@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vlrdevapi"
+version = "1.0.0"
+description = "The comprehensive Python library for VLR.gg Valorant esports data scraping - tournaments, matches, players, and statistics"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Vansh" }]
+keywords = [
+    "valorant",
+    "esports",
+    "vlr",
+    "vlr.gg",
+    "scraper",
+    "api",
+    "gaming",
+    "competitive",
+    "tournament",
+    "statistics",
+    "data",
+    "vct",
+    "web-scraping",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "beautifulsoup4>=4.12",
+    "lxml>=5.0",
+    "pydantic>=2.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/vanshbordia/vlrdevapi"
+Documentation = "https://vlrdevapi.readthedocs.io"
+Source = "https://github.com/vanshbordia/vlrdevapi"
+Issues = "https://github.com/vanshbordia/vlrdevapi/issues"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.6.0",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "library:Marks tests covering the Python library surface."
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
