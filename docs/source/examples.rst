@@ -1,12 +1,50 @@
 Usage Examples
 ==============
 
-This page provides practical examples for common use cases.
+This page provides practical examples for common use cases with vlrdevapi.
 
-Example 1: Track Tournament Progress
--------------------------------------
+Search Examples
+---------------
 
-Monitor an ongoing tournament and display match results:
+Search Across All Types
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   import vlrdevapi as vlr
+
+   results = vlr.search.search("nrg")
+   print(f"Found {results.total_results} results")
+
+   for team in results.teams:
+       status = "inactive" if team.is_inactive else "active"
+       print(f"Team: {team.name} ({status}) - {team.country}")
+
+   for player in results.players:
+       rn = f" ({player.real_name})" if player.real_name else ""
+       print(f"Player: {player.ign}{rn} - {player.country}")
+
+Type-Specific Searches
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   # Search only players
+   players = vlr.search.search_players("tenz")
+   
+   # Search only teams
+   teams = vlr.search.search_teams("sentinels")
+   
+   # Search only events
+   events = vlr.search.search_events("champions")
+
+Match Tracking Examples
+-----------------------
+
+Track Tournament Progress
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Monitor an ongoing tournament:
 
 .. code-block:: python
 
@@ -44,10 +82,38 @@ Monitor an ongoing tournament and display match results:
    
    track_tournament(event_id=2498)
 
-Example 2: Player Performance Analysis
----------------------------------------
+Live Match Monitor
+~~~~~~~~~~~~~~~~~~
 
-Analyze a player's recent performance across different agents:
+Monitor live matches:
+
+.. code-block:: python
+
+   import vlrdevapi as vlr
+   import time
+   
+   def monitor_live_matches(refresh_interval=60):
+       while True:
+           vlr.fetcher.clear_cache()
+           live_matches = vlr.matches.live()
+           
+           if not live_matches:
+               print("No live matches")
+           else:
+               print(f"{len(live_matches)} live match(es):")
+               for match in live_matches:
+                   print(f"  {match.teams[0]} vs {match.teams[1]}")
+                   print(f"  Event: {match.event}")
+           
+           time.sleep(refresh_interval)
+
+Player Analysis Examples
+------------------------
+
+Player Performance Analysis
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Analyze player performance across agents:
 
 .. code-block:: python
 
@@ -58,41 +124,31 @@ Analyze a player's recent performance across different agents:
        profile = vlr.players.profile(player_id=player_id)
        print(f"Player: {profile.handle} ({profile.real_name})")
        print(f"Country: {profile.country}")
-       print()
        
        # Get agent stats
        stats = vlr.players.agent_stats(player_id=player_id, timespan=timespan)
-       
-       # Sort by usage
        stats_sorted = sorted(stats, key=lambda s: s.usage_count or 0, reverse=True)
        
-       print(f"Agent Performance (Past {timespan}):")
-       print(f"{'Agent':<15} {'Games':<8} {'Rating':<8} {'ACS':<8} {'K/D':<8}")
-       print("-" * 55)
-       
+       print(f"\nTop Agents (Past {timespan}):")
        for stat in stats_sorted[:5]:
            if stat.agent and stat.agent != "All":
-               games = stat.usage_count or 0
-               rating = f"{stat.rating:.2f}" if stat.rating else "N/A"
-               acs = f"{stat.acs:.0f}" if stat.acs else "N/A"
-               kd = f"{stat.kd:.2f}" if stat.kd else "N/A"
-               print(f"{stat.agent:<15} {games:<8} {rating:<8} {acs:<8} {kd:<8}")
+               print(f"{stat.agent}: {stat.rating:.2f} rating, {stat.acs:.0f} ACS")
        
-       # Get recent matches
+       # Get recent match record
        matches = vlr.players.matches(player_id=player_id, limit=10)
-       
        wins = sum(1 for m in matches if m.result == "win")
        losses = sum(1 for m in matches if m.result == "loss")
-       
-       print()
-       print(f"Recent Match Record: {wins}W - {losses}L")
+       print(f"\nRecent Record: {wins}W - {losses}L")
    
    analyze_player(player_id=4164)
 
-Example 3: Match Deep Dive
----------------------------
+Match Analysis Examples
+-----------------------
 
-Get detailed statistics for a specific match:
+Match Deep Dive
+~~~~~~~~~~~~~~~
+
+Get detailed statistics for a match:
 
 .. code-block:: python
 
@@ -147,47 +203,13 @@ Get detailed statistics for a specific match:
    
    match_deep_dive(match_id=530935)
 
-Example 4: Live Match Monitor
-------------------------------
+Team Analysis Examples
+----------------------
 
-Monitor live matches and display updates:
+Team Comparison
+~~~~~~~~~~~~~~~
 
-.. code-block:: python
-
-   import vlrdevapi as vlr
-   import time
-   
-   def monitor_live_matches(refresh_interval=60):
-       print("Live Match Monitor")
-       print("=" * 50)
-       
-       while True:
-           # Clear cache to get fresh data
-           vlr.fetcher.clear_cache()
-           
-           # Get live matches
-           live_matches = vlr.matches.live()
-           
-           if not live_matches:
-               print("No live matches at the moment.")
-           else:
-               print(f"\n{len(live_matches)} live match(es):")
-               for match in live_matches:
-                   print(f"\n  {match.teams[0]} vs {match.teams[1]}")
-                   print(f"  Event: {match.event}")
-                   if match.score:
-                       print(f"  Score: {match.score}")
-           
-           print(f"\nRefreshing in {refresh_interval} seconds...")
-           time.sleep(refresh_interval)
-   
-   # Run for a limited time in this example
-   # monitor_live_matches(refresh_interval=60)
-
-Example 5: Team Comparison
----------------------------
-
-Compare two teams based on recent match results:
+Compare two teams:
 
 .. code-block:: python
 
@@ -243,56 +265,10 @@ Compare two teams based on recent match results:
    
    compare_teams_from_event(event_id=2498, team1_name="NRG", team2_name="FNATIC")
 
-Example 6: Export Data to CSV
-------------------------------
+Team Analysis and Tracking
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Export event data to a CSV file:
-
-.. code-block:: python
-
-   import vlrdevapi as vlr
-   import csv
-   
-   def export_event_matches_to_csv(event_id, filename="matches.csv"):
-       # Get event info and matches
-       info = vlr.events.info(event_id=event_id)
-       matches = vlr.events.matches(event_id=event_id)
-       
-       # Write to CSV
-       with open(filename, 'w', newline='', encoding='utf-8') as f:
-           writer = csv.writer(f)
-           
-           # Header
-           writer.writerow([
-               'Match ID', 'Team 1', 'Team 2', 'Score 1', 'Score 2',
-               'Winner', 'Stage', 'Status', 'Date'
-           ])
-           
-           # Data rows
-           for match in matches:
-               team1, team2 = match.teams
-               winner = team1.name if team1.is_winner else (team2.name if team2.is_winner else "TBD")
-               
-               writer.writerow([
-                   match.match_id,
-                   team1.name,
-                   team2.name,
-                   team1.score or '',
-                   team2.score or '',
-                   winner,
-                   match.stage or '',
-                   match.status,
-                   match.date or ''
-               ])
-       
-       print(f"Exported {len(matches)} matches to {filename}")
-   
-   export_event_matches_to_csv(event_id=2498)
-
-Example 7: Team Analysis and Tracking
---------------------------------------
-
-Track a team's performance, roster, and tournament placements:
+Track team performance:
 
 .. code-block:: python
 
@@ -340,55 +316,35 @@ Track a team's performance, roster, and tournament placements:
            for detail in placement.placements:
                print(f"    {detail.series}: {detail.place} - {detail.prize_money}")
    
-   # Example: Analyze Velocity Gaming
    analyze_team(team_id=799)
 
-Example 8: Compare Team Performance
-------------------------------------
+Data Export Examples
+--------------------
 
-Compare statistics between two teams:
+Export to CSV
+~~~~~~~~~~~~~
+
+Export event data to CSV:
 
 .. code-block:: python
 
    import vlrdevapi as vlr
+   import csv
    
-   def compare_teams(team1_id, team2_id):
-       # Get team info
-       team1_info = vlr.teams.info(team_id=team1_id)
-       team2_info = vlr.teams.info(team_id=team2_id)
+   def export_event_matches(event_id, filename="matches.csv"):
+       matches = vlr.events.matches(event_id=event_id)
        
-       print(f"Comparing: {team1_info.name} vs {team2_info.name}")
-       print("=" * 60)
-       
-       # Compare recent match records
-       team1_matches = vlr.teams.completed_matches(team_id=team1_id, count=10)
-       team2_matches = vlr.teams.completed_matches(team_id=team2_id, count=10)
-       
-       def calculate_win_rate(matches, team_id):
-           wins = 0
+       with open(filename, 'w', newline='', encoding='utf-8') as f:
+           writer = csv.writer(f)
+           writer.writerow(['Team 1', 'Team 2', 'Score', 'Status'])
+           
            for match in matches:
-               if match.team1_id == team_id and match.score_team1 > match.score_team2:
-                   wins += 1
-               elif match.team2_id == team_id and match.score_team2 > match.score_team1:
-                   wins += 1
-           return (wins / len(matches) * 100) if matches else 0
+               team1, team2 = match.teams
+               score = f"{team1.score}-{team2.score}" if team1.score else "TBD"
+               writer.writerow([team1.name, team2.name, score, match.status])
        
-       team1_wr = calculate_win_rate(team1_matches, team1_id)
-       team2_wr = calculate_win_rate(team2_matches, team2_id)
-       
-       print(f"\nRecent Form (Last 10 matches):")
-       print(f"  {team1_info.name}: {team1_wr:.1f}% win rate")
-       print(f"  {team2_info.name}: {team2_wr:.1f}% win rate")
-       
-       # Compare tournament placements
-       team1_placements = vlr.teams.placements(team_id=team1_id)
-       team2_placements = vlr.teams.placements(team_id=team2_id)
-       
-       print(f"\nTournament Participation:")
-       print(f"  {team1_info.name}: {len(team1_placements)} events")
-       print(f"  {team2_info.name}: {len(team2_placements)} events")
+       print(f"Exported {len(matches)} matches")
    
-   # Example: Compare two teams
-   compare_teams(team1_id=799, team2_id=1034)
+   export_event_matches(event_id=2498)
 
-These examples demonstrate common patterns and use cases. Adapt them to your specific needs.
+These examples demonstrate common patterns. Adapt them to your needs.

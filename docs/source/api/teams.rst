@@ -1,10 +1,12 @@
 Teams API
 =========
 
-The teams module provides access to Valorant esports team information, rosters, match history, and event placements.
+The teams module provides access to team information, rosters, matches, and tournament placements.
 
-Module Overview
----------------
+Overview
+--------
+
+Get comprehensive team data including team info, current rosters, match schedules, and tournament placement history.
 
 .. automodule:: vlrdevapi.teams
    :members:

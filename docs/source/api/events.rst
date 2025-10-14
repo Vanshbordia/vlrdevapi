@@ -1,10 +1,12 @@
 Events API
 ==========
 
-The events module provides access to Valorant esports events, tournaments, and competitions including VCT Champions, VCT Masters, regional leagues, and Game Changers tournaments.
+The events module provides access to Valorant esports events, tournaments, and competitions.
 
-Module Overview
----------------
+Overview
+--------
+
+Access VCT Champions, VCT Masters, regional leagues, Game Changers tournaments, and other Valorant esports events. Get event details, matches, and standings.
 
 .. automodule:: vlrdevapi.events
    :members:

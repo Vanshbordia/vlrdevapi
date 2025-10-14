@@ -1,10 +1,12 @@
 Series API
 ==========
 
-The series module provides detailed match information including map picks/bans and player statistics.
+The series module provides detailed match information including map picks/bans, player statistics, and round-by-round data.
 
-Module Overview
----------------
+Overview
+--------
+
+Get in-depth match analytics including series info, map picks and bans, detailed player statistics, and round results.
 
 .. automodule:: vlrdevapi.series
    :members:
