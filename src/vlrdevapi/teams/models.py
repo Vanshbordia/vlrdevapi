@@ -97,3 +97,34 @@ class EventPlacement(BaseModel):
     event_url: Optional[str] = Field(None, description="Event URL")
     placements: List[PlacementDetail] = Field(default_factory=list, description="List of placements in this event")
     year: Optional[str] = Field(None, description="Year of the event")
+
+
+class PlayerTransaction(BaseModel):
+    """Individual player transaction record."""
+    
+    model_config = ConfigDict(frozen=True)
+    
+    date: Optional[str] = Field(None, description="Transaction date (YYYY/MM/DD)")
+    action: Optional[str] = Field(None, description="Action type (join, leave, inactive, etc.)")
+    player_id: Optional[int] = Field(None, description="Player ID")
+    ign: Optional[str] = Field(None, description="In-game name")
+    real_name: Optional[str] = Field(None, description="Real name")
+    country: Optional[str] = Field(None, description="Country")
+    position: Optional[str] = Field(None, description="Position/role (Player, Head Coach, etc.)")
+    reference_url: Optional[str] = Field(None, description="Reference URL for transaction")
+
+
+class PreviousPlayer(BaseModel):
+    """Previous player with calculated status."""
+    
+    model_config = ConfigDict(frozen=True)
+    
+    player_id: Optional[int] = Field(None, description="Player ID")
+    ign: Optional[str] = Field(None, description="In-game name")
+    real_name: Optional[str] = Field(None, description="Real name")
+    country: Optional[str] = Field(None, description="Country")
+    position: Optional[str] = Field(None, description="Position/role")
+    status: str = Field(description="Player status (Active, Left, Inactive, Unknown)")
+    join_date: Optional[str] = Field(None, description="Date joined team")
+    leave_date: Optional[str] = Field(None, description="Date left team")
+    transactions: List[PlayerTransaction] = Field(default_factory=list, description="All transactions for this player")

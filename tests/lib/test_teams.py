@@ -840,3 +840,354 @@ class TestTeamsPlacements:
             assert detail.series == "Playoffs"
             assert detail.place == "1st"
             assert "$" in detail.prize_money
+
+
+class TestTeamsTransactions:
+    """Test team transactions functionality."""
+    
+    def test_transactions_returns_list(self, mock_fetch_html):
+        """Test that transactions() returns a list."""
+        txns = vlr.teams.transactions(team_id=1034)
+        assert isinstance(txns, list)
+    
+    def test_transactions_not_empty(self, mock_fetch_html):
+        """Test that NRG has transactions."""
+        txns = vlr.teams.transactions(team_id=1034)
+        assert len(txns) > 0
+    
+    def test_transactions_structure(self, mock_fetch_html):
+        """Test transaction objects have correct structure."""
+        txns = vlr.teams.transactions(team_id=1034)
+        if txns:
+            txn = txns[0]
+            assert hasattr(txn, 'date')
+            assert hasattr(txn, 'action')
+            assert hasattr(txn, 'player_id')
+            assert hasattr(txn, 'ign')
+            assert hasattr(txn, 'real_name')
+            assert hasattr(txn, 'country')
+            assert hasattr(txn, 'position')
+            assert hasattr(txn, 'reference_url')
+    
+    def test_transactions_first_entry(self, mock_fetch_html):
+        """Test first transaction entry (most recent)."""
+        txns = vlr.teams.transactions(team_id=1034)
+        assert len(txns) > 0
+        
+        first = txns[0]
+        # Based on HTML: FiNESSE leaving
+        assert first.ign == "FiNESSE"
+        assert first.real_name == "Pujan Mehta"
+        assert first.action == "leave"
+        assert first.date == "2025/10/03"
+        assert first.position == "Player"
+        assert first.country == "Canada"
+        assert first.player_id == 817
+    
+    def test_transactions_action_types(self, mock_fetch_html):
+        """Test that different action types are captured."""
+        txns = vlr.teams.transactions(team_id=1034)
+        
+        actions = {txn.action for txn in txns if txn.action}
+        assert "join" in actions
+        assert "leave" in actions
+        assert "inactive" in actions
+    
+    def test_transactions_player_ids(self, mock_fetch_html):
+        """Test that player IDs are extracted correctly."""
+        txns = vlr.teams.transactions(team_id=1034)
+        
+        # Check that we have player IDs
+        player_ids = [txn.player_id for txn in txns if txn.player_id]
+        assert len(player_ids) > 0
+        
+        # All player IDs should be integers
+        for pid in player_ids:
+            assert isinstance(pid, int)
+            assert pid > 0
+    
+    def test_transactions_countries(self, mock_fetch_html):
+        """Test that countries are extracted and mapped."""
+        txns = vlr.teams.transactions(team_id=1034)
+        
+        countries = {txn.country for txn in txns if txn.country}
+        assert len(countries) > 0
+        
+        # Should have full country names, not codes
+        for country in countries:
+            assert isinstance(country, str)
+            assert len(country) > 2  # Not just country codes
+    
+    def test_transactions_positions(self, mock_fetch_html):
+        """Test that positions are extracted."""
+        txns = vlr.teams.transactions(team_id=1034)
+        
+        positions = {txn.position for txn in txns if txn.position}
+        assert "Player" in positions
+        assert "Head coach" in positions or "Assistant coach" in positions
+    
+    def test_transactions_reference_urls(self, mock_fetch_html):
+        """Test that reference URLs are extracted."""
+        txns = vlr.teams.transactions(team_id=1034)
+        
+        # Check that some transactions have reference URLs
+        refs = [txn.reference_url for txn in txns if txn.reference_url]
+        assert len(refs) > 0
+        
+        # URLs should be valid
+        for ref in refs[:5]:  # Check first 5
+            assert isinstance(ref, str)
+            assert ref.startswith("http")
+    
+    def test_transactions_no_whitespace(self, mock_fetch_html):
+        """Test that all text fields are cleaned of whitespace."""
+        txns = vlr.teams.transactions(team_id=1034)
+        
+        for txn in txns[:10]:  # Check first 10
+            if txn.ign:
+                assert txn.ign == txn.ign.strip()
+                assert "\n" not in txn.ign
+                assert "\t" not in txn.ign
+            
+            if txn.real_name:
+                assert txn.real_name == txn.real_name.strip()
+                assert "\n" not in txn.real_name
+                assert "\t" not in txn.real_name
+            
+            if txn.position:
+                assert txn.position == txn.position.strip()
+                assert "\n" not in txn.position
+                assert "\t" not in txn.position
+    
+    def test_transactions_immutable(self, mock_fetch_html):
+        """Test that transaction objects are immutable."""
+        txns = vlr.teams.transactions(team_id=1034)
+        if txns:
+            txn = txns[0]
+            with pytest.raises(Exception):
+                txn.ign = "new_name"
+    
+    def test_transactions_invalid_team(self, mock_fetch_html):
+        """Test transactions for invalid team ID."""
+        txns = vlr.teams.transactions(team_id=999999999)
+        assert isinstance(txns, list)
+        assert len(txns) == 0
+
+
+class TestTeamsPreviousPlayers:
+    """Test previous players functionality."""
+    
+    def test_previous_players_returns_list(self, mock_fetch_html):
+        """Test that previous_players() returns a list."""
+        players = vlr.teams.previous_players(team_id=1034)
+        assert isinstance(players, list)
+    
+    def test_previous_players_not_empty(self, mock_fetch_html):
+        """Test that NRG has previous players."""
+        players = vlr.teams.previous_players(team_id=1034)
+        assert len(players) > 0
+    
+    def test_previous_players_structure(self, mock_fetch_html):
+        """Test player objects have correct structure."""
+        players = vlr.teams.previous_players(team_id=1034)
+        if players:
+            player = players[0]
+            assert hasattr(player, 'player_id')
+            assert hasattr(player, 'ign')
+            assert hasattr(player, 'real_name')
+            assert hasattr(player, 'country')
+            assert hasattr(player, 'position')
+            assert hasattr(player, 'status')
+            assert hasattr(player, 'join_date')
+            assert hasattr(player, 'leave_date')
+            assert hasattr(player, 'transactions')
+    
+    def test_previous_players_status_types(self, mock_fetch_html):
+        """Test that different status types are present."""
+        players = vlr.teams.previous_players(team_id=1034)
+        
+        statuses = {p.status for p in players}
+        # Should have at least some of these statuses
+        assert len(statuses) > 0
+        
+        # All statuses should be valid
+        valid_statuses = {"Active", "Left", "Inactive", "Unknown"}
+        for status in statuses:
+            assert status in valid_statuses
+    
+    def test_previous_players_has_active(self, mock_fetch_html):
+        """Test that there are active players."""
+        players = vlr.teams.previous_players(team_id=1034)
+        
+        active = [p for p in players if p.status == "Active"]
+        # NRG should have active players
+        assert len(active) > 0
+    
+    def test_previous_players_has_left(self, mock_fetch_html):
+        """Test that there are players who left."""
+        players = vlr.teams.previous_players(team_id=1034)
+        
+        left = [p for p in players if p.status == "Left"]
+        # NRG should have players who left
+        assert len(left) > 0
+    
+    def test_previous_players_finesse_left(self, mock_fetch_html):
+        """Test that FiNESSE is marked as Left."""
+        players = vlr.teams.previous_players(team_id=1034)
+        
+        finesse = next((p for p in players if p.ign == "FiNESSE"), None)
+        assert finesse is not None
+        assert finesse.status == "Left"
+        assert finesse.real_name == "Pujan Mehta"
+        assert finesse.country == "Canada"
+        assert finesse.position == "Player"
+        assert finesse.leave_date == "2025/10/03"
+    
+    def test_previous_players_skuba_active(self, mock_fetch_html):
+        """Test that skuba is marked as Active."""
+        players = vlr.teams.previous_players(team_id=1034)
+        
+        skuba = next((p for p in players if p.ign == "skuba"), None)
+        assert skuba is not None
+        assert skuba.status == "Active"
+        assert skuba.real_name == "Logan Jenkins"
+        assert skuba.country == "United States"
+        assert skuba.position == "Player"
+        assert skuba.join_date == "2025/05/10"
+        assert skuba.leave_date is None
+    
+    def test_previous_players_verno_left(self, mock_fetch_html):
+        """Test Verno's status (inactive then left)."""
+        players = vlr.teams.previous_players(team_id=1034)
+        
+        verno = next((p for p in players if p.ign == "Verno"), None)
+        assert verno is not None
+        # Verno was inactive, then left
+        assert verno.status == "Left"
+        assert verno.leave_date == "2025/03/19"
+    
+    def test_previous_players_transactions_included(self, mock_fetch_html):
+        """Test that each player has their transaction history."""
+        players = vlr.teams.previous_players(team_id=1034)
+        
+        for player in players[:5]:  # Check first 5
+            assert isinstance(player.transactions, list)
+            assert len(player.transactions) > 0
+            
+            # Each transaction should be valid
+            for txn in player.transactions:
+                assert hasattr(txn, 'date')
+                assert hasattr(txn, 'action')
+    
+    def test_previous_players_join_dates(self, mock_fetch_html):
+        """Test that join dates are extracted."""
+        players = vlr.teams.previous_players(team_id=1034)
+        
+        # Active players should have join dates
+        active = [p for p in players if p.status == "Active"]
+        for player in active:
+            if player.join_date:
+                # Date format should be YYYY/MM/DD or 'Unknown'
+                if player.join_date != "Unknown":
+                    assert "/" in player.join_date
+                    parts = player.join_date.split("/")
+                    assert len(parts) == 3
+    
+    def test_previous_players_no_whitespace(self, mock_fetch_html):
+        """Test that all text fields are cleaned."""
+        players = vlr.teams.previous_players(team_id=1034)
+        
+        for player in players[:10]:  # Check first 10
+            if player.ign:
+                assert player.ign == player.ign.strip()
+                assert "\n" not in player.ign
+                assert "\t" not in player.ign
+            
+            if player.real_name:
+                assert player.real_name == player.real_name.strip()
+                assert "\n" not in player.real_name
+                assert "\t" not in player.real_name
+    
+    def test_previous_players_sorted_by_recent(self, mock_fetch_html):
+        """Test that players are sorted by most recent activity."""
+        players = vlr.teams.previous_players(team_id=1034)
+        
+        # First player should have the most recent transaction
+        if len(players) >= 2:
+            first_date = players[0].transactions[0].date
+            second_date = players[1].transactions[0].date
+            
+            # Dates should be in descending order (most recent first)
+            # Skip 'Unknown' dates in comparison
+            if first_date and second_date and first_date != "Unknown" and second_date != "Unknown":
+                assert first_date >= second_date
+    
+    def test_previous_players_immutable(self, mock_fetch_html):
+        """Test that player objects are immutable."""
+        players = vlr.teams.previous_players(team_id=1034)
+        if players:
+            player = players[0]
+            with pytest.raises(Exception):
+                player.status = "new_status"
+    
+    def test_previous_players_invalid_team(self, mock_fetch_html):
+        """Test previous_players for invalid team ID."""
+        players = vlr.teams.previous_players(team_id=999999999)
+        assert isinstance(players, list)
+        assert len(players) == 0
+    
+    def test_previous_players_filter_by_position(self, mock_fetch_html):
+        """Test filtering players by position."""
+        players = vlr.teams.previous_players(team_id=1034)
+        
+        # Filter for coaches
+        coaches = [p for p in players if p.position and "coach" in p.position.lower()]
+        assert len(coaches) > 0
+        
+        # Filter for players
+        players_only = [p for p in players if p.position == "Player"]
+        assert len(players_only) > 0
+    
+    def test_previous_players_multiple_transactions(self, mock_fetch_html):
+        """Test players with multiple transactions."""
+        players = vlr.teams.previous_players(team_id=1034)
+        
+        # Find a player with multiple transactions (e.g., Verno or Mikes)
+        multi_txn_players = [p for p in players if len(p.transactions) > 1]
+        assert len(multi_txn_players) > 0
+        
+        # Check that transactions are sorted (most recent first)
+        for player in multi_txn_players[:3]:
+            dates = [txn.date for txn in player.transactions if txn.date and txn.date != "Unknown"]
+            if len(dates) >= 2:
+                # Should be in descending order
+                assert dates == sorted(dates, reverse=True)
+    
+    def test_previous_players_unknown_dates(self, mock_fetch_html):
+        """Test that players with 'Unknown' dates are handled correctly."""
+        players = vlr.teams.previous_players(team_id=1034)
+        
+        # Find player with Unknown date (Ry - Manager)
+        ry = next((p for p in players if p.ign == "Ry"), None)
+        if ry:
+            assert ry.join_date == "Unknown"
+            assert ry.status == "Active"  # Most recent action is join
+            assert ry.position == "Manager"
+            assert len(ry.transactions) > 0
+    
+    def test_previous_players_rejoin_scenario(self, mock_fetch_html):
+        """Test players who leave and rejoin (multiple join/leave cycles)."""
+        players = vlr.teams.previous_players(team_id=1034)
+        
+        # Check for players with multiple joins
+        for player in players:
+            join_count = sum(1 for txn in player.transactions if txn.action == "join")
+            leave_count = sum(1 for txn in player.transactions if txn.action == "leave")
+            
+            # If player has multiple joins, verify status is based on most recent action
+            if join_count > 1:
+                most_recent_action = player.transactions[0].action
+                if most_recent_action == "join":
+                    assert player.status == "Active"
+                elif most_recent_action == "leave":
+                    assert player.status == "Left"

@@ -318,6 +318,64 @@ Track team performance:
    
    analyze_team(team_id=799)
 
+Team Roster History and Transactions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Track team roster changes over time:
+
+.. code-block:: python
+
+   import vlrdevapi as vlr
+   
+   def roster_analysis(team_id):
+       # Get all previous players with status
+       players = vlr.teams.previous_players(team_id=team_id)
+       
+       # Group by status
+       active = [p for p in players if p.status == "Active"]
+       left = [p for p in players if p.status == "Left"]
+       inactive = [p for p in players if p.status == "Inactive"]
+       
+       print(f"Roster Status Summary:")
+       print(f"  Active: {len(active)}")
+       print(f"  Left: {len(left)}")
+       print(f"  Inactive: {len(inactive)}")
+       print()
+       
+       # Show active players
+       print("Current Active Players:")
+       for player in active:
+           print(f"  {player.ign} ({player.position})")
+           print(f"    Joined: {player.join_date}")
+           print(f"    Country: {player.country}")
+       print()
+       
+       # Show recent departures
+       print("Recent Departures:")
+       for player in left[:5]:
+           print(f"  {player.ign} ({player.position})")
+           print(f"    Joined: {player.join_date}, Left: {player.leave_date}")
+       print()
+       
+       # Get raw transactions
+       txns = vlr.teams.transactions(team_id=team_id)
+       
+       # Analyze transaction patterns
+       joins = [t for t in txns if t.action == "join"]
+       leaves = [t for t in txns if t.action == "leave"]
+       
+       print(f"Transaction Summary:")
+       print(f"  Total Joins: {len(joins)}")
+       print(f"  Total Leaves: {len(leaves)}")
+       print()
+       
+       # Show recent transactions
+       print("Recent Transactions:")
+       for txn in txns[:10]:
+           print(f"  {txn.date}: {txn.ign} - {txn.action} ({txn.position})")
+   
+   roster_analysis(team_id=1034)
+
 Data Export Examples
 --------------------
 
