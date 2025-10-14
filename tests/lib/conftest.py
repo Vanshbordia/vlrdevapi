@@ -59,6 +59,7 @@ def mock_fetch_html(monkeypatch, load_html):
         "https://www.vlr.gg/team/matches/799/?group=upcoming": "team_799_upcoming_matches.html",
         "https://www.vlr.gg/team/matches/799/?group=completed": "team_799_completed_matches.html",
         "https://www.vlr.gg/team/matches/799/?group=completed&page=2": "team_799_completed_matches_paginate_2.html",
+        "https://www.vlr.gg/team/transactions/1034": "team_nrg_1034_transactions.html",
         
         # Series/Match pages for team ID extraction (NRG vs FNATIC)
         "https://www.vlr.gg/530935": "series_page.html",

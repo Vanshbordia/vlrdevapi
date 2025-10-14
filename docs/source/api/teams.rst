@@ -1,12 +1,12 @@
 Teams API
 =========
 
-The teams module provides access to team information, rosters, matches, and tournament placements.
+The teams module provides access to team information, rosters, matches, tournament placements, and transaction history.
 
 Overview
 --------
 
-Get comprehensive team data including team info, current rosters, match schedules, and tournament placement history.
+Get comprehensive team data including team info, current rosters, match schedules, tournament placement history, and player transactions (joins, leaves, status changes).
 
 .. automodule:: vlrdevapi.teams
    :members:
@@ -44,6 +44,18 @@ placements
 ~~~~~~~~~~
 
 .. autofunction:: vlrdevapi.teams.placements
+   :noindex:
+
+transactions
+~~~~~~~~~~~~
+
+.. autofunction:: vlrdevapi.teams.transactions
+   :noindex:
+
+previous_players
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: vlrdevapi.teams.previous_players
    :noindex:
 
 Data Models
@@ -95,6 +107,20 @@ PlacementDetail
 ~~~~~~~~~~~~~~~
 
 .. autoclass:: vlrdevapi.teams.PlacementDetail
+   :members:
+   :undoc-members:
+
+PlayerTransaction
+~~~~~~~~~~~~~~~~~
+
+.. autoclass:: vlrdevapi.teams.PlayerTransaction
+   :members:
+   :undoc-members:
+
+PreviousPlayer
+~~~~~~~~~~~~~~
+
+.. autoclass:: vlrdevapi.teams.PreviousPlayer
    :members:
    :undoc-members:
 
@@ -175,6 +201,47 @@ Get Event Placements
            print(f"  {detail.series} - {detail.place}")
            if detail.prize_money:
                print(f"    Prize: {detail.prize_money}")
+
+Get Team Transactions
+~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   import vlrdevapi as vlr
+
+   # Get all transactions for a team
+   txns = vlr.teams.transactions(team_id=1034)
+   
+   for txn in txns[:10]:
+       # Note: date can be 'Unknown' if not officially documented
+       print(f"{txn.date}: {txn.ign} - {txn.action} ({txn.position})")
+
+Get Previous Players
+~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   import vlrdevapi as vlr
+
+   # Get all previous/current players with calculated status
+   players = vlr.teams.previous_players(team_id=1034)
+   
+   # Filter by status
+   active = [p for p in players if p.status == "Active"]
+   left = [p for p in players if p.status == "Left"]
+   
+   print(f"Active: {len(active)}, Left: {len(left)}")
+   
+   # Display player details
+   for player in active:
+       print(f"{player.ign} - {player.position}")
+       # Note: dates can be 'Unknown' if not officially documented
+       print(f"  Joined: {player.join_date}")
+   
+   # Players can rejoin after leaving - status is based on most recent action
+   for player in players:
+       if len([t for t in player.transactions if t.action == "join"]) > 1:
+           print(f"{player.ign} has rejoined the team")
 
 Pagination
 ~~~~~~~~~~
