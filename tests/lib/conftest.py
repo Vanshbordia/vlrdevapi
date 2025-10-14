@@ -63,6 +63,13 @@ def mock_fetch_html(monkeypatch, load_html):
         # Series/Match pages for team ID extraction (NRG vs FNATIC)
         "https://www.vlr.gg/530935": "series_page.html",
 
+        # Search
+        "https://www.vlr.gg/search/?q=nrg&type=all": "search_nrg_all.html",
+        "https://www.vlr.gg/search/?q=nrg&type=players": "search_nrg_all.html",
+        "https://www.vlr.gg/search/?q=nrg&type=teams": "search_nrg_all.html",
+        "https://www.vlr.gg/search/?q=nrg&type=events": "search_nrg_all.html",
+        "https://www.vlr.gg/search/?q=nrg&type=series": "search_nrg_all.html",
+
     }
     
     def mock_fetch(url: str, timeout: float = 5.0) -> str:

@@ -7,25 +7,33 @@ Requirements
 - Python 3.11 or higher
 - pip package manager
 
-Basic Installation
-------------------
+Installation
+------------
 
-Install vlrdevapi using pip:
+Install via pip:
 
 .. code-block:: bash
 
    pip install vlrdevapi
 
-This will install the library along with its required dependencies:
+This installs vlrdevapi and its dependencies:
 
-- beautifulsoup4 (HTML parsing)
-- lxml (fast XML/HTML parser)
-- pydantic (data validation)
+- **beautifulsoup4**: HTML parsing
+- **lxml**: Fast XML/HTML parser
+- **pydantic**: Data validation
 
-Development Installation
-------------------------
+Verify Installation
+-------------------
 
-For development work, clone the repository and install in editable mode with development dependencies:
+.. code-block:: python
+
+   import vlrdevapi as vlr
+   print(vlr.__version__)
+
+Development Setup
+-----------------
+
+For development work:
 
 .. code-block:: bash
 
@@ -33,42 +41,10 @@ For development work, clone the repository and install in editable mode with dev
    cd vlrdevapi
    pip install -e .[dev]
 
-This installs additional tools for testing and development:
+This includes additional tools:
 
-- pytest (testing framework)
-- ruff (linting and formatting)
-
-Verifying Installation
-----------------------
-
-Verify the installation by importing the library:
-
-.. code-block:: python
-
-   import vlrdevapi as vlr
-   print(vlr.__version__)
-
-Dependencies
-------------
-
-Core Dependencies
-~~~~~~~~~~~~~~~~~
-
-- **beautifulsoup4** (>=4.12): HTML parsing library
-- **lxml** (>=5.0): Fast C-based XML/HTML parser
-- **pydantic** (>=2.0): Data validation using Python type hints
-
-Optional Dependencies
-~~~~~~~~~~~~~~~~~~~~~
-
-Development dependencies (installed with ``[dev]``):
-
-- **pytest** (>=8.0.0): Testing framework
-- **ruff** (>=0.6.0): Fast Python linter and formatter
-
-Test dependencies (installed with ``[test]``):
-
-- **pytest** (>=8.0.0): Testing framework
+- **pytest**: Testing framework
+- **ruff**: Linting and formatting
 
 Troubleshooting
 ---------------
@@ -76,13 +52,13 @@ Troubleshooting
 lxml Installation Issues
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you encounter issues installing lxml on Windows, you may need to install Visual C++ build tools or use a pre-built wheel:
+**Windows**: If lxml fails to install, use a pre-built wheel:
 
 .. code-block:: bash
 
    pip install --only-binary :all: lxml
 
-On Linux, you may need to install development packages:
+**Linux**: Install development packages first:
 
 .. code-block:: bash
 
@@ -95,6 +71,15 @@ On Linux, you may need to install development packages:
 Connection Issues
 ~~~~~~~~~~~~~~~~~
 
-If you experience connection timeouts or network errors, check your firewall settings and ensure you can access https://www.vlr.gg from your network.
+If you experience network errors:
 
-The library includes automatic retry logic with exponential backoff for transient network errors.
+1. Check firewall settings
+2. Verify access to https://www.vlr.gg
+3. The library includes automatic retry logic for transient errors
+
+Next Steps
+----------
+
+- See :doc:`quickstart` to get started
+- Browse :doc:`examples` for practical use cases
+- Read :doc:`api/search` and other API references

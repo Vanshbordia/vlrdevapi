@@ -1,10 +1,12 @@
 Players API
 ===========
 
-The players module provides access to player profiles, match history, and statistics.
+The players module provides access to player profiles, match history, and agent statistics.
 
-Module Overview
----------------
+Overview
+--------
+
+Get comprehensive player data including profiles, team history, match records, and agent performance statistics.
 
 .. automodule:: vlrdevapi.players
    :members:
@@ -17,17 +19,23 @@ Functions
 profile
 ~~~~~~~
 
+Get player profile information.
+
 .. autofunction:: vlrdevapi.players.profile
    :noindex:
 
 matches
 ~~~~~~~
 
+Get player match history.
+
 .. autofunction:: vlrdevapi.players.matches
    :noindex:
 
 agent_stats
 ~~~~~~~~~~~
+
+Get player agent statistics.
 
 .. autofunction:: vlrdevapi.players.agent_stats
    :noindex:
@@ -77,11 +85,11 @@ AgentStats
    :members:
    :undoc-members:
 
-Usage Examples
---------------
+Examples
+--------
 
-Get Player Profile
-~~~~~~~~~~~~~~~~~~
+Player Profile
+~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -90,20 +98,15 @@ Get Player Profile
    # Get player profile
    profile = vlr.players.profile(player_id=4164)
    
-   print(f"Handle: {profile.handle}")
-   print(f"Real Name: {profile.real_name}")
+   print(f"{profile.handle} ({profile.real_name})")
    print(f"Country: {profile.country}")
    
    # Current teams
    for team in profile.current_teams:
-       print(f"Team: {team.name} ({team.role})")
-   
-   # Social links
-   for social in profile.socials:
-       print(f"{social.label}: {social.url}")
+       print(f"Team: {team.name} - {team.role}")
 
-Get Player Match History
-~~~~~~~~~~~~~~~~~~~~~~~~
+Match History
+~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -116,40 +119,26 @@ Get Player Match History
        print(f"{match.player_team.name} vs {match.opponent_team.name}")
        print(f"Result: {match.result}")
        print(f"Score: {match.player_score}-{match.opponent_score}")
-       print(f"Event: {match.event}")
-       print()
 
-Get Agent Statistics
-~~~~~~~~~~~~~~~~~~~~
+Agent Statistics
+~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
    import vlrdevapi as vlr
 
-   # Get agent stats for past 60 days
+   # Get agent stats
    stats = vlr.players.agent_stats(player_id=4164, timespan="60d")
    
-   for stat in stats:
+   for stat in stats[:5]:
        if stat.agent and stat.agent != "All":
-           print(f"{stat.agent}:")
-           print(f"  Games: {stat.usage_count}")
-           print(f"  Rating: {stat.rating}")
-           print(f"  ACS: {stat.acs}")
-           print(f"  K/D: {stat.kd}")
-           print(f"  KAST: {stat.kast * 100:.1f}%")
-           print()
+           print(f"{stat.agent}: {stat.rating:.2f} rating, {stat.acs:.0f} ACS")
 
-Different Time Periods
-~~~~~~~~~~~~~~~~~~~~~~
+Timespan Options
+~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
-   import vlrdevapi as vlr
-
    # Available timespans: "30d", "60d", "90d", "all"
-   
-   # Last 30 days
    stats_30d = vlr.players.agent_stats(player_id=4164, timespan="30d")
-   
-   # All time
    stats_all = vlr.players.agent_stats(player_id=4164, timespan="all")

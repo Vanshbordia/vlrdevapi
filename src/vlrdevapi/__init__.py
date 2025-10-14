@@ -36,6 +36,7 @@ from . import players
 from . import series
 from . import status
 from . import teams
+from . import search
 
 # Import exceptions for error handling
 from .exceptions import (
@@ -57,6 +58,7 @@ __all__ = [
     "series",
     "status",
     "teams",
+    "search",
     
     # Exceptions for error handling
     "VlrdevapiError",
