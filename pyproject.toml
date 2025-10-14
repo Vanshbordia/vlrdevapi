@@ -46,7 +46,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/vanshbordia/vlrdevapi"
-Documentation = "https://vlrdevapi.readthedocs.io"
+Documentation = "https://vlrdevapi.readthedocs.io/en/latest/"
 Source = "https://github.com/vanshbordia/vlrdevapi"
 Issues = "https://github.com/vanshbordia/vlrdevapi/issues"
 

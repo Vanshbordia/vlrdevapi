@@ -1,5 +1,12 @@
 # vlrdevapi
 
+[![PyPI version](https://badge.fury.io/py/vlrdevapi.svg)](https://badge.fury.io/py/vlrdevapi)
+[![Python Version](https://img.shields.io/pypi/pyversions/vlrdevapi.svg)](https://pypi.org/project/vlrdevapi/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Documentation Status](https://readthedocs.org/projects/vlrdevapi/badge/?version=latest)](https://vlrdevapi.readthedocs.io/en/latest/?badge=latest)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Tests](https://github.com/vanshbordia/vlrdevapi/workflows/tests/badge.svg)](https://github.com/vanshbordia/vlrdevapi/actions)
+
 **The Python library for VLR.gg Valorant esports data scraping and API access.**
 
 vlrdevapi is a comprehensive, type-safe Python client library designed specifically for scraping and accessing Valorant esports data from VLR.gg. As there is no official VLR.gg API, this library provides a standardized, reliable, and efficient way to programmatically access tournament information, match data, player statistics, and more.
@@ -81,6 +88,34 @@ print(f"Score: {info.score[0]}-{info.score[1]}")
 ```
 
 ## Complete API Reference
+
+### Teams Module - Team Information and Statistics
+
+```python
+import vlrdevapi as vlr
+
+# Team information
+team_info = vlr.teams.info(team_id=799)
+print(f"{team_info.name} ({team_info.tag}) - {team_info.country}")
+
+# Team roster
+roster = vlr.teams.roster(team_id=799)
+for member in roster:
+    print(f"{member.ign} - {member.name}")
+
+# Upcoming matches with pagination
+upcoming = vlr.teams.upcoming_matches(team_id=799, count=10)
+
+# Completed matches with pagination
+completed = vlr.teams.completed_matches(team_id=799, count=20)
+
+# Event placements
+placements = vlr.teams.placements(team_id=799)
+for placement in placements:
+    print(f"{placement.event_name} ({placement.year})")
+    for detail in placement.placements:
+        print(f"  {detail.series} - {detail.place}: {detail.prize_money}")
+```
 
 ### Events Module - Tournament and Competition Data
 

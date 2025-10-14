@@ -1,0 +1,99 @@
+"""Team-related data models."""
+
+from __future__ import annotations
+
+from typing import List, Optional
+from pydantic import BaseModel, Field, ConfigDict
+
+
+class SocialLink(BaseModel):
+    """Team social media link."""
+    
+    model_config = ConfigDict(frozen=True)
+    
+    label: str = Field(description="Link label")
+    url: str = Field(description="Link URL")
+
+
+class PreviousTeam(BaseModel):
+    """Information about a team's previous name/identity."""
+    
+    model_config = ConfigDict(frozen=True)
+    
+    team_id: Optional[int] = Field(None, description="Previous team ID")
+    name: Optional[str] = Field(None, description="Previous team name")
+
+
+class RosterMember(BaseModel):
+    """Team roster member (player or staff)."""
+    
+    model_config = ConfigDict(frozen=True)
+    
+    player_id: Optional[int] = Field(None, description="Player ID")
+    ign: Optional[str] = Field(None, description="In-game name")
+    real_name: Optional[str] = Field(None, description="Real name")
+    country: Optional[str] = Field(None, description="Country")
+    role: str = Field(description="Role (e.g., Player, Head Coach, Sub)")
+    is_captain: bool = Field(False, description="Whether player is team captain")
+    photo_url: Optional[str] = Field(None, description="Player photo URL")
+
+
+class TeamInfo(BaseModel):
+    """Team information."""
+    
+    model_config = ConfigDict(frozen=True)
+    
+    team_id: int = Field(description="Team ID")
+    name: Optional[str] = Field(None, description="Team name")
+    tag: Optional[str] = Field(None, description="Team tag/short name")
+    logo_url: Optional[str] = Field(None, description="Team logo URL")
+    country: Optional[str] = Field(None, description="Country")
+    is_active: bool = Field(True, description="Whether team is active")
+    socials: List[SocialLink] = Field(default_factory=list, description="Social media links")
+    previous_team: Optional[PreviousTeam] = Field(None, description="Previous team identity if renamed")
+
+
+class TeamMatch(BaseModel):
+    """Team match information."""
+    
+    model_config = ConfigDict(frozen=True)
+    
+    match_id: Optional[int] = Field(None, description="Match ID")
+    match_url: Optional[str] = Field(None, description="Match URL")
+    tournament_name: Optional[str] = Field(None, description="Tournament name")
+    phase: Optional[str] = Field(None, description="Tournament phase (e.g., 'Playoffs')")
+    series: Optional[str] = Field(None, description="Series (e.g., 'GF', 'Semi Finals')")
+    team1_id: Optional[int] = Field(None, description="First team ID")
+    team1_name: Optional[str] = Field(None, description="First team name")
+    team1_tag: Optional[str] = Field(None, description="First team tag")
+    team1_logo: Optional[str] = Field(None, description="First team logo URL")
+    team2_id: Optional[int] = Field(None, description="Second team ID")
+    team2_name: Optional[str] = Field(None, description="Second team name")
+    team2_tag: Optional[str] = Field(None, description="Second team tag")
+    team2_logo: Optional[str] = Field(None, description="Second team logo URL")
+    score_team1: Optional[int] = Field(None, description="Team 1 score")
+    score_team2: Optional[int] = Field(None, description="Team 2 score")
+    date: Optional[str] = Field(None, description="Match date")
+    time: Optional[str] = Field(None, description="Match time")
+
+
+class PlacementDetail(BaseModel):
+    """Individual placement detail within an event."""
+    
+    model_config = ConfigDict(frozen=True)
+    
+    series: Optional[str] = Field(None, description="Series/stage (e.g., 'Playoffs', '#5')")
+    place: Optional[str] = Field(None, description="Placement (e.g., '1st', '3rd-4th')")
+    prize_money: Optional[str] = Field(None, description="Prize money (e.g., '$28,256')")
+
+
+class EventPlacement(BaseModel):
+    """Team event placement information."""
+    
+    model_config = ConfigDict(frozen=True)
+    
+    event_id: Optional[int] = Field(None, description="Event ID")
+    event_name: Optional[str] = Field(None, description="Event name")
+    event_url: Optional[str] = Field(None, description="Event URL")
+    placements: List[PlacementDetail] = Field(default_factory=list, description="List of placements in this event")
+    year: Optional[str] = Field(None, description="Year of the event")

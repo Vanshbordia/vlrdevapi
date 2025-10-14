@@ -34,16 +34,6 @@ Automatically accepts and decompresses gzip-encoded responses.
 
 **Impact**: 5-10x smaller transfers
 
-Performance Benchmarks
-----------------------
-
-Typical performance on a high-speed connection:
-
-- Event info: 0.5-1.2s (was 2-5s)
-- Player profile: 0.7-1.8s (was 2-5s)
-- Match fetch: 0.5-1.2s (was 2-5s)
-- Cached request: <0.01s
-
 Cache Management
 ----------------
 

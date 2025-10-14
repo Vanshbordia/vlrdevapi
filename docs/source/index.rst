@@ -85,6 +85,7 @@ Contents
    api/matches
    api/players
    api/series
+   api/teams
    api/models
    api/exceptions
 

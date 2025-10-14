@@ -289,4 +289,106 @@ Export event data to a CSV file:
    
    export_event_matches_to_csv(event_id=2498)
 
+Example 7: Team Analysis and Tracking
+--------------------------------------
+
+Track a team's performance, roster, and tournament placements:
+
+.. code-block:: python
+
+   import vlrdevapi as vlr
+   
+   def analyze_team(team_id):
+       # Get team information
+       info = vlr.teams.info(team_id=team_id)
+       print(f"Team: {info.name} ({info.tag})")
+       print(f"Country: {info.country}")
+       print(f"Active: {info.is_active}")
+       print()
+       
+       # Get current roster
+       roster = vlr.teams.roster(team_id=team_id)
+       print(f"Current Roster ({len(roster)} players):")
+       for member in roster:
+           print(f"  {member.ign} - {member.name}")
+           if member.role:
+               print(f"    Role: {member.role}")
+       print()
+       
+       # Get recent match results
+       completed = vlr.teams.completed_matches(team_id=team_id, count=5)
+       print("Last 5 Matches:")
+       for match in completed:
+           result = f"{match.score_team1}-{match.score_team2}"
+           print(f"  {match.team1_name} vs {match.team2_name}: {result}")
+           print(f"    {match.tournament_name}")
+       print()
+       
+       # Get upcoming matches
+       upcoming = vlr.teams.upcoming_matches(team_id=team_id, count=3)
+       print(f"Next {len(upcoming)} Matches:")
+       for match in upcoming:
+           print(f"  {match.team1_name} vs {match.team2_name}")
+           print(f"    {match.tournament_name} - {match.date}")
+       print()
+       
+       # Get tournament placements
+       placements = vlr.teams.placements(team_id=team_id)
+       print(f"Tournament History ({len(placements)} events):")
+       for placement in placements[:5]:  # Show top 5
+           print(f"\n  {placement.event_name} ({placement.year})")
+           for detail in placement.placements:
+               print(f"    {detail.series}: {detail.place} - {detail.prize_money}")
+   
+   # Example: Analyze Velocity Gaming
+   analyze_team(team_id=799)
+
+Example 8: Compare Team Performance
+------------------------------------
+
+Compare statistics between two teams:
+
+.. code-block:: python
+
+   import vlrdevapi as vlr
+   
+   def compare_teams(team1_id, team2_id):
+       # Get team info
+       team1_info = vlr.teams.info(team_id=team1_id)
+       team2_info = vlr.teams.info(team_id=team2_id)
+       
+       print(f"Comparing: {team1_info.name} vs {team2_info.name}")
+       print("=" * 60)
+       
+       # Compare recent match records
+       team1_matches = vlr.teams.completed_matches(team_id=team1_id, count=10)
+       team2_matches = vlr.teams.completed_matches(team_id=team2_id, count=10)
+       
+       def calculate_win_rate(matches, team_id):
+           wins = 0
+           for match in matches:
+               if match.team1_id == team_id and match.score_team1 > match.score_team2:
+                   wins += 1
+               elif match.team2_id == team_id and match.score_team2 > match.score_team1:
+                   wins += 1
+           return (wins / len(matches) * 100) if matches else 0
+       
+       team1_wr = calculate_win_rate(team1_matches, team1_id)
+       team2_wr = calculate_win_rate(team2_matches, team2_id)
+       
+       print(f"\nRecent Form (Last 10 matches):")
+       print(f"  {team1_info.name}: {team1_wr:.1f}% win rate")
+       print(f"  {team2_info.name}: {team2_wr:.1f}% win rate")
+       
+       # Compare tournament placements
+       team1_placements = vlr.teams.placements(team_id=team1_id)
+       team2_placements = vlr.teams.placements(team_id=team2_id)
+       
+       print(f"\nTournament Participation:")
+       print(f"  {team1_info.name}: {len(team1_placements)} events")
+       print(f"  {team2_info.name}: {len(team2_placements)} events")
+   
+   # Example: Compare two teams
+   compare_teams(team1_id=799, team2_id=1034)
+
 These examples demonstrate common patterns and use cases. Adapt them to your specific needs.

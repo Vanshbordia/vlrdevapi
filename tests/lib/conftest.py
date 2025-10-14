@@ -52,6 +52,17 @@ def mock_fetch_html(monkeypatch, load_html):
         "https://www.vlr.gg/player/17397?timespan=60d": "player_profile_60d.html",
         "https://www.vlr.gg/player/17397?timespan=90d": "player_profile_90d.html",
 
+        # Teams
+        "https://www.vlr.gg/team/1034": "team_nrg_core.html",
+        "https://www.vlr.gg/team/8326": "team_m3c_inc.html",
+        "https://www.vlr.gg/team/799": "team_velocity_gaming.html",
+        "https://www.vlr.gg/team/matches/799/?group=upcoming": "team_799_upcoming_matches.html",
+        "https://www.vlr.gg/team/matches/799/?group=completed": "team_799_completed_matches.html",
+        "https://www.vlr.gg/team/matches/799/?group=completed&page=2": "team_799_completed_matches_paginate_2.html",
+        
+        # Series/Match pages for team ID extraction (NRG vs FNATIC)
+        "https://www.vlr.gg/530935": "series_page.html",
+
     }
     
     def mock_fetch(url: str, timeout: float = 5.0) -> str:

@@ -18,6 +18,13 @@ Example usage:
     >>> # Get series info
     >>> info = vlr.series.info(match_id=456)
     >>> print(f"{info.teams[0].name} vs {info.teams[1].name}")
+    >>> 
+    >>> # Get team info and roster
+    >>> team = vlr.teams.info(team_id=1034)
+    >>> print(f"{team.name} ({team.tag}) - {team.country}")
+    >>> roster = vlr.teams.roster(team_id=1034)
+    >>> for member in roster:
+    ...     print(f"{member.ign} - {member.role}")
 """
 
 __version__ = "1.0.0"
@@ -28,6 +35,7 @@ from . import events
 from . import players
 from . import series
 from . import status
+from . import teams
 
 # Import exceptions for error handling
 from .exceptions import (
@@ -48,6 +56,7 @@ __all__ = [
     "players",
     "series",
     "status",
+    "teams",
     
     # Exceptions for error handling
     "VlrdevapiError",

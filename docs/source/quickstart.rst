@@ -47,6 +47,35 @@ Get detailed event information:
    print(f"{info.name}")
    print(f"Prize: {info.prize}")
    print(f"Location: {info.location}")
+
+Working with Teams
+~~~~~~~~~~~~~~~~~~
+
+Get team information and statistics:
+
+.. code-block:: python
+
+   # Get team information
+   team_info = vlr.teams.info(team_id=799)
+   print(f"{team_info.name} ({team_info.tag})")
+   print(f"Country: {team_info.country}")
+   print(f"Active: {team_info.is_active}")
+   
+   # Get team roster
+   roster = vlr.teams.roster(team_id=799)
+   for member in roster:
+       print(f"{member.ign} - {member.name}")
+   
+   # Get team matches with pagination
+   upcoming = vlr.teams.upcoming_matches(team_id=799, count=10)
+   completed = vlr.teams.completed_matches(team_id=799, count=20)
+   
+   # Get event placements
+   placements = vlr.teams.placements(team_id=799)
+   for placement in placements[:5]:
+       print(f"{placement.event_name} ({placement.year})")
+       for detail in placement.placements:
+           print(f"  {detail.series}: {detail.place} - {detail.prize_money}")
    
    # Get event matches
    matches = vlr.events.matches(event_id=2498)
