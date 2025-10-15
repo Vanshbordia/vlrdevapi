@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import List, Dict
+from typing import List, Dict, Optional
+from datetime import date
 from collections import defaultdict
 from bs4 import BeautifulSoup
 
@@ -13,6 +14,28 @@ from ..exceptions import NetworkError
 from ..utils import extract_text, extract_id_from_url, normalize_whitespace, extract_country_code
 
 from .models import PlayerTransaction, PreviousPlayer
+
+
+def _parse_transaction_date(date_str: Optional[str]) -> Optional[date]:
+    """
+    Parse transaction date string into a date object.
+    
+    Args:
+        date_str: Date string in format "YYYY/MM/DD" (e.g., "2025/10/02")
+    
+    Returns:
+        date object or None if parsing fails or date is "Unknown"
+    """
+    if not date_str or date_str.strip().lower() == "unknown":
+        return None
+    
+    try:
+        # Parse YYYY/MM/DD format
+        from datetime import datetime
+        parsed = datetime.strptime(date_str.strip(), "%Y/%m/%d")
+        return parsed.date()
+    except (ValueError, AttributeError):
+        return None
 
 
 def transactions(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[PlayerTransaction]:
@@ -41,7 +64,10 @@ def transactions(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[PlayerT
         >>> 
         >>> # Display recent transactions
         >>> for txn in txns[:5]:
-        ...     print(f"{txn.date}: {txn.ign} - {txn.action} ({txn.position})")
+        ...     if txn.date:
+        ...         print(f"{txn.date.strftime('%Y/%m/%d')}: {txn.ign} - {txn.action} ({txn.position})")
+        ...     else:
+        ...         print(f"Unknown: {txn.ign} - {txn.action} ({txn.position})")
         2025/10/02: FiNESSE - leave (Player)
         2025/05/09: skuba - join (Player)
         
@@ -76,9 +102,12 @@ def transactions(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[PlayerT
     for row in tbody.select("tr.txn-item"):
         # Extract date
         date_td = row.select_one("td:nth-of-type(1)")
-        date = normalize_whitespace(extract_text(date_td)) if date_td else None
-        if date == "":
-            date = None
+        date_str = normalize_whitespace(extract_text(date_td)) if date_td else None
+        if date_str == "":
+            date_str = None
+        
+        # Parse date
+        transaction_date = _parse_transaction_date(date_str)
         
         # Extract action
         action_td = row.select_one("td.txn-item-action")
@@ -131,7 +160,7 @@ def transactions(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[PlayerT
                     reference_url = None
         
         transactions_list.append(PlayerTransaction(
-            date=date,
+            date=transaction_date,
             action=action,
             player_id=player_id,
             ign=ign,
@@ -184,7 +213,9 @@ def previous_players(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[Pre
         >>> # Display player status
         >>> for player in players[:5]:
         ...     print(f"{player.ign} - {player.status} ({player.position})")
-        ...     print(f"  Joined: {player.join_date}, Left: {player.leave_date}")
+        ...     join_str = player.join_date.strftime('%Y/%m/%d') if player.join_date else 'Unknown'
+        ...     leave_str = player.leave_date.strftime('%Y/%m/%d') if player.leave_date else 'None'
+        ...     print(f"  Joined: {join_str}, Left: {leave_str}")
         mada - Active (Player)
           Joined: 2024/10/10, Left: None
         FiNESSE - Left (Player)
@@ -204,7 +235,7 @@ def previous_players(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[Pre
     
     Note:
         - Players without a player_id are excluded from results
-        - Transaction dates are in YYYY/MM/DD format or 'Unknown' if not available
+        - Transaction dates are date objects or None if not available
         - Players can have multiple join/leave cycles (rejoining after leaving)
         - Status is calculated from the most recent transaction
         - All text fields are cleaned of extra whitespace
@@ -245,12 +276,19 @@ def previous_players(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[Pre
     
     for player_id, txn_list in player_txns.items():
         # Sort transactions by date (most recent first)
-        sorted_txns = sorted(txn_list, key=lambda t: t.date or "", reverse=True)
+        # Use a sentinel date for None values (far in the past)
+        from datetime import date as date_type
+        sentinel_date = date_type(1900, 1, 1)
+        sorted_txns = sorted(txn_list, key=lambda t: t.date or sentinel_date, reverse=True)
         
         # Determine status based on transactions
         status = "Unknown"
         join_date = None
         leave_date = None
+        
+        # Separate transactions with known dates from unknown dates
+        txns_with_dates = [t for t in sorted_txns if t.date is not None]
+        txns_without_dates = [t for t in sorted_txns if t.date is None]
         
         # Find join and leave dates (most recent of each)
         # Process chronologically to track the player's journey
@@ -266,22 +304,35 @@ def previous_players(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[Pre
                 # Update leave date
                 leave_date = txn.date
         
-        # Determine status based on most recent action
-        most_recent_action = (sorted_txns[0].action or "").lower()
-        
-        if most_recent_action == "join":
-            status = "Active"
-        elif most_recent_action == "leave":
-            status = "Left"
-        elif most_recent_action == "inactive":
-            status = "Inactive"
-        else:
-            # Fallback: if we have a leave date but no join, they left
-            if leave_date and not join_date:
-                status = "Left"
-            # If we have a join date but no leave, they're active
-            elif join_date and not leave_date:
+        # Determine status based on most recent action WITH A KNOWN DATE
+        # If we have transactions with dates, use those to determine status
+        if txns_with_dates:
+            most_recent_dated_action = (txns_with_dates[0].action or "").lower()
+            
+            if most_recent_dated_action == "join":
                 status = "Active"
+            elif most_recent_dated_action == "leave":
+                status = "Left"
+            elif most_recent_dated_action == "inactive":
+                status = "Inactive"
+            else:
+                # Fallback based on dates
+                if leave_date and not join_date:
+                    status = "Left"
+                elif join_date and not leave_date:
+                    status = "Active"
+                else:
+                    status = "Unknown"
+        else:
+            # All transactions have unknown dates, use the first action
+            most_recent_action = (sorted_txns[0].action or "").lower()
+            
+            if most_recent_action == "join":
+                status = "Active"
+            elif most_recent_action == "leave":
+                status = "Left"
+            elif most_recent_action == "inactive":
+                status = "Inactive"
             else:
                 status = "Unknown"
         
@@ -300,6 +351,8 @@ def previous_players(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[Pre
         ))
     
     # Sort by most recent activity (based on latest transaction date)
-    players.sort(key=lambda p: p.transactions[0].date or "", reverse=True)
+    from datetime import date as date_type
+    sentinel_date = date_type(1900, 1, 1)
+    players.sort(key=lambda p: p.transactions[0].date or sentinel_date, reverse=True)
     
     return players

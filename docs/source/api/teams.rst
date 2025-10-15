@@ -89,6 +89,13 @@ RosterMember
    :members:
    :undoc-members:
 
+MatchTeam
+~~~~~~~~~
+
+.. autoclass:: vlrdevapi.teams.MatchTeam
+   :members:
+   :undoc-members:
+
 TeamMatch
 ~~~~~~~~~
 
@@ -171,15 +178,16 @@ Get Team Matches
    upcoming = vlr.teams.upcoming_matches(team_id=799, count=10)
    
    for match in upcoming:
-       print(f"{match.team1_name} vs {match.team2_name}")
+       print(f"{match.team1.name} vs {match.team2.name}")
        print(f"Tournament: {match.tournament_name}")
-       print(f"Date: {match.date} {match.time}")
+       if match.match_datetime:
+           print(f"Date: {match.match_datetime.strftime('%B %d, %Y at %I:%M %p')}")
    
    # Get completed matches (with pagination)
    completed = vlr.teams.completed_matches(team_id=799, count=20)
    
    for match in completed:
-       print(f"{match.team1_name} {match.score_team1} - {match.score_team2} {match.team2_name}")
+       print(f"{match.team1.name} {match.team1.score} - {match.team2.score} {match.team2.name}")
        print(f"Tournament: {match.tournament_name}")
 
 Get Event Placements
@@ -212,9 +220,11 @@ Get Team Transactions
    # Get all transactions for a team
    txns = vlr.teams.transactions(team_id=1034)
    
-   for txn in txns[:10]:
-       # Note: date can be 'Unknown' if not officially documented
-       print(f"{txn.date}: {txn.ign} - {txn.action} ({txn.position})")
+   for txn in txns[:5]:
+       if txn.date:
+           print(f"{txn.date.strftime('%Y/%m/%d')}: {txn.ign} - {txn.action} ({txn.position})")
+       else:
+           print(f"Unknown: {txn.ign} - {txn.action} ({txn.position})")
 
 Get Previous Players
 ~~~~~~~~~~~~~~~~~~~~
@@ -235,8 +245,10 @@ Get Previous Players
    # Display player details
    for player in active:
        print(f"{player.ign} - {player.position}")
-       # Note: dates can be 'Unknown' if not officially documented
-       print(f"  Joined: {player.join_date}")
+       if player.join_date:
+           print(f"  Joined: {player.join_date.strftime('%Y/%m/%d')}")
+       else:
+           print(f"  Joined: Unknown")
    
    # Players can rejoin after leaving - status is based on most recent action
    for player in players:
@@ -284,8 +296,10 @@ Complete Example
    recent = vlr.teams.completed_matches(team_id=team_id, count=5)
    print(f"\nLast 5 matches:")
    for match in recent:
-       result = f"{match.score_team1}-{match.score_team2}"
-       print(f"  {match.team1_name} vs {match.team2_name}: {result}")
+       result = f"{match.team1.score}-{match.team2.score}"
+       print(f"  {match.team1.name} vs {match.team2.name}: {result}")
+       if match.match_datetime:
+           print(f"    Date: {match.match_datetime.strftime('%B %d, %Y')}")
    
    # Get placements
    placements = vlr.teams.placements(team_id=team_id)

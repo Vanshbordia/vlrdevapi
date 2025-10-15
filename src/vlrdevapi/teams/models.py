@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from typing import List, Optional
+from datetime import datetime
+from datetime import date as date_type
 from pydantic import BaseModel, Field, ConfigDict
 
 
@@ -53,6 +55,18 @@ class TeamInfo(BaseModel):
     previous_team: Optional[PreviousTeam] = Field(None, description="Previous team identity if renamed")
 
 
+class MatchTeam(BaseModel):
+    """Team information in a match context."""
+    
+    model_config = ConfigDict(frozen=True)
+    
+    team_id: Optional[int] = Field(None, description="Team ID")
+    name: Optional[str] = Field(None, description="Team name")
+    tag: Optional[str] = Field(None, description="Team tag/short name")
+    logo: Optional[str] = Field(None, description="Team logo URL")
+    score: Optional[int] = Field(None, description="Team score")
+
+
 class TeamMatch(BaseModel):
     """Team match information."""
     
@@ -63,18 +77,9 @@ class TeamMatch(BaseModel):
     tournament_name: Optional[str] = Field(None, description="Tournament name")
     phase: Optional[str] = Field(None, description="Tournament phase (e.g., 'Playoffs')")
     series: Optional[str] = Field(None, description="Series (e.g., 'GF', 'Semi Finals')")
-    team1_id: Optional[int] = Field(None, description="First team ID")
-    team1_name: Optional[str] = Field(None, description="First team name")
-    team1_tag: Optional[str] = Field(None, description="First team tag")
-    team1_logo: Optional[str] = Field(None, description="First team logo URL")
-    team2_id: Optional[int] = Field(None, description="Second team ID")
-    team2_name: Optional[str] = Field(None, description="Second team name")
-    team2_tag: Optional[str] = Field(None, description="Second team tag")
-    team2_logo: Optional[str] = Field(None, description="Second team logo URL")
-    score_team1: Optional[int] = Field(None, description="Team 1 score")
-    score_team2: Optional[int] = Field(None, description="Team 2 score")
-    date: Optional[str] = Field(None, description="Match date")
-    time: Optional[str] = Field(None, description="Match time")
+    team1: MatchTeam = Field(description="First team information")
+    team2: MatchTeam = Field(description="Second team information")
+    match_datetime: Optional[datetime] = Field(None, description="Match date and time")
 
 
 class PlacementDetail(BaseModel):
@@ -104,7 +109,7 @@ class PlayerTransaction(BaseModel):
     
     model_config = ConfigDict(frozen=True)
     
-    date: Optional[str] = Field(None, description="Transaction date (YYYY/MM/DD)")
+    date: Optional[date_type] = Field(None, description="Transaction date")
     action: Optional[str] = Field(None, description="Action type (join, leave, inactive, etc.)")
     player_id: Optional[int] = Field(None, description="Player ID")
     ign: Optional[str] = Field(None, description="In-game name")
@@ -125,6 +130,6 @@ class PreviousPlayer(BaseModel):
     country: Optional[str] = Field(None, description="Country")
     position: Optional[str] = Field(None, description="Position/role")
     status: str = Field(description="Player status (Active, Left, Inactive, Unknown)")
-    join_date: Optional[str] = Field(None, description="Date joined team")
-    leave_date: Optional[str] = Field(None, description="Date left team")
+    join_date: Optional[date_type] = Field(None, description="Date joined team")
+    leave_date: Optional[date_type] = Field(None, description="Date left team")
     transactions: List[PlayerTransaction] = Field(default_factory=list, description="All transactions for this player")
