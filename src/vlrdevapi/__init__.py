@@ -38,6 +38,9 @@ from . import status
 from . import teams
 from . import search
 
+# Import enums for autocomplete
+from .events import EventTier, EventStatus
+
 # Import exceptions for error handling
 from .exceptions import (
     VlrdevapiError,
@@ -59,6 +62,10 @@ __all__ = [
     "status",
     "teams",
     "search",
+    
+    # Enums for autocomplete
+    "EventTier",
+    "EventStatus",
     
     # Exceptions for error handling
     "VlrdevapiError",

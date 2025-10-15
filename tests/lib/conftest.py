@@ -55,6 +55,7 @@ def mock_fetch_html(monkeypatch, load_html):
         # Teams
         "https://www.vlr.gg/team/1034": "team_nrg_core.html",
         "https://www.vlr.gg/team/8326": "team_m3c_inc.html",
+        "https://www.vlr.gg/team/682": "team_gambit_current.html",
         "https://www.vlr.gg/team/799": "team_velocity_gaming.html",
         "https://www.vlr.gg/team/matches/799/?group=upcoming": "team_799_upcoming_matches.html",
         "https://www.vlr.gg/team/matches/799/?group=completed": "team_799_completed_matches.html",

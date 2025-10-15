@@ -11,9 +11,9 @@ This module provides access to:
 from __future__ import annotations
 
 import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Optional, Tuple, Literal, Dict
 from urllib import parse
+from enum import Enum
 
 from pydantic import BaseModel, Field, ConfigDict
 from bs4 import BeautifulSoup
@@ -33,11 +33,31 @@ from .utils import (
 )
 
 
-# Type aliases
+# Enums for autocomplete
+class EventTier(str, Enum):
+    """Event tier options."""
+    ALL = "all"
+    VCT = "vct"
+    VCL = "vcl"
+    T3 = "t3"
+    GC = "gc"
+    CG = "cg"
+    OFFSEASON = "offseason"
+
+
+class EventStatus(str, Enum):
+    """Event status filter options."""
+    ALL = "all"
+    UPCOMING = "upcoming"
+    ONGOING = "ongoing"
+    COMPLETED = "completed"
+
+
+# Type aliases for backward compatibility
 TierName = Literal["all", "vct", "vcl", "t3", "gc", "cg", "offseason"]
 StatusFilter = Literal["all", "upcoming", "ongoing", "completed"]
 
-_TIER_TO_ID: Dict[TierName, str] = {
+_TIER_TO_ID: Dict[str, str] = {
     "all": "all",
     "vct": "60",
     "vcl": "61",
@@ -160,9 +180,9 @@ class Standings(BaseModel):
 
 
 def list_events(
-    tier: str = "all",
+    tier: EventTier | TierName = EventTier.ALL,
     region: Optional[str] = None,
-    status: str = "all",
+    status: EventStatus | StatusFilter = EventStatus.ALL,
     page: int = 1,
     limit: Optional[int] = None,
     timeout: float = DEFAULT_TIMEOUT,
@@ -171,9 +191,9 @@ def list_events(
     List events with filters.
     
     Args:
-        tier: Event tier ("all", "vct", "vcl", "t3", "gc", "cg", "offseason")
+        tier: Event tier (use EventTier enum or string)
         region: Region filter (optional)
-        status: Event status ("all", "upcoming", "ongoing", "completed")
+        status: Event status (use EventStatus enum or string)
         page: Page number (1-indexed)
         limit: Maximum number of events to return (optional)
         timeout: Request timeout in seconds
@@ -183,12 +203,15 @@ def list_events(
     
     Example:
         >>> import vlrdevapi as vlr
-        >>> events = vlr.events.list_events(tier="vct", status="ongoing", limit=10)
+        >>> from vlrdevapi.events import EventTier, EventStatus
+        >>> events = vlr.events.list_events(tier=EventTier.VCT, status=EventStatus.ONGOING, limit=10)
         >>> for event in events:
         ...     print(f"{event.name} - {event.status}")
     """
     base_params: Dict[str, str] = {}
-    tier_id = _TIER_TO_ID.get(tier, "60")
+    tier_str = tier.value if isinstance(tier, EventTier) else tier
+    status_str = status.value if isinstance(status, EventStatus) else status
+    tier_id = _TIER_TO_ID.get(tier_str, "60")
     if tier_id != "all":
         base_params["tier"] = tier_id
     
@@ -249,7 +272,7 @@ def list_events(
             elif any("mod-completed" in str(c) for c in classes):
                 card_status = "completed"
         
-        if status != "all" and card_status != status:
+        if status_str != "all" and card_status != status_str:
             continue
         
         # Parse region
@@ -266,7 +289,7 @@ def list_events(
             id=ev_id,
             name=name,
             region=region_name or region,
-            tier=tier_text or tier.upper() if tier else tier_text,
+            tier=tier_text or tier_str.upper() if tier_str else tier_text,
             start_date=None,
             end_date=None,
             start_text=start_text,
@@ -343,9 +366,29 @@ def info(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Info]:
     )
 
 
+def _get_match_team_ids(match_id: int, timeout: float) -> Tuple[Optional[int], Optional[int]]:
+    """Get team IDs for a match using series.info().
+    
+    Args:
+        match_id: Match ID
+        timeout: Request timeout
+    
+    Returns:
+        Tuple of (team1_id, team2_id)
+    """
+    try:
+        from . import series as _series
+        s_info = _series.info(match_id, timeout=timeout)
+        if s_info and s_info.teams and len(s_info.teams) == 2:
+            return s_info.teams[0].id, s_info.teams[1].id
+    except Exception:
+        pass
+    return None, None
+
+
 def matches(event_id: int, stage: Optional[str] = None, limit: Optional[int] = None, timeout: float = DEFAULT_TIMEOUT) -> List[Match]:
     """
-    Get event matches.
+    Get event matches with team IDs.
     
     Args:
         event_id: Event ID
@@ -354,13 +397,13 @@ def matches(event_id: int, stage: Optional[str] = None, limit: Optional[int] = N
         timeout: Request timeout in seconds
     
     Returns:
-        List of event matches
+        List of event matches with team IDs extracted from match pages
     
     Example:
         >>> import vlrdevapi as vlr
         >>> matches = vlr.events.matches(event_id=123, limit=20)
         >>> for match in matches:
-        ...     print(f"{match.teams[0].name} vs {match.teams[1].name}")
+        ...     print(f"{match.teams[0].name} (ID: {match.teams[0].id}) vs {match.teams[1].name} (ID: {match.teams[1].id})")
     """
     url = f"{VLR_BASE}/event/matches/{event_id}"
     try:
@@ -369,10 +412,10 @@ def matches(event_id: int, stage: Optional[str] = None, limit: Optional[int] = N
         return []
     
     soup = BeautifulSoup(html, "lxml")
-    results: List[Match] = []
+    match_data: List[Tuple[int, str, List[MatchTeam], str, str, Optional[datetime.date], Optional[str]]] = []
     
     for card in soup.select("a.match-item"):
-        if limit is not None and len(results) >= limit:
+        if limit is not None and len(match_data) >= limit:
             break
         href = card.get("href")
         match_id = parse_int(href.strip("/").split("/")[0]) if href else None
@@ -432,6 +475,34 @@ def matches(event_id: int, stage: Optional[str] = None, limit: Optional[int] = N
             match_date = parse_date(text, ["%a, %B %d, %Y", "%A, %B %d, %Y", "%B %d, %Y"])
         
         time_text = extract_text(card.select_one(".match-item-time")) or None
+        match_url = parse.urljoin(f"{VLR_BASE}/", href.lstrip("/"))
+        
+        match_data.append((match_id, match_url, teams, match_status, stage_name or "", phase or "", match_date, time_text))
+    
+    # Fetch team IDs sequentially using series.info()
+    results: List[Match] = []
+    
+    for match_id, match_url, teams, match_status, stage_name, phase, match_date, time_text in match_data:
+        # Get team IDs from series.info()
+        team1_id, team2_id = _get_match_team_ids(match_id, timeout)
+        
+        # Update team IDs
+        updated_teams = [
+            MatchTeam(
+                id=team1_id,
+                name=teams[0].name,
+                country=teams[0].country,
+                score=teams[0].score,
+                is_winner=teams[0].is_winner,
+            ),
+            MatchTeam(
+                id=team2_id,
+                name=teams[1].name,
+                country=teams[1].country,
+                score=teams[1].score,
+                is_winner=teams[1].is_winner,
+            ),
+        ]
         
         results.append(Match(
             match_id=match_id,
@@ -441,8 +512,8 @@ def matches(event_id: int, stage: Optional[str] = None, limit: Optional[int] = N
             status=match_status,
             date=match_date,
             time=time_text,
-            teams=(teams[0], teams[1]),
-            url=parse.urljoin(f"{VLR_BASE}/", href.lstrip("/")),
+            teams=(updated_teams[0], updated_teams[1]),
+            url=match_url,
         ))
     
     return results

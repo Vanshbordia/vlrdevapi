@@ -26,6 +26,15 @@ class PreviousTeam(BaseModel):
     name: Optional[str] = Field(None, description="Previous team name")
 
 
+class SuccessorTeam(BaseModel):
+    """Information about a team's successor/current banner identity."""
+    
+    model_config = ConfigDict(frozen=True)
+    
+    team_id: Optional[int] = Field(None, description="Successor team ID")
+    name: Optional[str] = Field(None, description="Successor team name")
+
+
 class RosterMember(BaseModel):
     """Team roster member (player or staff)."""
     
@@ -53,6 +62,7 @@ class TeamInfo(BaseModel):
     is_active: bool = Field(True, description="Whether team is active")
     socials: List[SocialLink] = Field(default_factory=list, description="Social media links")
     previous_team: Optional[PreviousTeam] = Field(None, description="Previous team identity if renamed")
+    current_team: Optional[SuccessorTeam] = Field(None, description="If inactive, team currently playing under this banner")
 
 
 class MatchTeam(BaseModel):
