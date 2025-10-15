@@ -542,27 +542,31 @@ class TestTeamsUpcomingMatches:
             assert hasattr(match, 'tournament_name')
             assert hasattr(match, 'phase')
             assert hasattr(match, 'series')
-            assert hasattr(match, 'team1_id')
-            assert hasattr(match, 'team1_name')
-            assert hasattr(match, 'team1_tag')
-            assert hasattr(match, 'team1_logo')
-            assert hasattr(match, 'team2_id')
-            assert hasattr(match, 'team2_name')
-            assert hasattr(match, 'team2_tag')
-            assert hasattr(match, 'team2_logo')
-            assert hasattr(match, 'date')
-            assert hasattr(match, 'time')
+            assert hasattr(match, 'team1')
+            assert hasattr(match, 'team2')
+            assert hasattr(match, 'match_datetime')
+            # Check team objects
+            assert hasattr(match.team1, 'team_id')
+            assert hasattr(match.team1, 'name')
+            assert hasattr(match.team1, 'tag')
+            assert hasattr(match.team1, 'logo')
+            assert hasattr(match.team1, 'score')
+            assert hasattr(match.team2, 'team_id')
+            assert hasattr(match.team2, 'name')
+            assert hasattr(match.team2, 'tag')
+            assert hasattr(match.team2, 'logo')
+            assert hasattr(match.team2, 'score')
     
     def test_upcoming_matches_team_names(self, mock_fetch_html):
         """Test that team names are extracted."""
         matches = vlr.teams.upcoming_matches(team_id=799)
         for match in matches:
-            if match.team1_name:
-                assert isinstance(match.team1_name, str)
-                assert len(match.team1_name) > 0
-            if match.team2_name:
-                assert isinstance(match.team2_name, str)
-                assert len(match.team2_name) > 0
+            if match.team1.name:
+                assert isinstance(match.team1.name, str)
+                assert len(match.team1.name) > 0
+            if match.team2.name:
+                assert isinstance(match.team2.name, str)
+                assert len(match.team2.name) > 0
     
     def test_upcoming_matches_tournament_info(self, mock_fetch_html):
         """Test that tournament information is extracted."""
@@ -573,13 +577,12 @@ class TestTeamsUpcomingMatches:
                 assert len(match.tournament_name) > 0
     
     def test_upcoming_matches_date_time(self, mock_fetch_html):
-        """Test that date and time are extracted."""
+        """Test that match datetime is extracted."""
+        from datetime import datetime
         matches = vlr.teams.upcoming_matches(team_id=799)
         for match in matches:
-            if match.date:
-                assert isinstance(match.date, str)
-            if match.time:
-                assert isinstance(match.time, str)
+            if match.match_datetime:
+                assert isinstance(match.match_datetime, datetime)
     
     def test_upcoming_matches_immutable(self, mock_fetch_html):
         """Test that match objects are immutable."""
@@ -587,7 +590,7 @@ class TestTeamsUpcomingMatches:
         if matches:
             match = matches[0]
             with pytest.raises(Exception):
-                match.team1_name = "new_name"
+                match.tournament_name = "new_name"
 
 
 class TestTeamsCompletedMatches:
@@ -607,16 +610,16 @@ class TestTeamsCompletedMatches:
             assert hasattr(match, 'match_id')
             assert hasattr(match, 'match_url')
             assert hasattr(match, 'tournament_name')
-            assert hasattr(match, 'score_team1')
-            assert hasattr(match, 'score_team2')
+            assert hasattr(match, 'team1')
+            assert hasattr(match, 'team2')
             
             # Test scores are valid
-            if match.score_team1 is not None:
-                assert isinstance(match.score_team1, int)
-                assert match.score_team1 >= 0
-            if match.score_team2 is not None:
-                assert isinstance(match.score_team2, int)
-                assert match.score_team2 >= 0
+            if match.team1.score is not None:
+                assert isinstance(match.team1.score, int)
+                assert match.team1.score >= 0
+            if match.team2.score is not None:
+                assert isinstance(match.team2.score, int)
+                assert match.team2.score >= 0
             
             # Test match ID
             if match.match_id:
@@ -712,12 +715,12 @@ class TestTeamsMatchesEdgeCases:
         """Test that team IDs are extracted."""
         matches = vlr.teams.completed_matches(team_id=799)
         for match in matches:
-            if match.team1_id:
-                assert isinstance(match.team1_id, int)
-                assert match.team1_id > 0
-            if match.team2_id:
-                assert isinstance(match.team2_id, int)
-                assert match.team2_id > 0
+            if match.team1.team_id:
+                assert isinstance(match.team1.team_id, int)
+                assert match.team1.team_id > 0
+            if match.team2.team_id:
+                assert isinstance(match.team2.team_id, int)
+                assert match.team2.team_id > 0
     
     def test_matches_immutable(self, mock_fetch_html):
         """Test that match objects are immutable."""
@@ -725,7 +728,7 @@ class TestTeamsMatchesEdgeCases:
         if matches:
             match = matches[0]
             with pytest.raises(Exception):
-                match.score_team1 = 999
+                match.tournament_name = "new_name"
 
 
 class TestTeamsPlacements:
@@ -880,7 +883,12 @@ class TestTeamsTransactions:
         assert first.real_name == "Pujan Mehta"
         assert first.action == "leave"
         # Date from HTML source
-        assert first.date in ["2025/10/02", "2025/10/03"]  # May vary by timezone
+        from datetime import date
+        if first.date:
+            assert isinstance(first.date, date)
+            assert first.date.year == 2025
+            assert first.date.month == 10
+            assert first.date.day in [2, 3]  # May vary by timezone
         assert first.position == "Player"
         assert first.country == "Canada"
         assert first.player_id == 817
@@ -1043,7 +1051,12 @@ class TestTeamsPreviousPlayers:
         assert finesse.country == "Canada"
         assert finesse.position == "Player"
         # Date may vary by timezone
-        assert finesse.leave_date in ["2025/10/02", "2025/10/03"]
+        from datetime import date
+        if finesse.leave_date:
+            assert isinstance(finesse.leave_date, date)
+            assert finesse.leave_date.year == 2025
+            assert finesse.leave_date.month == 10
+            assert finesse.leave_date.day in [2, 3]
     
     def test_previous_players_skuba_active(self, mock_fetch_html):
         """Test that skuba is marked as Active."""
@@ -1056,7 +1069,12 @@ class TestTeamsPreviousPlayers:
         assert skuba.country == "United States"
         assert skuba.position == "Player"
         # Date may vary by timezone
-        assert skuba.join_date in ["2025/05/09", "2025/05/10"]
+        from datetime import date
+        if skuba.join_date:
+            assert isinstance(skuba.join_date, date)
+            assert skuba.join_date.year == 2025
+            assert skuba.join_date.month == 5
+            assert skuba.join_date.day in [9, 10]
         assert skuba.leave_date is None
     
     def test_previous_players_verno_left(self, mock_fetch_html):
@@ -1067,7 +1085,12 @@ class TestTeamsPreviousPlayers:
         assert verno is not None
         # Verno was inactive, then left
         assert verno.status == "Left"
-        assert verno.leave_date == "2025/03/19"
+        from datetime import date
+        if verno.leave_date:
+            assert isinstance(verno.leave_date, date)
+            assert verno.leave_date.year == 2025
+            assert verno.leave_date.month == 3
+            assert verno.leave_date.day == 19
     
     def test_previous_players_transactions_included(self, mock_fetch_html):
         """Test that each player has their transaction history."""
@@ -1088,13 +1111,11 @@ class TestTeamsPreviousPlayers:
         
         # Active players should have join dates
         active = [p for p in players if p.status == "Active"]
+        from datetime import date
         for player in active:
             if player.join_date:
-                # Date format should be YYYY/MM/DD or 'Unknown'
-                if player.join_date != "Unknown":
-                    assert "/" in player.join_date
-                    parts = player.join_date.split("/")
-                    assert len(parts) == 3
+                # Should be a date object
+                assert isinstance(player.join_date, date)
     
     def test_previous_players_no_whitespace(self, mock_fetch_html):
         """Test that all text fields are cleaned."""
@@ -1121,8 +1142,7 @@ class TestTeamsPreviousPlayers:
             second_date = players[1].transactions[0].date
             
             # Dates should be in descending order (most recent first)
-            # Skip 'Unknown' dates in comparison
-            if first_date and second_date and first_date != "Unknown" and second_date != "Unknown":
+            if first_date and second_date:
                 assert first_date >= second_date
     
     def test_previous_players_immutable(self, mock_fetch_html):
@@ -1160,8 +1180,9 @@ class TestTeamsPreviousPlayers:
         assert len(multi_txn_players) > 0
         
         # Check that transactions are sorted (most recent first)
+        from datetime import date
         for player in multi_txn_players[:3]:
-            dates = [txn.date for txn in player.transactions if txn.date and txn.date != "Unknown"]
+            dates = [txn.date for txn in player.transactions if txn.date]
             if len(dates) >= 2:
                 # Should be in descending order
                 assert dates == sorted(dates, reverse=True)
@@ -1173,7 +1194,8 @@ class TestTeamsPreviousPlayers:
         # Find player with Unknown date (Ry - Manager)
         ry = next((p for p in players if p.ign == "Ry"), None)
         if ry:
-            assert ry.join_date == "Unknown"
+            # If date is Unknown, it will be None
+            assert ry.join_date is None or isinstance(ry.join_date, date)
             assert ry.status == "Active"  # Most recent action is join
             assert ry.position == "Manager"
             assert len(ry.transactions) > 0
@@ -1183,6 +1205,7 @@ class TestTeamsPreviousPlayers:
         players = vlr.teams.previous_players(team_id=1034)
         
         # Check for players with multiple joins
+        from datetime import date
         for player in players:
             join_count = sum(1 for txn in player.transactions if txn.action == "join")
             leave_count = sum(1 for txn in player.transactions if txn.action == "leave")

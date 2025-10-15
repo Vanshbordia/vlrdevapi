@@ -295,8 +295,8 @@ Track team performance:
        completed = vlr.teams.completed_matches(team_id=team_id, count=5)
        print("Last 5 Matches:")
        for match in completed:
-           result = f"{match.score_team1}-{match.score_team2}"
-           print(f"  {match.team1_name} vs {match.team2_name}: {result}")
+           result = f"{match.team1.score}-{match.team2.score}"
+           print(f"  {match.team1.name} vs {match.team2.name}: {result}")
            print(f"    {match.tournament_name}")
        print()
        
@@ -304,8 +304,11 @@ Track team performance:
        upcoming = vlr.teams.upcoming_matches(team_id=team_id, count=3)
        print(f"Next {len(upcoming)} Matches:")
        for match in upcoming:
-           print(f"  {match.team1_name} vs {match.team2_name}")
-           print(f"    {match.tournament_name} - {match.date}")
+           print(f"  {match.team1.name} vs {match.team2.name}")
+           if match.match_datetime:
+               print(f"    {match.tournament_name} - {match.match_datetime.strftime('%B %d, %Y at %I:%M %p')}")
+           else:
+               print(f"    {match.tournament_name}")
        print()
        
        # Get tournament placements

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import List, Optional
+from datetime import datetime
 from bs4 import BeautifulSoup
 
 from ..constants import VLR_BASE, DEFAULT_TIMEOUT
@@ -10,7 +11,73 @@ from ..fetcher import fetch_html
 from ..exceptions import NetworkError
 from ..utils import extract_text, absolute_url, extract_id_from_url
 
-from .models import TeamMatch
+from .models import TeamMatch, MatchTeam
+
+
+def _parse_match_datetime(date_str: Optional[str], time_str: Optional[str]) -> Optional[datetime]:
+    """
+    Parse match date and time strings into a datetime object.
+    
+    Args:
+        date_str: Date string (e.g., "2025/10/14", "October 15", "Oct 15")
+        time_str: Time string (e.g., "5:50 pm", "2:30 PM PDT", "14:30")
+    
+    Returns:
+        datetime object or None if parsing fails
+    """
+    if not date_str:
+        return None
+    
+    try:
+        date_str_clean = date_str.strip()
+        
+        # Try multiple date formats
+        date_formats = [
+            "%Y/%m/%d",  # 2025/10/14 (most common on VLR)
+            "%Y-%m-%d",  # 2025-10-14
+            "%B %d",     # October 15
+            "%b %d",     # Oct 15
+            "%d/%m",     # 15/10
+            "%m/%d",     # 10/15
+        ]
+        
+        parsed_date = None
+        for fmt in date_formats:
+            try:
+                parsed_date = datetime.strptime(date_str_clean, fmt)
+                # Add current year if not included in format
+                if "%Y" not in fmt:
+                    from datetime import datetime as dt
+                    current_year = dt.now().year
+                    parsed_date = parsed_date.replace(year=current_year)
+                break
+            except ValueError:
+                continue
+        
+        if not parsed_date:
+            return None
+        
+        # Parse time if available
+        if time_str:
+            time_str_clean = time_str.strip()
+            
+            time_formats = [
+                "%I:%M %p",  # 5:50 PM or 5:50 pm
+                "%I:%M%p",   # 5:50PM (no space)
+                "%H:%M",     # 14:30
+            ]
+            
+            for fmt in time_formats:
+                try:
+                    time_obj = datetime.strptime(time_str_clean, fmt).time()
+                    parsed_date = datetime.combine(parsed_date.date(), time_obj)
+                    break
+                except ValueError:
+                    continue
+        
+        return parsed_date
+    except Exception:
+        return None
 
 
 def _extract_match_id_from_url(url: str) -> Optional[int]:
@@ -90,7 +157,10 @@ def upcoming_matches(team_id: int, count: Optional[int] = None, timeout: float =
         >>> import vlrdevapi as vlr
         >>> matches = vlr.teams.upcoming_matches(team_id=799, count=10)
         >>> for match in matches:
-        ...     print(f"{match.team1_name} vs {match.team2_name} - {match.date}")
+        ...     if match.match_datetime:
+        ...         print(f"{match.team1.name} vs {match.team2.name} - {match.match_datetime.strftime('%B %d, %Y')}")
+        ...     else:
+        ...         print(f"{match.team1.name} vs {match.team2.name}")
     """
     all_matches: List[TeamMatch] = []
     page = 1
@@ -141,7 +211,9 @@ def completed_matches(team_id: int, count: Optional[int] = None, timeout: float 
         >>> import vlrdevapi as vlr
         >>> matches = vlr.teams.completed_matches(team_id=799, count=20)
         >>> for match in matches:
-        ...     print(f"{match.team1_name} {match.score_team1}:{match.score_team2} {match.team2_name}")
+        ...     print(f"{match.team1.name} {match.team1.score}:{match.team2.score} {match.team2.name}")
+        ...     if match.match_datetime:
+        ...         print(f"  Date: {match.match_datetime.strftime('%B %d, %Y')}")
     """
     all_matches: List[TeamMatch] = []
     page = 1
@@ -295,18 +367,38 @@ def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT) -> List[TeamMatc
                     pass
         
         # Extract date and time
-        date = None
-        time = None
+        date_str = None
+        time_str = None
         date_el = item.select_one(".m-item-date")
         if date_el:
             date_div = date_el.select_one("div")
             if date_div:
-                date = extract_text(date_div)
+                date_str = extract_text(date_div)
             
             # Get time (text node after the div)
             full_date_text = extract_text(date_el)
-            if date and full_date_text.startswith(date):
-                time = full_date_text[len(date):].strip()
+            if date_str and full_date_text.startswith(date_str):
+                time_str = full_date_text[len(date_str):].strip()
+        
+        # Parse datetime
+        match_datetime = _parse_match_datetime(date_str, time_str)
+        
+        # Create team objects
+        team1_obj = MatchTeam(
+            team_id=team1_id,
+            name=team1_name,
+            tag=team1_tag,
+            logo=team1_logo,
+            score=score_team1,
+        )
+        
+        team2_obj = MatchTeam(
+            team_id=team2_id,
+            name=team2_name,
+            tag=team2_tag,
+            logo=team2_logo,
+            score=score_team2,
+        )
         
         matches.append(TeamMatch(
             match_id=match_id,
@@ -314,18 +406,9 @@ def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT) -> List[TeamMatc
             tournament_name=tournament_name,
             phase=phase,
             series=series,
-            team1_id=team1_id,
-            team1_name=team1_name,
-            team1_tag=team1_tag,
-            team1_logo=team1_logo,
-            team2_id=team2_id,
-            team2_name=team2_name,
-            team2_tag=team2_tag,
-            team2_logo=team2_logo,
-            score_team1=score_team1,
-            score_team2=score_team2,
-            date=date,
-            time=time,
+            team1=team1_obj,
+            team2=team2_obj,
+            match_datetime=match_datetime,
         ))
     
     return matches
