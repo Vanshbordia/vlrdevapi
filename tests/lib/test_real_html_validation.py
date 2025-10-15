@@ -59,27 +59,31 @@ class TestRealMatchData:
         matches = vlr.matches.upcoming(limit=5)
         
         for match in matches:
-            assert match.teams[0] is not None
-            assert match.teams[1] is not None
-            assert len(match.teams[0]) > 0
-            assert len(match.teams[1]) > 0
+            assert match.team1 is not None
+            assert match.team2 is not None
+            assert match.team1.name is not None
+            assert match.team2.name is not None
+            assert len(match.team1.name) > 0
+            assert len(match.team2.name) > 0
             # Team names should not be just whitespace
-            assert match.teams[0].strip() == match.teams[0]
-            assert match.teams[1].strip() == match.teams[1]
+            assert match.team1.name.strip() == match.team1.name
+            assert match.team2.name.strip() == match.team2.name
     
     def test_completed_matches_have_scores(self, mock_fetch_html):
         """Test that completed matches have valid scores."""
         matches = vlr.matches.completed(limit=5)
         
         for match in matches:
-            if match.status == "completed" and match.score:
-                # Score should be in format "X-Y"
-                assert "-" in match.score
-                parts = match.score.split("-")
-                assert len(parts) == 2
-                # Each part should be a number
-                assert parts[0].isdigit()
-                assert parts[1].isdigit()
+            if match.status == "completed":
+                # At least one team should have a score
+                assert match.team1.score is not None or match.team2.score is not None
+                # Scores should be non-negative integers
+                if match.team1.score is not None:
+                    assert isinstance(match.team1.score, int)
+                    assert match.team1.score >= 0
+                if match.team2.score is not None:
+                    assert isinstance(match.team2.score, int)
+                    assert match.team2.score >= 0
     
     def test_matches_have_events(self, mock_fetch_html):
         """Test that matches have event information."""
@@ -205,21 +209,18 @@ class TestDataQuality:
         matches = vlr.matches.upcoming(limit=10)
         
         for match in matches:
-            assert match.teams[0] != ""
-            assert match.teams[1] != ""
+            assert match.team1.name != ""
+            assert match.team2.name != ""
     
     def test_no_negative_scores(self, mock_fetch_html):
         """Test that scores are never negative."""
         matches = vlr.matches.completed(limit=10)
         
         for match in matches:
-            if match.score:
-                parts = match.score.split("-")
-                if len(parts) == 2:
-                    score1 = int(parts[0])
-                    score2 = int(parts[1])
-                    assert score1 >= 0
-                    assert score2 >= 0
+            if match.team1.score is not None:
+                assert match.team1.score >= 0
+            if match.team2.score is not None:
+                assert match.team2.score >= 0
     
     def test_agent_stats_valid_ranges(self, mock_fetch_html):
         """Test that agent stats are in valid ranges."""
@@ -278,8 +279,8 @@ class TestEdgeCasesWithRealData:
         
         for match in matches:
             # Should handle team names with special characters
-            assert isinstance(match.teams[0], str)
-            assert isinstance(match.teams[1], str)
+            assert isinstance(match.team1.name, str)
+            assert isinstance(match.team2.name, str)
     
     def test_date_fields_valid_or_none(self, mock_fetch_html):
         """Test that date fields are valid dates or None."""

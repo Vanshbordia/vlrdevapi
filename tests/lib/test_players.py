@@ -90,6 +90,8 @@ class TestPlayersMatches:
             match = matches[0]
             assert hasattr(match, 'match_id')
             assert hasattr(match, 'event')
+            assert hasattr(match, 'stage')
+            assert hasattr(match, 'phase')
             assert hasattr(match, 'player_team')
             assert hasattr(match, 'opponent_team')
             assert hasattr(match, 'result')
@@ -123,6 +125,18 @@ class TestPlayersMatches:
         """Test pagination for player matches."""
         page1 = vlr.players.matches(player_id=457, page=1, limit=5)
         assert isinstance(page1, list)
+    
+    def test_match_stage_and_phase(self, mock_fetch_html):
+        """Test that stage and phase are extracted correctly."""
+        matches = vlr.players.matches(player_id=457, limit=10)
+        for match in matches:
+            # Stage and phase might be None or strings
+            if match.stage is not None:
+                assert isinstance(match.stage, str)
+                assert len(match.stage) > 0
+            if match.phase is not None:
+                assert isinstance(match.phase, str)
+                assert len(match.phase) > 0
 
 
 class TestPlayersAgentStats:

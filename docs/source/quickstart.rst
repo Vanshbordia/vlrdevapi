@@ -63,14 +63,20 @@ Get Match Schedules
    # Upcoming matches
    upcoming = vlr.matches.upcoming(limit=10)
    for match in upcoming:
-       print(f"{match.teams[0]} vs {match.teams[1]}")
+       print(f"{match.team1.name} vs {match.team2.name}")
        print(f"Event: {match.event}")
+       print(f"Countries: {match.team1.country} vs {match.team2.country}")
    
    # Live matches
    live = vlr.matches.live()
+   for match in live:
+       print(f"LIVE: {match.team1.name} vs {match.team2.name}")
    
    # Completed matches
    completed = vlr.matches.completed(limit=10)
+   for match in completed:
+       score = f"{match.team1.score}-{match.team2.score}"
+       print(f"{match.team1.name} vs {match.team2.name}: {score}")
 
 Player Information
 ~~~~~~~~~~~~~~~~~~
@@ -89,6 +95,8 @@ Player Information
    
    # Get match history
    matches = vlr.players.matches(player_id=4164, limit=10)
+   for match in matches:
+       print(f"{match.event} - {match.stage} {match.phase}: {match.result}")
 
 Team Information
 ~~~~~~~~~~~~~~~~

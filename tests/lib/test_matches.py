@@ -24,21 +24,31 @@ class TestMatchesUpcoming:
         if matches:
             match = matches[0]
             assert hasattr(match, 'match_id')
-            assert hasattr(match, 'teams')
+            assert hasattr(match, 'team1')
+            assert hasattr(match, 'team2')
             assert hasattr(match, 'event')
             assert hasattr(match, 'status')
-            assert isinstance(match.teams, tuple)
-            assert len(match.teams) == 2
     
     def test_upcoming_match_teams(self, mock_fetch_html):
         """Test that teams are properly extracted."""
         matches = vlr.matches.upcoming(limit=1)
         if matches:
             match = matches[0]
-            assert match.teams[0] is not None
-            assert match.teams[1] is not None
-            assert isinstance(match.teams[0], str)
-            assert isinstance(match.teams[1], str)
+            assert match.team1 is not None
+            assert match.team2 is not None
+            assert hasattr(match.team1, 'name')
+            assert hasattr(match.team2, 'name')
+            # Team id may be None or int
+            assert hasattr(match.team1, 'id')
+            assert (match.team1.id is None) or isinstance(match.team1.id, int)
+            assert hasattr(match.team2, 'id')
+            assert (match.team2.id is None) or isinstance(match.team2.id, int)
+            assert hasattr(match.team1, 'country')
+            assert hasattr(match.team2, 'country')
+            assert hasattr(match.team1, 'score')
+            assert hasattr(match.team2, 'score')
+            assert isinstance(match.team1.name, str)
+            assert isinstance(match.team2.name, str)
     
     def test_upcoming_match_id_is_int(self, mock_fetch_html):
         """Test that match_id is an integer."""
@@ -73,7 +83,7 @@ class TestMatchesCompleted:
         for match in matches:
             # Completed matches should have scores
             if match.status == "completed":
-                assert match.score is not None or match.score == ""
+                assert match.team1.score is not None or match.team2.score is not None
     
     def test_completed_match_structure(self, mock_fetch_html):
         """Test completed match structure."""
@@ -81,9 +91,16 @@ class TestMatchesCompleted:
         if matches:
             match = matches[0]
             assert hasattr(match, 'match_id')
-            assert hasattr(match, 'teams')
-            assert hasattr(match, 'score')
+            assert hasattr(match, 'team1')
+            assert hasattr(match, 'team2')
             assert hasattr(match, 'event')
+            assert hasattr(match.team1, 'score')
+            assert hasattr(match.team2, 'score')
+            # Team id may be None or int
+            assert hasattr(match.team1, 'id')
+            assert (match.team1.id is None) or isinstance(match.team1.id, int)
+            assert hasattr(match.team2, 'id')
+            assert (match.team2.id is None) or isinstance(match.team2.id, int)
     
     def test_completed_pagination(self, mock_fetch_html):
         """Test pagination for completed matches."""
@@ -113,9 +130,15 @@ class TestMatchesLive:
         """Test that live matches have teams."""
         matches = vlr.matches.live()
         for match in matches:
-            assert len(match.teams) == 2
-            assert match.teams[0] is not None
-            assert match.teams[1] is not None
+            assert match.team1 is not None
+            assert match.team2 is not None
+            assert hasattr(match.team1, 'name')
+            assert hasattr(match.team2, 'name')
+            # Team id may be None or int during live parsing
+            assert hasattr(match.team1, 'id')
+            assert (match.team1.id is None) or isinstance(match.team1.id, int)
+            assert hasattr(match.team2, 'id')
+            assert (match.team2.id is None) or isinstance(match.team2.id, int)
 
 
 class TestMatchesIntegration:
@@ -136,9 +159,13 @@ class TestMatchesIntegration:
         """Test that team countries are extracted."""
         matches = vlr.matches.upcoming(limit=5)
         for match in matches:
-            assert hasattr(match, 'team_countries')
-            assert isinstance(match.team_countries, tuple)
-            assert len(match.team_countries) == 2
+            assert hasattr(match.team1, 'country')
+            assert hasattr(match.team2, 'country')
+            # Countries can be None or strings
+            if match.team1.country is not None:
+                assert isinstance(match.team1.country, str)
+            if match.team2.country is not None:
+                assert isinstance(match.team2.country, str)
     
     def test_match_event_info(self, mock_fetch_html):
         """Test that event information is present."""

@@ -74,11 +74,9 @@ Monitor an ongoing tournament:
        # Show recent results
        print("Recent Results:")
        for match in completed[:5]:
-           team1, team2 = match.teams
-           print(f"  {team1.name} vs {team2.name}")
-           if team1.score is not None and team2.score is not None:
-               winner = team1.name if team1.is_winner else team2.name
-               print(f"    Winner: {winner} ({team1.score}-{team2.score})")
+           print(f"  {match.team1.name} vs {match.team2.name}")
+           if match.team1.score is not None and match.team2.score is not None:
+               print(f"    Score: {match.team1.score}-{match.team2.score}")
    
    track_tournament(event_id=2498)
 
@@ -102,8 +100,10 @@ Monitor live matches:
            else:
                print(f"{len(live_matches)} live match(es):")
                for match in live_matches:
-                   print(f"  {match.teams[0]} vs {match.teams[1]}")
+                   print(f"  {match.team1.name} vs {match.team2.name}")
                    print(f"  Event: {match.event}")
+                   if match.team1.score is not None:
+                       print(f"  Score: {match.team1.score}-{match.team2.score}")
            
            time.sleep(refresh_interval)
 
@@ -139,6 +139,12 @@ Analyze player performance across agents:
        wins = sum(1 for m in matches if m.result == "win")
        losses = sum(1 for m in matches if m.result == "loss")
        print(f"\nRecent Record: {wins}W - {losses}L")
+       
+       # Show recent matches with stage/phase info
+       print("\nRecent Matches:")
+       for match in matches[:5]:
+           stage_info = f"{match.stage} {match.phase}" if match.phase else match.stage or "N/A"
+           print(f"  {match.event} - {stage_info}: {match.result}")
    
    analyze_player(player_id=4164)
 
@@ -231,24 +237,24 @@ Compare two teams:
            # Check if our teams are in this match
            for team_name in [team1_name, team2_name]:
                if team_name.lower() in t1.name.lower():
-                   if t1.is_winner:
+                   t1_score = t1.score or 0
+                   t2_score = t2.score or 0
+                   if t1_score > t2_score:
                        team_stats[team_name]["wins"] += 1
-                       team_stats[team_name]["maps_won"] += t1.score or 0
-                       team_stats[team_name]["maps_lost"] += t2.score or 0
                    else:
                        team_stats[team_name]["losses"] += 1
-                       team_stats[team_name]["maps_won"] += t1.score or 0
-                       team_stats[team_name]["maps_lost"] += t2.score or 0
+                   team_stats[team_name]["maps_won"] += t1_score
+                   team_stats[team_name]["maps_lost"] += t2_score
                
                elif team_name.lower() in t2.name.lower():
-                   if t2.is_winner:
+                   t1_score = t1.score or 0
+                   t2_score = t2.score or 0
+                   if t2_score > t1_score:
                        team_stats[team_name]["wins"] += 1
-                       team_stats[team_name]["maps_won"] += t2.score or 0
-                       team_stats[team_name]["maps_lost"] += t1.score or 0
                    else:
                        team_stats[team_name]["losses"] += 1
-                       team_stats[team_name]["maps_won"] += t2.score or 0
-                       team_stats[team_name]["maps_lost"] += t1.score or 0
+                   team_stats[team_name]["maps_won"] += t2_score
+                   team_stats[team_name]["maps_lost"] += t1_score
        
        print(f"Team Comparison for Event {event_id}")
        print("=" * 50)
@@ -397,12 +403,18 @@ Export event data to CSV:
        
        with open(filename, 'w', newline='', encoding='utf-8') as f:
            writer = csv.writer(f)
-           writer.writerow(['Team 1', 'Team 2', 'Score', 'Status'])
+           writer.writerow(['Team 1', 'Team 1 Country', 'Team 2', 'Team 2 Country', 'Score', 'Status'])
            
            for match in matches:
-               team1, team2 = match.teams
-               score = f"{team1.score}-{team2.score}" if team1.score else "TBD"
-               writer.writerow([team1.name, team2.name, score, match.status])
+               score = f"{match.team1.score}-{match.team2.score}" if match.team1.score is not None else "TBD"
+               writer.writerow([
+                   match.team1.name, 
+                   match.team1.country or "N/A",
+                   match.team2.name,
+                   match.team2.country or "N/A",
+                   score, 
+                   match.status
+               ])
        
        print(f"Exported {len(matches)} matches")
    

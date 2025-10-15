@@ -77,7 +77,8 @@ class Match(BaseModel):
     match_id: int = Field(description="Match ID")
     url: str = Field(description="Match URL")
     event: Optional[str] = Field(None, description="Event name")
-    stage: Optional[str] = Field(None, description="Stage name")
+    stage: Optional[str] = Field(None, description="Stage name (e.g., 'Group Stage')")
+    phase: Optional[str] = Field(None, description="Phase name (e.g., 'W1')")
     player_team: MatchTeam = Field(description="Player's team")
     opponent_team: MatchTeam = Field(description="Opponent team")
     player_score: Optional[int] = Field(None, description="Player team score")
@@ -295,13 +296,15 @@ def matches(
         timeout: Request timeout in seconds
     
     Returns:
-        List of player matches
+        List of player matches. Each match includes:
+        - stage: The tournament stage (e.g., "Group Stage", "Playoffs")
+        - phase: The specific phase within the stage (e.g., "W1", "GF")
     
     Example:
         >>> import vlrdevapi as vlr
         >>> matches = vlr.players.matches(player_id=123, limit=10)
         >>> for match in matches:
-        ...     print(f"{match.event}: {match.result}")
+        ...     print(f"{match.event} - {match.stage} {match.phase}: {match.result}")
     """
     start_page = page or 1
     results: List[Match] = []
@@ -346,14 +349,25 @@ def matches(
             event_el = anchor.select_one(".m-item-event")
             event_name = None
             stage = None
+            phase = None
             if event_el:
                 strings = list(event_el.stripped_strings)
                 if strings:
                     event_name = normalize_whitespace(strings[0]) if strings[0] else None
                     details = [s.strip("⋅ ") for s in strings[1:] if s.strip("⋅ ")]
-                    stage = details[0] if details else None
-                    if stage:
-                        stage = stage.replace("⋅", " ").strip()
+                    if details:
+                        # Join all details and split on ⋅ separator
+                        combined = " ".join(details)
+                        if "⋅" in combined:
+                            parts = [normalize_whitespace(p) for p in combined.split("⋅") if p.strip()]
+                            if len(parts) >= 2:
+                                stage = parts[0]
+                                phase = parts[1]
+                            elif len(parts) == 1:
+                                stage = parts[0]
+                        else:
+                            # No separator, treat as stage only
+                            stage = normalize_whitespace(combined)
             
             # Parse teams
             team_blocks = anchor.select(".m-item-team")
@@ -425,6 +439,7 @@ def matches(
                 url=match_url,
                 event=event_name,
                 stage=stage,
+                phase=phase,
                 player_team=player_team,
                 opponent_team=opponent_team,
                 player_score=player_score,
