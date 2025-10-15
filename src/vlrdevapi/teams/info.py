@@ -11,7 +11,7 @@ from ..fetcher import fetch_html
 from ..exceptions import NetworkError
 from ..utils import extract_text, absolute_url, extract_id_from_url
 
-from .models import TeamInfo, SocialLink, PreviousTeam
+from .models import TeamInfo, SocialLink, PreviousTeam, SuccessorTeam
 
 
 def info(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[TeamInfo]:
@@ -88,24 +88,22 @@ def info(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[TeamInfo]:
                 full_url = absolute_url(href) or href
                 socials.append(SocialLink(label=label, url=full_url))
     
-    # Extract previous team information
+    # Extract previous and current team information
     previous_team = None
+    current_team = None
     successor_el = header.select_one(".team-header-name-successor")
     if successor_el:
-        successor_text = extract_text(successor_el)
-        # Check if it mentions "previously"
-        if "previously" in successor_text.lower():
-            # Find the link to the previous team
-            prev_link = successor_el.select_one("a[href]")
-            if prev_link:
-                prev_href = prev_link.get("href", "")
-                prev_team_id = extract_id_from_url(prev_href, "team")
-                prev_name = extract_text(prev_link)
-                if prev_name:
-                    previous_team = PreviousTeam(
-                        team_id=prev_team_id,
-                        name=prev_name
-                    )
+        successor_text = extract_text(successor_el).lower()
+        link = successor_el.select_one("a[href]")
+        if link:
+            href = link.get("href", "")
+            linked_team_id = extract_id_from_url(href, "team")
+            linked_name = extract_text(link)
+            if linked_name:
+                if "previously" in successor_text:
+                    previous_team = PreviousTeam(team_id=linked_team_id, name=linked_name)
+                if "currently" in successor_text:
+                    current_team = SuccessorTeam(team_id=linked_team_id, name=linked_name)
     
     return TeamInfo(
         team_id=team_id,
@@ -116,4 +114,5 @@ def info(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[TeamInfo]:
         is_active=is_active,
         socials=socials,
         previous_team=previous_team,
+        current_team=current_team,
     )

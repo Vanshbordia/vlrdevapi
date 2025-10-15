@@ -29,6 +29,7 @@ class TestTeamsInfo:
             assert hasattr(team, 'is_active')
             assert hasattr(team, 'socials')
             assert hasattr(team, 'previous_team')
+            assert hasattr(team, 'current_team')
     
     def test_info_team_id(self, mock_fetch_html):
         """Test that team_id is correct."""
@@ -171,6 +172,25 @@ class TestTeamsInactiveTeam:
         assert team is not None
         assert isinstance(team.socials, list)
         # M3C might not have social links, so just check it's a list
+
+
+class TestTeamsCurrentBanner:
+    """Test inactive team with current banner (Gambit -> M3 Champions)."""
+
+    def test_gambit_current_banner(self, mock_fetch_html):
+        """Gambit Esports page should indicate current team M3 Champions."""
+        team = vlr.teams.info(team_id=682)
+        assert team is not None
+        # Basic fields
+        assert team.name == "Gambit Esports"
+        assert team.tag == "GMB"
+        assert team.is_active is False
+        # Previous should be None in this fixture
+        assert team.previous_team is None
+        # Current team should be populated
+        assert team.current_team is not None
+        assert team.current_team.name == "M3 Champions"
+        assert team.current_team.team_id == 8326
 
 
 class TestTeamsIntegration:

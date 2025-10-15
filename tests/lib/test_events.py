@@ -133,6 +133,8 @@ class TestEventsMatches:
             assert len(match.teams) == 2
             assert hasattr(match.teams[0], 'name')
             assert hasattr(match.teams[1], 'name')
+            assert hasattr(match.teams[0], 'id')
+            assert hasattr(match.teams[1], 'id')
     
     def test_match_event_id(self, mock_fetch_html):
         """Test that event_id is correct."""
@@ -153,6 +155,17 @@ class TestEventsMatches:
             for team in match.teams:
                 if team.score is not None:
                     assert isinstance(team.score, int)
+    
+    def test_match_team_ids(self, mock_fetch_html):
+        """Test that team IDs are extracted from match pages."""
+        matches = vlr.events.matches(event_id=2498, limit=5)
+        for match in matches:
+            # Team IDs should be extracted from match page headers
+            for team in match.teams:
+                # IDs may be None for some teams (TBD, etc.)
+                if team.id is not None:
+                    assert isinstance(team.id, int)
+                    assert team.id > 0
 
 
 class TestEventsMatchSummary:

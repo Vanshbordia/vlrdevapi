@@ -22,6 +22,13 @@ list_events
 .. autofunction:: vlrdevapi.events.list_events
    :noindex:
 
+Use ``EventTier`` and ``EventStatus`` enums for autocomplete support:
+
+.. code-block:: python
+
+   from vlrdevapi import EventTier, EventStatus
+   events = vlr.events.list_events(tier=EventTier.VCT, status=EventStatus.ONGOING)
+
 info
 ~~~~
 
@@ -34,6 +41,8 @@ matches
 .. autofunction:: vlrdevapi.events.matches
    :noindex:
 
+**Note:** Team IDs are extracted by fetching individual match pages in parallel for performance.
+
 match_summary
 ~~~~~~~~~~~~~
 
@@ -45,6 +54,23 @@ standings
 
 .. autofunction:: vlrdevapi.events.standings
    :noindex:
+
+Enums
+-----
+
+EventTier
+~~~~~~~~~
+
+.. autoclass:: vlrdevapi.events.EventTier
+   :members:
+   :undoc-members:
+
+EventStatus
+~~~~~~~~~~~
+
+.. autoclass:: vlrdevapi.events.EventStatus
+   :members:
+   :undoc-members:
 
 Data Models
 -----------

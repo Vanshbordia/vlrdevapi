@@ -3,6 +3,7 @@
 from .models import (
     SocialLink,
     PreviousTeam,
+    SuccessorTeam,
     RosterMember,
     TeamInfo,
     MatchTeam,
@@ -22,6 +23,7 @@ __all__ = [
     # Models
     "SocialLink",
     "PreviousTeam",
+    "SuccessorTeam",
     "RosterMember",
     "TeamInfo",
     "MatchTeam",

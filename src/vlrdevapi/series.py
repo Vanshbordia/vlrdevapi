@@ -117,7 +117,7 @@ class MapPlayers(BaseModel):
     
     model_config = ConfigDict(frozen=True)
     
-    game_id: Optional[int] = Field(None, description="Game ID")
+    game_id: Optional[int | str] = Field(None, description="Game ID (int for specific maps, 'All' for aggregate)")
     map_name: Optional[str] = Field(None, description="Map name")
     players: List[PlayerStats] = Field(default_factory=list, description="Player statistics")
     teams: Optional[Tuple[MapTeamScore, MapTeamScore]] = Field(None, description="Team scores")
@@ -383,8 +383,28 @@ def matches(series_id: int, limit: Optional[int] = None, timeout: float = DEFAUL
         name = re.sub(r"^\s*\d+\s*", "", txt).strip()
         game_name_map[int(gid)] = name
     
-    # Map team identity
-    short_to_id: Dict[str, int] = {}
+    def canonical(value: Optional[str]) -> Optional[str]:
+        if not value:
+            return None
+        return re.sub(r"\s+", " ", value).strip().lower()
+    
+    # Fetch team metadata to map names/shorts to IDs
+    series_details = info(series_id, timeout=timeout)
+    team_meta_lookup: Dict[str, Dict[str, Optional[str | int]]] = {}
+    team_short_to_id: Dict[str, Optional[int]] = {}
+    if series_details:
+        for team_info in series_details.teams:
+            meta = {
+                "id": team_info.id,
+                "name": team_info.name,
+                "short": team_info.short,
+            }
+            for key in filter(None, [team_info.name, team_info.short]):
+                canon = canonical(key)
+                if canon:
+                    team_meta_lookup[canon] = meta
+            if team_info.short:
+                team_short_to_id[team_info.short.upper()] = team_info.id
     
     # Determine order from nav
     ordered_ids: List[str] = []
@@ -420,15 +440,16 @@ def matches(series_id: int, limit: Optional[int] = None, timeout: float = DEFAUL
             continue
         
         game_id = game.get("data-game-id")
-        gid = None
-        try:
-            gid = int(game_id) if game_id and game_id.isdigit() else None
-        except Exception:
-            gid = None
+        gid: Optional[int | str] = None
         
         if game_id == "all":
+            gid = "All"
             map_name = "All"
         else:
+            try:
+                gid = int(game_id) if game_id and game_id.isdigit() else None
+            except Exception:
+                gid = None
             map_name = game_name_map.get(gid) if gid is not None else None
         
         if not map_name:
@@ -439,15 +460,306 @@ def matches(series_id: int, limit: Optional[int] = None, timeout: float = DEFAUL
                     direct = outer.find(string=True, recursive=False)
                     map_name = (direct or "").strip() or None
         
-        # Parse players (simplified - full implementation would parse table)
-        players: List[PlayerStats] = []
+        # Parse teams from header
+        teams_tuple: Optional[Tuple[MapTeamScore, MapTeamScore]] = None
+        header = game.select_one(".vm-stats-game-header")
+        if header:
+            team_divs = header.select(".team")
+            if len(team_divs) >= 2:
+                # Team 1
+                t1_name_el = team_divs[0].select_one(".team-name")
+                t1_name = extract_text(t1_name_el) if t1_name_el else None
+                t1_score_el = team_divs[0].select_one(".score")
+                t1_score = parse_int(extract_text(t1_score_el)) if t1_score_el else None
+                t1_is_winner = t1_score_el and "mod-win" in (t1_score_el.get("class") or []) if t1_score_el else False
+                
+                # Parse attacker/defender rounds for team 1
+                t1_ct = team_divs[0].select_one(".mod-ct")
+                t1_t = team_divs[0].select_one(".mod-t")
+                t1_ct_rounds = parse_int(extract_text(t1_ct)) if t1_ct else None
+                t1_t_rounds = parse_int(extract_text(t1_t)) if t1_t else None
+                
+                # Team 2
+                t2_name_el = team_divs[1].select_one(".team-name")
+                t2_name = extract_text(t2_name_el) if t2_name_el else None
+                t2_score_el = team_divs[1].select_one(".score")
+                t2_score = parse_int(extract_text(t2_score_el)) if t2_score_el else None
+                t2_is_winner = t2_score_el and "mod-win" in (t2_score_el.get("class") or []) if t2_score_el else False
+                
+                # Parse attacker/defender rounds for team 2
+                t2_ct = team_divs[1].select_one(".mod-ct")
+                t2_t = team_divs[1].select_one(".mod-t")
+                t2_ct_rounds = parse_int(extract_text(t2_ct)) if t2_ct else None
+                t2_t_rounds = parse_int(extract_text(t2_t)) if t2_t else None
+                
+                if t1_name and t2_name:
+                    t1_meta = team_meta_lookup.get(canonical(t1_name))
+                    t2_meta = team_meta_lookup.get(canonical(t2_name))
+                    teams_tuple = (
+                        MapTeamScore(
+                            id=t1_meta.get("id") if t1_meta else None,
+                            name=t1_name,
+                            short=t1_meta.get("short") if t1_meta else None,
+                            score=t1_score,
+                            attacker_rounds=t1_t_rounds,
+                            defender_rounds=t1_ct_rounds,
+                            is_winner=t1_is_winner,
+                        ),
+                        MapTeamScore(
+                            id=t2_meta.get("id") if t2_meta else None,
+                            name=t2_name,
+                            short=t2_meta.get("short") if t2_meta else None,
+                            score=t2_score,
+                            attacker_rounds=t2_t_rounds,
+                            defender_rounds=t2_ct_rounds,
+                            is_winner=t2_is_winner,
+                        ),
+                    )
         
+        # Parse rounds
+        rounds_list: List[RoundResult] = []
+        rounds_container = game.select_one(".vlr-rounds")
+        if rounds_container:
+            round_rows = rounds_container.select(".vlr-rounds-row")
+            # Determine top/bottom team order from the rounds legend
+            round_team_names: List[str] = []
+            if round_rows:
+                header_col = round_rows[0].select_one(".vlr-rounds-row-col")
+                if header_col:
+                    round_team_names = [extract_text(team_el) for team_el in header_col.select(".team")]
+            # Flatten all round columns across rows, skipping headers/spacing
+            flat_columns: List = []
+            for row in round_rows:
+                for col in row.select(".vlr-rounds-row-col"):
+                    if col.select_one(".team"):
+                        continue
+                    if "mod-spacing" in (col.get("class") or []):
+                        continue
+                    flat_columns.append(col)
+            prev_score: Optional[Tuple[int, int]] = None
+            final_score_tuple: Optional[Tuple[int, int]] = None
+            if teams_tuple and all(ts.score is not None for ts in teams_tuple):
+                final_score_tuple = (teams_tuple[0].score or 0, teams_tuple[1].score or 0)
+            for col in flat_columns:
+                rnd_num_el = col.select_one(".rnd-num")
+                if not rnd_num_el:
+                    continue
+                rnd_num = parse_int(extract_text(rnd_num_el))
+                if rnd_num is None:
+                    continue
+                title = (col.get("title") or "").strip()
+                if not title and not col.select_one(".rnd-sq.mod-win"):
+                    # No data beyond this point
+                    break
+                score_tuple: Optional[Tuple[int, int]] = None
+                if "-" in title:
+                    parts = title.split("-")
+                    if len(parts) == 2:
+                        s1 = parse_int(parts[0].strip())
+                        s2 = parse_int(parts[1].strip())
+                        if s1 is not None and s2 is not None:
+                            score_tuple = (s1, s2)
+                # Determine winning square and method
+                winner_sq = col.select_one(".rnd-sq.mod-win")
+                winner_side = None
+                method = None
+                if winner_sq:
+                    classes = winner_sq.get("class") or []
+                    if "mod-t" in classes:
+                        winner_side = "Attacker"
+                    elif "mod-ct" in classes:
+                        winner_side = "Defender"
+                    method_img = winner_sq.select_one("img")
+                    if method_img:
+                        src = (method_img.get("src") or "").lower()
+                        if "elim" in src:
+                            method = "Elimination"
+                        elif "defuse" in src:
+                            method = "SpikeDefused"
+                        elif "boom" in src or "explosion" in src:
+                            method = "SpikeExplosion"
+                        elif "time" in src:
+                            method = "TimeRunOut"
+                winner_idx: Optional[int] = None
+                if score_tuple is not None:
+                    if prev_score is None:
+                        winner_idx = 0 if score_tuple[0] > score_tuple[1] else 1 if score_tuple[1] > score_tuple[0] else None
+                    else:
+                        if score_tuple[0] > prev_score[0]:
+                            winner_idx = 0
+                        elif score_tuple[1] > prev_score[1]:
+                            winner_idx = 1
+                    prev_score = score_tuple
+                winner_team_id = None
+                winner_team_short = None
+                winner_team_name = None
+                if winner_idx is not None and teams_tuple and 0 <= winner_idx < len(teams_tuple):
+                    team_score = teams_tuple[winner_idx]
+                    winner_team_id = team_score.id
+                    winner_team_short = team_score.short
+                    winner_team_name = team_score.name
+                elif winner_idx is not None and round_team_names:
+                    team_name = round_team_names[winner_idx] if winner_idx < len(round_team_names) else None
+                    if team_name:
+                        meta = team_meta_lookup.get(canonical(team_name))
+                        if meta:
+                            winner_team_id = meta.get("id")  # type: ignore[attr-defined]
+                            winner_team_short = meta.get("short")  # type: ignore[attr-defined]
+                            winner_team_name = meta.get("name")  # type: ignore[attr-defined]
+                        else:
+                            winner_team_name = team_name
+                rounds_list.append(RoundResult(
+                    number=rnd_num,
+                    winner_side=winner_side,
+                    method=method,
+                    score=score_tuple,
+                    winner_team_id=winner_team_id,
+                    winner_team_short=winner_team_short,
+                    winner_team_name=winner_team_name,
+                ))
+                if final_score_tuple and score_tuple == final_score_tuple:
+                    break
+        
+        # Helpers for player parsing
+        def extract_mod_both(cell) -> Optional[str]:
+            if not cell:
+                return None
+            # Prefer spans containing mod-both
+            for selector in [".side.mod-both", ".side.mod-side.mod-both", ".mod-both"]:
+                el = cell.select_one(selector)
+                if el:
+                    return extract_text(el)
+            for el in cell.select("span"):
+                classes = el.get("class", [])
+                if classes and any("mod-both" in cls for cls in classes):
+                    return extract_text(el)
+            return extract_text(cell)
+        
+        def parse_numeric(text: Optional[str]) -> Optional[float]:
+            if not text:
+                return None
+            cleaned = text.strip().replace(",", "")
+            if not cleaned:
+                return None
+            sign = 1
+            if cleaned.startswith("+"):
+                cleaned = cleaned[1:]
+            elif cleaned.startswith("-"):
+                sign = -1
+                cleaned = cleaned[1:]
+            percent = cleaned.endswith("%")
+            if percent:
+                cleaned = cleaned[:-1]
+            cleaned = cleaned.strip()
+            if not cleaned:
+                return None
+            try:
+                value = float(cleaned)
+            except ValueError:
+                return None
+            return sign * value
+        
+        # Parse players from both team tables
+        players: List[PlayerStats] = []
+        tables = game.select("table.wf-table-inset")
+        team_scores = list(teams_tuple) if teams_tuple else []
+        for table_idx, table in enumerate(tables):
+            tbody = table.select_one("tbody")
+            if not tbody:
+                continue
+            team_score = team_scores[table_idx] if table_idx < len(team_scores) else None
+            team_meta = None
+            if team_score:
+                team_meta = team_meta_lookup.get(canonical(team_score.name))
+            inferred_team_short = team_meta.get("short") if team_meta else (team_score.short if team_score else None)
+            inferred_team_id = team_meta.get("id") if team_meta else (team_score.id if team_score else None)
+            for row in tbody.select("tr"):
+                player_cell = row.select_one(".mod-player")
+                if not player_cell:
+                    continue
+                player_link = player_cell.select_one("a[href*='/player/']")
+                if not player_link:
+                    continue
+                player_id = extract_id_from_url(player_link.get("href", ""), "player")
+                name_el = player_link.select_one(".text-of")
+                name = extract_text(name_el) if name_el else None
+                if not name:
+                    continue
+                team_short_el = player_link.select_one(".ge-text-light")
+                player_team_short = extract_text(team_short_el) if team_short_el else inferred_team_short
+                if player_team_short:
+                    player_team_short = player_team_short.strip().upper()
+                team_id = None
+                if player_team_short:
+                    team_id = team_short_to_id.get(player_team_short.upper(), inferred_team_id)
+                elif inferred_team_id is not None:
+                    team_id = inferred_team_id
+                # Country
+                flag = player_cell.select_one(".flag")
+                country = None
+                if flag:
+                    for cls in flag.get("class", []):
+                        if cls.startswith("mod-") and cls != "mod-dark":
+                            country_code = cls.removeprefix("mod-")
+                            country = COUNTRY_MAP.get(country_code.upper(), country_code.upper())
+                            break
+                # Agents
+                agents: List[str] = []
+                agents_cell = row.select_one(".mod-agents")
+                if agents_cell:
+                    for img in agents_cell.select("img"):
+                        agent_name = img.get("title") or img.get("alt", "")
+                        if agent_name:
+                            agents.append(agent_name)
+                # Stats
+                stat_cells = row.select(".mod-stat")
+                values = [parse_numeric(extract_mod_both(cell)) for cell in stat_cells]
+                def as_int(idx: int) -> Optional[int]:
+                    if idx >= len(values) or values[idx] is None:
+                        return None
+                    return int(values[idx])
+                def as_float(idx: int) -> Optional[float]:
+                    if idx >= len(values) or values[idx] is None:
+                        return None
+                    return float(values[idx])
+                r_float = as_float(0)
+                acs_int = as_int(1)
+                k_int = as_int(2)
+                d_int = as_int(3)
+                a_int = as_int(4)
+                kd_diff_int = as_int(5)
+                kast_float = as_float(6)
+                adr_float = as_float(7)
+                hs_pct_float = as_float(8)
+                fk_int = as_int(9)
+                fd_int = as_int(10)
+                fk_diff_int = as_int(11)
+                players.append(PlayerStats(
+                    country=country,
+                    name=name,
+                    team_short=player_team_short,
+                    team_id=team_id,
+                    player_id=player_id,
+                    agents=agents,
+                    r=r_float,
+                    acs=acs_int,
+                    k=k_int,
+                    d=d_int,
+                    a=a_int,
+                    kd_diff=kd_diff_int,
+                    kast=kast_float,
+                    adr=adr_float,
+                    hs_pct=hs_pct_float,
+                    fk=fk_int,
+                    fd=fd_int,
+                    fk_diff=fk_diff_int,
+                ))
         result.append(MapPlayers(
             game_id=gid,
             map_name=map_name,
             players=players,
-            teams=None,
-            rounds=None,
+            teams=teams_tuple,
+            rounds=rounds_list if rounds_list else None,
         ))
     
     return result

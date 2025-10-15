@@ -82,6 +82,13 @@ PreviousTeam
    :members:
    :undoc-members:
 
+SuccessorTeam
+~~~~~~~~~~~~~
+
+.. autoclass:: vlrdevapi.teams.SuccessorTeam
+   :members:
+   :undoc-members:
+
 RosterMember
 ~~~~~~~~~~~~
 
