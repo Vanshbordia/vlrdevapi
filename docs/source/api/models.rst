@@ -67,18 +67,19 @@ Many fields are optional and may be None:
    else:
        print("Date not available")
 
-Lists and Tuples
-~~~~~~~~~~~~~~~~
+Lists and Nested Objects
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-Some fields contain lists or tuples:
+Some fields contain lists or nested objects:
 
 .. code-block:: python
 
    import vlrdevapi as vlr
 
-   # Tuple of exactly 2 teams
+   # Team objects in matches
    match = vlr.matches.upcoming()[0]
-   team1, team2 = match.teams
+   print(f"{match.team1.name} vs {match.team2.name}")
+   print(f"Countries: {match.team1.country} vs {match.team2.country}")
    
    # List of variable length
    profile = vlr.players.profile(player_id=4164)
@@ -104,19 +105,20 @@ Matches Models
 
 See :doc:`matches` for detailed documentation of:
 
-- Match
+- Team (team information with name, country, score)
+- Match (match information with team1, team2, event details)
 
 Players Models
 --------------
 
 See :doc:`players` for detailed documentation of:
 
-- SocialLink
-- Team
-- Profile
-- MatchTeam
-- Match
-- AgentStats
+- SocialLink (social media links)
+- Team (team membership with role and dates)
+- Profile (player profile with teams and socials)
+- MatchTeam (team info in player matches)
+- Match (player match with stage, phase, result)
+- AgentStats (agent performance statistics)
 
 Series Models
 -------------

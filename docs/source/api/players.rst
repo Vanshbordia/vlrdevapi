@@ -117,8 +117,16 @@ Match History
    
    for match in matches:
        print(f"{match.player_team.name} vs {match.opponent_team.name}")
+       print(f"Event: {match.event}")
+       # Stage and phase information
+       if match.stage:
+           stage_info = f"{match.stage}"
+           if match.phase:
+               stage_info += f" - {match.phase}"
+           print(f"Stage: {stage_info}")
        print(f"Result: {match.result}")
-       print(f"Score: {match.player_score}-{match.opponent_score}")
+       if match.player_score is not None:
+           print(f"Score: {match.player_score}-{match.opponent_score}")
 
 Agent Statistics
 ~~~~~~~~~~~~~~~~
