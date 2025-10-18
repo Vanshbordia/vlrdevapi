@@ -270,15 +270,12 @@ Pagination
    import vlrdevapi as vlr
 
    # Get specific number of matches
-   matches_10 = vlr.teams.completed_matches(team_id=799, limit=10)
-   matches_50 = vlr.teams.completed_matches(team_id=799, limit=50)
+   matches_2 = vlr.teams.completed_matches(team_id=799, limit=2)
+   matches_5 = vlr.teams.completed_matches(team_id=799, limit=5)
    
-   # Get all matches (no limit)
-   all_matches = vlr.teams.completed_matches(team_id=799)
+   print(f"Retrieved {len(matches_2)} matches")
+   print(f"Retrieved {len(matches_5)} matches")
    
-   print(f"Retrieved {len(matches_10)} matches")
-   print(f"Retrieved {len(matches_50)} matches")
-   print(f"Total matches: {len(all_matches)}")
 
 Complete Example
 ~~~~~~~~~~~~~~~~
