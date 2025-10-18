@@ -31,6 +31,7 @@ The search module is the easiest way to find players, teams, events, or series:
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    # Search everything
    results = vlr.search.search("nrg")
    print(f"Found {results.total_results} results")
@@ -42,10 +43,11 @@ The search module is the easiest way to find players, teams, events, or series:
    for player in results.players:
        print(f"Player: {player.ign} - {player.country}")
 
-Type-specific searches:
+Type-specific searches (set ``enrich=False`` for the fastest raw results):
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    # Search only players
    players = vlr.search.search_players("tenz")
    
@@ -60,6 +62,7 @@ Get Match Schedules
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    # Upcoming matches
    upcoming = vlr.matches.upcoming(limit=10)
    for match in upcoming:
@@ -83,6 +86,7 @@ Player Information
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    # Get player profile
    profile = vlr.players.profile(player_id=4164)
    print(f"{profile.handle} ({profile.real_name})")
@@ -103,6 +107,7 @@ Team Information
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    # Get team info
    team = vlr.teams.info(team_id=1034)
    print(f"{team.name} ({team.tag}) - {team.country}")
@@ -113,14 +118,15 @@ Team Information
        print(f"{member.ign} - {member.role}")
    
    # Get team matches
-   upcoming = vlr.teams.upcoming_matches(team_id=1034, count=5)
-   completed = vlr.teams.completed_matches(team_id=1034, count=10)
+   upcoming = vlr.teams.upcoming_matches(team_id=1034, limit=5)
+   completed = vlr.teams.completed_matches(team_id=1034, limit=10)
 
 Event Information
 ~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    # List events
    events = vlr.events.list_events(tier="vct", status="ongoing")
    
@@ -136,6 +142,7 @@ Match Details
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    # Get detailed match info
    info = vlr.series.info(match_id=530935)
    print(f"{info.teams[0].name} vs {info.teams[1].name}")
@@ -154,6 +161,7 @@ Error Handling
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    from vlrdevapi.exceptions import NetworkError, RateLimitError
    
    try:
@@ -168,15 +176,43 @@ Pagination
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    # Get specific page
-   page1 = vlr.matches.completed(limit=10, page=1)
-   page2 = vlr.matches.completed(limit=10, page=2)
+   page1 = vlr.matches.completed(page=1)
+   page2 = vlr.matches.completed(page=2)
+
+Caching
+~~~~~~~
+
+``vlr.fetcher`` caches responses in process. Clear it when you need fresh HTML:
+
+.. code-block:: python
+
+   import vlrdevapi as vlr
+   vlr.fetcher.clear_cache()
+
+Async Fetching
+~~~~~~~~~~~~~~
+
+The fetcher also exposes async helpers if you are running inside an async application:
+
+.. code-block:: python
+
+   import asyncio
+   from vlrdevapi import fetcher
+
+   async def load_match_async(match_url: str) -> str:
+       html = await fetcher.fetch_html_async(match_url)
+       return html
+
+   asyncio.run(load_match_async("https://www.vlr.gg"))
 
 Filtering
 ~~~~~~~~~
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    # Filter events by tier and status
    vct_events = vlr.events.list_events(tier="vct", status="ongoing")
    

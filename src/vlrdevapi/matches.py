@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 
 from .constants import VLR_BASE, DEFAULT_TIMEOUT
 from .countries import map_country_code
-from .fetcher import fetch_html
+from .fetcher import fetch_html, batch_fetch_html
 from .exceptions import NetworkError
 from .utils import extract_text, extract_match_id, extract_country_code, parse_date, extract_id_from_url
 
@@ -31,32 +31,64 @@ class Team(BaseModel):
 _TEAM_ID_CACHE: Dict[int, Tuple[Optional[int], Optional[int]]] = {}
 
 
-def _fetch_team_ids_quick(match_id: Optional[int], timeout: float) -> Tuple[Optional[int], Optional[int]]:
-    """Fetch team IDs from the match header quickly with caching.
-    Returns (team1_id, team2_id) where values may be None if unavailable/TBD.
+def _fetch_team_ids_batch(match_ids: List[int], timeout: float, max_workers: int = 4) -> Dict[int, Tuple[Optional[int], Optional[int]]]:
+    """Fetch team IDs for multiple matches concurrently.
+    
+    Args:
+        match_ids: List of match IDs
+        timeout: Request timeout
+        max_workers: Number of concurrent workers
+    
+    Returns:
+        Dictionary mapping match_id to (team1_id, team2_id)
     """
-    if not match_id:
-        return None, None
-    if match_id in _TEAM_ID_CACHE:
-        return _TEAM_ID_CACHE[match_id]
-    try:
-        html = fetch_html(f"{VLR_BASE}/{match_id}", timeout)
-        soup = BeautifulSoup(html, "lxml")
-        header = soup.select_one(".wf-card.match-header")
-        if not header:
-            _TEAM_ID_CACHE[match_id] = (None, None)
-            return _TEAM_ID_CACHE[match_id]
-        t1_link = header.select_one(".match-header-link.mod-1")
-        t2_link = header.select_one(".match-header-link.mod-2")
-        t1_id = extract_id_from_url(t1_link.get("href") if t1_link else None, "team")
-        t2_id = extract_id_from_url(t2_link.get("href") if t2_link else None, "team")
-        _TEAM_ID_CACHE[match_id] = (t1_id, t2_id)
-        return _TEAM_ID_CACHE[match_id]
-    except NetworkError:
-        _TEAM_ID_CACHE[match_id] = (None, None)
-        return _TEAM_ID_CACHE[match_id]
-    except Exception:
-        return None, None
+    if not match_ids:
+        return {}
+    
+    # Check cache first and collect uncached IDs
+    results: Dict[int, Tuple[Optional[int], Optional[int]]] = {}
+    uncached_ids: List[int] = []
+    
+    for match_id in match_ids:
+        if match_id in _TEAM_ID_CACHE:
+            results[match_id] = _TEAM_ID_CACHE[match_id]
+        else:
+            uncached_ids.append(match_id)
+    
+    # Fetch uncached matches concurrently
+    if uncached_ids:
+        urls = [f"{VLR_BASE}/{match_id}" for match_id in uncached_ids]
+        batch_results = batch_fetch_html(urls, timeout=timeout, max_workers=max_workers)
+        
+        for match_id, url in zip(uncached_ids, urls):
+            content = batch_results.get(url)
+            
+            if isinstance(content, Exception) or not content:
+                _TEAM_ID_CACHE[match_id] = (None, None)
+                results[match_id] = (None, None)
+                continue
+            
+            try:
+                soup = BeautifulSoup(content, "lxml")
+                header = soup.select_one(".wf-card.match-header")
+                
+                if not header:
+                    _TEAM_ID_CACHE[match_id] = (None, None)
+                    results[match_id] = (None, None)
+                    continue
+                
+                t1_link = header.select_one(".match-header-link.mod-1")
+                t2_link = header.select_one(".match-header-link.mod-2")
+                t1_id = extract_id_from_url(t1_link.get("href") if t1_link else None, "team")
+                t2_id = extract_id_from_url(t2_link.get("href") if t2_link else None, "team")
+                
+                _TEAM_ID_CACHE[match_id] = (t1_id, t2_id)
+                results[match_id] = (t1_id, t2_id)
+            except Exception:
+                _TEAM_ID_CACHE[match_id] = (None, None)
+                results[match_id] = (None, None)
+    
+    return results
 
 
 class Match(BaseModel):
@@ -75,12 +107,17 @@ class Match(BaseModel):
 
 
 def _parse_matches(html: str, include_scores: bool) -> List[Match]:
-    """Parse matches from HTML."""
+    """Parse matches from HTML with batch fetching for team IDs."""
     soup = BeautifulSoup(html, "lxml")
-    matches: List[Match] = []
-
+    
+    # First pass: collect all match data
+    match_data: List[Tuple[int, List[str], List[Optional[str]], str, str, Optional[datetime.date], str, str, Optional[int], Optional[int]]] = []
+    
     for node in soup.select("a.match-item"):
         match_id = extract_match_id(node.get("href"))
+        if not match_id:
+            continue
+            
         team_blocks = node.select(".match-item-vs-team")
 
         teams: List[str] = []
@@ -145,12 +182,21 @@ def _parse_matches(html: str, include_scores: bool) -> List[Match]:
         else:
             status = "upcoming"
 
-        # Fetch team IDs from header quickly (cached). Will be None for TBD/unknown.
-        team1_id, team2_id = _fetch_team_ids_quick(match_id, timeout=DEFAULT_TIMEOUT)
-
+        match_data.append((match_id, teams, countries, series, event, match_date, time_text, status, team1_score, team2_score))
+    
+    # Batch fetch team IDs for all matches concurrently
+    match_ids = [match_id for match_id, _, _, _, _, _, _, _, _, _ in match_data]
+    team_ids_map = _fetch_team_ids_batch(match_ids, timeout=DEFAULT_TIMEOUT, max_workers=4)
+    
+    # Second pass: build Match objects with team IDs
+    matches: List[Match] = []
+    
+    for match_id, teams, countries, series, event, match_date, time_text, status, team1_score, team2_score in match_data:
+        team1_id, team2_id = team_ids_map.get(match_id, (None, None))
+        
         matches.append(
             Match(
-                match_id=match_id or -1,
+                match_id=match_id,
                 team1=Team(
                     name=teams[0],
                     id=team1_id,

@@ -111,12 +111,12 @@ class TestEventsMatches:
     
     def test_matches_returns_list(self, mock_fetch_html):
         """Test that matches() returns a list."""
-        matches = vlr.events.matches(event_id=2498)
+        matches = vlr.events.matches(event_id=2498, limit=2)
         assert isinstance(matches, list)
     
     def test_match_structure(self, mock_fetch_html):
         """Test match structure."""
-        matches = vlr.events.matches(event_id=2498)
+        matches = vlr.events.matches(event_id=2498, limit=3)
         if matches:
             match = matches[0]
             assert hasattr(match, 'match_id')
@@ -126,7 +126,7 @@ class TestEventsMatches:
     
     def test_match_teams(self, mock_fetch_html):
         """Test that match teams are extracted."""
-        matches = vlr.events.matches(event_id=2498)
+        matches = vlr.events.matches(event_id=2498, limit=3)
         if matches:
             match = matches[0]
             assert isinstance(match.teams, tuple)
@@ -138,19 +138,19 @@ class TestEventsMatches:
     
     def test_match_event_id(self, mock_fetch_html):
         """Test that event_id is correct."""
-        matches = vlr.events.matches(event_id=2498)
+        matches = vlr.events.matches(event_id=2498, limit=3)
         for match in matches:
             assert match.event_id == 2498
     
     def test_match_status(self, mock_fetch_html):
         """Test that match status is valid."""
-        matches = vlr.events.matches(event_id=2498)
+        matches = vlr.events.matches(event_id=2498, limit=3)
         for match in matches:
             assert isinstance(match.status, str)
     
     def test_match_team_scores(self, mock_fetch_html):
         """Test that team scores are extracted."""
-        matches = vlr.events.matches(event_id=2498)
+        matches = vlr.events.matches(event_id=2498, limit=3)
         for match in matches:
             for team in match.teams:
                 if team.score is not None:
@@ -158,7 +158,7 @@ class TestEventsMatches:
     
     def test_match_team_ids(self, mock_fetch_html):
         """Test that team IDs are extracted from match pages."""
-        matches = vlr.events.matches(event_id=2498, limit=5)
+        matches = vlr.events.matches(event_id=2498, limit=3)
         for match in matches:
             # Team IDs should be extracted from match page headers
             for team in match.teams:

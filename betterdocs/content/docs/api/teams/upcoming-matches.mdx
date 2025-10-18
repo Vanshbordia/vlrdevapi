@@ -1,0 +1,172 @@
+---
+title: teams.upcoming_matches()
+description: Get a team's upcoming matches
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { CheckCircle, Info } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.teams.upcoming_matches(
+    team_id: int,
+    limit: int | None = None,
+    timeout: float = 5.0
+) -> list[TeamMatch]
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    team_id: {
+      type: 'int',
+      description: 'Team ID',
+      required: true,
+    },
+    limit: {
+      type: 'int | None',
+      description: 'Maximum number of matches to return (fetches across pages if needed)',
+      default: 'None',
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `list[TeamMatch]`
+
+Returns a list of upcoming matches.
+
+<TypeTable
+  type={{
+    match_id: {
+      type: 'int | None',
+      description: 'Match ID',
+    },
+    match_url: {
+      type: 'str | None',
+      description: 'Match URL',
+    },
+    tournament_name: {
+      type: 'str | None',
+      description: 'Tournament name',
+    },
+    phase: {
+      type: 'str | None',
+      description: 'Tournament phase',
+    },
+    series: {
+      type: 'str | None',
+      description: 'Series name',
+    },
+    team1: {
+      type: 'MatchTeam',
+      description: 'First team',
+      required: true,
+    },
+    team2: {
+      type: 'MatchTeam',
+      description: 'Second team',
+      required: true,
+    },
+    match_datetime: {
+      type: 'datetime | None',
+      description: 'Match date and time',
+    },
+  }}
+/>
+
+## Examples
+
+### Get Upcoming Matches
+
+```python title="Get upcoming matches"
+import vlrdevapi as vlr
+
+# Get upcoming matches
+matches = vlr.teams.upcoming_matches(team_id=799, limit=3)
+
+print(f"Upcoming matches: {len(matches)}")
+for match in matches:
+    print(f"{match.tournament_name} - {match.phase}")
+    print(f"  {match.team1.name} vs {match.team2.name}")
+    if match.match_datetime:
+        print(f"  Time: {match.match_datetime}")
+```
+
+### Filter by Tournament
+
+```python title="Filter by tournament"
+import vlrdevapi as vlr
+
+matches = vlr.teams.upcoming_matches(team_id=799)
+
+# Filter for VCT matches
+vct_matches = [m for m in matches if m.tournament_name and "VCT" in m.tournament_name]
+
+print(f"VCT matches: {len(vct_matches)}")
+for match in vct_matches:
+    print(f"  {match.tournament_name}: {match.team1.name} vs {match.team2.name}")
+```
+
+### Get Match Details
+
+```python title="Get match details"
+import vlrdevapi as vlr
+
+matches = vlr.teams.upcoming_matches(team_id=799, limit=2)
+
+for match in matches:
+    if match.match_id:
+        # Get detailed series info
+        series = vlr.series.info(match.match_id)
+        if series:
+            print(f"Match: {series.teams[0].name} vs {series.teams[1].name}")
+            print(f"  Best of: {series.best_of}")
+```
+
+## Error Handling
+
+- **Network failures**: Returns an empty list `[]`
+- **Invalid team ID**: Returns an empty list `[]`
+- **No upcoming matches**: Returns an empty list `[]`
+
+The function never raises exceptions, making it safe to use without try-catch blocks.
+
+## Tips
+
+- Check list length before accessing: `if matches:`
+- All optional fields can be `None` - check before using
+- Use `match_id` to get detailed match information with `series.info()`
+- The `limit` parameter fetches across multiple pages if needed
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/teams/completed-matches"
+    title="teams.completed_matches()"
+    description="Get completed matches"
+    icon={<CheckCircle className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/teams/info"
+    title="teams.info()"
+    description="Get team information"
+    icon={<Info className="h-5 w-5" />}
+  />
+</Cards>
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/team/matches/{team_id}`

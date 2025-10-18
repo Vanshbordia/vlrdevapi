@@ -12,9 +12,16 @@ from bs4 import BeautifulSoup
 
 from .constants import VLR_BASE, DEFAULT_TIMEOUT
 from .countries import COUNTRY_MAP
-from .fetcher import fetch_html
+from .fetcher import fetch_html, batch_fetch_html
 from .exceptions import NetworkError
 from .utils import extract_text, parse_int, parse_float, extract_id_from_url
+
+# Pre-compiled regex patterns for performance
+_WHITESPACE_RE = re.compile(r"\s+")
+_PICKS_BANS_RE = re.compile(r"([^;]+?)\s+(ban|pick)\s+([^;]+?)(?:;|$)", re.IGNORECASE)
+_REMAINS_RE = re.compile(r"([^;]+?)\s+remains\b", re.IGNORECASE)
+_TIME_RE = re.compile(r"^(\d{1,2}):(\d{2})\s*(AM|PM)\s*([A-Z]{2,4}|[+\-]\d{2})?", re.IGNORECASE)
+_MAP_NUMBER_RE = re.compile(r"^\s*\d+\s*")
 
 class TeamInfo(BaseModel):
     """Team information in a series."""
@@ -53,6 +60,7 @@ class Info(BaseModel):
     event_phase: str = Field(description="Event phase")
     date: Optional[datetime.date] = Field(None, description="Match date")
     time: Optional[datetime.time] = Field(None, description="Match time")
+    patch: Optional[str] = Field(None, description="Game patch / version")
     map_actions: List[MapAction] = Field(default_factory=list, description="All map actions")
     picks: List[MapAction] = Field(default_factory=list, description="Map picks")
     bans: List[MapAction] = Field(default_factory=list, description="Map bans")
@@ -137,29 +145,56 @@ _METHOD_LABELS: Dict[str, str] = {
 }
 
 
-def _fetch_team_meta(team_id: int, timeout: float) -> Tuple[Optional[str], Optional[str], Optional[str]]:
-    """Fetch team metadata (short tag, country, country code)."""
-    try:
-        url = f"{VLR_BASE}/team/{team_id}"
-        html = fetch_html(url, timeout)
-        soup = BeautifulSoup(html, "lxml")
+def _fetch_team_meta_batch(team_ids: List[int], timeout: float) -> Dict[int, Tuple[Optional[str], Optional[str], Optional[str]]]:
+    """Fetch team metadata for multiple teams concurrently.
+    
+    Args:
+        team_ids: List of team IDs
+        timeout: Request timeout
+    
+    Returns:
+        Dictionary mapping team_id to (short_tag, country, country_code)
+    """
+    if not team_ids:
+        return {}
+    
+    # Build URLs for all teams
+    urls = [f"{VLR_BASE}/team/{team_id}" for team_id in team_ids]
+    
+    # Batch fetch all team pages concurrently
+    batch_results = batch_fetch_html(urls, timeout=timeout, max_workers=min(2, len(urls)))
+    
+    # Parse metadata from each page
+    results: Dict[int, Tuple[Optional[str], Optional[str], Optional[str]]] = {}
+    
+    for team_id, url in zip(team_ids, urls):
+        html = batch_results.get(url)
         
-        short_tag = extract_text(soup.select_one(".team-header .team-header-tag"))
-        country_el = soup.select_one(".team-header .team-header-country")
-        country = extract_text(country_el) if country_el else None
+        if isinstance(html, Exception) or not html:
+            results[team_id] = (None, None, None)
+            continue
         
-        flag = None
-        if country_el:
-            flag_icon = country_el.select_one(".flag")
-            if flag_icon:
-                for cls in flag_icon.get("class", []):
-                    if cls.startswith("mod-") and cls != "mod-dark":
-                        flag = cls.removeprefix("mod-")
-                        break
-        
-        return short_tag or None, country, flag
-    except Exception:
-        return None, None, None
+        try:
+            soup = BeautifulSoup(html, "lxml")
+            
+            short_tag = extract_text(soup.select_one(".team-header .team-header-tag"))
+            country_el = soup.select_one(".team-header .team-header-country")
+            country = extract_text(country_el) if country_el else None
+            
+            flag = None
+            if country_el:
+                flag_icon = country_el.select_one(".flag")
+                if flag_icon:
+                    for cls in flag_icon.get("class", []):
+                        if cls.startswith("mod-") and cls != "mod-dark":
+                            flag = cls.removeprefix("mod-")
+                            break
+            
+            results[team_id] = (short_tag or None, country, flag)
+        except Exception:
+            results[team_id] = (None, None, None)
+    
+    return results
 
 
 def _parse_note_for_picks_bans(
@@ -168,12 +203,10 @@ def _parse_note_for_picks_bans(
     team2_aliases: List[str],
 ) -> Tuple[List[MapAction], List[MapAction], List[MapAction], Optional[str]]:
     """Parse picks/bans from header note text."""
-    text = re.sub(r"\s+", " ", note_text).strip()
+    text = _WHITESPACE_RE.sub(" ", note_text).strip()
     picks: List[MapAction] = []
     bans: List[MapAction] = []
     remaining: Optional[str] = None
-    
-    action_re = re.compile(r"([^;]+?)\s+(ban|pick)\s+([^;]+?)(?:;|$)", re.IGNORECASE)
     
     def normalize_team(who: str) -> str:
         who_clean = who.strip()
@@ -184,7 +217,7 @@ def _parse_note_for_picks_bans(
         return who_clean
     
     ordered_actions: List[MapAction] = []
-    for m in action_re.finditer(text):
+    for m in _PICKS_BANS_RE.finditer(text):
         who = m.group(1).strip()
         action = m.group(2).lower()
         game_map = m.group(3).strip()
@@ -196,7 +229,7 @@ def _parse_note_for_picks_bans(
         else:
             picks.append(map_action)
     
-    rem_m = re.search(r"([^;]+?)\s+remains\b", text, re.IGNORECASE)
+    rem_m = _REMAINS_RE.search(text)
     if rem_m:
         remaining = rem_m.group(1).strip()
     
@@ -233,12 +266,13 @@ def info(match_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Info]:
     # Event name and phase
     event_name = extract_text(header.select_one(".match-header-event div[style*='font-weight']")) or \
                  extract_text(header.select_one(".match-header-event .wf-title-med"))
-    event_phase = re.sub(r"\s+", " ", extract_text(header.select_one(".match-header-event-series"))).strip()
+    event_phase = _WHITESPACE_RE.sub(" ", extract_text(header.select_one(".match-header-event-series"))).strip()
     
-    # Date and time
+    # Date, time, and patch information
     date_el = header.select_one(".match-header-date .moment-tz-convert")
     match_date: Optional[datetime.date] = None
     time_value: Optional[datetime.time] = None
+    patch_text: Optional[str] = None
     
     if date_el and date_el.has_attr("data-utc-ts"):
         try:
@@ -249,17 +283,36 @@ def info(match_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Info]:
     
     time_els = header.select(".match-header-date .moment-tz-convert")
     if len(time_els) >= 2:
-        raw = extract_text(time_els[1])
-        m = re.match(r"^(\d{1,2}):(\d{2})\s*(AM|PM)\s*([+\-])(\d{2})$", raw, re.IGNORECASE)
-        if m:
-            hour = int(m.group(1)) % 12
-            minute = int(m.group(2))
-            if m.group(3).upper() == "PM":
-                hour += 12
-            sign = 1 if m.group(4) == "+" else -1
-            offset_hours = int(m.group(5))
-            tz = datetime.timezone(sign * datetime.timedelta(hours=offset_hours))
-            time_value = datetime.time(hour=hour, minute=minute, tzinfo=tz)
+        time_node = time_els[1]
+        dt_attr = time_node.get("data-utc-ts")
+        if dt_attr:
+            try:
+                dt_parsed = datetime.datetime.strptime(dt_attr, "%Y-%m-%d %H:%M:%S")
+                tz_utc = datetime.timezone.utc
+                time_value = datetime.time(hour=dt_parsed.hour, minute=dt_parsed.minute, tzinfo=tz_utc)
+            except Exception:
+                pass
+        if time_value is None:
+            raw = extract_text(time_node)
+            # Handles formats like "2:00 PM PST" and "2:00 PM +02"
+            m = _TIME_RE.match(raw)
+            if m:
+                hour = int(m.group(1)) % 12
+                minute = int(m.group(2))
+                if m.group(3).upper() == "PM":
+                    hour += 12
+                tzinfo = None
+                suffix = m.group(4)
+                if suffix and suffix.startswith(("+", "-")) and len(suffix) == 3:
+                    sign = 1 if suffix[0] == "+" else -1
+                    offset_hours = int(suffix[1:])
+                    tzinfo = datetime.timezone(sign * datetime.timedelta(hours=offset_hours))
+                else:
+                    tzinfo = datetime.timezone.utc if dt_attr else None
+                time_value = datetime.time(hour=hour, minute=minute, tzinfo=tzinfo)
+    patch_el = header.select_one(".match-header-date div[style*='font-style: italic']")
+    if patch_el:
+        patch_text = extract_text(patch_el) or None
     
     # Teams and scores
     t1_link = header.select_one(".match-header-link.mod-1")
@@ -272,10 +325,14 @@ def info(match_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Info]:
     t1_short, t1_country, t1_country_code = None, None, None
     t2_short, t2_country, t2_country_code = None, None, None
     
-    if t1_id:
-        t1_short, t1_country, t1_country_code = _fetch_team_meta(t1_id, timeout)
-    if t2_id:
-        t2_short, t2_country, t2_country_code = _fetch_team_meta(t2_id, timeout)
+    # Batch fetch team metadata for both teams concurrently
+    team_ids_to_fetch = [tid for tid in [t1_id, t2_id] if tid is not None]
+    if team_ids_to_fetch:
+        team_meta_map = _fetch_team_meta_batch(team_ids_to_fetch, timeout)
+        if t1_id:
+            t1_short, t1_country, t1_country_code = team_meta_map.get(t1_id, (None, None, None))
+        if t2_id:
+            t2_short, t2_country, t2_country_code = team_meta_map.get(t2_id, (None, None, None))
     
     s1 = header.select_one(".match-header-vs-score-winner")
     s2 = header.select_one(".match-header-vs-score-loser")
@@ -330,6 +387,7 @@ def info(match_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Info]:
         event_phase=event_phase,
         date=match_date,
         time=time_value,
+        patch=patch_text,
         map_actions=map_actions,
         picks=picks,
         bans=bans,
@@ -380,13 +438,13 @@ def matches(series_id: int, limit: Optional[int] = None, timeout: float = DEFAUL
         txt = nav.get_text(" ", strip=True)
         if not txt:
             continue
-        name = re.sub(r"^\s*\d+\s*", "", txt).strip()
+        name = _MAP_NUMBER_RE.sub("", txt).strip()
         game_name_map[int(gid)] = name
     
     def canonical(value: Optional[str]) -> Optional[str]:
         if not value:
             return None
-        return re.sub(r"\s+", " ", value).strip().lower()
+        return _WHITESPACE_RE.sub(" ", value).strip().lower()
     
     # Fetch team metadata to map names/shorts to IDs
     series_details = info(series_id, timeout=timeout)

@@ -7,7 +7,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 from ..constants import VLR_BASE, DEFAULT_TIMEOUT
-from ..fetcher import fetch_html
+from ..fetcher import fetch_html, batch_fetch_html
 from ..exceptions import NetworkError
 from ..utils import extract_text, absolute_url, extract_id_from_url
 
@@ -141,13 +141,63 @@ def _get_team_ids_from_match(match_url: str, timeout: float = DEFAULT_TIMEOUT) -
         return None, None
 
 
-def upcoming_matches(team_id: int, count: Optional[int] = None, timeout: float = DEFAULT_TIMEOUT) -> List[TeamMatch]:
+def _get_team_ids_batch(match_urls: List[str], timeout: float = DEFAULT_TIMEOUT) -> dict[str, tuple[Optional[int], Optional[int]]]:
+    """Get team IDs for multiple matches concurrently.
+    
+    Args:
+        match_urls: List of full match URLs
+        timeout: Request timeout
+    
+    Returns:
+        Dictionary mapping match_url to (team1_id, team2_id)
+    """
+    if not match_urls:
+        return {}
+    
+    # Batch fetch all match pages concurrently
+    batch_results = batch_fetch_html(match_urls, timeout=timeout, max_workers=min(4, len(match_urls)))
+    
+    # Parse team IDs from each page
+    results: dict[str, tuple[Optional[int], Optional[int]]] = {}
+    
+    for match_url in match_urls:
+        html = batch_results.get(match_url)
+        
+        if isinstance(html, Exception) or not html:
+            results[match_url] = (None, None)
+            continue
+        
+        try:
+            soup = BeautifulSoup(html, "lxml")
+            
+            # Find team links in the match header
+            team_links = soup.select(".match-header-link")
+            
+            team1_id = None
+            team2_id = None
+            
+            if len(team_links) >= 2:
+                # Extract team IDs from the links
+                team1_href = team_links[0].get("href", "")
+                team2_href = team_links[1].get("href", "")
+                
+                team1_id = extract_id_from_url(team1_href, "team")
+                team2_id = extract_id_from_url(team2_href, "team")
+            
+            results[match_url] = (team1_id, team2_id)
+        except:
+            results[match_url] = (None, None)
+    
+    return results
+
+
+def upcoming_matches(team_id: int, limit: Optional[int] = None, timeout: float = DEFAULT_TIMEOUT) -> List[TeamMatch]:
     """
     Get upcoming matches for a team.
     
     Args:
         team_id: Team ID
-        count: Maximum number of matches to return (fetches across pages if needed)
+        limit: Maximum number of matches to return (fetches across pages if needed)
         timeout: Request timeout in seconds
     
     Returns:
@@ -155,7 +205,7 @@ def upcoming_matches(team_id: int, count: Optional[int] = None, timeout: float =
     
     Example:
         >>> import vlrdevapi as vlr
-        >>> matches = vlr.teams.upcoming_matches(team_id=799, count=10)
+        >>> matches = vlr.teams.upcoming_matches(team_id=799, limit=10)
         >>> for match in matches:
         ...     if match.match_datetime:
         ...         print(f"{match.team1.name} vs {match.team2.name} - {match.match_datetime.strftime('%B %d, %Y')}")
@@ -175,16 +225,21 @@ def upcoming_matches(team_id: int, count: Optional[int] = None, timeout: float =
         except NetworkError:
             break
         
-        matches = _parse_matches(html, timeout)
+        # Calculate remaining matches needed
+        remaining = None
+        if limit is not None:
+            remaining = limit - len(all_matches)
+        
+        matches = _parse_matches(html, timeout, limit=remaining)
         
         if not matches:
             break
         
         all_matches.extend(matches)
         
-        # If count is specified and we have enough matches, stop
-        if count is not None and len(all_matches) >= count:
-            return all_matches[:count]
+        # If limit is specified and we have enough matches, stop
+        if limit is not None and len(all_matches) >= limit:
+            return all_matches[:limit]
         
         page += 1
         
@@ -195,13 +250,13 @@ def upcoming_matches(team_id: int, count: Optional[int] = None, timeout: float =
     return all_matches
 
 
-def completed_matches(team_id: int, count: Optional[int] = None, timeout: float = DEFAULT_TIMEOUT) -> List[TeamMatch]:
+def completed_matches(team_id: int, limit: Optional[int] = None, timeout: float = DEFAULT_TIMEOUT) -> List[TeamMatch]:
     """
     Get completed matches for a team.
     
     Args:
         team_id: Team ID
-        count: Maximum number of matches to return (fetches across pages if needed)
+        limit: Maximum number of matches to return (fetches across pages if needed)
         timeout: Request timeout in seconds
     
     Returns:
@@ -209,7 +264,7 @@ def completed_matches(team_id: int, count: Optional[int] = None, timeout: float 
     
     Example:
         >>> import vlrdevapi as vlr
-        >>> matches = vlr.teams.completed_matches(team_id=799, count=20)
+        >>> matches = vlr.teams.completed_matches(team_id=799, limit=20)
         >>> for match in matches:
         ...     print(f"{match.team1.name} {match.team1.score}:{match.team2.score} {match.team2.name}")
         ...     if match.match_datetime:
@@ -228,16 +283,21 @@ def completed_matches(team_id: int, count: Optional[int] = None, timeout: float 
         except NetworkError:
             break
         
-        matches = _parse_matches(html, timeout)
+        # Calculate remaining matches needed
+        remaining = None
+        if limit is not None:
+            remaining = limit - len(all_matches)
+        
+        matches = _parse_matches(html, timeout, limit=remaining)
         
         if not matches:
             break
         
         all_matches.extend(matches)
         
-        # If count is specified and we have enough matches, stop
-        if count is not None and len(all_matches) >= count:
-            return all_matches[:count]
+        # If limit is specified and we have enough matches, stop
+        if limit is not None and len(all_matches) >= limit:
+            return all_matches[:limit]
         
         page += 1
         
@@ -248,24 +308,31 @@ def completed_matches(team_id: int, count: Optional[int] = None, timeout: float 
     return all_matches
 
 
-def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT) -> List[TeamMatch]:
-    """
-    Parse matches from HTML.
+def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT, limit: Optional[int] = None) -> List[TeamMatch]:
+    """Parse matches from HTML with batch fetching for team IDs.
     
     Args:
         html: HTML content
         timeout: Request timeout for fetching team IDs
+        limit: Maximum number of matches to parse (stops early to avoid wasted parsing)
     
     Returns:
         List of parsed matches
     """
     soup = BeautifulSoup(html, "lxml")
-    matches: List[TeamMatch] = []
     
     # Find all match items
     match_items = soup.select("a.m-item")
     
+    # First pass: collect all match data and URLs
+    match_data_list = []
+    match_urls_to_fetch = []
+    
     for item in match_items:
+        # Early stop if we've reached the limit
+        if limit is not None and len(match_data_list) >= limit:
+            break
+        
         # Extract match URL and ID
         match_url_raw = item.get("href", "")
         match_id = _extract_match_id_from_url(match_url_raw)
@@ -347,11 +414,6 @@ def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT) -> List[TeamMatc
             if src and "vlr.png" not in src and "tmp/" not in src:
                 team2_logo = absolute_url(src)
         
-        # Get team IDs from match page
-        team1_id = None
-        team2_id = None
-        if match_url:
-            team1_id, team2_id = _get_team_ids_from_match(match_url, timeout)
         
         # Extract scores (if available)
         score_team1 = None
@@ -383,32 +445,63 @@ def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT) -> List[TeamMatc
         # Parse datetime
         match_datetime = _parse_match_datetime(date_str, time_str)
         
+        # Store match data for later processing
+        match_data_list.append({
+            'match_id': match_id,
+            'match_url': match_url,
+            'tournament_name': tournament_name,
+            'phase': phase,
+            'series': series,
+            'team1_name': team1_name,
+            'team1_tag': team1_tag,
+            'team1_logo': team1_logo,
+            'team2_name': team2_name,
+            'team2_tag': team2_tag,
+            'team2_logo': team2_logo,
+            'score_team1': score_team1,
+            'score_team2': score_team2,
+            'match_datetime': match_datetime,
+        })
+        
+        if match_url:
+            match_urls_to_fetch.append(match_url)
+    
+    # Batch fetch team IDs for all matches concurrently
+    team_ids_map = _get_team_ids_batch(match_urls_to_fetch, timeout)
+    
+    # Second pass: build TeamMatch objects with team IDs
+    matches: List[TeamMatch] = []
+    
+    for data in match_data_list:
+        match_url = data['match_url']
+        team1_id, team2_id = team_ids_map.get(match_url, (None, None)) if match_url else (None, None)
+        
         # Create team objects
         team1_obj = MatchTeam(
             team_id=team1_id,
-            name=team1_name,
-            tag=team1_tag,
-            logo=team1_logo,
-            score=score_team1,
+            name=data['team1_name'],
+            tag=data['team1_tag'],
+            logo=data['team1_logo'],
+            score=data['score_team1'],
         )
         
         team2_obj = MatchTeam(
             team_id=team2_id,
-            name=team2_name,
-            tag=team2_tag,
-            logo=team2_logo,
-            score=score_team2,
+            name=data['team2_name'],
+            tag=data['team2_tag'],
+            logo=data['team2_logo'],
+            score=data['score_team2'],
         )
         
         matches.append(TeamMatch(
-            match_id=match_id,
-            match_url=match_url,
-            tournament_name=tournament_name,
-            phase=phase,
-            series=series,
+            match_id=data['match_id'],
+            match_url=data['match_url'],
+            tournament_name=data['tournament_name'],
+            phase=data['phase'],
+            series=data['series'],
             team1=team1_obj,
             team2=team2_obj,
-            match_datetime=match_datetime,
+            match_datetime=data['match_datetime'],
         ))
     
     return matches

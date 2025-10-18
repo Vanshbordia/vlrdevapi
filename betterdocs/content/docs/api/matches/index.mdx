@@ -1,0 +1,58 @@
+---
+title: Matches
+description: Browse upcoming, live, and completed matches from VLR.gg
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Calendar, Activity, CheckCircle } from 'lucide-react';
+
+The `vlrdevapi.matches` module exposes functions to read match listings with clean, typed models.
+
+## Functions
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/matches/upcoming"
+    title="matches.upcoming()"
+    description="Get upcoming matches with pagination support"
+    icon={<Calendar className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/matches/live"
+    title="matches.live()"
+    description="Fetch matches that are currently live"
+    icon={<Activity className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/matches/completed"
+    title="matches.completed()"
+    description="Browse recently completed matches with scores"
+    icon={<CheckCircle className="h-5 w-5" />}
+  />
+</Cards>
+
+## Quick Example
+
+```python title="Get upcoming matches"
+import vlrdevapi as vlr
+
+# Get next 5 upcoming matches
+matches = vlr.matches.upcoming(limit=5)
+
+for m in matches:
+    print(f"{m.event} - {m.event_phase}")
+    print(f"  {m.team1.name} vs {m.team2.name}")
+    print(f"  Time: {m.time}")
+    if m.team1.id and m.team2.id:
+        print(f"  IDs: {m.team1.id} vs {m.team2.id}")
+```
+
+## Notes
+
+- Team IDs are enriched by quickly opening the match header. They may be `None` for TBD teams.
+- Network failures return an empty list.
+- All functions support pagination for browsing large result sets.
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/matches` and `https://www.vlr.gg/matches/results`

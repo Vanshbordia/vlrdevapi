@@ -9,7 +9,10 @@ from urllib import parse
 from bs4 import BeautifulSoup
 
 from ..constants import VLR_BASE, DEFAULT_TIMEOUT
-from ..fetcher import fetch_html
+
+# Pre-compiled regex pattern for performance
+_INACTIVE_RE = re.compile(r'\s*\(inactive\s*\)\s*', re.IGNORECASE)
+from ..fetcher import fetch_html, batch_fetch_html
 from ..exceptions import NetworkError
 from ..utils import (
     extract_text,
@@ -92,7 +95,7 @@ def _parse_search_results(
                 
                 clean_title = title
                 if clean_title and "inactive" in clean_title.lower():
-                    clean_title = re.sub(r'\s*\(inactive\s*\)\s*', '', clean_title, flags=re.IGNORECASE).strip()
+                    clean_title = _INACTIVE_RE.sub('', clean_title).strip()
                 
                 teams.append(SearchTeamResult(
                     team_id=team_id,
@@ -208,53 +211,116 @@ def search(
     
     results = _parse_search_results(soup, query)
     
-    # Enrich players with country (and names if missing) using players.profile
+    # Enrich players with country (and names if missing) using batch fetching
     enriched_players: List[SearchPlayerResult] = []
-    for p in results.players:
-        country = p.country
-        ign = p.ign
-        real_name = p.real_name
-        try:
-            prof = players_api.profile(player_id=p.player_id, timeout=timeout)
-            if prof:
-                country = country or prof.country
-                ign = ign or prof.handle
-                real_name = real_name or prof.real_name
-        except Exception:
-            pass
-        enriched_players.append(SearchPlayerResult(
-            player_id=p.player_id,
-            url=p.url,
-            ign=ign,
-            real_name=real_name,
-            country=country,
-            image_url=p.image_url,
-        ))
+    if results.players:
+        # Batch fetch all player profiles concurrently
+        player_urls = [f"{VLR_BASE}/player/{p.player_id}" for p in results.players]
+        player_htmls = batch_fetch_html(player_urls, timeout=timeout, max_workers=min(4, len(player_urls)))
+        
+        for p, url in zip(results.players, player_urls):
+            country = p.country
+            ign = p.ign
+            real_name = p.real_name
+            
+            html = player_htmls.get(url)
+            if html and not isinstance(html, Exception):
+                try:
+                    soup = BeautifulSoup(html, "lxml")
+                    header = soup.select_one(".player-header")
+                    
+                    if header:
+                        # Extract handle
+                        if not ign:
+                            handle_el = header.select_one("h1.wf-title")
+                            if handle_el:
+                                ign = extract_text(handle_el)
+                        
+                        # Extract real name
+                        if not real_name:
+                            real_name_el = header.select_one(".player-real-name")
+                            if real_name_el:
+                                real_name = extract_text(real_name_el)
+                        
+                        # Extract country
+                        if not country:
+                            flag = header.select_one(".flag")
+                            if flag:
+                                for cls in flag.get("class", []):
+                                    if cls.startswith("mod-") and cls != "mod-dark":
+                                        from ..countries import map_country_code
+                                        code = cls.removeprefix("mod-")
+                                        country = map_country_code(code)
+                                        break
+                except Exception:
+                    pass
+            
+            enriched_players.append(SearchPlayerResult(
+                player_id=p.player_id,
+                url=p.url,
+                ign=ign,
+                real_name=real_name,
+                country=country,
+                image_url=p.image_url,
+            ))
     
-    # Enrich teams with country and active flag using teams.info
+    # Enrich teams with country and active flag using batch fetching
     enriched_teams: List[SearchTeamResult] = []
-    for t in results.teams:
-        country = t.country
-        is_inactive = t.is_inactive
-        name = t.name
-        try:
-            info = teams_api.info(team_id=t.team_id, timeout=timeout)
-            if info:
-                country = country or info.country
-                # If info says active, override inactivity flag
-                if info.is_active is not None:
-                    is_inactive = not bool(info.is_active)
-                name = name or info.name
-        except Exception:
-            pass
-        enriched_teams.append(SearchTeamResult(
-            team_id=t.team_id,
-            url=t.url,
-            name=name,
-            country=country,
-            logo_url=t.logo_url,
-            is_inactive=is_inactive,
-        ))
+    if results.teams:
+        # Batch fetch all team info pages concurrently
+        team_urls = [f"{VLR_BASE}/team/{t.team_id}" for t in results.teams]
+        team_htmls = batch_fetch_html(team_urls, timeout=timeout, max_workers=min(4, len(team_urls)))
+        
+        for t, url in zip(results.teams, team_urls):
+            country = t.country
+            is_inactive = t.is_inactive
+            name = t.name
+            
+            html = team_htmls.get(url)
+            if html and not isinstance(html, Exception):
+                try:
+                    soup = BeautifulSoup(html, "lxml")
+                    header = soup.select_one(".team-header")
+                    
+                    if header:
+                        # Extract team name
+                        if not name:
+                            name_el = header.select_one("h1.wf-title")
+                            if name_el:
+                                name = extract_text(name_el)
+                        
+                        # Check if team is active
+                        status_el = header.select_one(".team-header-status")
+                        if status_el:
+                            status_text = extract_text(status_el).lower()
+                            if "inactive" in status_text:
+                                is_inactive = True
+                            else:
+                                is_inactive = False
+                        
+                        # Extract country
+                        if not country:
+                            country_el = header.select_one(".team-header-country")
+                            if country_el:
+                                flag = country_el.select_one(".flag")
+                                if flag:
+                                    for cls in flag.get("class", []):
+                                        if cls.startswith("mod-") and cls != "mod-dark":
+                                            from ..countries import map_country_code
+                                            code = cls.removeprefix("mod-")
+                                            country = map_country_code(code)
+                                            break
+                except Exception:
+                    pass
+            
+            enriched_teams.append(SearchTeamResult(
+                team_id=t.team_id,
+                url=t.url,
+                name=name,
+                country=country,
+                logo_url=t.logo_url,
+                is_inactive=is_inactive,
+            ))
     
     # Return new SearchResults with enriched data
     return SearchResults(

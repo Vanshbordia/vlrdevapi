@@ -1,0 +1,301 @@
+---
+title: events.standings()
+description: Get event standings and prize distribution
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Info, ListChecks, Users } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.events.standings(
+    event_id: int,
+    stage: str | None = None,
+    timeout: float = 5.0
+) -> Standings | None
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    event_id: {
+      type: 'int',
+      description: 'Unique event identifier',
+      required: true,
+    },
+    stage: {
+      type: 'str | None',
+      description: 'Optional stage filter (currently unused, reserved for future use)',
+      default: 'None',
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `Standings | None`
+
+Returns event standings with prize distribution or `None` if not found.
+
+<TypeTable
+  type={{
+    event_id: {
+      type: 'int',
+      description: 'Event ID',
+      required: true,
+    },
+    stage_path: {
+      type: 'str',
+      description: 'Stage path identifier',
+      required: true,
+    },
+    entries: {
+      type: 'list[StandingEntry]',
+      description: 'List of team placements (always a list, may be empty)',
+      required: true,
+    },
+    url: {
+      type: 'str',
+      description: 'Full URL to standings page on VLR.gg',
+      required: true,
+    },
+  }}
+/>
+
+**StandingEntry fields:**
+
+<TypeTable
+  type={{
+    place: {
+      type: 'str',
+      description: 'Placement (e.g., "1st", "3rd-4th", "5th-8th")',
+      required: true,
+    },
+    prize: {
+      type: 'str | None',
+      description: 'Prize amount with currency formatting',
+    },
+    team_id: {
+      type: 'int | None',
+      description: 'Team ID (None for TBD teams)',
+    },
+    team_name: {
+      type: 'str | None',
+      description: 'Team name',
+    },
+    team_country: {
+      type: 'str | None',
+      description: 'Team country',
+    },
+    note: {
+      type: 'str | None',
+      description: 'Additional note (e.g., qualification status)',
+    },
+  }}
+/>
+
+## Examples
+
+### Get Event Standings
+
+```python title="Get event standings"
+import vlrdevapi as vlr
+
+# Get standings for an event
+standings = vlr.events.standings(event_id=1189)
+
+if standings:
+    print(f"Prize Distribution - {len(standings.entries)} teams")
+    print(f"URL: {standings.url}\n")
+    
+    for entry in standings.entries:
+        place = entry.place
+        team = entry.team_name or "TBD"
+        prize = entry.prize or "No prize"
+        
+        print(f"{place}. {team}")
+        print(f"   Prize: {prize}")
+        
+        if entry.team_country:
+            print(f"   Country: {entry.team_country}")
+        if entry.note:
+            print(f"   Note: {entry.note}")
+else:
+    print("Standings not available for this event")
+```
+
+### Analyze Prize Distribution
+
+```python title="Analyze prize distribution"
+import vlrdevapi as vlr
+
+standings = vlr.events.standings(event_id=1189)
+
+if standings:
+    # Show top 3 placements
+    print("Top 3:")
+    for entry in standings.entries[:3]:
+        if entry.team_name:
+            print(f"{entry.place}. {entry.team_name} - {entry.prize}")
+```
+
+### Calculate Total Prize Pool
+
+```python title="Calculate total prize pool"
+import vlrdevapi as vlr
+
+standings = vlr.events.standings(event_id=1189)
+
+if standings:
+    total_prize = 0
+    parsed_entries = []
+    
+    for entry in standings.entries:
+        if entry.prize:
+            # Parse prize amount (remove currency symbols and commas)
+            prize_str = entry.prize.replace('$', '').replace(',', '').split()[0]
+            try:
+                prize_amount = float(prize_str)
+                total_prize += prize_amount
+                parsed_entries.append((entry, prize_amount))
+            except ValueError:
+                parsed_entries.append((entry, 0))
+        else:
+            parsed_entries.append((entry, 0))
+    
+    print(f"Total Prize Pool: ${total_prize:,.0f}")
+    
+    # Show teams with highest individual prizes
+    if parsed_entries:
+        print("\nHighest individual prizes:")
+        sorted_entries = sorted(parsed_entries, key=lambda x: x[1], reverse=True)
+        for entry, prize in sorted_entries[:3]:
+            if entry.team_name and prize > 0:
+                print(f"{entry.team_name}: ${prize:,.0f}")
+```
+
+### Find Team Placement
+
+```python title="Find team placement"
+import vlrdevapi as vlr
+
+def find_team_placement(event_id, team_name):
+    standings = vlr.events.standings(event_id)
+    
+    if not standings:
+        return None
+    
+    # Search for team (case-insensitive)
+    for entry in standings.entries:
+        if entry.team_name and team_name.lower() in entry.team_name.lower():
+            return {
+                'place': entry.place,
+                'team_name': entry.team_name,
+                'prize': entry.prize,
+                'country': entry.team_country,
+                'note': entry.note
+            }
+    
+    return None
+
+# Find a specific team
+result = find_team_placement(1189, "LOUD")
+
+if result:
+    print(f"Team: {result['team_name']}")
+    print(f"Placement: {result['place']}")
+    print(f"Prize: {result['prize'] or 'N/A'}")
+    if result['country']:
+        print(f"Country: {result['country']}")
+else:
+    print("Team not found in standings")
+```
+
+### Compare Multiple Events
+
+```python title="Compare multiple events"
+import vlrdevapi as vlr
+
+def compare_event_prizes(event_ids):
+    results = {}
+    
+    for event_id in event_ids:
+        standings = vlr.events.standings(event_id)
+        if standings and standings.entries:
+            # Get first place prize as indicator
+            first_place = standings.entries[0]
+            results[event_id] = {
+                'winner': first_place.team_name,
+                'prize': first_place.prize,
+                'total_teams': len(standings.entries)
+            }
+    
+    return results
+
+# Compare multiple events
+events_to_compare = [1189, 1190, 1191]  # Replace with actual event IDs
+comparison = compare_event_prizes(events_to_compare)
+
+print("Event Prize Comparison:")
+for event_id, data in comparison.items():
+    print(f"Event {event_id}: {data['winner']} won {data['prize']} ({data['total_teams']} teams)")
+```
+
+## Error Handling
+
+<Callout type="info">
+This function returns `None` instead of raising exceptions, making it safe to use without try-catch blocks.
+</Callout>
+
+- **Network failures**: Returns `None`
+- **Invalid event ID**: Returns `None`
+- **No standings available**: Returns `None`
+
+Always check if the return value is not `None` before accessing properties.
+
+## Tips
+
+- The `entries` field is always a list (never `None`), but may be empty `[]`
+- The `place` field is a string and may contain ranges like "3rd-4th" or "5th-8th"
+- Prize amounts include currency symbols and formatting from VLR.gg
+- Team IDs may be `None` for teams that haven't been determined yet
+- The `note` field may contain additional information like qualification status
+- Standings are typically available only for completed or ongoing events
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/events/info"
+    title="events.info()"
+    description="Get event header information"
+    icon={<Info className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/events/matches"
+    title="events.matches()"
+    description="Get event matches"
+    icon={<ListChecks className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/teams/info"
+    title="teams.info()"
+    description="Get detailed team information"
+    icon={<Users className="h-5 w-5" />}
+  />
+</Cards>
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/event/{event_id}/prize-distribution`

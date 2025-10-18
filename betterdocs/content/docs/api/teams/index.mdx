@@ -1,0 +1,90 @@
+---
+title: Teams
+description: Team info, roster, matches, transactions
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Info, Users, Calendar, CheckCircle, Trophy, ArrowRightLeft, History } from 'lucide-react';
+
+The `vlr.teams` module offers multiple endpoints to inspect team data.
+
+## Functions
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/teams/info"
+    title="teams.info()"
+    description="Get team information and metadata"
+    icon={<Info className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/teams/roster"
+    title="teams.roster()"
+    description="Retrieve current team roster (players and staff)"
+    icon={<Users className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/teams/upcoming-matches"
+    title="teams.upcoming_matches()"
+    description="List upcoming matches for the team"
+    icon={<Calendar className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/teams/completed-matches"
+    title="teams.completed_matches()"
+    description="Browse completed matches with scores"
+    icon={<CheckCircle className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/teams/placements"
+    title="teams.placements()"
+    description="Review event placements and prize winnings"
+    icon={<Trophy className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/teams/transactions"
+    title="teams.transactions()"
+    description="Access all team transactions (joins, leaves)"
+    icon={<ArrowRightLeft className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/teams/previous-players"
+    title="teams.previous_players()"
+    description="Inspect previous and current players with status"
+    icon={<History className="h-5 w-5" />}
+  />
+</Cards>
+
+
+## Quick Example
+
+```python title="Get team info and roster"
+import vlrdevapi
+
+# Get team information
+team = vlrdevapi.teams.info(team_id=1034)
+if team:
+    print(f"{team.name} ({team.tag})")
+    print(f"Country: {team.country}")
+    print(f"Active: {team.is_active}")
+    
+    # Show social links
+    for social in team.socials:
+        print(f"  {social.label}: {social.url}")
+
+# Get current roster
+roster = vlrdevapi.teams.roster(team_id=1034)
+for member in roster:
+    captain = "[Captain]" if member.is_captain else ""
+    print(f"{captain}{member.ign} - {member.role} ({member.country})")
+```
+
+## Notes
+
+- Returns `None`/`[]` on network failure to keep flows simple.
+- Team IDs can be found via search or from match listings.
+- Use `previous_players()` for historical roster analysis with calculated status.
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/team/{team_id}`

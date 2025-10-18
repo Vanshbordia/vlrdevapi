@@ -62,8 +62,8 @@ Many fields are optional and may be None:
    match = vlr.matches.upcoming()[0]
    
    # Check if optional field exists
-   if match.match_datetime:
-       print(f"Date: {match.match_datetime.strftime('%Y-%m-%d %H:%M')}")
+   if match.date:
+       print(f"Date: {match.date.isoformat()}")
    else:
        print("Date not available")
 
@@ -222,11 +222,11 @@ Always check optional fields before use:
    match = vlr.matches.upcoming()[0]
    
    # Safe access
-   if match.match_datetime:
-       print(f"Date: {match.match_datetime.isoformat()}")
+   if match.date:
+       print(f"Date: {match.date.isoformat()}")
    
    # Or use default value
-   date_str = match.match_datetime.isoformat() if match.match_datetime else "TBD"
+   date_str = match.date.isoformat() if match.date else "TBD"
 
 Iteration
 ~~~~~~~~~

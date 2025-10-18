@@ -1,0 +1,169 @@
+---
+title: search.search_events()
+description: Search for events
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Search, Trophy } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.search.search_events(
+    query: str,
+    timeout: float = 5.0
+) -> list[SearchEventResult]
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    query: {
+      type: 'str',
+      description: 'Event name or keyword',
+      required: true,
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `list[SearchEventResult]`
+
+Returns a list of event search results.
+
+<TypeTable
+  type={{
+    event_id: {
+      type: 'int',
+      description: 'Event ID',
+      required: true,
+    },
+    url: {
+      type: 'str',
+      description: 'Event URL',
+      required: true,
+    },
+    name: {
+      type: 'str | None',
+      description: 'Event name',
+    },
+    date_range: {
+      type: 'str | None',
+      description: 'Event date range',
+    },
+    prize: {
+      type: 'str | None',
+      description: 'Prize pool',
+    },
+    image_url: {
+      type: 'str | None',
+      description: 'Event image URL',
+    },
+  }}
+/>
+
+## Examples
+
+### Search for Events
+
+```python title="Search for events"
+import vlrdevapi as vlr
+
+# Search for events
+events = vlr.search.search_events("champions")
+
+print(f"Found {len(events)} events")
+for e in events:
+    print(f"{e.name}")
+    print(f"  Dates: {e.date_range}")
+    print(f"  Prize: {e.prize}")
+    print(f"  URL: {e.url}")
+```
+
+### Get Event Details
+
+```python title="Get event details"
+import vlrdevapi as vlr
+import time
+
+# Search and get full info
+events = vlr.search.search_events("vct")
+
+for event in events[:3]:  # First 3 results
+    print(f"\nFound: {event.name}")
+    
+    # Get detailed event info
+    event_info = vlr.events.info(event.event_id)
+    if event_info:
+        print(f"  Name: {event_info.name}")
+        print(f"  Prize: {event_info.prize}")
+        print(f"  Location: {event_info.location}")
+        print(f"  Dates: {event_info.date_text}")
+    time.sleep(1)  # Small delay to avoid overwhelming the server
+```
+
+### Search and Get Matches
+
+```python title="Search and get matches"
+import vlrdevapi as vlr
+
+# Search for event
+events = vlr.search.search_events("masters")
+
+if events:
+    event = events[0]  # First result
+    print(f"Event: {event.name}")
+    
+    # Get matches for this event
+    matches = vlr.events.matches(event.event_id, limit=5)
+    print(f"\nUpcoming matches: {len(matches)}")
+    for match in matches:
+        print(f"  {match.teams[0].name} vs {match.teams[1].name}")
+```
+
+## Error Handling
+
+- **Network failures**: Returns an empty list `[]`
+- **No results found**: Returns an empty list `[]`
+- **Empty query**: Returns an empty list `[]`
+
+The function never raises exceptions, making it safe to use without try-catch blocks.
+
+## Tips
+
+- Check list length before accessing results: `if events:`
+- All optional fields can be `None` - check before using
+- Use the `event_id` to fetch detailed information with `events.info()`
+- Combine with `events.matches()` to get event matches
+- The `prize` field includes currency formatting from VLR.gg
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/search/search"
+    title="search.search()"
+    description="Unified search across all types"
+    icon={<Search className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/search/search-series"
+    title="search.search_series()"
+    description="Search for series"
+    icon={<Trophy className="h-5 w-5" />}
+  />
+</Cards>
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/search/?q={query}&type=events`

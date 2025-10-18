@@ -29,6 +29,7 @@ Type-Specific Searches
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    # Search only players
    players = vlr.search.search_players("tenz")
    
@@ -74,9 +75,10 @@ Monitor an ongoing tournament:
        # Show recent results
        print("Recent Results:")
        for match in completed[:5]:
-           print(f"  {match.team1.name} vs {match.team2.name}")
-           if match.team1.score is not None and match.team2.score is not None:
-               print(f"    Score: {match.team1.score}-{match.team2.score}")
+           t1, t2 = match.teams[0], match.teams[1]
+           print(f"  {t1.name} vs {t2.name}")
+           if t1.score is not None and t2.score is not None:
+               print(f"    Score: {t1.score}-{t2.score}")
    
    track_tournament(event_id=2498)
 
@@ -232,7 +234,7 @@ Compare two teams:
            if match.status != "completed":
                continue
            
-           t1, t2 = match.teams
+           t1, t2 = match.teams[0], match.teams[1]
            
            # Check if our teams are in this match
            for team_name in [team1_name, team2_name]:
@@ -269,7 +271,7 @@ Compare two teams:
                win_rate = stats['wins'] / (stats['wins'] + stats['losses']) * 100
                print(f"  Win Rate: {win_rate:.1f}%")
    
-   compare_teams_from_event(event_id=2498, team1_name="NRG", team2_name="FNATIC")
+   compare_teams_from_event(event_id=2498, team1_name="Team Liquid", team2_name="FNATIC")
 
 Team Analysis and Tracking
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -292,13 +294,13 @@ Track team performance:
        roster = vlr.teams.roster(team_id=team_id)
        print(f"Current Roster ({len(roster)} players):")
        for member in roster:
-           print(f"  {member.ign} - {member.name}")
+           print(f"  {member.ign} - {member.real_name or 'N/A'}")
            if member.role:
                print(f"    Role: {member.role}")
        print()
        
        # Get recent match results
-       completed = vlr.teams.completed_matches(team_id=team_id, count=5)
+       completed = vlr.teams.completed_matches(team_id=team_id, limit=5)
        print("Last 5 Matches:")
        for match in completed:
            result = f"{match.team1.score}-{match.team2.score}"
@@ -307,7 +309,7 @@ Track team performance:
        print()
        
        # Get upcoming matches
-       upcoming = vlr.teams.upcoming_matches(team_id=team_id, count=3)
+       upcoming = vlr.teams.upcoming_matches(team_id=team_id, limit=3)
        print(f"Next {len(upcoming)} Matches:")
        for match in upcoming:
            print(f"  {match.team1.name} vs {match.team2.name}")
@@ -406,12 +408,13 @@ Export event data to CSV:
            writer.writerow(['Team 1', 'Team 1 Country', 'Team 2', 'Team 2 Country', 'Score', 'Status'])
            
            for match in matches:
-               score = f"{match.team1.score}-{match.team2.score}" if match.team1.score is not None else "TBD"
+               t1, t2 = match.teams[0], match.teams[1]
+               score = f"{t1.score}-{t2.score}" if t1.score is not None else "TBD"
                writer.writerow([
-                   match.team1.name, 
-                   match.team1.country or "N/A",
-                   match.team2.name,
-                   match.team2.country or "N/A",
+                   t1.name, 
+                   t1.country or "N/A",
+                   t2.name,
+                   t2.country or "N/A",
                    score, 
                    match.status
                ])

@@ -8,3 +8,25 @@ wheels/
 .pytest_cache/
 # Virtual environments
 .venv/
+# Validation cache
+.validation_cache.json
+
+# Node.js
+node_modules/
+.next/
+.npm/
+.yarn/
+.pnpm-store/
+.vercel/
+
+# Node/Yarn/NPM/Pnpm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Additional Python (pip/uv)
+venv/
+env/
+pip-wheel-metadata/
+pip-log.txt

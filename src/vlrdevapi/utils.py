@@ -2,6 +2,7 @@
 
 import datetime
 import re
+from functools import lru_cache
 from typing import Optional, Tuple, List
 from urllib import parse
 
@@ -9,15 +10,25 @@ from bs4 import BeautifulSoup, Tag
 
 from .constants import VLR_BASE
 
+# Pre-compiled regex patterns for performance
+_WHITESPACE_RE = re.compile(r"\s+")
+_NUMBER_RE = re.compile(r"-?\d+(?:\.\d+)?")
+_ALPHANUMERIC_RE = re.compile(r"[^a-z0-9]")
+_DATE_SPLIT_RE = re.compile(r"\s*-\s*")
+_MONTH_DAY_RE = re.compile(r"^(?P<month>\w+)\s+(?P<day>\d{1,2})(?:,\s*(?P<year>\d{4}))?$")
+_DAY_ONLY_RE = re.compile(r"^\d{1,2}$")
+_DAY_YEAR_RE = re.compile(r"^\d{1,2},\s*\d{4}$")
+
 
 def extract_text(element: Optional[Tag]) -> str:
     """Extract text from a BeautifulSoup element."""
     return element.get_text(strip=True) if element else ""
 
 
+@lru_cache(maxsize=512)
 def normalize_whitespace(text: str) -> str:
     """Normalize whitespace in text."""
-    return re.sub(r"\s+", " ", text).strip()
+    return _WHITESPACE_RE.sub(" ", text).strip()
 
 
 def absolute_url(url: Optional[str]) -> Optional[str]:
@@ -44,12 +55,13 @@ def parse_int(text: Optional[str]) -> Optional[int]:
         return None
 
 
+@lru_cache(maxsize=256)
 def parse_float(text: Optional[str]) -> Optional[float]:
     """Parse float from text, returning None if invalid."""
     if text is None:
         return None
     # Extract first number from text
-    match = re.search(r"-?\d+(?:\.\d+)?", text)
+    match = _NUMBER_RE.search(text)
     if not match:
         return None
     try:
@@ -172,7 +184,7 @@ def split_date_range(text: Optional[str]) -> Tuple[Optional[str], Optional[str]]
         return None, None
     
     normalized = text.replace("—", "-").replace("–", "-").strip()
-    parts = re.split(r"\s*-\s*", normalized, maxsplit=1)
+    parts = _DATE_SPLIT_RE.split(normalized, maxsplit=1)
     
     if not parts:
         return None, None
@@ -184,20 +196,21 @@ def split_date_range(text: Optional[str]) -> Tuple[Optional[str], Optional[str]]
         return None, end_raw
     
     # If end part lacks month, borrow from start
-    month_match = re.match(r"^(?P<month>\w+)\s+(?P<day>\d{1,2})(?:,\s*(?P<year>\d{4}))?$", start_raw)
+    month_match = _MONTH_DAY_RE.match(start_raw)
     if end_raw and month_match:
         month = month_match.group("month")
         year = month_match.group("year")
-        if re.match(r"^\d{1,2}$", end_raw):
+        if _DAY_ONLY_RE.match(end_raw):
             end_raw = f"{month} {end_raw}"
             if year:
                 end_raw = f"{end_raw}, {year}"
-        elif re.match(r"^\d{1,2},\s*\d{4}$", end_raw):
+        elif _DAY_YEAR_RE.match(end_raw):
             end_raw = f"{month} {end_raw}"
     
     return start_raw, end_raw
 
 
+@lru_cache(maxsize=256)
 def normalize_name(name: str) -> str:
     """Normalize name for comparison (lowercase, alphanumeric only)."""
-    return re.sub(r"[^a-z0-9]", "", name.lower())
+    return _ALPHANUMERIC_RE.sub("", name.lower())

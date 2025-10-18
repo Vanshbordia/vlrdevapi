@@ -1,0 +1,222 @@
+---
+title: events.info()
+description: Get event header and detailed information
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { CalendarSearch, ListChecks, Trophy } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.events.info(
+    event_id: int,
+    timeout: float = 5.0
+) -> Info | None
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    event_id: {
+      type: 'int',
+      description: 'Unique event identifier (obtained from list_events() or search)',
+      required: true,
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `Info | None`
+
+Returns event header information or `None` if the event is not found.
+
+<TypeTable
+  type={{
+    id: {
+      type: 'int',
+      description: 'Event ID',
+      required: true,
+    },
+    name: {
+      type: 'str',
+      description: 'Event name',
+      required: true,
+    },
+    subtitle: {
+      type: 'str | None',
+      description: 'Event subtitle or tagline',
+    },
+    date_text: {
+      type: 'str | None',
+      description: 'Human-readable date range (e.g., "May 20 - Jun 15, 2024")',
+    },
+    prize: {
+      type: 'str | None',
+      description: 'Prize pool with currency formatting (e.g., "$1,000,000 USD")',
+    },
+    location: {
+      type: 'str | None',
+      description: 'Event location (e.g., "Los Angeles, USA" or "Online")',
+    },
+    regions: {
+      type: 'list[str]',
+      description: 'List of participating regions (always a list, may be empty)',
+      required: true,
+    },
+  }}
+/>
+
+## Examples
+
+### Get Event Information
+
+```python title="Get event information"
+import vlrdevapi as vlr
+
+# Get event details
+event = vlr.events.info(event_id=1189)
+
+if event:
+    print(f"Event: {event.name}")
+    if event.subtitle:
+        print(f"Subtitle: {event.subtitle}")
+    
+    print(f"Prize Pool: {event.prize or 'Not announced'}")
+    print(f"Location: {event.location or 'Online'}")
+    print(f"Dates: {event.date_text or 'TBD'}")
+    
+    if event.regions:
+        print(f"Regions: {', '.join(event.regions)}")
+else:
+    print("Event not found")
+```
+
+### Combine with Other Endpoints
+
+```python title="Combine with other endpoints"
+import vlrdevapi as vlr
+
+# Get event info and matches
+event = vlr.events.info(event_id=1189)
+
+if event:
+    print(f"=== {event.name} ===")
+    print(f"Prize: {event.prize}")
+    
+    # Get matches for this event
+    matches = vlr.events.matches(event_id=event.id, limit=5)
+    print(f"\nUpcoming matches: {len(matches)}")
+    
+    for match in matches:
+        print(f"  {match.teams[0].name} vs {match.teams[1].name}")
+```
+
+### Check Event Status
+
+```python title="Check event status"
+import vlrdevapi as vlr
+
+# Check if event exists and get basic info
+event_info = vlr.events.info(event_id=1189)
+
+if event_info is None:
+    print("Event does not exist")
+else:
+    print(f"Event exists: {event_info.name}")
+    print(f"Location: {event_info.location or 'Online'}")
+    
+    # Check if event has regions
+    if event_info.regions:
+        print(f"Multi-region event: {len(event_info.regions)} regions")
+    else:
+        print("Single region or global event")
+```
+
+### Format Event Display
+
+```python title="Format event display"
+import vlrdevapi as vlr
+
+def format_event_card(event_id):
+    event = vlr.events.info(event_id)
+    if not event:
+        return "Event not found"
+    
+    card = f"""
+{event.name}
+"""
+    if event.subtitle:
+        card += f"   {event.subtitle}\n"
+    
+    card += f"""
+Prize: {event.prize or 'TBD'}
+Location: {event.location or 'Online'}
+Dates: {event.date_text or 'TBD'}
+"""
+    
+    if event.regions:
+        card += f"Regions: {', '.join(event.regions)}\n"
+    
+    return card.strip()
+
+print(format_event_card(1189))
+```
+
+## Error Handling
+
+<Callout type="info">
+This function returns `None` instead of raising exceptions, making it safe to use without try-catch blocks.
+</Callout>
+
+- **Network failures**: Returns `None`
+- **Invalid event ID**: Returns `None`
+- **Event not found**: Returns `None`
+
+Always check if the return value is not `None` before accessing properties.
+
+## Tips
+
+- The `regions` field is always a list (never `None`), but may be empty `[]`
+- Use `date_text` for display purposes; it contains human-readable date ranges
+- The `prize` field includes currency symbols and formatting from VLR.gg
+- Combine with `matches()` and `standings()` to get complete event data
+- Event IDs can be obtained from `list_events()` or search results
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/events/list-events"
+    title="events.list_events()"
+    description="Browse and filter events"
+    icon={<CalendarSearch className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/events/matches"
+    title="events.matches()"
+    description="Get matches for this event"
+    icon={<ListChecks className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/events/standings"
+    title="events.standings()"
+    description="Get prize distribution"
+    icon={<Trophy className="h-5 w-5" />}
+  />
+</Cards>
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/event/{event_id}`

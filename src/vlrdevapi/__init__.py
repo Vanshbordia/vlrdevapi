@@ -9,7 +9,7 @@ Example usage:
     >>> # Get upcoming matches
     >>> matches = vlr.matches.upcoming(limit=10)
     >>> for match in matches:
-    ...     print(f"{match.teams[0]} vs {match.teams[1]}")
+    ...     print(f"{match.team1.name} vs {match.team2.name}")
     >>> 
     >>> # Get player profile
     >>> profile = vlr.players.profile(player_id=123)
@@ -53,6 +53,9 @@ from .exceptions import (
 # Import status function for convenience
 from .status import check_status
 
+# Import rate limit configuration
+from .fetcher import configure_rate_limit
+
 __all__ = [
     # Modules - these are the main API entry points
     "matches",
@@ -74,8 +77,9 @@ __all__ = [
     "DataNotFoundError",
     "RateLimitError",
     
-    # Convenience function
+    # Convenience functions
     "check_status",
+    "configure_rate_limit",
 ]
 
 # Note: Models are NOT exported at the top level to prevent confusion.

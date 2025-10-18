@@ -1,0 +1,257 @@
+---
+title: events.matches()
+description: Get all matches for an event with team IDs and scores
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { ListChecks, Info, PieChart } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.events.matches(
+    event_id: int,
+    stage: str | None = None,
+    limit: int | None = None,
+    timeout: float = 5.0
+) -> list[Match]
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    event_id: {
+      type: 'int',
+      description: 'Unique event identifier',
+      required: true,
+    },
+    stage: {
+      type: 'str | None',
+      description: 'Optional stage filter (e.g., "Group Stage", "Playoffs")',
+      default: 'None',
+    },
+    limit: {
+      type: 'int | None',
+      description: 'Maximum number of matches to return (None returns all matches)',
+      default: 'None',
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `list[Match]`
+
+Returns a list of matches for the event. Each `Match` object contains:
+
+<TypeTable
+  type={{
+    match_id: {
+      type: 'int',
+      description: 'Match ID',
+      required: true,
+    },
+    event_id: {
+      type: 'int',
+      description: 'Parent event ID',
+      required: true,
+    },
+    stage: {
+      type: 'str | None',
+      description: 'Stage name (e.g., "Group Stage", "Playoffs")',
+    },
+    phase: {
+      type: 'str | None',
+      description: 'Phase name (e.g., "Quarterfinals", "Grand Final")',
+    },
+    status: {
+      type: 'str',
+      typeDescription: '"upcoming" | "ongoing" | "completed"',
+      description: 'Current match status',
+      required: true,
+    },
+    date: {
+      type: 'date | None',
+      description: 'Match date',
+    },
+    time: {
+      type: 'str | None',
+      description: 'Match time or time until match',
+    },
+    teams: {
+      type: 'tuple[MatchTeam, MatchTeam]',
+      description: 'Tuple of exactly 2 team objects',
+      required: true,
+    },
+    url: {
+      type: 'str',
+      description: 'Full URL to match page on VLR.gg',
+      required: true,
+    },
+  }}
+/>
+
+**MatchTeam fields:**
+
+<TypeTable
+  type={{
+    id: {
+      type: 'int | None',
+      description: 'Team ID (None for TBD teams)',
+    },
+    name: {
+      type: 'str',
+      description: 'Team name',
+      required: true,
+    },
+    country: {
+      type: 'str | None',
+      description: 'Team country',
+    },
+    score: {
+      type: 'int | None',
+      description: 'Team score (maps won)',
+    },
+    is_winner: {
+      type: 'bool | None',
+      description: 'Whether team won (only set for completed matches)',
+    },
+  }}
+/>
+
+<Callout type="info" title="Team IDs Enrichment">
+This function automatically fetches team IDs by making additional requests to each match page. This ensures you get complete team information including IDs for further API calls.
+</Callout>
+
+## Examples
+
+### Get Event Matches
+
+```python title="Get event matches"
+import vlrdevapi as vlr
+
+# Get matches for an event
+matches = vlr.events.matches(event_id=1189, limit=3)
+
+for match in matches:
+    team1, team2 = match.teams
+    print(f"Match {match.match_id}: {team1.name} vs {team2.name}")
+    print(f"  Status: {match.status}")
+    print(f"  Stage: {match.stage or 'N/A'}")
+    
+    if match.status == "completed" and team1.score is not None:
+        print(f"  Score: {team1.score}-{team2.score}")
+```
+
+### Filter by Stage
+
+```python title="Filter by stage"
+import vlrdevapi as vlr
+
+# Get only playoff matches
+matches = vlr.events.matches(event_id=1189, stage="Playoffs", limit=3)
+
+print(f"Found {len(matches)} playoff matches")
+for match in matches:
+    team1, team2 = match.teams
+    print(f"{team1.name} vs {team2.name} - {match.status}")
+```
+
+### Find Live Matches
+
+```python title="Find live matches"
+import vlrdevapi as vlr
+
+# Get matches and filter for live ones
+matches = vlr.events.matches(event_id=1189)
+
+live_matches = [m for m in matches if m.status == "ongoing"]
+
+if live_matches:
+    print(f" {len(live_matches)} live match(es) in progress:")
+    for match in live_matches:
+        team1, team2 = match.teams
+        print(f"  {team1.name} vs {team2.name}")
+        print(f"    Stage: {match.stage or 'Unknown'}")
+        print(f"    Current Score: {team1.score or 0}-{team2.score or 0}")
+else:
+    print("No live matches currently")
+```
+
+### Get Match Details with Team IDs
+
+```python title="Get match details with team IDs"
+import vlrdevapi as vlr
+
+# Get matches with enriched team information
+matches = vlr.events.matches(event_id=1189, limit=2)
+
+for match in matches:
+    team1, team2 = match.teams
+    
+    print(f"Match ID: {match.match_id}")
+    print(f"  {team1.name} (ID: {team1.id}) vs {team2.name} (ID: {team2.id})")
+    print(f"  Status: {match.status}")
+    
+    if match.date:
+        print(f"  Date: {match.date}")
+    if match.time:
+        print(f"  Time: {match.time}")
+```
+
+
+## Error Handling
+
+- **Network failures**: Returns an empty list `[]`
+- **Invalid event ID**: Returns an empty list `[]`
+- **No matches found**: Returns an empty list `[]`
+
+The function never raises exceptions, making it safe to use without try-catch blocks.
+
+## Tips
+
+- The `teams` field is always a tuple of exactly 2 `MatchTeam` objects
+- Team IDs may be `None` for TBD (To Be Determined) teams
+- Use `match.status` to filter by match state: `"upcoming"`, `"ongoing"`, or `"completed"`
+- The `is_winner` field is only set for completed matches
+- Combine with `vlr.series.info(match_id)` to get detailed match information including picks/bans
+- Date parsing is automatic when available; check for `None` before using
+- The `stage` parameter is case-sensitive and must match exactly
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/series/info"
+    title="series.info()"
+    description="Get detailed match information with picks/bans"
+    icon={<ListChecks className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/events/info"
+    title="events.info()"
+    description="Get event header information"
+    icon={<Info className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/events/match-summary"
+    title="events.match_summary()"
+    description="Get aggregated match statistics"
+    icon={<PieChart className="h-5 w-5" />}
+  />
+</Cards>
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/event/matches/{event_id}`

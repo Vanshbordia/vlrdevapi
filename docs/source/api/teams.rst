@@ -156,7 +156,7 @@ Get Team Information
    
    # Access social links
    for social in team_info.socials:
-       print(f"{social.platform}: {social.url}")
+       print(f"{social.label}: {social.url}")
 
 Get Team Roster
 ~~~~~~~~~~~~~~~
@@ -169,7 +169,7 @@ Get Team Roster
    roster = vlr.teams.roster(team_id=799)
    
    for member in roster:
-       print(f"{member.ign} - {member.name}")
+       print(f"{member.ign} - {member.real_name or 'N/A'}")
        print(f"  Role: {member.role}")
        if member.country:
            print(f"  Country: {member.country}")
@@ -182,7 +182,7 @@ Get Team Matches
    import vlrdevapi as vlr
 
    # Get upcoming matches (with pagination)
-   upcoming = vlr.teams.upcoming_matches(team_id=799, count=10)
+   upcoming = vlr.teams.upcoming_matches(team_id=799, limit=10)
    
    for match in upcoming:
        print(f"{match.team1.name} vs {match.team2.name}")
@@ -191,7 +191,7 @@ Get Team Matches
            print(f"Date: {match.match_datetime.strftime('%B %d, %Y at %I:%M %p')}")
    
    # Get completed matches (with pagination)
-   completed = vlr.teams.completed_matches(team_id=799, count=20)
+   completed = vlr.teams.completed_matches(team_id=799, limit=20)
    
    for match in completed:
        print(f"{match.team1.name} {match.team1.score} - {match.team2.score} {match.team2.name}")
@@ -270,15 +270,12 @@ Pagination
    import vlrdevapi as vlr
 
    # Get specific number of matches
-   matches_10 = vlr.teams.completed_matches(team_id=799, count=10)
-   matches_50 = vlr.teams.completed_matches(team_id=799, count=50)
+   matches_2 = vlr.teams.completed_matches(team_id=799, limit=2)
+   matches_5 = vlr.teams.completed_matches(team_id=799, limit=5)
    
-   # Get all matches (no limit)
-   all_matches = vlr.teams.completed_matches(team_id=799)
+   print(f"Retrieved {len(matches_2)} matches")
+   print(f"Retrieved {len(matches_5)} matches")
    
-   print(f"Retrieved {len(matches_10)} matches")
-   print(f"Retrieved {len(matches_50)} matches")
-   print(f"Total matches: {len(all_matches)}")
 
 Complete Example
 ~~~~~~~~~~~~~~~~
@@ -300,7 +297,7 @@ Complete Example
    print(f"\nRoster: {len(roster)} players")
    
    # Get recent matches
-   recent = vlr.teams.completed_matches(team_id=team_id, count=5)
+   recent = vlr.teams.completed_matches(team_id=team_id, limit=5)
    print(f"\nLast 5 matches:")
    for match in recent:
        result = f"{match.team1.score}-{match.team2.score}"

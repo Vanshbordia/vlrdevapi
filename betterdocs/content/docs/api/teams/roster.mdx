@@ -1,0 +1,168 @@
+---
+title: teams.roster()
+description: Get current team roster (active players and staff)
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Info, Calendar } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.teams.roster(
+    team_id: int,
+    timeout: float = 5.0
+) -> list[RosterMember]
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    team_id: {
+      type: 'int',
+      description: 'Team ID',
+      required: true,
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `list[RosterMember]`
+
+Returns a list of current roster members.
+
+<TypeTable
+  type={{
+    player_id: {
+      type: 'int | None',
+      description: 'Player ID',
+    },
+    ign: {
+      type: 'str | None',
+      description: 'In-game name',
+    },
+    real_name: {
+      type: 'str | None',
+      description: 'Real name',
+    },
+    country: {
+      type: 'str | None',
+      description: 'Country',
+    },
+    role: {
+      type: 'str',
+      description: 'Role (e.g., "Player", "Coach")',
+      required: true,
+    },
+    is_captain: {
+      type: 'bool',
+      description: 'Whether member is team captain',
+      required: true,
+    },
+    photo_url: {
+      type: 'str | None',
+      description: 'Photo URL',
+    },
+  }}
+/>
+
+## Examples
+
+### Get Team Roster
+
+```python title="Get team roster"
+import vlrdevapi as vlr
+
+# Get current roster
+roster = vlr.teams.roster(team_id=1034)
+
+print(f"Roster ({len(roster)} members):")
+for member in roster:
+    captain = "[Captain]" if member.is_captain else ""
+    name = member.ign or member.real_name or "Unknown"
+    print(f"{captain}{name} - {member.role} ({member.country})")
+```
+
+### Filter by Role
+
+```python title="Filter by role"
+import vlrdevapi as vlr
+
+roster = vlr.teams.roster(team_id=1034)
+
+# Get players only
+players = [m for m in roster if m.role == "Player"]
+print(f"Players: {len(players)}")
+for player in players:
+    print(f"  {player.ign}")
+
+# Get coaches
+coaches = [m for m in roster if "coach" in m.role.lower()]
+for coach in coaches:
+    print(f"Coach: {coach.real_name or coach.ign}")
+```
+
+### Get Player IDs
+
+```python title="Get player IDs"
+import vlrdevapi as vlr
+
+roster = vlr.teams.roster(team_id=1034)
+
+# Get all player IDs
+player_ids = [m.player_id for m in roster if m.player_id is not None]
+
+print(f"Found {len(player_ids)} players with IDs")
+for player_id in player_ids:
+    # Get detailed player info
+    player = vlr.players.profile(player_id)
+    if player:
+        print(f"  {player.handle}: {player.country}")
+```
+
+## Error Handling
+
+- **Network failures**: Returns an empty list `[]`
+- **Invalid team ID**: Returns an empty list `[]`
+- **No roster data**: Returns an empty list `[]`
+
+The function never raises exceptions, making it safe to use without try-catch blocks.
+
+## Tips
+
+- Check list length before accessing: `if roster:`
+- All optional fields can be `None` - check before using
+- Use `is_captain` to identify team captain
+- The `role` field is always present
+- Combine with `players.profile()` to get detailed player information
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/teams/info"
+    title="teams.info()"
+    description="Get team information"
+    icon={<Info className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/teams/upcoming-matches"
+    title="teams.upcoming_matches()"
+    description="Get upcoming matches"
+    icon={<Calendar className="h-5 w-5" />}
+  />
+</Cards>
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/team/{team_id}`

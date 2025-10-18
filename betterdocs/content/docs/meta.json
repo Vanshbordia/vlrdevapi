@@ -1,0 +1,30 @@
+{
+  "title": "VLR Dev API",
+  "icon": "book",
+  "index": {
+    "type": "doc",
+    "title": "Overview"
+  },
+  "groups": [
+    {
+      "title": "Getting Started",
+      "items": [
+        { "type": "doc", "slug": "/installation", "title": "Installation" },
+        { "type": "doc", "slug": "/getting-started", "title": "Quick Start" }
+      ]
+    },
+    {
+      "title": "API Reference",
+      "items": [
+        { "type": "doc", "slug": "/api/index", "title": "Overview" },
+        { "type": "folder", "slug": "/api/search", "title": "Search" },
+        { "type": "folder", "slug": "/api/matches", "title": "Matches" },
+        { "type": "folder", "slug": "/api/events", "title": "Events" },
+        { "type": "folder", "slug": "/api/players", "title": "Players" },
+        { "type": "folder", "slug": "/api/teams", "title": "Teams" },
+        { "type": "folder", "slug": "/api/series", "title": "Series" },
+        { "type": "doc", "slug": "/api/status/index", "title": "Status" }
+      ]
+    }
+  ]
+}

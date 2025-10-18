@@ -6,21 +6,21 @@ vlrdevapi is optimized for speed and efficiency.
 Built-in Optimizations
 ----------------------
 
-HTTP Connection Pooling
-~~~~~~~~~~~~~~~~~~~~~~~
+HTTP Connection Pooling & HTTP/2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Persistent HTTP connections with keep-alive.
+Managed by the shared `httpx` clients with automatic keep-alive and HTTP/2 support.
 
-- **Impact**: 2-3x faster network requests
-- Automatically managed by the library
+- **Impact**: Lower latency from multiplexed requests and persistent sessions
+- Shared across the process for consistent performance
 
 In-Memory Caching
 ~~~~~~~~~~~~~~~~~
 
 Responses cached in memory to avoid redundant requests.
 
-- **Impact**: 200-500x faster for repeated requests
-- Automatic cache invalidation
+- **Impact**: Orders-of-magnitude faster for repeated requests within a session
+- Cache is in-memory only; call ``vlr.fetcher.clear_cache()`` for fresh data
 
 Fast HTML Parser
 ~~~~~~~~~~~~~~~~
@@ -30,13 +30,13 @@ Uses lxml (C-based) instead of Python's html.parser.
 - **Impact**: 50-100% faster HTML parsing
 - Installed automatically as a dependency
 
-Gzip Compression
-~~~~~~~~~~~~~~~~
+Brotli & Gzip Compression
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Automatic gzip compression for network transfers.
+`httpx` transparently negotiates Brotli (`br`) and gzip compression with VLR.gg.
 
-- **Impact**: 5-10x smaller transfers
-- Reduces bandwidth usage
+- **Impact**: Smaller payloads and faster decompression
+- Enabled by default; no additional configuration needed
 
 Best Practices
 --------------
@@ -63,32 +63,24 @@ Close connections on application shutdown:
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    # At application exit
    vlr.fetcher.close_connections()
 
-Batch Requests
-~~~~~~~~~~~~~~
+Controlled Fetches
+~~~~~~~~~~~~~~~~~~
 
-Minimize API calls by batching operations:
+Minimize API calls by batching or paginating operations:
 
 .. code-block:: python
 
-   # Good: Single call for multiple items
+   import vlrdevapi as vlr
+   # Efficient: Request a larger batch once
    matches = vlr.matches.upcoming(limit=20)
-   
-   # Avoid: Multiple small calls
-   # matches1 = vlr.matches.upcoming(limit=5)
-   # matches2 = vlr.matches.upcoming(limit=5)
-
-Use Pagination
-~~~~~~~~~~~~~~
-
-For large datasets, use pagination instead of fetching everything:
 
 .. code-block:: python
 
-   # Efficient: Get specific page
+   import vlrdevapi as vlr
+   # Paginate when you need historical data
    page1 = vlr.matches.completed(limit=20, page=1)
-   
-   # Less efficient: Fetching all at once
-   # all_matches = vlr.matches.completed(limit=1000)
+   page2 = vlr.matches.completed(limit=20, page=2)

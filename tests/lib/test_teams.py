@@ -549,12 +549,12 @@ class TestTeamsUpcomingMatches:
     
     def test_upcoming_matches_returns_list(self, mock_fetch_html):
         """Test that upcoming_matches() returns a list."""
-        matches = vlr.teams.upcoming_matches(team_id=799)
+        matches = vlr.teams.upcoming_matches(team_id=799, limit=3)
         assert isinstance(matches, list)
     
     def test_upcoming_matches_structure(self, mock_fetch_html):
         """Test that match objects have correct structure."""
-        matches = vlr.teams.upcoming_matches(team_id=799)
+        matches = vlr.teams.upcoming_matches(team_id=799, limit=3)
         if matches:
             match = matches[0]
             assert hasattr(match, 'match_id')
@@ -579,7 +579,7 @@ class TestTeamsUpcomingMatches:
     
     def test_upcoming_matches_team_names(self, mock_fetch_html):
         """Test that team names are extracted."""
-        matches = vlr.teams.upcoming_matches(team_id=799)
+        matches = vlr.teams.upcoming_matches(team_id=799, limit=3)
         for match in matches:
             if match.team1.name:
                 assert isinstance(match.team1.name, str)
@@ -590,7 +590,7 @@ class TestTeamsUpcomingMatches:
     
     def test_upcoming_matches_tournament_info(self, mock_fetch_html):
         """Test that tournament information is extracted."""
-        matches = vlr.teams.upcoming_matches(team_id=799)
+        matches = vlr.teams.upcoming_matches(team_id=799, limit=3)
         for match in matches:
             if match.tournament_name:
                 assert isinstance(match.tournament_name, str)
@@ -599,14 +599,14 @@ class TestTeamsUpcomingMatches:
     def test_upcoming_matches_date_time(self, mock_fetch_html):
         """Test that match datetime is extracted."""
         from datetime import datetime
-        matches = vlr.teams.upcoming_matches(team_id=799)
+        matches = vlr.teams.upcoming_matches(team_id=799, limit=3)
         for match in matches:
             if match.match_datetime:
                 assert isinstance(match.match_datetime, datetime)
     
     def test_upcoming_matches_immutable(self, mock_fetch_html):
         """Test that match objects are immutable."""
-        matches = vlr.teams.upcoming_matches(team_id=799)
+        matches = vlr.teams.upcoming_matches(team_id=799, limit=3)
         if matches:
             match = matches[0]
             with pytest.raises(Exception):
@@ -618,7 +618,7 @@ class TestTeamsCompletedMatches:
     
     def test_completed_matches_basic(self, mock_fetch_html):
         """Test completed matches returns list with correct structure and data."""
-        matches = vlr.teams.completed_matches(team_id=799, count=2)
+        matches = vlr.teams.completed_matches(team_id=799, limit=2)
         
         # Test returns list
         assert isinstance(matches, list)
@@ -657,8 +657,8 @@ class TestTeamsMatchesIntegration:
     
     def test_both_match_types(self, mock_fetch_html):
         """Test getting both upcoming and completed matches (limited)."""
-        upcoming = vlr.teams.upcoming_matches(team_id=799, count=2)
-        completed = vlr.teams.completed_matches(team_id=799, count=2)
+        upcoming = vlr.teams.upcoming_matches(team_id=799, limit=2)
+        completed = vlr.teams.completed_matches(team_id=799, limit=2)
         
         assert isinstance(upcoming, list)
         assert isinstance(completed, list)
@@ -666,7 +666,7 @@ class TestTeamsMatchesIntegration:
     def test_matches_with_team_info(self, mock_fetch_html):
         """Test getting matches along with team info (limited)."""
         team_info = vlr.teams.info(team_id=799)
-        matches = vlr.teams.completed_matches(team_id=799, count=2)
+        matches = vlr.teams.completed_matches(team_id=799, limit=2)
         
         if team_info:
             assert team_info.team_id == 799
@@ -674,8 +674,8 @@ class TestTeamsMatchesIntegration:
     
     def test_invalid_team_matches(self, mock_fetch_html):
         """Test matches for invalid team ID."""
-        upcoming = vlr.teams.upcoming_matches(team_id=999999999)
-        completed = vlr.teams.completed_matches(team_id=999999999)
+        upcoming = vlr.teams.upcoming_matches(team_id=999999999, limit=2)
+        completed = vlr.teams.completed_matches(team_id=999999999, limit=2)
         
         assert isinstance(upcoming, list)
         assert isinstance(completed, list)
@@ -684,8 +684,8 @@ class TestTeamsMatchesIntegration:
     
     def test_matches_with_count_limit(self, mock_fetch_html):
         """Test getting matches with count limit."""
-        matches_2 = vlr.teams.completed_matches(team_id=799, count=2)
-        matches_5 = vlr.teams.completed_matches(team_id=799, count=5)
+        matches_2 = vlr.teams.completed_matches(team_id=799, limit=2)
+        matches_5 = vlr.teams.completed_matches(team_id=799, limit=5)
         
         assert isinstance(matches_2, list)
         assert isinstance(matches_5, list)
@@ -695,20 +695,20 @@ class TestTeamsMatchesIntegration:
     def test_matches_pagination(self, mock_fetch_html):
         """Test that pagination works correctly (limited test)."""
         # Only test minimal count to avoid long test times
-        limited_matches = vlr.teams.completed_matches(team_id=799, count=2)
+        limited_matches = vlr.teams.completed_matches(team_id=799, limit=2)
         
         assert isinstance(limited_matches, list)
         assert len(limited_matches) <= 2
     
     def test_matches_count_zero(self, mock_fetch_html):
-        """Test getting matches with count=0."""
-        matches = vlr.teams.completed_matches(team_id=799, count=0)
+        """Test getting matches with limit=0."""
+        matches = vlr.teams.completed_matches(team_id=799, limit=0)
         assert isinstance(matches, list)
         assert len(matches) == 0
     
     def test_upcoming_matches_with_count(self, mock_fetch_html):
         """Test upcoming matches with count parameter."""
-        matches = vlr.teams.upcoming_matches(team_id=799, count=3)
+        matches = vlr.teams.upcoming_matches(team_id=799, limit=3)
         assert isinstance(matches, list)
         assert len(matches) <= 3
 
@@ -718,7 +718,7 @@ class TestTeamsMatchesEdgeCases:
     
     def test_matches_phase_series_format(self, mock_fetch_html):
         """Test that phase and series are properly formatted."""
-        matches = vlr.teams.completed_matches(team_id=799)
+        matches = vlr.teams.completed_matches(team_id=799, limit=3)
         for match in matches:
             if match.phase:
                 assert isinstance(match.phase, str)
@@ -733,7 +733,7 @@ class TestTeamsMatchesEdgeCases:
     
     def test_matches_team_ids(self, mock_fetch_html):
         """Test that team IDs are extracted."""
-        matches = vlr.teams.completed_matches(team_id=799)
+        matches = vlr.teams.completed_matches(team_id=799, limit=3)
         for match in matches:
             if match.team1.team_id:
                 assert isinstance(match.team1.team_id, int)
@@ -744,7 +744,7 @@ class TestTeamsMatchesEdgeCases:
     
     def test_matches_immutable(self, mock_fetch_html):
         """Test that match objects are immutable."""
-        matches = vlr.teams.completed_matches(team_id=799)
+        matches = vlr.teams.completed_matches(team_id=799, limit=3)
         if matches:
             match = matches[0]
             with pytest.raises(Exception):

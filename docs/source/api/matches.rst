@@ -116,25 +116,16 @@ Completed Matches
 Performance Notes
 -----------------
 
-* By default, ``Team.id`` and ``Team.tag`` fields will be ``None`` for performance reasons.
-* To populate these fields, pass ``enrich_teams=True`` to any match function. This will fetch team metadata from the series page header for each match, which is significantly slower but provides complete team information.
-* The enrichment does not rely on URL patterns and fetches authoritative data from the match page header.
-
-.. code-block:: python
-
-   # Fast (default) - id and tag will be None
-   matches = vlr.matches.upcoming(limit=10)
-   
-   # Slower but complete - id and tag will be populated
-   matches = vlr.matches.upcoming(limit=10, enrich_teams=True)
-   for match in matches:
-       print(f"{match.team1.name} ({match.team1.tag}) [ID: {match.team1.id}]")
+* ``vlr.matches`` uses shared `httpx` clients with HTTP/2 and connection pooling, reducing latency for repeat calls.
+* `Team.id` is filled opportunistically by scraping the match header; it may be ``None`` when the team is TBD or hidden on VLR.gg.
+* Results are cached in process via ``vlr.fetcher``. Call ``vlr.fetcher.clear_cache()`` before refetching if you need fresh data.
 
 Pagination
 ~~~~~~~~~~
 
 .. code-block:: python
 
-   # Get specific page
-   page1 = vlr.matches.completed(limit=10, page=1)
-   page2 = vlr.matches.completed(limit=10, page=2)
+   import vlrdevapi as vlr
+   # Get a specific results page when no limit is supplied
+   page1 = vlr.matches.completed(page=1)
+   page2 = vlr.matches.completed(page=2)

@@ -21,6 +21,7 @@ This installs vlrdevapi and its dependencies:
 - **beautifulsoup4**: HTML parsing
 - **lxml**: Fast XML/HTML parser
 - **pydantic**: Data validation
+- **httpx[brotli]**: HTTP/2 client with retry-friendly session pooling and Brotli/gzip support
 
 Verify Installation
 -------------------
@@ -45,6 +46,7 @@ This includes additional tools:
 
 - **pytest**: Testing framework
 - **ruff**: Linting and formatting
+- **sphinx**: Documentation builder
 
 Troubleshooting
 ---------------

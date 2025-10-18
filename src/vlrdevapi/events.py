@@ -20,16 +20,17 @@ from bs4 import BeautifulSoup
 
 from .constants import VLR_BASE, DEFAULT_TIMEOUT
 from .countries import map_country_code
-from .fetcher import fetch_html
+from .fetcher import fetch_html, batch_fetch_html
 from .exceptions import NetworkError
 from .utils import (
-    extract_text, 
-    extract_id_from_url, 
+    extract_text,
+    extract_id_from_url,
     extract_country_code,
     split_date_range,
     parse_date,
     normalize_name,
     parse_int,
+    normalize_whitespace,
 )
 
 
@@ -353,6 +354,8 @@ def info(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Info]:
     
     date_text = extract_desc_value("Dates")
     prize_text = extract_desc_value("Prize")
+    if prize_text:
+        prize_text = normalize_whitespace(prize_text)
     location_text = extract_desc_value("Location")
     
     return Info(
@@ -366,24 +369,55 @@ def info(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Info]:
     )
 
 
-def _get_match_team_ids(match_id: int, timeout: float) -> Tuple[Optional[int], Optional[int]]:
-    """Get team IDs for a match using series.info().
+def _get_match_team_ids_batch(match_ids: List[int], timeout: float, max_workers: int = 4) -> Dict[int, Tuple[Optional[int], Optional[int]]]:
+    """Get team IDs for multiple matches concurrently.
     
     Args:
-        match_id: Match ID
+        match_ids: List of match IDs
         timeout: Request timeout
+        max_workers: Number of concurrent workers
     
     Returns:
-        Tuple of (team1_id, team2_id)
+        Dictionary mapping match_id to (team1_id, team2_id)
     """
-    try:
-        from . import series as _series
-        s_info = _series.info(match_id, timeout=timeout)
-        if s_info and s_info.teams and len(s_info.teams) == 2:
-            return s_info.teams[0].id, s_info.teams[1].id
-    except Exception:
-        pass
-    return None, None
+    if not match_ids:
+        return {}
+    
+    # Build URLs for all match pages
+    urls = [f"{VLR_BASE}/{match_id}" for match_id in match_ids]
+    
+    # Fetch all match pages concurrently
+    results = batch_fetch_html(urls, timeout=timeout, max_workers=max_workers)
+    
+    # Parse team IDs from each page
+    team_ids_map: Dict[int, Tuple[Optional[int], Optional[int]]] = {}
+    
+    for match_id, url in zip(match_ids, urls):
+        content = results.get(url)
+        if isinstance(content, Exception) or not content:
+            team_ids_map[match_id] = (None, None)
+            continue
+        
+        try:
+            soup = BeautifulSoup(content, "lxml")
+            team_links = soup.select(".match-header-link-name a[href*='/team/']")
+            
+            team1_id = None
+            team2_id = None
+            
+            if len(team_links) >= 1:
+                href1 = team_links[0].get("href", "")
+                team1_id = extract_id_from_url(href1, "team")
+            
+            if len(team_links) >= 2:
+                href2 = team_links[1].get("href", "")
+                team2_id = extract_id_from_url(href2, "team")
+            
+            team_ids_map[match_id] = (team1_id, team2_id)
+        except Exception:
+            team_ids_map[match_id] = (None, None)
+    
+    return team_ids_map
 
 
 def matches(event_id: int, stage: Optional[str] = None, limit: Optional[int] = None, timeout: float = DEFAULT_TIMEOUT) -> List[Match]:
@@ -479,12 +513,19 @@ def matches(event_id: int, stage: Optional[str] = None, limit: Optional[int] = N
         
         match_data.append((match_id, match_url, teams, match_status, stage_name or "", phase or "", match_date, time_text))
     
-    # Fetch team IDs sequentially using series.info()
+    # Apply limit early to avoid fetching unnecessary team IDs
+    if limit is not None and len(match_data) > limit:
+        match_data = match_data[:limit]
+    
+    # Fetch team IDs concurrently using batch fetching (only for limited matches)
+    match_ids = [match_id for match_id, _, _, _, _, _, _, _ in match_data]
+    team_ids_map = _get_match_team_ids_batch(match_ids, timeout, max_workers=4)
+    
     results: List[Match] = []
     
     for match_id, match_url, teams, match_status, stage_name, phase, match_date, time_text in match_data:
-        # Get team IDs from series.info()
-        team1_id, team2_id = _get_match_team_ids(match_id, timeout)
+        # Get team IDs from batch results
+        team1_id, team2_id = team_ids_map.get(match_id, (None, None))
         
         # Update team IDs
         updated_teams = [
@@ -543,13 +584,30 @@ def match_summary(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[M
     
     soup = BeautifulSoup(html, "lxml")
     
-    # Simple implementation - count matches
-    all_matches = matches(event_id, timeout=timeout)
+    # Count matches directly from HTML without fetching team IDs
+    total = 0
+    completed = 0
+    upcoming = 0
+    ongoing = 0
     
-    total = len(all_matches)
-    completed = sum(1 for m in all_matches if m.status == "completed")
-    upcoming = sum(1 for m in all_matches if m.status == "upcoming")
-    ongoing = sum(1 for m in all_matches if m.status == "ongoing")
+    for card in soup.select("a.match-item"):
+        total += 1
+        
+        # Parse status
+        ml = card.select_one(".match-item-eta .ml")
+        match_status = "upcoming"
+        if ml:
+            classes = ml.get("class", [])
+            if any("mod-completed" in str(c) for c in classes):
+                match_status = "completed"
+                completed += 1
+            elif any("mod-live" in str(c) or "mod-ongoing" in str(c) for c in classes):
+                match_status = "ongoing"
+                ongoing += 1
+            else:
+                upcoming += 1
+        else:
+            upcoming += 1
     
     return MatchSummary(
         event_id=event_id,
