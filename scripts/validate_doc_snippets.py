@@ -165,7 +165,7 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
     parser.add_argument("--compile-only", action="store_true", help="Only compile snippets, do not execute")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
-    repo_root = Path(__file__).resolve().parents[2]  # scripts/ is one level, repo root is two up
+    repo_root = Path(__file__).resolve().parents[1]  # scripts/ is one level down from repo root
     docs_root = (repo_root / args.docs_dir).resolve()
 
     if not docs_root.exists():
