@@ -1,0 +1,269 @@
+---
+title: series.info()
+description: Get series header (teams, score, picks/bans, etc.)
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { BarChart3 } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.series.info(
+    match_id: int,
+    timeout: float = 5.0
+) -> Info | None
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    match_id: {
+      type: 'int',
+      description: 'Series/Match ID',
+      required: true,
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `Info | None`
+
+Returns series header information or `None` if not found.
+
+<TypeTable
+  type={{
+    match_id: {
+      type: 'int',
+      description: 'Match ID',
+      required: true,
+    },
+    teams: {
+      type: 'tuple[TeamInfo, TeamInfo]',
+      description: 'Tuple of exactly 2 team objects',
+      required: true,
+    },
+    score: {
+      type: 'tuple[int | None, int | None]',
+      description: 'Match score (maps won)',
+      required: true,
+    },
+    status_note: {
+      type: 'str',
+      description: 'Status note',
+      required: true,
+    },
+    best_of: {
+      type: 'str | None',
+      description: 'Best of format (e.g., "BO3", "BO5")',
+    },
+    event: {
+      type: 'str',
+      description: 'Event name',
+      required: true,
+    },
+    event_phase: {
+      type: 'str',
+      description: 'Event phase',
+      required: true,
+    },
+    date: {
+      type: 'date | None',
+      description: 'Match date',
+    },
+    time: {
+      type: 'time | None',
+      description: 'Match time',
+    },
+    patch: {
+      type: 'str | None',
+      description: 'Game patch/version',
+    },
+    map_actions: {
+      type: 'list[MapAction]',
+      description: 'All map actions (picks and bans in order)',
+      required: true,
+    },
+    picks: {
+      type: 'list[MapAction]',
+      description: 'Map picks only',
+      required: true,
+    },
+    bans: {
+      type: 'list[MapAction]',
+      description: 'Map bans only',
+      required: true,
+    },
+    remaining: {
+      type: 'str | None',
+      description: 'Remaining map',
+    },
+  }}
+/>
+
+**TeamInfo fields:**
+
+<TypeTable
+  type={{
+    id: {
+      type: 'int | None',
+      description: 'Team ID',
+    },
+    name: {
+      type: 'str',
+      description: 'Team name',
+      required: true,
+    },
+    short: {
+      type: 'str | None',
+      description: 'Team short tag',
+    },
+    country: {
+      type: 'str | None',
+      description: 'Team country',
+    },
+    country_code: {
+      type: 'str | None',
+      description: 'Country code',
+    },
+    score: {
+      type: 'int | None',
+      description: 'Team score (maps won)',
+    },
+  }}
+/>
+
+**MapAction fields:**
+
+<TypeTable
+  type={{
+    action: {
+      type: 'str',
+      description: 'Action type ("pick" or "ban")',
+      required: true,
+    },
+    team: {
+      type: 'str',
+      description: 'Team name',
+      required: true,
+    },
+    map: {
+      type: 'str',
+      description: 'Map name',
+      required: true,
+    },
+  }}
+/>
+
+## Examples
+
+### Get Series Header
+
+```python title="Get series header"
+import vlrdevapi as vlr
+
+# Get series information
+series = vlr.series.info(match_id=511536)
+
+if series:
+    print(f"{series.event} - {series.event_phase}")
+    print(f"{series.teams[0].name} vs {series.teams[1].name}")
+    print(f"Score: {series.score[0]}-{series.score[1]}")
+    print(f"Best of: {series.best_of}")
+    print(f"Status: {series.status_note}")
+    if series.patch:
+        print(f"Patch: {series.patch}")
+else:
+    print("Series not found")
+```
+
+### View Picks and Bans
+
+```python title="View picks and bans"
+import vlrdevapi as vlr
+
+series = vlr.series.info(match_id=511536)
+
+if series:
+    print(f"=== {series.teams[0].name} vs {series.teams[1].name} ===")
+    
+    # Show picks
+    if series.picks:
+        print("\nPicks:")
+        for pick in series.picks:
+            print(f"  {pick.team} picked {pick.map}")
+    
+    # Show bans
+    if series.bans:
+        print("\nBans:")
+        for ban in series.bans:
+            print(f"  {ban.team} banned {ban.map}")
+    
+    # Show remaining map
+    if series.remaining:
+        print(f"\nRemaining: {series.remaining}")
+```
+
+### Analyze Map Actions
+
+```python title="Analyze map actions"
+import vlrdevapi as vlr
+
+series = vlr.series.info(match_id=511536)
+
+if series:
+    print("Map Actions (in order):")
+    for i, action in enumerate(series.map_actions, 1):
+        print(f"{i}. {action.team} {action.action}ed {action.map}")
+    
+    # Count picks/bans per team
+    team1_name = series.teams[0].name
+    team2_name = series.teams[1].name
+    
+    team1_picks = sum(1 for p in series.picks if p.team == team1_name)
+    team2_picks = sum(1 for p in series.picks if p.team == team2_name)
+    
+    print(f"\n{team1_name} picks: {team1_picks}")
+    print(f"{team2_name} picks: {team2_picks}")
+```
+
+## Error Handling
+
+- **Network failures**: Returns `None`
+- **Invalid match ID**: Returns `None`
+- **Match not found**: Returns `None`
+
+The function never raises exceptions, making it safe to use without try-catch blocks.
+
+## Tips
+
+- All list fields (`map_actions`, `picks`, `bans`) are always lists, never `None`
+- The `teams` field is always a tuple of exactly 2 `TeamInfo` objects
+- Use `map_actions` for chronological order, or `picks`/`bans` for filtered lists
+- Team IDs may be `None` for some matches
+- Combine with `series.matches()` to get detailed map statistics
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/series/matches"
+    title="series.matches()"
+    description="Get per-map statistics and player performance"
+    icon={<BarChart3 className="h-5 w-5" />}
+  />
+</Cards>
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/{match_id}`

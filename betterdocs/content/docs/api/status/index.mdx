@@ -1,0 +1,120 @@
+---
+title: status.check_status()
+description: Check if VLR.gg is reachable
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.status.check_status(
+    timeout: float = 5.0
+) -> bool
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `bool`
+
+Returns `True` if VLR.gg is reachable, `False` otherwise.
+
+## Examples
+
+### Check VLR.gg Status
+
+```python title="Check VLR.gg availability"
+import vlrdevapi as vlr
+
+# Quick status check
+if vlr.status.check_status():
+    print("VLR.gg is online and reachable")
+    
+    # Safe to proceed with API calls
+    matches = vlr.matches.upcoming(limit=5)
+    print(f"Found {len(matches)} upcoming matches")
+else:
+    print("VLR.gg is down or unreachable")
+    print("Please try again later")
+```
+
+### Pre-flight Check
+
+```python title="Pre-flight check"
+import vlrdevapi as vlr
+
+def get_team_data(team_id):
+    # Check status before making multiple calls
+    if not vlr.status.check_status():
+        print("VLR.gg is unavailable")
+        return None
+    
+    # Proceed with API calls
+    team = vlr.teams.info(team_id)
+    roster = vlr.teams.roster(team_id)
+    matches = vlr.teams.upcoming_matches(team_id)
+    
+    return {"team": team, "roster": roster, "matches": matches}
+
+data = get_team_data(1034)
+```
+
+### Health Check
+
+```python title="Health check"
+import vlrdevapi as vlr
+import time
+
+def monitor_vlr_status(interval=300):
+    """Monitor VLR.gg status every interval seconds"""
+    while True:
+        status = vlr.status.check_status(timeout=3.0)
+        timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+        
+        if status:
+            print(f"[{timestamp}] VLR.gg: OK")
+        else:
+            print(f"[{timestamp}] VLR.gg: DOWN")
+        
+        time.sleep(interval)
+
+# Run monitor (uncomment to use)
+# monitor_vlr_status(300)  # Check every 5 minutes
+```
+
+## How It Works
+
+Internally performs a `HEAD` request to the VLR base URL (`https://www.vlr.gg`) to check availability without downloading the full page.
+
+## Error Handling
+
+- **Network errors**: Returns `False`
+- **Timeouts**: Returns `False`
+- **Non-200 status codes**: Returns `False`
+
+The function never raises exceptions, making it safe to use as a pre-flight check.
+
+## Tips
+
+- Use before making multiple API calls to avoid unnecessary failures
+- Useful for health checks in monitoring systems
+- Lightweight operation (HEAD request only)
+- Does not download page content, only checks if server responds
+
+## Source
+
+Checks: `https://www.vlr.gg`

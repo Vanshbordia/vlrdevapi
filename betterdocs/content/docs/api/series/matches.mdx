@@ -1,0 +1,292 @@
+---
+title: series.matches()
+description: Get detailed per-map statistics for a series
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Info } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.series.matches(
+    series_id: int,
+    limit: int | None = None,
+    timeout: float = 5.0
+) -> list[MapPlayers]
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    series_id: {
+      type: 'int',
+      description: 'Series/Match ID',
+      required: true,
+    },
+    limit: {
+      type: 'int | None',
+      description: 'Maximum number of maps to return (None returns all)',
+      default: 'None',
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `list[MapPlayers]`
+
+Returns a list of map statistics with player performance data.
+
+<TypeTable
+  type={{
+    game_id: {
+      type: 'int | str | None',
+      description: 'Game ID (int for specific maps, "All" for aggregate)',
+    },
+    map_name: {
+      type: 'str | None',
+      description: 'Map name',
+    },
+    players: {
+      type: 'list[PlayerStats]',
+      description: 'Player statistics (always a list, may be empty)',
+      required: true,
+    },
+    teams: {
+      type: 'tuple[MapTeamScore, MapTeamScore] | None',
+      description: 'Team scores for the map',
+    },
+    rounds: {
+      type: 'list[RoundResult] | None',
+      description: 'Round-by-round results',
+    },
+  }}
+/>
+
+**PlayerStats fields:**
+
+<TypeTable
+  type={{
+    country: {
+      type: 'str | None',
+      description: 'Player country',
+    },
+    name: {
+      type: 'str',
+      description: 'Player name',
+      required: true,
+    },
+    team_short: {
+      type: 'str | None',
+      description: 'Team short tag',
+    },
+    team_id: {
+      type: 'int | None',
+      description: 'Team ID',
+    },
+    player_id: {
+      type: 'int | None',
+      description: 'Player ID',
+    },
+    agents: {
+      type: 'list[str]',
+      description: 'Agents played',
+      required: true,
+    },
+    r: {
+      type: 'float | None',
+      description: 'Rating',
+    },
+    acs: {
+      type: 'int | None',
+      description: 'Average combat score',
+    },
+    k: {
+      type: 'int | None',
+      description: 'Kills',
+    },
+    d: {
+      type: 'int | None',
+      description: 'Deaths',
+    },
+    a: {
+      type: 'int | None',
+      description: 'Assists',
+    },
+    kd_diff: {
+      type: 'int | None',
+      description: 'K/D difference',
+    },
+    kast: {
+      type: 'float | None',
+      description: 'KAST percentage',
+    },
+    adr: {
+      type: 'float | None',
+      description: 'Average damage per round',
+    },
+    hs_pct: {
+      type: 'float | None',
+      description: 'Headshot percentage',
+    },
+    fk: {
+      type: 'int | None',
+      description: 'First kills',
+    },
+    fd: {
+      type: 'int | None',
+      description: 'First deaths',
+    },
+    fk_diff: {
+      type: 'int | None',
+      description: 'First kill difference',
+    },
+  }}
+/>
+
+## Examples
+
+### Get Map Statistics
+
+```python title="Get map statistics"
+import vlrdevapi as vlr
+
+# Get all maps for a series
+maps = vlr.series.matches(series_id=511536)
+
+for map_data in maps:
+    print(f"\nMap: {map_data.map_name}")
+    print(f"Players: {len(map_data.players)}")
+    
+    # Show team scores if available
+    if map_data.teams:
+        team1, team2 = map_data.teams
+        print(f"Score: {team1.score}-{team2.score}")
+        print(f"Winner: {team1.name if team1.is_winner else team2.name}")
+```
+
+### Analyze Player Performance
+
+```python title="Analyze player performance"
+import vlrdevapi as vlr
+
+# Get map stats
+maps = vlr.series.matches(series_id=511536, limit=1)
+
+if maps:
+    map_data = maps[0]
+    print(f"=== {map_data.map_name} ===")
+    
+    # Sort players by ACS
+    sorted_players = sorted(
+        [p for p in map_data.players if p.acs is not None],
+        key=lambda x: x.acs,
+        reverse=True
+    )
+    
+    print("\nTop performers:")
+    for player in sorted_players[:5]:
+        print(f"{player.name}: {player.acs} ACS")
+        print(f"  K/D/A: {player.k}/{player.d}/{player.a}")
+        print(f"  Rating: {player.r}")
+        if player.agents:
+            print(f"  Agent: {', '.join(player.agents)}")
+```
+
+### View Round-by-Round Results
+
+```python title="View round-by-round results"
+import vlrdevapi as vlr
+
+# Get map stats with rounds
+maps = vlr.series.matches(series_id=511536)
+
+for map_data in maps:
+    if map_data.rounds:
+        print(f"\n=== {map_data.map_name} - Round History ===")
+        for round_result in map_data.rounds:
+            winner = round_result.winner_team_short or "Unknown"
+            method = round_result.method or "N/A"
+            score = f"{round_result.score[0]}-{round_result.score[1]}" if round_result.score else "N/A"
+            print(f"Round {round_result.number}: {winner} wins ({method}) - Score: {score}")
+```
+
+### Compare Team Performance
+
+```python title="Compare team performance"
+import vlrdevapi as vlr
+
+# Get all maps
+maps = vlr.series.matches(series_id=511536)
+
+for map_data in maps:
+    if map_data.teams:
+        team1, team2 = map_data.teams
+        print(f"\n{map_data.map_name}:")
+        print(f"  {team1.name}: {team1.score} rounds")
+        print(f"    ATK: {team1.attacker_rounds}, DEF: {team1.defender_rounds}")
+        print(f"  {team2.name}: {team2.score} rounds")
+        print(f"    ATK: {team2.attacker_rounds}, DEF: {team2.defender_rounds}")
+```
+
+### Get Aggregate Stats
+
+```python title="Get aggregate stats"
+import vlrdevapi as vlr
+
+# Get map stats
+maps = vlr.series.matches(series_id=511536)
+
+# Find aggregate stats (game_id == "All")
+aggregate = next((m for m in maps if m.game_id == "All"), None)
+
+if aggregate:
+    print("Series Aggregate Stats:")
+    for player in aggregate.players:
+        print(f"\n{player.name}:")
+        print(f"  ACS: {player.acs}")
+        print(f"  K/D/A: {player.k}/{player.d}/{player.a}")
+        print(f"  Rating: {player.r}")
+```
+
+## Error Handling
+
+- **Network failures**: Returns an empty list `[]`
+- **Invalid series ID**: Returns an empty list `[]`
+- **No map data**: Returns an empty list `[]`
+
+The function never raises exceptions, making it safe to use without try-catch blocks.
+
+## Tips
+
+- The `players` field is always a list, never `None` - check with `if map_data.players:`
+- All numeric stats can be `None` - check before using
+- The first map in results may be aggregate stats with `game_id == "All"`
+- Use `teams` to get map scores and side performance (attacker/defender rounds)
+- The `rounds` field contains detailed round-by-round results when available
+- Combine with `series.info()` to get match header and picks/bans
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/series/info"
+    title="series.info()"
+    description="Get series header with teams, score, picks/bans"
+    icon={<Info className="h-5 w-5" />}
+  />
+</Cards>
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/{series_id}`

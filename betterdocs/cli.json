@@ -6,6 +6,6 @@
     "cssDir": "./styles",
     "libDir": "./lib"
   },
-  "baseDir": "src",
+  "baseDir": "",
   "commands": {}
 }

@@ -1,0 +1,136 @@
+---
+title: VLR Dev API
+description: A clean Python client for Valorant esports data from VLR.gg
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { GithubInfo } from 'fumadocs-ui/components/github-info';
+import { BookOpen, Rocket, Search, Users, Trophy, Video, Shield, Signal, Code2 } from 'lucide-react';
+
+## Welcome
+
+VLR Dev API is a typed Python client for Valorant esports data scraped from VLR.gg.
+
+- Typed models with safe defaults
+- Consistent, human-friendly function signatures
+- Null-safe examples and clear error handling
+- Built-in rate limiting (10 req/s default, configurable)
+
+## Quick Start
+
+```python title="Quick start"
+import vlrdevapi as vlr
+
+# Upcoming matches
+matches = vlr.matches.upcoming(limit=5)
+for m in matches:
+    print(m.event, '-', m.team1.name, 'vs', m.team2.name)
+```
+
+## Get Started
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/installation"
+    title="Installation"
+    description="Install the package with pip and verify your setup"
+    icon={<Rocket className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/getting-started"
+    title="Quick Start"
+    description="First request, best practices, and common patterns"
+    icon={<BookOpen className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api"
+    title="API Reference"
+    description="Browse all modules, functions, models, and examples"
+    icon={<Code2 className="h-5 w-5" />}
+  />
+  </Cards>
+
+## Popular Modules
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/search/index"
+    title="Search"
+    description="Players, teams, events, and series"
+    icon={<Search className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/matches/index"
+    title="Matches"
+    description="Upcoming, live, and completed"
+    icon={<Video className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/events/index"
+    title="Events"
+    description="Info, matches, standings, summaries"
+    icon={<Trophy className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/players/index"
+    title="Players"
+    description="Profiles, matches, agent stats"
+    icon={<Users className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/teams/index"
+    title="Teams"
+    description="Info, roster, matches, placements"
+    icon={<Shield className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/series/index"
+    title="Series"
+    description="Headers and per-map statistics"
+    icon={<Signal className="h-5 w-5" />}
+  />
+</Cards>
+
+## Example: End-to-end
+
+```python title="Lookup a team and upcoming matches"
+import vlrdevapi as vlr
+
+team = vlr.teams.info(team_id=1034)
+if team:
+    roster = vlr.teams.roster(team.team_id)
+    upcoming = vlr.teams.upcoming_matches(team.team_id, limit=2)
+
+    print(f"{team.name} ({team.tag}) - {team.country}")
+    print(f"Roster: {len(roster)} players")
+    
+    print("\nNext matches:")
+    for match in upcoming:
+        print(f"  {match.tournament_name}: {match.team1.name} vs {match.team2.name}")
+```
+
+## GitHub
+
+<div className="mt-2">
+  <GithubInfo owner="Vanshbordia" repo="vlrdevapi" />
+</div>
+
+## Helpful Links
+
+<Cards className="mt-2">
+  <Card
+    href="https://pypi.org/project/vlrdevapi/"
+    title="PyPI"
+    description="Package page and release history"
+  />
+  <Card
+    href="https://github.com/Vanshbordia/vlrdevapi"
+    title="GitHub"
+    description="Source code, issues, and contributions"
+  />
+  <Card
+    href="/docs/api/status/index"
+    title="Status"
+    description="Check VLR.gg availability"
+  />
+</Cards>
