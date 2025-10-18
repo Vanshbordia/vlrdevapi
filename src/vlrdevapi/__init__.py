@@ -27,7 +27,7 @@ Example usage:
     ...     print(f"{member.ign} - {member.role}")
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 # Import modules for clean API access
 from . import matches
