@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 
 from .constants import VLR_BASE, DEFAULT_TIMEOUT
 from .countries import map_country_code
-from .fetcher import fetch_html
+from .fetcher import fetch_html, batch_fetch_html
 from .exceptions import NetworkError
 from .utils import (
     extract_text,
@@ -287,7 +287,7 @@ def matches(
     timeout: float = DEFAULT_TIMEOUT,
 ) -> List[Match]:
     """
-    Get player match history.
+    Get player match history with batch fetching for pagination.
     
     Args:
         player_id: Player ID
@@ -321,153 +321,175 @@ def matches(
     current_page = start_page
     pages_fetched = 0
     MAX_PAGES = 25
+    BATCH_SIZE = 3  # Fetch 3 pages at a time
     
     while pages_fetched < MAX_PAGES:
-        suffix = f"?page={current_page}" if current_page > 1 else ""
-        url = f"{VLR_BASE}/player/matches/{player_id}{suffix}"
+        # Determine how many pages to fetch in this batch
+        pages_to_fetch = min(BATCH_SIZE, MAX_PAGES - pages_fetched)
+        if single_page_only:
+            pages_to_fetch = 1
         
-        try:
-            html = fetch_html(url, timeout)
-        except NetworkError:
-            break
+        # Build URLs for batch fetching
+        urls = []
+        for i in range(pages_to_fetch):
+            page_num = current_page + i
+            suffix = f"?page={page_num}" if page_num > 1 else ""
+            url = f"{VLR_BASE}/player/matches/{player_id}{suffix}"
+            urls.append(url)
         
-        soup = BeautifulSoup(html, "lxml")
-        page_matches: List[Match] = []
+        # Batch fetch all pages concurrently
+        batch_results = batch_fetch_html(urls, timeout=timeout, max_workers=min(3, len(urls)))
         
-        for anchor in soup.select("a.wf-card.fc-flex.m-item"):
-            href = anchor.get("href")
-            if not href:
-                continue
+        # Process each page in order
+        for page_idx, url in enumerate(urls):
+            html = batch_results.get(url)
             
-            parts = href.strip("/").split("/")
-            if not parts or not parts[0].isdigit():
-                continue
-            match_id = int(parts[0])
-            match_url = absolute_url(href) or ""
+            if isinstance(html, Exception) or not html:
+                # Stop if we hit an error
+                pages_fetched = MAX_PAGES
+                break
             
-            # Parse event info
-            event_el = anchor.select_one(".m-item-event")
-            event_name = None
-            stage = None
-            phase = None
-            if event_el:
-                strings = list(event_el.stripped_strings)
-                if strings:
-                    event_name = normalize_whitespace(strings[0]) if strings[0] else None
-                    details = [s.strip("⋅ ") for s in strings[1:] if s.strip("⋅ ")]
-                    if details:
-                        # Join all details and split on ⋅ separator
-                        combined = " ".join(details)
-                        if "⋅" in combined:
-                            parts = [normalize_whitespace(p) for p in combined.split("⋅") if p.strip()]
-                            if len(parts) >= 2:
-                                stage = parts[0]
-                                phase = parts[1]
-                            elif len(parts) == 1:
-                                stage = parts[0]
-                        else:
-                            # No separator, treat as stage only
-                            stage = normalize_whitespace(combined)
+            soup = BeautifulSoup(html, "lxml")
+            page_matches: List[Match] = []
             
-            # Parse teams
-            team_blocks = anchor.select(".m-item-team")
-            player_block = team_blocks[0] if team_blocks else None
-            opponent_block = team_blocks[-1] if len(team_blocks) > 1 else None
-            
-            def parse_team_block(block):
-                if not block:
-                    return MatchTeam(name=None, tag=None, core=None)
-                name = extract_text(block.select_one(".m-item-team-name"))
-                tag = extract_text(block.select_one(".m-item-team-tag"))
-                core = extract_text(block.select_one(".m-item-team-core"))
-                return MatchTeam(name=name or None, tag=tag or None, core=core or None)
-            
-            player_team = parse_team_block(player_block)
-            opponent_team = parse_team_block(opponent_block)
-            
-            # Parse result and scores
-            result_el = anchor.select_one(".m-item-result")
-            player_score = None
-            opponent_score = None
-            result = None
-            
-            if result_el:
-                spans = [span.get_text(strip=True) for span in result_el.select("span")]
-                scores = []
-                for value in spans:
-                    try:
-                        scores.append(int(value))
-                    except ValueError:
-                        continue
-                if len(scores) >= 2:
-                    player_score, opponent_score = scores[0], scores[1]
-                elif len(scores) == 1:
-                    player_score = scores[0]
+            for anchor in soup.select("a.wf-card.fc-flex.m-item"):
+                href = anchor.get("href")
+                if not href:
+                    continue
                 
-                classes = result_el.get("class", [])
-                if any("mod-win" == cls or cls.endswith("mod-win") for cls in classes):
-                    result = "win"
-                elif any("mod-loss" == cls or cls.endswith("mod-loss") for cls in classes):
-                    result = "loss"
-                elif any("mod-draw" == cls or cls.endswith("mod-draw") for cls in classes):
-                    result = "draw"
-            
-            # Parse date/time
-            date_el = anchor.select_one(".m-item-date")
-            match_date = None
-            match_time = None
-            time_text = None
-            
-            if date_el:
-                parts = list(date_el.stripped_strings)
-                if parts:
-                    date_text = parts[0]
-                    try:
-                        match_date = datetime.datetime.strptime(date_text, "%Y/%m/%d").date()
-                    except ValueError:
-                        pass
-                    
-                    if len(parts) > 1:
-                        time_text = parts[1]
+                parts = href.strip("/").split("/")
+                if not parts or not parts[0].isdigit():
+                    continue
+                match_id = int(parts[0])
+                match_url = absolute_url(href) or ""
+                
+                # Parse event info
+                event_el = anchor.select_one(".m-item-event")
+                event_name = None
+                stage = None
+                phase = None
+                if event_el:
+                    strings = list(event_el.stripped_strings)
+                    if strings:
+                        event_name = normalize_whitespace(strings[0]) if strings[0] else None
+                        details = [s.strip("⋅ ") for s in strings[1:] if s.strip("⋅ ")]
+                        if details:
+                            # Join all details and split on ⋅ separator
+                            combined = " ".join(details)
+                            if "⋅" in combined:
+                                parts = [normalize_whitespace(p) for p in combined.split("⋅") if p.strip()]
+                                if len(parts) >= 2:
+                                    stage = parts[0]
+                                    phase = parts[1]
+                                elif len(parts) == 1:
+                                    stage = parts[0]
+                            else:
+                                # No separator, treat as stage only
+                                stage = normalize_whitespace(combined)
+                
+                # Parse teams
+                team_blocks = anchor.select(".m-item-team")
+                player_block = team_blocks[0] if team_blocks else None
+                opponent_block = team_blocks[-1] if len(team_blocks) > 1 else None
+                
+                def parse_team_block(block):
+                    if not block:
+                        return MatchTeam(name=None, tag=None, core=None)
+                    name = extract_text(block.select_one(".m-item-team-name"))
+                    tag = extract_text(block.select_one(".m-item-team-tag"))
+                    core = extract_text(block.select_one(".m-item-team-core"))
+                    return MatchTeam(name=name or None, tag=tag or None, core=core or None)
+                
+                player_team = parse_team_block(player_block)
+                opponent_team = parse_team_block(opponent_block)
+                
+                # Parse result and scores
+                result_el = anchor.select_one(".m-item-result")
+                player_score = None
+                opponent_score = None
+                result = None
+                
+                if result_el:
+                    spans = [span.get_text(strip=True) for span in result_el.select("span")]
+                    scores = []
+                    for value in spans:
                         try:
-                            match_time = datetime.datetime.strptime(time_text, "%I:%M %p").time()
+                            scores.append(int(value))
+                        except ValueError:
+                            continue
+                    if len(scores) >= 2:
+                        player_score, opponent_score = scores[0], scores[1]
+                    elif len(scores) == 1:
+                        player_score = scores[0]
+                    
+                    classes = result_el.get("class", [])
+                    if any("mod-win" == cls or cls.endswith("mod-win") for cls in classes):
+                        result = "win"
+                    elif any("mod-loss" == cls or cls.endswith("mod-loss") for cls in classes):
+                        result = "loss"
+                    elif any("mod-draw" == cls or cls.endswith("mod-draw") for cls in classes):
+                        result = "draw"
+                
+                # Parse date/time
+                date_el = anchor.select_one(".m-item-date")
+                match_date = None
+                match_time = None
+                time_text = None
+                
+                if date_el:
+                    parts = list(date_el.stripped_strings)
+                    if parts:
+                        date_text = parts[0]
+                        try:
+                            match_date = datetime.datetime.strptime(date_text, "%Y/%m/%d").date()
                         except ValueError:
                             pass
+                        
+                        if len(parts) > 1:
+                            time_text = parts[1]
+                            try:
+                                match_time = datetime.datetime.strptime(time_text, "%I:%M %p").time()
+                            except ValueError:
+                                pass
+                
+                page_matches.append(Match(
+                    match_id=match_id,
+                    url=match_url,
+                    event=event_name,
+                    stage=stage,
+                    phase=phase,
+                    player_team=player_team,
+                    opponent_team=opponent_team,
+                    player_score=player_score,
+                    opponent_score=opponent_score,
+                    result=result,
+                    date=match_date,
+                    time=match_time,
+                    time_text=time_text,
+                ))
+        
+            if not page_matches:
+                # No more matches on this page, stop fetching
+                pages_fetched = MAX_PAGES
+                break
             
-            page_matches.append(Match(
-                match_id=match_id,
-                url=match_url,
-                event=event_name,
-                stage=stage,
-                phase=phase,
-                player_team=player_team,
-                opponent_team=opponent_team,
-                player_score=player_score,
-                opponent_score=opponent_score,
-                result=result,
-                date=match_date,
-                time=match_time,
-                time_text=time_text,
-            ))
+            if remaining is None:
+                results.extend(page_matches)
+            else:
+                take = page_matches[:remaining]
+                results.extend(take)
+                remaining -= len(take)
+            
+            pages_fetched += 1
+            
+            if single_page_only:
+                pages_fetched = MAX_PAGES
+                break
+            if remaining is not None and remaining <= 0:
+                pages_fetched = MAX_PAGES
+                break
         
-        if not page_matches:
-            break
-        
-        if remaining is None:
-            results.extend(page_matches)
-        else:
-            take = page_matches[:remaining]
-            results.extend(take)
-            remaining -= len(take)
-        
-        pages_fetched += 1
-        
-        if single_page_only:
-            break
-        if remaining is not None and remaining <= 0:
-            break
-        
-        current_page += 1
+        current_page += pages_to_fetch
     
     return results
 

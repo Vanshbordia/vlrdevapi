@@ -1,0 +1,173 @@
+---
+title: search.search_teams()
+description: Search for teams
+icon: users
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Users, Search, Calendar } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.search.search_teams(
+    query: str,
+    timeout: float = 5.0
+) -> list[SearchTeamResult]
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    query: {
+      type: 'str',
+      description: 'Team name or tag',
+      required: true,
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `list[SearchTeamResult]`
+
+Returns a list of team search results.
+
+<TypeTable
+  type={{
+    team_id: {
+      type: 'int',
+      description: 'Team ID',
+      required: true,
+    },
+    url: {
+      type: 'str',
+      description: 'Team URL',
+      required: true,
+    },
+    name: {
+      type: 'str | None',
+      description: 'Team name',
+    },
+    country: {
+      type: 'str | None',
+      description: 'Country',
+    },
+    logo_url: {
+      type: 'str | None',
+      description: 'Team logo URL',
+    },
+    is_inactive: {
+      type: 'bool',
+      description: 'Whether team is inactive',
+      required: true,
+    },
+  }}
+/>
+
+## Examples
+
+### Search for Teams
+
+```python title="Search for teams"
+import vlrdevapi as vlr
+
+# Search for teams
+teams = vlr.search.search_teams("sentinels")
+
+print(f"Found {len(teams)} teams")
+for t in teams:
+    status = "Inactive" if t.is_inactive else "Active"
+    print(f"{t.name} - {t.country} ({status})")
+    print(f"  URL: {t.url}")
+```
+
+### Get Team Details
+
+```python title="Get team details"
+import vlrdevapi as vlr
+import time
+
+# Search and get full info
+teams = vlr.search.search_teams("nrg")
+
+for team in teams:
+    print(f"\nFound: {team.name}")
+    
+    # Get detailed team info
+    team_info = vlr.teams.info(team.team_id)
+    roster = vlr.teams.roster(team.team_id)
+    if team_info:
+        print(f"  Country: {team_info.country}")
+        print(f"  Active: {team_info.is_active}")
+        print(f"  Players: {len(roster)}")
+        if roster:
+            print(f"  Roster: {', '.join(p.ign for p in roster[:5] if p.ign)}")
+    time.sleep(1)  # Small delay to avoid overwhelming the server
+```
+
+### Filter Active Teams
+
+```python title="Filter active teams"
+import vlrdevapi as vlr
+
+# Search and filter for active teams only
+all_teams = vlr.search.search_teams("valorant")
+active_teams = [t for t in all_teams if not t.is_inactive]
+
+print(f"Active teams: {len(active_teams)}/{len(all_teams)}")
+for team in active_teams:
+    print(f"  {team.name} - {team.country}")
+```
+
+## Error Handling
+
+- **Network failures**: Returns an empty list `[]`
+- **No results found**: Returns an empty list `[]`
+- **Empty query**: Returns an empty list `[]`
+
+The function never raises exceptions, making it safe to use without try-catch blocks.
+
+## Tips
+
+- Team results are enriched with `teams.info()` when available to fix name/country and set active status
+- Check list length before accessing results: `if teams:`
+- All optional fields can be `None` - check before using
+- Use the `team_id` to fetch detailed information with `teams.info()`
+- The `is_inactive` field is always present (defaults to `False`)
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/search/search"
+    title="search.search()"
+    description="Unified search across all types"
+    icon={<Search className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/search/search-players"
+    title="search.search_players()"
+    description="Search for players"
+    icon={<Users className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/search/search-events"
+    title="search.search_events()"
+    description="Search for events"
+    icon={<Calendar className="h-5 w-5" />}
+  />
+</Cards>
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/search/?q={query}&type=teams`

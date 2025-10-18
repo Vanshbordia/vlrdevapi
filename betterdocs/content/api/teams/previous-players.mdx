@@ -1,0 +1,205 @@
+---
+title: teams.previous_players()
+description: Get all previous and current players with calculated status from transaction history
+icon: users
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { ArrowRightLeft, Info } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.teams.previous_players(
+    team_id: int,
+    timeout: float = 5.0
+) -> list[PreviousPlayer]
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    team_id: {
+      type: 'int',
+      description: 'Team ID',
+      required: true,
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `list[PreviousPlayer]`
+
+Returns a list of previous and current players sorted by most recent activity.
+
+<TypeTable
+  type={{
+    player_id: {
+      type: 'int | None',
+      description: 'Player ID',
+    },
+    ign: {
+      type: 'str | None',
+      description: 'In-game name',
+    },
+    real_name: {
+      type: 'str | None',
+      description: 'Real name',
+    },
+    country: {
+      type: 'str | None',
+      description: 'Country',
+    },
+    position: {
+      type: 'str | None',
+      description: 'Position (e.g., "Player", "Head Coach")',
+    },
+    status: {
+      type: 'str',
+      typeDescription: '"Active" | "Left" | "Inactive" | "Unknown"',
+      description: 'Calculated player status',
+      required: true,
+    },
+    join_date: {
+      type: 'date | None',
+      description: 'Most recent join date',
+    },
+    leave_date: {
+      type: 'date | None',
+      description: 'Most recent leave/inactive date',
+    },
+    transactions: {
+      type: 'list[PlayerTransaction]',
+      description: 'All transactions for this player (always a list, may be empty)',
+      required: true,
+    },
+  }}
+/>
+
+## Status Determination
+
+Status is calculated from the most recent transaction with a known date:
+
+- **Active**: Player has joined and has no subsequent leave/inactive action
+- **Left**: Player has a "leave" action as their most recent status change
+- **Inactive**: Player has an "inactive" action as their most recent status change
+- **Unknown**: Cannot determine status from available transactions
+
+## Examples
+
+### Get Previous Players
+
+```python title="Get previous players"
+import vlrdevapi as vlr
+
+# Get all players
+players = vlr.teams.previous_players(team_id=1034)
+
+print(f"Total players: {len(players)}")
+for player in players[:10]:  # Show first 10
+    print(f"{player.ign} - {player.status} ({player.position})")
+    join_str = player.join_date.strftime('%Y/%m/%d') if player.join_date else 'Unknown'
+    leave_str = player.leave_date.strftime('%Y/%m/%d') if player.leave_date else 'None'
+    print(f"  Joined: {join_str}, Left: {leave_str}")
+```
+
+### Filter by Status
+
+```python title="Filter by status"
+import vlrdevapi as vlr
+
+players = vlr.teams.previous_players(team_id=1034)
+
+# Filter by status
+active = [p for p in players if p.status == "Active"]
+left = [p for p in players if p.status == "Left"]
+inactive = [p for p in players if p.status == "Inactive"]
+
+print(f"Active: {len(active)}")
+print(f"Left: {len(left)}")
+print(f"Inactive: {len(inactive)}")
+
+# Show active players
+for player in active:
+    print(f"  {player.ign} - {player.position}")
+```
+
+### Filter by Position
+
+```python title="Filter by position"
+import vlrdevapi as vlr
+
+players = vlr.teams.previous_players(team_id=1034)
+
+# Get coaches
+coaches = [p for p in players if p.position and "coach" in p.position.lower()]
+
+print(f"Coaches: {len(coaches)}")
+for coach in coaches:
+    print(f"  {coach.real_name or coach.ign} - {coach.status}")
+```
+
+### Access Transaction History
+
+```python title="Access transaction history"
+import vlrdevapi as vlr
+
+players = vlr.teams.previous_players(team_id=1034)
+
+if players:
+    player = players[0]
+    print(f"Transaction history for {player.ign}:")
+    for txn in player.transactions:
+        date_str = txn.date.strftime('%Y/%m/%d') if txn.date else 'Unknown'
+        print(f"  {date_str}: {txn.action}")
+```
+
+## Error Handling
+
+- **Network failures**: Returns an empty list `[]`
+- **Invalid team ID**: Returns an empty list `[]`
+- **No transactions**: Returns an empty list `[]`
+- **Players without player_id**: Excluded from results
+
+The function never raises exceptions, making it safe to use without try-catch blocks.
+
+## Tips
+
+- Check list length before accessing: `if players:`
+- All optional fields can be `None` - check before using
+- Use this instead of `transactions()` when you need calculated player status
+- Players are sorted by most recent activity (latest transaction first)
+- The `transactions` field is always a list, never `None`
+- Players can have multiple join/leave cycles (rejoining after leaving)
+- Transaction dates can be `None` - always check before formatting
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/teams/transactions"
+    title="teams.transactions()"
+    description="Get all team transactions"
+    icon={<ArrowRightLeft className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/teams/info"
+    title="teams.info()"
+    description="Get team information"
+    icon={<Info className="h-5 w-5" />}
+  />
+</Cards>
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/team/transactions/{team_id}`

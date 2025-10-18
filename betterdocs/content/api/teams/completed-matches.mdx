@@ -1,0 +1,176 @@
+---
+title: teams.completed_matches()
+description: Get a team's completed matches
+icon: check
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Calendar, Info } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.teams.completed_matches(
+    team_id: int,
+    limit: int | None = None,
+    timeout: float = 5.0
+) -> list[TeamMatch]
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    team_id: {
+      type: 'int',
+      description: 'Team ID',
+      required: true,
+    },
+    limit: {
+      type: 'int | None',
+      description: 'Maximum number of matches to return (fetches across pages if needed)',
+      default: 'None',
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `list[TeamMatch]`
+
+Returns a list of completed matches with scores.
+
+<TypeTable
+  type={{
+    match_id: {
+      type: 'int | None',
+      description: 'Match ID',
+    },
+    match_url: {
+      type: 'str | None',
+      description: 'Match URL',
+    },
+    tournament_name: {
+      type: 'str | None',
+      description: 'Tournament name',
+    },
+    phase: {
+      type: 'str | None',
+      description: 'Tournament phase',
+    },
+    series: {
+      type: 'str | None',
+      description: 'Series name',
+    },
+    team1: {
+      type: 'MatchTeam',
+      description: 'First team (with score)',
+      required: true,
+    },
+    team2: {
+      type: 'MatchTeam',
+      description: 'Second team (with score)',
+      required: true,
+    },
+    match_datetime: {
+      type: 'datetime | None',
+      description: 'Match date and time',
+    },
+  }}
+/>
+
+## Examples
+
+### Get Completed Matches
+
+```python title="Get completed matches"
+import vlrdevapi as vlr
+
+# Get recent completed matches
+matches = vlr.teams.completed_matches(team_id=799, limit=3)
+
+print(f"Recent matches: {len(matches)}")
+for match in matches:
+    score = f"{match.team1.score}-{match.team2.score}" if match.team1.score is not None else "N/A"
+    print(f"{match.tournament_name}")
+    print(f"  {match.team1.name} {score} {match.team2.name}")
+```
+
+### Analyze Win Rate
+
+```python title="Analyze win rate"
+import vlrdevapi as vlr
+
+matches = vlr.teams.completed_matches(team_id=799, limit=3)
+team_info = vlr.teams.info(team_id=799)
+
+if team_info:
+    team_name = team_info.name
+    wins = sum(1 for m in matches 
+               if m.team1.score is not None and m.team2.score is not None
+               and ((m.team1.name == team_name and m.team1.score > m.team2.score)
+                    or (m.team2.name == team_name and m.team2.score > m.team1.score)))
+    
+    print(f"{team_name}: {wins} wins in last {len(matches)} matches")
+```
+
+### Get Match Details
+
+```python title="Get match details"
+import vlrdevapi as vlr
+
+matches = vlr.teams.completed_matches(team_id=799, limit=2)
+
+for match in matches:
+    if match.match_id:
+        # Get detailed series info
+        series = vlr.series.info(match.match_id)
+        if series:
+            print(f"\n{series.event} - {series.event_phase}")
+            print(f"Score: {series.score[0]}-{series.score[1]}")
+```
+
+## Error Handling
+
+- **Network failures**: Returns an empty list `[]`
+- **Invalid team ID**: Returns an empty list `[]`
+- **No completed matches**: Returns an empty list `[]`
+
+The function never raises exceptions, making it safe to use without try-catch blocks.
+
+## Tips
+
+- Check list length before accessing: `if matches:`
+- All optional fields can be `None` - check before using
+- Use `match_id` to get detailed match information with `series.info()`
+- Scores represent maps won, not rounds
+- The `limit` parameter fetches across multiple pages if needed
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/teams/upcoming-matches"
+    title="teams.upcoming_matches()"
+    description="Get upcoming matches"
+    icon={<Calendar className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/teams/info"
+    title="teams.info()"
+    description="Get team information"
+    icon={<Info className="h-5 w-5" />}
+  />
+</Cards>
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/team/matches/{team_id}?group=completed`

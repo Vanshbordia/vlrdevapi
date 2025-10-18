@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 from ..constants import VLR_BASE, DEFAULT_TIMEOUT
 from ..countries import map_country_code
-from ..fetcher import fetch_html
+from ..fetcher import fetch_html  # Uses connection pooling automatically
 from ..exceptions import NetworkError
 from ..utils import extract_text, absolute_url, extract_id_from_url
 

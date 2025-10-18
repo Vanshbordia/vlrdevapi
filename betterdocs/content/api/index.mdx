@@ -1,0 +1,69 @@
+---
+title: API Overview
+description: Explore all modules and models in vlrdevapi
+icon: list
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Search, Video, Trophy, Users, Shield, Signal, Code2 } from 'lucide-react';
+
+This section documents the main modules of `vlrdevapi`.
+
+## Modules
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/search"
+    title="Search"
+    description="search(), search_players(), search_teams(), search_events(), search_series()"
+    icon={<Search className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/matches"
+    title="Matches"
+    description="upcoming(), live(), completed()"
+    icon={<Video className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/events"
+    title="Events"
+    description="list_events(), info(), matches(), standings(), match_summary()"
+    icon={<Trophy className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/players"
+    title="Players"
+    description="profile(), matches(), agent_stats()"
+    icon={<Users className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/teams"
+    title="Teams"
+    description="info(), roster(), upcoming_matches(), completed_matches(), placements(), transactions(), previous_players()"
+    icon={<Shield className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/series"
+    title="Series"
+    description="info(), matches() with per-map stats"
+    icon={<Signal className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/status"
+    title="Status"
+    description="status.check_status()"
+    icon={<Code2 className="h-5 w-5" />}
+  />
+</Cards>
+
+## Conventions
+
+- All functions are synchronous and use sensible defaults
+- Returns are Pydantic models with clear field descriptions
+- Network failures typically return empty lists or None instead of raising
+
+## Import
+
+```python
+import vlrdevapi as vlr
+```

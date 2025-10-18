@@ -1,0 +1,28 @@
+---
+title: Installation
+description: Install and set up vlrdevapi for Python
+icon: download
+---
+
+## Requirements
+
+- Python 3.9+
+- pip or uv/poetry
+
+## Install
+
+```bash
+pip install vlrdevapi
+# or
+uv add vlrdevapi
+```
+
+## Verify
+
+```python
+import vlrdevapi as vlr
+print(vlr.__version__)
+print(vlr.status.check_status())
+```
+
+If `check_status()` returns `False`, VLR.gg may be down or blocked.

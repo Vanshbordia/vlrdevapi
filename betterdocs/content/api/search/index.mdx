@@ -1,0 +1,85 @@
+---
+title: Search
+description: Unified search for players, teams, events, and series
+icon: search
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Search, Users, Shield, Calendar, Trophy } from 'lucide-react';
+
+The `vlr.search` module provides high-level search helpers that return typed results.
+
+## Functions
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/search/search"
+    title="search.search()"
+    description="Unified search across players, teams, events, and series"
+    icon={<Search className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/search/search-players"
+    title="search.search_players()"
+    description="Search for players by name or handle"
+    icon={<Users className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/search/search-teams"
+    title="search.search_teams()"
+    description="Search for teams by name or tag"
+    icon={<Shield className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/search/search-events"
+    title="search.search_events()"
+    description="Search for events by name or keyword"
+    icon={<Calendar className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/search/search-series"
+    title="search.search_series()"
+    description="Search for series by keyword"
+    icon={<Trophy className="h-5 w-5" />}
+  />
+</Cards>
+
+
+## Quick Example
+
+```python title="Search for teams and players"
+import vlrdevapi
+import time
+
+# Unified search
+results = vlrdevapi.search.search("sentinels")
+print(f"Total results: {results.total_results}")
+
+# Players
+for p in results.players:
+    print(f"Player: {p.ign} ({p.real_name}) - {p.country}")
+    time.sleep(0.5)  # Small delay to avoid overwhelming the server
+
+# Teams
+for t in results.teams:
+    status = "Inactive" if t.is_inactive else "Active"
+    print(f"Team: {t.name} - {t.country} ({status})")
+    time.sleep(0.5)  # Small delay to avoid overwhelming the server
+
+# Or use specific search
+players = vlrdevapi.search.search_players("tenz")
+for p in players:
+    print(f"{p.ign}: {p.url}")
+    time.sleep(0.5)  # Small delay to avoid overwhelming the server
+```
+
+## Notes
+
+- Network issues return empty categories. Always check lengths before iterating.
+- Player and team results are enriched using `players.profile()` and `teams.info()` when possible.
+- Use specific helpers like `search_players()` if you only need one type.
+
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/search/?q={query}`

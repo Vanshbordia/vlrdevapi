@@ -1,0 +1,309 @@
+---
+title: players.agent_stats()
+description: Get agent statistics for a player
+icon: bar-chart
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { UserCircle, History } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.players.agent_stats(
+    player_id: int,
+    timespan: str = "all",
+    timeout: float = 5.0
+) -> list[AgentStats]
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    player_id: {
+      type: 'int',
+      description: 'Player ID',
+      required: true,
+    },
+    timespan: {
+      type: 'str',
+      description: 'Timespan filter (e.g., "all", "60d", "90d")',
+      default: '"all"',
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `list[AgentStats]`
+
+Returns a list of agent statistics. Each `AgentStats` object contains:
+
+<TypeTable
+  type={{
+    agent: {
+      type: 'str | None',
+      description: 'Agent name',
+    },
+    agent_image_url: {
+      type: 'str | None',
+      description: 'Agent image URL',
+    },
+    usage_count: {
+      type: 'int | None',
+      description: 'Times played',
+    },
+    usage_percent: {
+      type: 'float | None',
+      description: 'Usage percentage (0-1)',
+    },
+    rounds_played: {
+      type: 'int | None',
+      description: 'Rounds played',
+    },
+    rating: {
+      type: 'float | None',
+      description: 'Rating',
+    },
+    acs: {
+      type: 'float | None',
+      description: 'Average combat score',
+    },
+    kd: {
+      type: 'float | None',
+      description: 'K/D ratio',
+    },
+    adr: {
+      type: 'float | None',
+      description: 'Average damage per round',
+    },
+    kast: {
+      type: 'float | None',
+      description: 'KAST percentage (0-1)',
+    },
+    kpr: {
+      type: 'float | None',
+      description: 'Kills per round',
+    },
+    apr: {
+      type: 'float | None',
+      description: 'Assists per round',
+    },
+    fkpr: {
+      type: 'float | None',
+      description: 'First kills per round',
+    },
+    fdpr: {
+      type: 'float | None',
+      description: 'First deaths per round',
+    },
+    kills: {
+      type: 'int | None',
+      description: 'Total kills',
+    },
+    deaths: {
+      type: 'int | None',
+      description: 'Total deaths',
+    },
+    assists: {
+      type: 'int | None',
+      description: 'Total assists',
+    },
+    first_kills: {
+      type: 'int | None',
+      description: 'Total first kills',
+    },
+    first_deaths: {
+      type: 'int | None',
+      description: 'Total first deaths',
+    },
+  }}
+/>
+
+## Examples
+
+### Get Agent Statistics
+
+```python title="Get agent statistics"
+import vlrdevapi as vlr
+
+# Get all-time agent stats
+stats = vlr.players.agent_stats(player_id=123)
+
+print("Agent Statistics:")
+for s in stats:
+    if s.agent:
+        print(f"\n{s.agent}:")
+        print(f"  Usage: {s.usage_count} times ({s.usage_percent * 100:.1f}%)" if s.usage_percent else "")
+        print(f"  Rating: {s.rating}")
+        print(f"  ACS: {s.acs}")
+        print(f"  K/D: {s.kd}")
+```
+
+### Get Recent Stats with Timespan
+
+```python title="Get recent stats with timespan"
+import vlrdevapi as vlr
+
+# Get last 90 days of stats
+stats = vlr.players.agent_stats(player_id=123, timespan="90d")
+
+print("Last 90 Days - Top Agents:")
+for s in stats[:5]:  # Top 5 agents
+    if s.agent and s.rating:
+        print(f"{s.agent}: {s.rating} rating, {s.acs} ACS")
+```
+
+### Compare Agent Performance
+
+```python title="Compare agent performance"
+import vlrdevapi as vlr
+
+# Get agent stats
+stats = vlr.players.agent_stats(player_id=123)
+
+# Sort by rating
+sorted_stats = sorted(
+    [s for s in stats if s.rating is not None],
+    key=lambda x: x.rating,
+    reverse=True
+)
+
+print("Agents by Rating:")
+for s in sorted_stats[:5]:
+    print(f"{s.agent}: {s.rating} rating")
+    print(f"  ACS: {s.acs}, K/D: {s.kd}")
+    print(f"  Rounds: {s.rounds_played}")
+```
+
+### Analyze Agent Pool
+
+```python title="Analyze agent pool"
+import vlrdevapi as vlr
+
+# Get agent stats
+stats = vlr.players.agent_stats(player_id=123)
+
+# Filter agents with significant playtime
+main_agents = [
+    s for s in stats 
+    if s.usage_count and s.usage_count >= 5
+]
+
+print(f"Agent Pool: {len(main_agents)} agents with 5+ games")
+for s in main_agents:
+    usage_pct = f"{s.usage_percent * 100:.1f}%" if s.usage_percent else "N/A"
+    print(f"{s.agent}: {s.usage_count} games ({usage_pct})")
+```
+
+### Get Detailed Statistics
+
+```python title="Get detailed statistics"
+import vlrdevapi as vlr
+
+# Get agent stats
+stats = vlr.players.agent_stats(player_id=123, timespan="60d")
+
+for s in stats[:3]:  # Top 3 agents
+    if s.agent:
+        print(f"\n=== {s.agent} ===")
+        print(f"Games: {s.usage_count}")
+        print(f"Rounds: {s.rounds_played}")
+        print(f"\nCore Stats:")
+        print(f"  Rating: {s.rating}")
+        print(f"  ACS: {s.acs}")
+        print(f"  K/D: {s.kd}")
+        print(f"  ADR: {s.adr}")
+        print(f"  KAST: {s.kast * 100:.1f}%" if s.kast else "")
+        print(f"\nPer Round:")
+        print(f"  KPR: {s.kpr}")
+        print(f"  APR: {s.apr}")
+        print(f"  FKPR: {s.fkpr}")
+        print(f"  FDPR: {s.fdpr}")
+        print(f"\nTotals:")
+        print(f"  Kills: {s.kills}")
+        print(f"  Deaths: {s.deaths}")
+        print(f"  Assists: {s.assists}")
+```
+
+### Find Best Agent
+
+```python title="Find best agent"
+import vlrdevapi as vlr
+
+def find_best_agent(player_id, min_games=10):
+    stats = vlr.players.agent_stats(player_id)
+    
+    # Filter agents with minimum games
+    qualified = [
+        s for s in stats
+        if s.usage_count and s.usage_count >= min_games and s.rating
+    ]
+    
+    if not qualified:
+        return None
+    
+    # Sort by rating
+    best = max(qualified, key=lambda x: x.rating)
+    
+    return {
+        'agent': best.agent,
+        'rating': best.rating,
+        'games': best.usage_count,
+        'acs': best.acs,
+        'kd': best.kd
+    }
+
+best = find_best_agent(123, min_games=10)
+if best:
+    print(f"Best Agent: {best['agent']}")
+    print(f"  Rating: {best['rating']} ({best['games']} games)")
+    print(f"  ACS: {best['acs']}, K/D: {best['kd']}")
+```
+
+## Error Handling
+
+- **Network failures**: Returns an empty list `[]`
+- **Invalid player ID**: Returns an empty list `[]`
+- **No stats available**: Returns an empty list `[]`
+
+The function never raises exceptions, making it safe to use without try-catch blocks.
+
+## Tips
+
+- All numeric fields can be `None` - check before using
+- `usage_percent` and `kast` are decimals (0-1), multiply by 100 for percentage
+- Timespan options: "all", "60d", "90d" (check VLR.gg for current options)
+- Stats are sorted by usage/playtime by default
+- Use `rating` or `acs` to identify best-performing agents
+- Filter by `usage_count` to focus on main agents
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/players/profile"
+    title="players.profile()"
+    description="Get player profile information"
+    icon={<UserCircle className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/players/matches"
+    title="players.matches()"
+    description="Get player match history"
+    icon={<History className="h-5 w-5" />}
+  />
+</Cards>
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/player/{player_id}/?timespan={timespan}`

@@ -36,7 +36,7 @@ print(f"Found {results.total_results} results")
 # Get upcoming matches
 matches = vlr.matches.upcoming(limit=5)
 for match in matches:
-    print(f"{match.teams[0]} vs {match.teams[1]}")
+    print(f"{match.team1.name} vs {match.team2.name}")
 
 # Player stats
 profile = vlr.players.profile(player_id=4164)

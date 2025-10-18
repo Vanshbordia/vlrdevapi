@@ -1,0 +1,146 @@
+---
+title: Getting Started
+description: Learn the basics of using vlrdevapi
+icon: rocket
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+This guide walks you through the common flows with `vlrdevapi`.
+
+<Steps>
+<Step>
+
+## Install the Package
+
+```bash title="Install via pip"
+pip install vlrdevapi
+```
+
+Or with uv:
+
+```bash title="Install via uv"
+uv add vlrdevapi
+```
+
+</Step>
+
+<Step>
+
+## Import and Verify
+
+```python title="Quick verification"
+import vlrdevapi as vlr
+
+# Check if VLR.gg is reachable
+if vlr.status.check_status():
+    print("Ready to use vlrdevapi!")
+else:
+    print("VLR.gg is currently unreachable")
+```
+
+</Step>
+
+<Step>
+
+## Your First Query
+
+<Tabs items={['Matches', 'Search', 'Events']}>
+<Tab value="Matches">
+
+```python title="Get upcoming matches"
+import vlrdevapi as vlr
+
+# Get next 5 upcoming matches
+matches = vlr.matches.upcoming(limit=5)
+
+for m in matches:
+    print(f"{m.event} - {m.event_phase}")
+    print(f"  {m.team1.name} vs {m.team2.name}")
+    print(f"  Time: {m.time}")
+```
+
+</Tab>
+<Tab value="Search">
+
+```python title="Search for teams and players"
+import vlrdevapi as vlr
+
+# Search across all categories
+results = vlr.search.search('sentinels')
+
+print(f"Found {results.total_results} results:")
+print(f"  Players: {len(results.players)}")
+print(f"  Teams: {len(results.teams)}")
+print(f"  Events: {len(results.events)}")
+```
+
+</Tab>
+<Tab value="Events">
+
+```python title="List ongoing events"
+import vlrdevapi as vlr
+from vlrdevapi.events import EventTier, EventStatus
+
+# Get ongoing VCT events
+events = vlr.events.list_events(
+    tier=EventTier.VCT,
+    status=EventStatus.ONGOING,
+    limit=5
+)
+
+for e in events:
+    print(f"{e.name} - {e.prize or 'TBD'}")
+```
+
+</Tab>
+</Tabs>
+
+</Step>
+
+<Step>
+
+## Rate Limiting
+
+By default, vlrdevapi limits requests to **10 per second** to avoid overloading VLR.gg servers. You can configure this:
+
+```python title="Configure rate limiting"
+import vlrdevapi as vlr
+
+# Set custom rate (5 requests per second)
+vlr.configure_rate_limit(requests_per_second=5)
+
+# Disable rate limiting (not recommended)
+vlr.configure_rate_limit(enabled=False)
+
+# Re-enable with default settings
+vlr.configure_rate_limit(requests_per_second=10, enabled=True)
+```
+
+<Callout type="info" title="Recommended Settings">
+Keep rate limiting enabled to be respectful to VLR.gg servers. The default of 10 requests/second works well for most use cases.
+</Callout>
+
+</Step>
+
+<Step>
+
+## Explore the API
+
+<Callout type="success" title="You're all set!">
+Check out the full API documentation to discover all available endpoints and models.
+</Callout>
+
+**Next steps:**
+- [API Overview](/api/index) - Explore all modules
+- [Matches](/api/matches/index) - Browse matches
+- [Search](/api/search/index) - Search functionality
+- [Events](/api/events/index) - Event listings
+- [Players](/api/players/index) - Player profiles
+- [Teams](/api/teams/index) - Team information
+- [Series](/api/series/index) - Match details
+
+</Step>
+</Steps>

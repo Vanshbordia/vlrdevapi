@@ -1,0 +1,168 @@
+---
+title: teams.transactions()
+description: Get all team transactions (joins, leaves, inactive status changes)
+icon: arrow-right-left
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { History, Info } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.teams.transactions(
+    team_id: int,
+    timeout: float = 5.0
+) -> list[PlayerTransaction]
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    team_id: {
+      type: 'int',
+      description: 'Team ID',
+      required: true,
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `list[PlayerTransaction]`
+
+Returns a list of player transactions ordered by date (most recent first).
+
+<TypeTable
+  type={{
+    date: {
+      type: 'date | None',
+      description: 'Transaction date',
+    },
+    action: {
+      type: 'str | None',
+      description: 'Action type (e.g., "join", "leave", "inactive")',
+    },
+    player_id: {
+      type: 'int | None',
+      description: 'Player ID',
+    },
+    ign: {
+      type: 'str | None',
+      description: 'In-game name',
+    },
+    real_name: {
+      type: 'str | None',
+      description: 'Real name',
+    },
+    country: {
+      type: 'str | None',
+      description: 'Country',
+    },
+    position: {
+      type: 'str | None',
+      description: 'Position (e.g., "Player", "Head Coach")',
+    },
+    reference_url: {
+      type: 'str | None',
+      description: 'Reference URL',
+    },
+  }}
+/>
+
+## Examples
+
+### Get Team Transactions
+
+```python title="Get team transactions"
+import vlrdevapi as vlr
+
+# Get all transactions
+transactions = vlr.teams.transactions(team_id=1034)
+
+print(f"Total transactions: {len(transactions)}")
+for txn in transactions[:10]:  # Show recent 10
+    date_str = txn.date.strftime('%Y/%m/%d') if txn.date else 'Unknown'
+    print(f"{date_str}: {txn.ign} - {txn.action} ({txn.position})")
+```
+
+### Filter by Action Type
+
+```python title="Filter by action type"
+import vlrdevapi as vlr
+
+transactions = vlr.teams.transactions(team_id=1034)
+
+# Filter by action
+joins = [t for t in transactions if t.action == "join"]
+leaves = [t for t in transactions if t.action == "leave"]
+inactive = [t for t in transactions if t.action == "inactive"]
+
+print(f"Joins: {len(joins)}")
+print(f"Leaves: {len(leaves)}")
+print(f"Inactive: {len(inactive)}")
+```
+
+### Analyze Roster Changes
+
+```python title="Analyze roster changes"
+import vlrdevapi as vlr
+from datetime import datetime, timedelta
+
+transactions = vlr.teams.transactions(team_id=1034)
+
+# Get transactions from last 90 days
+ninety_days_ago = datetime.now().date() - timedelta(days=90)
+recent = [t for t in transactions if t.date and t.date >= ninety_days_ago]
+
+print(f"Recent changes (last 90 days): {len(recent)}")
+for txn in recent:
+    print(f"  {txn.date}: {txn.ign} - {txn.action}")
+```
+
+## Error Handling
+
+- **Network failures**: Returns an empty list `[]`
+- **Invalid team ID**: Returns an empty list `[]`
+- **No transactions**: Returns an empty list `[]`
+
+The function never raises exceptions, making it safe to use without try-catch blocks.
+
+## Tips
+
+- Check list length before accessing: `if transactions:`
+- All optional fields can be `None` - check before using
+- Transactions are ordered by date (most recent first)
+- Dates can be `None` if not available on VLR.gg
+- Use with `previous_players()` for calculated player status
+- Transaction actions include: "join", "leave", "inactive", and others
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/teams/previous-players"
+    title="teams.previous_players()"
+    description="Get previous players with status"
+    icon={<History className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/teams/info"
+    title="teams.info()"
+    description="Get team information"
+    icon={<Info className="h-5 w-5" />}
+  />
+</Cards>
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/team/transactions/{team_id}`

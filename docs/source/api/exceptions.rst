@@ -8,17 +8,17 @@ Exception Hierarchy
 
 .. code-block:: text
 
-   VLRAPIError (base exception)
+   VlrdevapiError (base exception)
    ├── NetworkError
    └── RateLimitError
 
 Exception Classes
 -----------------
 
-VLRAPIError
+VlrdevapiError
 ~~~~~~~~~~~
 
-.. autoclass:: vlrdevapi.exceptions.VLRAPIError
+.. autoclass:: vlrdevapi.exceptions.VlrdevapiError
    :members:
    :undoc-members:
 
@@ -85,11 +85,11 @@ Catch All Library Errors
 .. code-block:: python
 
    import vlrdevapi as vlr
-   from vlrdevapi.exceptions import VLRAPIError
+   from vlrdevapi.exceptions import VlrdevapiError
 
    try:
        profile = vlr.players.profile(player_id=4164)
-   except VLRAPIError as e:
+   except VlrdevapiError as e:
        print(f"API error: {e}")
 
 Specific Error Handling
@@ -144,7 +144,7 @@ Logging Errors
 .. code-block:: python
 
    import vlrdevapi as vlr
-   from vlrdevapi.exceptions import VLRAPIError
+   from vlrdevapi.exceptions import VlrdevapiError
    import logging
 
    logging.basicConfig(level=logging.ERROR)
@@ -152,7 +152,7 @@ Logging Errors
 
    try:
        matches = vlr.matches.upcoming()
-   except VLRAPIError as e:
+   except VlrdevapiError as e:
        logger.error(f"Failed to fetch matches: {e}", exc_info=True)
 
 Best Practices
@@ -181,6 +181,7 @@ Catch specific exceptions when possible:
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    from vlrdevapi.exceptions import RateLimitError, NetworkError
 
    try:
@@ -199,6 +200,7 @@ When rate limited, wait before retrying:
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    import time
    from vlrdevapi.exceptions import RateLimitError
 

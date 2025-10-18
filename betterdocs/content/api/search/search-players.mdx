@@ -1,0 +1,168 @@
+---
+title: search.search_players()
+description: Search for players
+icon: user
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Shield, Search } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.search.search_players(
+    query: str,
+    timeout: float = 5.0
+) -> list[SearchPlayerResult]
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    query: {
+      type: 'str',
+      description: 'Player name or handle (IGN)',
+      required: true,
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `list[SearchPlayerResult]`
+
+Returns a list of player search results.
+
+<TypeTable
+  type={{
+    player_id: {
+      type: 'int',
+      description: 'Player ID',
+      required: true,
+    },
+    url: {
+      type: 'str',
+      description: 'Player URL',
+      required: true,
+    },
+    ign: {
+      type: 'str | None',
+      description: 'In-game name',
+    },
+    real_name: {
+      type: 'str | None',
+      description: 'Real name',
+    },
+    country: {
+      type: 'str | None',
+      description: 'Country',
+    },
+    image_url: {
+      type: 'str | None',
+      description: 'Player image URL',
+    },
+  }}
+/>
+
+## Examples
+
+### Search for Players
+
+```python title="Search for players"
+import vlrdevapi as vlr
+
+# Search for players
+players = vlr.search.search_players("tenz")
+
+print(f"Found {len(players)} players")
+for p in players:
+    print(f"{p.ign} ({p.real_name})")
+    print(f"  Country: {p.country}")
+    print(f"  URL: {p.url}")
+```
+
+### Get Player Details
+
+```python title="Get player details"
+import vlrdevapi as vlr
+import time
+
+# Search and get full profile
+players = vlr.search.search_players("aspas")
+
+for player in players:
+    print(f"\nFound: {player.ign}")
+    
+    # Get detailed profile
+    profile = vlr.players.profile(player.player_id)
+    if profile:
+        print(f"  Real Name: {profile.real_name}")
+        print(f"  Country: {profile.country}")
+        if profile.current_teams:
+            teams = ", ".join(t.name for t in profile.current_teams if t.name)
+            print(f"  Current Teams: {teams}")
+    time.sleep(1)  # Small delay to avoid overwhelming the server
+```
+
+### Search Multiple Players
+
+```python title="Search multiple players"
+import vlrdevapi as vlr
+import time
+
+player_names = ["tenz", "aspas", "derke"]
+
+for name in player_names:
+    results = vlr.search.search_players(name)
+    if results:
+        top_result = results[0]
+        print(f"{name}: {top_result.ign} (ID: {top_result.player_id})")
+    else:
+        print(f"{name}: No results found")
+    time.sleep(1)  # Small delay to avoid overwhelming the server
+```
+
+## Error Handling
+
+- **Network failures**: Returns an empty list `[]`
+- **No results found**: Returns an empty list `[]`
+- **Empty query**: Returns an empty list `[]`
+
+The function never raises exceptions, making it safe to use without try-catch blocks.
+
+## Tips
+
+- Results are enriched with `players.profile()` when possible to fill in missing fields
+- Check list length before accessing results: `if players:`
+- All optional fields can be `None` - check before using
+- Use the `player_id` to fetch detailed information with `players.profile()`
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/search/search"
+    title="search.search()"
+    description="Unified search across all types"
+    icon={<Search className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/search/search-teams"
+    title="search.search_teams()"
+    description="Search for teams"
+    icon={<Shield className="h-5 w-5" />}
+  />
+</Cards>
+
+## Source
+
+Data scraped from: `https://www.vlr.gg/search/?q={query}&type=players`

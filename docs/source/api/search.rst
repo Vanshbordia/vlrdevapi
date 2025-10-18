@@ -6,7 +6,7 @@ The search module provides a unified interface to search VLR.gg for players, tea
 Overview
 --------
 
-The search module is the easiest way to find anything on VLR.gg. It searches across all entity types and enriches results with additional data like country information.
+The search module is the easiest way to find anything on VLR.gg. By default it searches across all entity types and enriches results with additional data like country information. Pass ``enrich=False`` to ``vlr.search.search`` if you want the fastest raw results with no additional network calls.
 
 .. automodule:: vlrdevapi.search
    :members:
@@ -23,6 +23,14 @@ Search across all types (players, teams, events, series).
 
 .. autofunction:: vlrdevapi.search.search
    :noindex:
+
+Keyword Arguments:
+
+* ``enrich`` – defaults to ``True``. When ``False`` the function returns raw search cards without additional requests to team/player detail pages.
+
+Caching:
+
+* Results are cached in process via ``vlr.fetcher``. Clear the cache with ``vlr.fetcher.clear_cache()`` before re-running the same query if you need fresh data.
 
 search_players
 ~~~~~~~~~~~~~~
@@ -131,6 +139,7 @@ Type-Specific Searches
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    # Search only players
    players = vlr.search.search_players("tenz")
    for player in players:

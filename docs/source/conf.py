@@ -1,18 +1,26 @@
 import os
 import sys
+import importlib.metadata as _metadata
 sys.path.insert(0, os.path.abspath('../../src'))
 
 project = 'vlrdevapi'
 copyright = '2025, Vansh'
 author = 'Vansh'
-release = '1.0.0'
+
+# The full version, including alpha/beta/rc tags
+try:
+    release = _metadata.version("vlrdevapi")
+except _metadata.PackageNotFoundError:
+    release = "1.0.0"
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autodoc.typehints',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.intersphinx',
     'sphinx.ext.autosummary',
+    'sphinx_copybutton',
 ]
 
 autodoc_default_options = {

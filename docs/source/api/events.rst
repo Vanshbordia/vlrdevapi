@@ -26,6 +26,7 @@ Use ``EventTier`` and ``EventStatus`` enums for autocomplete support:
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    from vlrdevapi import EventTier, EventStatus
    events = vlr.events.list_events(tier=EventTier.VCT, status=EventStatus.ONGOING)
 
@@ -174,8 +175,7 @@ Get Event Matches
    matches = vlr.events.matches(event_id=2498)
    
    for match in matches:
-       team1, team2 = match.teams
-       print(f"{team1.name} vs {team2.name}")
+       print(f"{match.teams[0].name} vs {match.teams[1].name}")
        print(f"Status: {match.status}")
 
 Get Event Standings

@@ -147,6 +147,7 @@ Timespan Options
 
 .. code-block:: python
 
+   import vlrdevapi as vlr
    # Available timespans: "30d", "60d", "90d", "all"
    stats_30d = vlr.players.agent_stats(player_id=4164, timespan="30d")
    stats_all = vlr.players.agent_stats(player_id=4164, timespan="all")
