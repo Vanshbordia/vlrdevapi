@@ -83,12 +83,6 @@ Returns a SearchResults object containing all matching results.
   }}
 />
 
-## Implementation Notes
-
-- Models returned by `vlrdevapi.search` are implemented as frozen Python dataclasses.
-- Optional fields use modern union syntax like `str | None`.
-- Result lists (`players`, `teams`, `events`, `series`) are always present; they may be empty but are never `None`.
-- For serialization, prefer `dataclasses.asdict(instance)` if you need a dict.
 
 ## Examples
 
@@ -139,22 +133,12 @@ for p in results.players:
 
 ```python title="Search and get details"
 import vlrdevapi as vlr
-import time
 
 # Search for teams
 results = vlr.search.search("nrg", search_type="teams")
 
-for team in results.teams:
-    print(f"\nTeam: {team.name}")
-    print(f"  ID: {team.team_id}")
-    print(f"  Country: {team.country}")
-    print(f"  Active: {not team.is_inactive}")
-
-    # Get detailed team info
-    team_info = vlr.teams.roster(team.team_id)
-    if team_info:
-        print(f"  Players: {len(team_info)}")
-    time.sleep(1)  # Small delay to avoid overwhelming the server
+for team in results.teams[:3]:  # First 3 teams
+    print(f"Team: {team.name} (ID: {team.team_id}) - {team.country}")
 ```
 
 ## Error Handling
@@ -165,13 +149,7 @@ for team in results.teams:
 
 Always check list lengths before iterating.
 
-## Tips
 
-- All result lists are always present, never `None` - check with `if results.players:`
-- Player and team results are enriched using `players.profile()` and `teams.info()` when possible
-- Use specific helpers like `search_players()` if you only need one type
-- The `search_type` parameter filters results server-side for better performance
-- Empty or whitespace-only queries return zero results immediately
 
 ## Related
 

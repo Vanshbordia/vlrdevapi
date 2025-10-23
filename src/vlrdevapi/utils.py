@@ -1,6 +1,7 @@
 """Common utility functions for parsing HTML and data extraction."""
 
 import datetime
+import unicodedata
 import re
 from functools import lru_cache
 from urllib import parse
@@ -20,8 +21,15 @@ _DAY_YEAR_RE = re.compile(r"^\d{1,2},\s*\d{4}$")
 
 
 def extract_text(element: Tag | None) -> str:
-    """Extract text from a BeautifulSoup element."""
-    return element.get_text(strip=True) if element else ""
+    """Extract text from a BeautifulSoup element (normalized to NFC)."""
+    if not element:
+        return ""
+    raw = element.get_text(strip=True)
+    # Normalize to NFC to ensure symbols (e.g., infinity) are consistent across platforms
+    try:
+        return unicodedata.normalize("NFC", raw)
+    except Exception:
+        return raw
 
 
 @lru_cache(maxsize=512)

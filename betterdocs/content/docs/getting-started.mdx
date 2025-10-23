@@ -30,7 +30,7 @@ uv add vlrdevapi
 
 ## Import and Verify
 
-```python title="Quick verification"
+```python title="Quick Verification"
 import vlrdevapi as vlr
 
 # Check if VLR.gg is reachable
@@ -49,7 +49,7 @@ else:
 <Tabs items={['Matches', 'Search', 'Events']}>
 <Tab value="Matches">
 
-```python title="Get upcoming matches"
+```python title="Get Upcoming Matches"
 import vlrdevapi as vlr
 
 # Get next 5 upcoming matches
@@ -64,7 +64,7 @@ for m in matches:
 </Tab>
 <Tab value="Search">
 
-```python title="Search for teams and players"
+```python title="Search for Teams and Players"
 import vlrdevapi as vlr
 
 # Search across all categories
@@ -79,7 +79,7 @@ print(f"  Events: {len(results.events)}")
 </Tab>
 <Tab value="Events">
 
-```python title="List ongoing events"
+```python title="List Ongoing Events"
 import vlrdevapi as vlr
 from vlrdevapi.events import EventTier, EventStatus
 
@@ -103,23 +103,26 @@ for e in events:
 
 ## Rate Limiting
 
-By default, vlrdevapi limits requests to **10 per second** to avoid overloading VLR.gg servers. You can configure this:
+By default, vlrdevapi limits requests to **10 per second**. Adjust if needed:
 
-```python title="Configure rate limiting"
+```python title="Configure Rate Limiting"
 import vlrdevapi as vlr
 
-# Set custom rate (5 requests per second)
-vlr.configure_rate_limit(requests_per_second=5)
+# Check current RPS (0.0 means disabled)
+print(vlr.get_rate_limit())
 
-# Disable rate limiting (not recommended)
+# Set to 5 requests/second (enabled)
+vlr.configure_rate_limit(requests_per_second=5.0, enabled=True)
+
+# Disable temporarily (not recommended)
 vlr.configure_rate_limit(enabled=False)
 
-# Re-enable with default settings
-vlr.configure_rate_limit(requests_per_second=10, enabled=True)
+# Restore default (10 req/s, enabled)
+vlr.reset_rate_limit()
 ```
 
 <Callout type="info" title="Recommended Settings">
-Keep rate limiting enabled to be respectful to VLR.gg servers. The default of 10 requests/second works well for most use cases.
+Keep rate limiting enabled. The default of 10 requests/second is a good balance for most use cases.
 </Callout>
 
 </Step>

@@ -73,32 +73,6 @@ def get_team_data(team_id):
 data = get_team_data(1034)
 ```
 
-### Health Check
-
-```python title="Health check"
-import vlrdevapi as vlr
-import time
-
-def monitor_vlr_status(interval=300):
-    """Monitor VLR.gg status every interval seconds"""
-    while True:
-        status = vlr.status.check_status(timeout=3.0)
-        timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-        
-        if status:
-            print(f"[{timestamp}] VLR.gg: OK")
-        else:
-            print(f"[{timestamp}] VLR.gg: DOWN")
-        
-        time.sleep(interval)
-
-# Run monitor (uncomment to use)
-# monitor_vlr_status(300)  # Check every 5 minutes
-```
-
-## How It Works
-
-Internally performs a `HEAD` request to the VLR base URL (`https://www.vlr.gg`) to check availability without downloading the full page.
 
 ## Error Handling
 
@@ -108,12 +82,7 @@ Internally performs a `HEAD` request to the VLR base URL (`https://www.vlr.gg`) 
 
 The function never raises exceptions, making it safe to use as a pre-flight check.
 
-## Tips
-
-- Use before making multiple API calls to avoid unnecessary failures
-- Useful for health checks in monitoring systems
-- Lightweight operation (HEAD request only)
-- Does not download page content, only checks if server responds
+ 
 
 ## Source
 

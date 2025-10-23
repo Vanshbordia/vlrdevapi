@@ -130,9 +130,6 @@ Returns a list of matches for the event. Each `Match` object contains:
   }}
 />
 
-<Callout type="info" title="Team IDs Enrichment">
-This function automatically fetches team IDs by making additional requests to each match page. This ensures you get complete team information including IDs for further API calls.
-</Callout>
 
 ## Examples
 
@@ -219,15 +216,7 @@ for match in matches:
 
 The function never raises exceptions, making it safe to use without try-catch blocks.
 
-## Tips
 
-- The `teams` field is always a tuple of exactly 2 `MatchTeam` objects
-- Team IDs may be `None` for TBD (To Be Determined) teams
-- Use `match.status` to filter by match state: `"upcoming"`, `"ongoing"`, or `"completed"`
-- The `is_winner` field is only set for completed matches
-- Combine with `vlr.series.info(match_id)` to get detailed match information including picks/bans
-- Date parsing is automatic when available; check for `None` before using
-- The `stage` parameter is case-sensitive and must match exactly
 
 ## Related
 

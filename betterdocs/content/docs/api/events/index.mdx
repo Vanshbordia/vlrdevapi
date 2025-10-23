@@ -72,12 +72,6 @@ for e in events:
     print(f"  Dates: {e.start_text} - {e.end_text}")
 ```
 
-## Notes
-
-- Many functions return `None` or `[]` on network failures, keeping usage simple.
-- Use `EventTier` and `EventStatus` enums for type-safe filtering.
-- All date fields are parsed when available, with fallback text representations.
-
 Related
 
 - Search events: /docs/api/search/search-events

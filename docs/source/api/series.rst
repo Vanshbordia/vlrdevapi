@@ -183,3 +183,5 @@ Top Performers
        print(f"\n{map_data.map_name} - Top 3 Performers:")
        for player in sorted_players[:3]:
            print(f"  {player.name}: {player.acs} ACS, {player.k}/{player.d}/{player.a}")
+
+See more examples: :doc:`../examples`

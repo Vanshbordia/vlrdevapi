@@ -1,0 +1,85 @@
+---
+title: Constants
+description: Core configuration constants used by vlrdevapi
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+These constants define defaults for networking and rate limiting. Override behavior using public helpers where applicable.
+
+## Constants
+
+<TypeTable
+  type={{
+    VLR_BASE: {
+      type: 'str',
+      description: 'Base URL for VLR.gg',
+      required: true,
+    },
+    DEFAULT_TIMEOUT: {
+      type: 'float',
+      description: 'Default HTTP timeout in seconds',
+      required: true,
+    },
+    DEFAULT_USER_AGENT: {
+      type: 'str',
+      description: 'Default User-Agent header for requests',
+      required: true,
+    },
+    MAX_RETRIES: {
+      type: 'int',
+      description: 'Maximum number of retry attempts on failure',
+      required: true,
+    },
+    BACKOFF_FACTOR: {
+      type: 'float',
+      description: 'Exponential backoff multiplier between retries',
+      required: true,
+    },
+    DEFAULT_RATE_LIMIT: {
+      type: 'int',
+      description: 'Default requests-per-second limit (RPS)',
+      required: true,
+    },
+    DEFAULT_RATE_LIMIT_ENABLED: {
+      type: 'bool',
+      description: 'Whether rate limiting is enabled by default',
+      required: true,
+    },
+  }}
+/>
+
+## Usage
+
+```python title="Access constants (read-only)"
+from vlrdevapi import constants
+
+print(constants.VLR_BASE)
+print(constants.DEFAULT_TIMEOUT)
+```
+
+```python title="Change rate limiting (use helpers)"
+import vlrdevapi as vlr
+
+# Set to 5 RPS and enable
+vlr.configure_rate_limit(requests_per_second=5.0, enabled=True)
+
+# Restore defaults (10 RPS, enabled)
+vlr.reset_rate_limit()
+```
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/rate-limiting"
+    title="Rate Limiting"
+    description="Configure request throughput"
+  />
+  <Card
+    href="/docs/getting-started"
+    title="Getting Started"
+    description="Install and make your first requests"
+  />
+</Cards>

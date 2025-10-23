@@ -93,7 +93,6 @@ for p in players:
 
 ```python title="Get player details"
 import vlrdevapi as vlr
-import time
 
 # Search and get full profile
 players = vlr.search.search_players("aspas")
@@ -109,25 +108,6 @@ for player in players:
         if profile.current_teams:
             teams = ", ".join(t.name for t in profile.current_teams if t.name)
             print(f"  Current Teams: {teams}")
-    time.sleep(1)  # Small delay to avoid overwhelming the server
-```
-
-### Search Multiple Players
-
-```python title="Search multiple players"
-import vlrdevapi as vlr
-import time
-
-player_names = ["tenz", "aspas", "derke"]
-
-for name in player_names:
-    results = vlr.search.search_players(name)
-    if results:
-        top_result = results[0]
-        print(f"{name}: {top_result.ign} (ID: {top_result.player_id})")
-    else:
-        print(f"{name}: No results found")
-    time.sleep(1)  # Small delay to avoid overwhelming the server
 ```
 
 ## Error Handling
@@ -138,12 +118,7 @@ for name in player_names:
 
 The function never raises exceptions, making it safe to use without try-catch blocks.
 
-## Tips
-
-- Results are enriched with `players.profile()` when possible to fill in missing fields
-- Check list length before accessing results: `if players:`
-- All optional fields can be `None` - check before using
-- Use the `player_id` to fetch detailed information with `players.profile()`
+ 
 
 ## Related
 

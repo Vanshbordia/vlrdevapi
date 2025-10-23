@@ -5,7 +5,7 @@ description: Install and set up vlrdevapi for Python
 
 ## Requirements
 
-- Python 3.9+
+- Python 3.11+
 - pip or uv/poetry
 
 ## Install
@@ -21,7 +21,31 @@ uv add vlrdevapi
 ```python
 import vlrdevapi as vlr
 print(vlr.__version__)
-print(vlr.status.check_status())
+
+# Optional: check site reachability (if using the status helper)
+try:
+    from vlrdevapi import status
+    print(status.check_status())
+except Exception:
+    # status helper may not be available in all builds
+    pass
 ```
 
-If `check_status()` returns `False`, VLR.gg may be down or blocked.
+If the status helper (when available) returns `False`, VLR.gg may be down or blocked.
+
+## Optional: Configure Rate Limiting
+
+```python
+import vlrdevapi as vlr
+
+# Check current RPS (0.0 means disabled)
+print(vlr.get_rate_limit())
+
+# Set to 5 requests/second and enable
+vlr.configure_rate_limit(requests_per_second=5.0, enabled=True)
+
+# Restore defaults (10 req/s, enabled)
+vlr.reset_rate_limit()
+```
+
+See: [Rate Limiting](/docs/rate-limiting)

@@ -164,53 +164,6 @@ for event in events:
         print(f"{event.name} - {duration} days")
 ```
 
-### Find Events by Region
-
-```python title="Find events by region"
-import vlrdevapi as vlr
-
-# Get all upcoming events in Americas
-na_events = vlr.events.list_events(
-    region="Americas",
-    status="upcoming",
-    limit=15
-)
-
-print(f"Americas events: {len(na_events)}")
-for event in na_events[:5]:  # Show first 5
-    print(f"• {event.name} ({event.tier})")
-```
-
-### Search by Tier String
-
-```python title="Search by tier string"
-import vlrdevapi as vlr
-
-# Get all VCL events (using string instead of enum)
-vcl_events = vlr.events.list_events(tier="vcl")
-
-print(f"VCL events: {len(vcl_events)}")
-for event in vcl_events:
-    if event.prize:
-        print(f"{event.name} - {event.prize}")
-```
-
-### Count Events by Status
-
-```python title="Count events by status"
-import vlrdevapi as vlr
-from collections import Counter
-
-# Get recent events
-events = vlr.events.list_events(limit=100)
-
-# Count by status
-status_counts = Counter(event.status for event in events)
-print("Event status distribution:")
-for status, count in status_counts.items():
-    print(f"  {status.title()}: {count}")
-```
-
 ## Error Handling
 
 - **Network failures**: Returns an empty list `[]`
@@ -219,11 +172,7 @@ for status, count in status_counts.items():
 
 The function never raises exceptions, making it safe to use without try-catch blocks.
 
-## Tips
-
-- Use `EventTier` and `EventStatus` enums for IDE autocomplete and type safety
-- Combine `limit` with `page` for efficient pagination through large result sets
-- Filter by `region` to narrow down results to specific geographic areas
+ 
 
 ## Related
 

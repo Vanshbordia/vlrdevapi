@@ -26,6 +26,7 @@ _DEFAULT_HEADERS = {
     "User-Agent": DEFAULT_USER_AGENT,
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Charset": "utf-8",
     "Accept-Encoding": "gzip, deflate, br",
     "Cache-Control": "max-age=0",
     "Sec-Ch-Ua": '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
@@ -318,6 +319,11 @@ def fetch_html_with_retry(
             elif status >= 400:
                 raise NetworkError(f"HTTP {status} on {url}")
             else:
+                # Force UTF-8 decoding to ensure consistent unicode behavior
+                try:
+                    response.encoding = "utf-8"
+                except Exception:
+                    pass
                 return response.text
 
         if attempt < max_retries and last_exception is not None:
@@ -375,6 +381,10 @@ async def fetch_html_with_retry_async(
             elif status >= 400:
                 raise NetworkError(f"HTTP {status} on {url}")
             else:
+                try:
+                    response.encoding = "utf-8"
+                except Exception:
+                    pass
                 return response.text
 
         if attempt < max_retries and last_exception is not None:
@@ -528,32 +538,28 @@ def batch_fetch_html(
     return results
 
 
-def set_rate_limit(requests_per_second: float) -> None:
-    """Set the global rate limit for requests.
-    
-    Args:
-        requests_per_second: Maximum number of requests per second (e.g., 10.0).
-                           Set to 0 or negative to disable rate limiting.
-    
-    Example:
-        >>> import vlrdevapi as vlr
-        >>> # Increase rate limit to 20 requests/second
-        >>> vlr.fetcher.set_rate_limit(20.0)
-        >>> 
-        >>> # Disable rate limiting (not recommended)
-        >>> vlr.fetcher.set_rate_limit(0)
-    """
-    global _RATE_LIMIT_REQUESTS_PER_SECOND
-    _RATE_LIMIT_REQUESTS_PER_SECOND = max(0, requests_per_second)
 
 
 def get_rate_limit() -> float:
-    """Get the current rate limit setting.
+    """Get the current requests-per-second limit.
     
     Returns:
-        Current requests per second limit.
+        float: Current RPS limit. Returns 0.0 when rate limiting is disabled.
     """
-    return _RATE_LIMIT_REQUESTS_PER_SECOND
+    # When disabled, report 0.0 for clarity
+    return _rate_limit_requests_per_second if _rate_limit_enabled else 0.0
+
+
+def reset_rate_limit() -> None:
+    """Reset rate limiting to defaults from constants.
+    
+    Restores enabled/disabled state and the default RPS, and refreshes the
+    active limiter instance.
+    """
+    configure_rate_limit(
+        requests_per_second=float(DEFAULT_RATE_LIMIT),
+        enabled=bool(DEFAULT_RATE_LIMIT_ENABLED),
+    )
 
 
 def clear_cache() -> None:

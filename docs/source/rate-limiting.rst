@@ -24,18 +24,21 @@ You can adjust the rate limit to suit your needs:
    # docs-validate: skip
    import vlrdevapi as vlr
 
-   # Check current rate limit
-   current = vlr.fetcher.get_rate_limit()
+   # Check current rate limit (0.0 means disabled)
+   current = vlr.get_rate_limit()
    print(f"Current: {current} requests/second")
 
-   # Increase to 20 requests/second
-   vlr.fetcher.set_rate_limit(20.0)
+   # Increase to 20 requests/second (enabled)
+   vlr.configure_rate_limit(requests_per_second=20.0, enabled=True)
 
    # Decrease to 5 requests/second (more conservative)
-   vlr.fetcher.set_rate_limit(5.0)
+   vlr.configure_rate_limit(requests_per_second=5.0, enabled=True)
 
    # Disable rate limiting (NOT recommended)
-   vlr.fetcher.set_rate_limit(0)
+   vlr.configure_rate_limit(enabled=False)
+
+   # Restore defaults (10 req/s, enabled)
+   vlr.reset_rate_limit()
 
 How It Works
 ------------
@@ -57,7 +60,7 @@ Example
    import vlrdevapi as vlr
 
    # Set a conservative rate limit
-   vlr.fetcher.set_rate_limit(2.0)  # 2 requests/second
+   vlr.configure_rate_limit(requests_per_second=2.0, enabled=True)  # 2 requests/second
 
    start = time.time()
 
@@ -80,7 +83,7 @@ Rate limiting works seamlessly with batch fetching:
    import vlrdevapi as vlr
 
    # Set rate limit
-   vlr.fetcher.set_rate_limit(10.0)
+   vlr.configure_rate_limit(requests_per_second=10.0, enabled=True)
 
    # Batch fetch respects rate limit
    # Even though we use 4 workers, total rate won't exceed 10 req/s
@@ -112,7 +115,7 @@ Troubleshooting
 
    # docs-validate: skip
    # Decrease your rate limit
-   vlr.fetcher.set_rate_limit(5.0)
+   vlr.configure_rate_limit(requests_per_second=5.0, enabled=True)
 
 **Requests too slow?**
 
@@ -120,10 +123,10 @@ Troubleshooting
 
    # docs-validate: skip
    # Check current setting
-   print(vlr.fetcher.get_rate_limit())
+   print(vlr.get_rate_limit())
    
    # Increase cautiously
-   vlr.fetcher.set_rate_limit(15.0)
+   vlr.configure_rate_limit(requests_per_second=15.0, enabled=True)
 
 **Need to bypass for testing?**
 
@@ -131,12 +134,12 @@ Troubleshooting
 
    # docs-validate: skip
    # Disable temporarily (use with caution)
-   vlr.fetcher.set_rate_limit(0)
+   vlr.configure_rate_limit(enabled=False)
    
    # ... your test code ...
    
-   # Re-enable
-   vlr.fetcher.set_rate_limit(10.0)
+   # Re-enable defaults
+   vlr.reset_rate_limit()
 
 Technical Details
 -----------------

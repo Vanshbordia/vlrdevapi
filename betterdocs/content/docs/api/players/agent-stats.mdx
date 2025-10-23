@@ -162,112 +162,6 @@ for s in stats[:5]:  # Top 5 agents
         print(f"{s.agent}: {s.rating} rating, {s.acs} ACS")
 ```
 
-### Compare Agent Performance
-
-```python title="Compare agent performance"
-import vlrdevapi as vlr
-
-# Get agent stats
-stats = vlr.players.agent_stats(player_id=123)
-
-# Sort by rating
-sorted_stats = sorted(
-    [s for s in stats if s.rating is not None],
-    key=lambda x: x.rating,
-    reverse=True
-)
-
-print("Agents by Rating:")
-for s in sorted_stats[:5]:
-    print(f"{s.agent}: {s.rating} rating")
-    print(f"  ACS: {s.acs}, K/D: {s.kd}")
-    print(f"  Rounds: {s.rounds_played}")
-```
-
-### Analyze Agent Pool
-
-```python title="Analyze agent pool"
-import vlrdevapi as vlr
-
-# Get agent stats
-stats = vlr.players.agent_stats(player_id=123)
-
-# Filter agents with significant playtime
-main_agents = [
-    s for s in stats 
-    if s.usage_count and s.usage_count >= 5
-]
-
-print(f"Agent Pool: {len(main_agents)} agents with 5+ games")
-for s in main_agents:
-    usage_pct = f"{s.usage_percent * 100:.1f}%" if s.usage_percent else "N/A"
-    print(f"{s.agent}: {s.usage_count} games ({usage_pct})")
-```
-
-### Get Detailed Statistics
-
-```python title="Get detailed statistics"
-import vlrdevapi as vlr
-
-# Get agent stats
-stats = vlr.players.agent_stats(player_id=123, timespan="60d")
-
-for s in stats[:3]:  # Top 3 agents
-    if s.agent:
-        print(f"\n=== {s.agent} ===")
-        print(f"Games: {s.usage_count}")
-        print(f"Rounds: {s.rounds_played}")
-        print(f"\nCore Stats:")
-        print(f"  Rating: {s.rating}")
-        print(f"  ACS: {s.acs}")
-        print(f"  K/D: {s.kd}")
-        print(f"  ADR: {s.adr}")
-        print(f"  KAST: {s.kast * 100:.1f}%" if s.kast else "")
-        print(f"\nPer Round:")
-        print(f"  KPR: {s.kpr}")
-        print(f"  APR: {s.apr}")
-        print(f"  FKPR: {s.fkpr}")
-        print(f"  FDPR: {s.fdpr}")
-        print(f"\nTotals:")
-        print(f"  Kills: {s.kills}")
-        print(f"  Deaths: {s.deaths}")
-        print(f"  Assists: {s.assists}")
-```
-
-### Find Best Agent
-
-```python title="Find best agent"
-import vlrdevapi as vlr
-
-def find_best_agent(player_id, min_games=10):
-    stats = vlr.players.agent_stats(player_id)
-    
-    # Filter agents with minimum games
-    qualified = [
-        s for s in stats
-        if s.usage_count and s.usage_count >= min_games and s.rating
-    ]
-    
-    if not qualified:
-        return None
-    
-    # Sort by rating
-    best = max(qualified, key=lambda x: x.rating)
-    
-    return {
-        'agent': best.agent,
-        'rating': best.rating,
-        'games': best.usage_count,
-        'acs': best.acs,
-        'kd': best.kd
-    }
-
-best = find_best_agent(123, min_games=10)
-if best:
-    print(f"Best Agent: {best['agent']}")
-    print(f"  Rating: {best['rating']} ({best['games']} games)")
-    print(f"  ACS: {best['acs']}, K/D: {best['kd']}")
-```
 
 ## Error Handling
 
@@ -277,14 +171,7 @@ if best:
 
 The function never raises exceptions, making it safe to use without try-catch blocks.
 
-## Tips
 
-- All numeric fields can be `None` - check before using
-- `usage_percent` and `kast` are decimals (0-1), multiply by 100 for percentage
-- Timespan options: "all", "60d", "90d" (check VLR.gg for current options)
-- Stats are sorted by usage/playtime by default
-- Use `rating` or `acs` to identify best-performing agents
-- Filter by `usage_count` to focus on main agents
 
 ## Related
 

@@ -79,12 +79,6 @@ for member in roster:
     print(f"{captain}{member.ign} - {member.role} ({member.country})")
 ```
 
-## Notes
-
-- Returns `None`/`[]` on network failure to keep flows simple.
-- Team IDs can be found via search or from match listings.
-- Use `previous_players()` for historical roster analysis with calculated status.
-
 ## Source
 
 Data scraped from: `https://www.vlr.gg/team/{team_id}`

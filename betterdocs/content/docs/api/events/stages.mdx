@@ -92,19 +92,9 @@ else:
 
 ## Error Handling
 
-<Callout type="info">
-This helper returns an empty list if the event has no stage dropdown or the request fails.
-</Callout>
-
 - **Network failures**: Returns `[]`
 - **Invalid event ID**: Returns `[]`
 - **No stage dropdown**: Returns `[]`
-
-## Tips
-
-- Stage names match the labels displayed on VLR.gg exactly (case-insensitive when filtering).
-- `series_id="all"` represents the default “All Stages” option.
-- Use the returned URLs to inspect the raw page users would see for that stage.
 
 ## Related
 

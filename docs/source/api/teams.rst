@@ -279,42 +279,5 @@ Pagination
    
    print(f"Retrieved {len(matches_2)} matches")
    print(f"Retrieved {len(matches_5)} matches")
-   
 
-Complete Example
-~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   import vlrdevapi as vlr
-
-   # Comprehensive team analysis
-   team_id = 799  # Velocity Gaming
-   
-   # Get team info
-   info = vlr.teams.info(team_id=team_id)
-   print(f"Team: {info.name} ({info.tag})")
-   print(f"Region: {info.country}")
-   
-   # Get roster
-   roster = vlr.teams.roster(team_id=team_id)
-   print(f"\nRoster: {len(roster)} players")
-   
-   # Get recent matches
-   recent = vlr.teams.completed_matches(team_id=team_id, limit=5)
-   print(f"\nLast 5 matches:")
-   for match in recent:
-       result = f"{match.team1.score}-{match.team2.score}"
-       print(f"  {match.team1.name} vs {match.team2.name}: {result}")
-       if match.match_datetime:
-           print(f"    Date: {match.match_datetime.strftime('%B %d, %Y')}")
-   
-   # Get placements
-   placements = vlr.teams.placements(team_id=team_id)
-   print(f"\nTotal events participated: {len(placements)}")
-   
-   # Show top 3 recent placements
-   for placement in placements[:3]:
-       print(f"\n{placement.event_name} ({placement.year})")
-       for detail in placement.placements:
-           print(f"  {detail.series}: {detail.place} - {detail.prize_money}")
+See more examples: :doc:`../examples`

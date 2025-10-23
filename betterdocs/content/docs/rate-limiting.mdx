@@ -1,0 +1,76 @@
+---
+title: Rate Limiting
+description: Configure request rate limiting for vlrdevapi
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+vlrdevapi provides a built-in, global rate limiter so you can avoid overwhelming VLR.gg and reduce 429 errors.
+
+## Default
+
+- Enabled by default
+- Requests per second (RPS): 10
+
+## API
+
+```python title="Public helpers"
+import vlrdevapi as vlr
+
+# Get current RPS (0.0 means disabled)
+current = vlr.get_rate_limit()
+
+# Change RPS and enable/disable
+vlr.configure_rate_limit(requests_per_second=5.0, enabled=True)
+vlr.configure_rate_limit(enabled=False)  # disable
+
+# Restore defaults (10 RPS, enabled)
+vlr.reset_rate_limit()
+```
+
+## Examples
+
+```python title="Lower rate for sensitive flows"
+import vlrdevapi as vlr
+
+# Temporarily reduce to 3 RPS
+vlr.configure_rate_limit(requests_per_second=3.0, enabled=True)
+
+# ... do your calls ...
+
+# Restore defaults
+vlr.reset_rate_limit()
+```
+
+```python title="Disable briefly (not recommended)"
+import vlrdevapi as vlr
+
+# Disable limiter (0.0 when disabled)
+vlr.configure_rate_limit(enabled=False)
+print(vlr.get_rate_limit())  # 0.0
+
+# Re-enable at 10 RPS
+vlr.reset_rate_limit()
+```
+
+## Error Handling
+
+- The limiter is applied automatically by all network calls.
+- When disabled, no waiting is applied.
+- If VLR.gg responds with HTTP 429, a `RateLimitError` is raised.
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/getting-started"
+    title="Getting Started"
+    description="Basics and first requests"
+  />
+  <Card
+    href="/docs/api"
+    title="API Reference"
+    description="All modules and endpoints"
+  />
+</Cards>

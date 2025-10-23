@@ -94,7 +94,6 @@ for t in teams:
 
 ```python title="Get team details"
 import vlrdevapi as vlr
-import time
 
 # Search and get full info
 teams = vlr.search.search_teams("nrg")
@@ -111,7 +110,7 @@ for team in teams:
         print(f"  Players: {len(roster)}")
         if roster:
             print(f"  Roster: {', '.join(p.ign for p in roster[:5] if p.ign)}")
-    time.sleep(1)  # Small delay to avoid overwhelming the server
+```
 ```
 
 ### Filter Active Teams
@@ -136,13 +135,7 @@ for team in active_teams:
 
 The function never raises exceptions, making it safe to use without try-catch blocks.
 
-## Tips
-
-- Team results are enriched with `teams.info()` when available to fix name/country and set active status
-- Check list length before accessing results: `if teams:`
-- All optional fields can be `None` - check before using
-- Use the `team_id` to fetch detailed information with `teams.info()`
-- The `is_inactive` field is always present (defaults to `False`)
+ 
 
 ## Related
 

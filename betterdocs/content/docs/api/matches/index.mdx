@@ -47,17 +47,6 @@ for m in matches:
         print(f"  IDs: {m.team1.id} vs {m.team2.id}")
 ```
 
-## Notes
-
-- Team IDs are enriched by quickly opening the match header. They may be `None` for TBD teams.
-- Network failures return an empty list.
-- All functions support pagination for browsing large result sets.
-
-## Typing
-
-- Return types use modern Python typing: `list[Match]`, `int | None`, and `Literal['upcoming','live','completed']` for `Match.status`.
-- `matches.live()` accepts an optional `limit` parameter to cap results (internally capped at 500), consistent with other endpoints.
-
 ## Source
 
 Data scraped from: `https://www.vlr.gg/matches` and `https://www.vlr.gg/matches/results`
