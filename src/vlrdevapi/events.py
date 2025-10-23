@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 from .constants import VLR_BASE, DEFAULT_TIMEOUT
-from .countries import map_country_code
+from .countries import map_country_code, COUNTRY_MAP
 from .fetcher import fetch_html, batch_fetch_html
 from .exceptions import NetworkError
 from .utils import (
@@ -340,6 +340,82 @@ def stages(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> list[EventStage]:
     return stages_list
 
 
+def _normalize_regions(tags: list[str]) -> list[str]:
+    """Normalize region tags according to business rules.
+
+    Rules:
+    - Allowed main regions: EMEA, Pacific, China, Americas
+    - If multiple of these main regions are present, return ["international"]
+    - If exactly one main region is present, keep it as first; then include only valid countries
+      (any value present in COUNTRY_MAP values). Discard anything else.
+    - If no main region is present, return only valid countries (if any). Otherwise, return [].
+    """
+    if not tags:
+        return []
+
+    # Deduplicate while preserving order
+    seen: set[str] = set()
+    unique_tags: list[str] = []
+    for t in tags:
+        t_norm = (t or "").strip()
+        if not t_norm:
+            continue
+        if t_norm not in seen:
+            seen.add(t_norm)
+            unique_tags.append(t_norm)
+
+    # Canonical main region names and case-insensitive detection
+    REGION_CANON = {
+        "emea": "EMEA",
+        "pacific": "Pacific",
+        "china": "China",
+        "americas": "Americas",
+    }
+    country_name_set_lower = {v.lower(): v for v in COUNTRY_MAP.values()}
+
+    # Resolve main regions case-insensitively to canonical casing
+    main_regions_canonical: list[str] = []
+    for t in unique_tags:
+        key = t.lower()
+        if key in REGION_CANON and REGION_CANON[key] not in main_regions_canonical:
+            main_regions_canonical.append(REGION_CANON[key])
+
+    # Resolve countries case-insensitively to canonical names
+    countries_canonical: list[str] = []
+    for t in unique_tags:
+        v = country_name_set_lower.get(t.lower())
+        if v and v not in countries_canonical:
+            countries_canonical.append(v)
+
+    # Exclude any country entries that are actually main regions (e.g., "China")
+    countries_canonical = [c for c in countries_canonical if c not in REGION_CANON.values()]
+
+    if len(main_regions_canonical) >= 2:
+        # International followed by all detected main regions and valid countries, no duplicates
+        combined = ["International"] + main_regions_canonical + countries_canonical
+        seen_out: set[str] = set()
+        out: list[str] = []
+        for x in combined:
+            if x not in seen_out:
+                seen_out.add(x)
+                out.append(x)
+        return out
+
+    if len(main_regions_canonical) == 1:
+        combined = [main_regions_canonical[0]] + countries_canonical
+        seen_out: set[str] = set()
+        out: list[str] = []
+        for x in combined:
+            if x not in seen_out:
+                seen_out.add(x)
+                out.append(x)
+        return out
+
+    # No main regions; include only valid countries
+    # No main regions; include only valid countries (deduped already)
+    return countries_canonical
+
+
 def info(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Info | None:
     """
     Get event header/info.
@@ -402,7 +478,7 @@ def info(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Info | None:
         date_text=date_text,
         prize=prize_text,
         location=location_text,
-        regions=regions,
+        regions=_normalize_regions(regions),
     )
 
 
