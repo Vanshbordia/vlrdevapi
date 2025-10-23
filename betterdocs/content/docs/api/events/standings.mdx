@@ -31,7 +31,7 @@ result = vlr.events.standings(
     },
     stage: {
       type: 'str | None',
-      description: 'Optional stage filter (currently unused, reserved for future use)',
+      description: 'Optional stage filter. Must match a stage name from the header subnav (e.g., "Playoffs", "Regular Season"). Case-insensitive. See `events.stages()` for available names.',
       default: 'None',
     },
     timeout: {
@@ -57,7 +57,8 @@ Returns event standings with prize distribution or `None` if not found.
     },
     stage_path: {
       type: 'str',
-      description: 'Stage path identifier',
+      typeDescription: 'Slug path (matches the portion after /event/...)',
+      description: 'Stage path identifier used to build stage-specific URLs',
       required: true,
     },
     entries: {
@@ -67,7 +68,7 @@ Returns event standings with prize distribution or `None` if not found.
     },
     url: {
       type: 'str',
-      description: 'Full URL to standings page on VLR.gg',
+      description: 'Full URL to the standings page for the selected stage on VLR.gg',
       required: true,
     },
   }}
@@ -112,8 +113,8 @@ Returns event standings with prize distribution or `None` if not found.
 ```python title="Get event standings"
 import vlrdevapi as vlr
 
-# Get standings for an event
-standings = vlr.events.standings(event_id=1189)
+# Get standings for an event (all stages)
+standings = vlr.events.standings(event_id=2498)
 
 if standings:
     print(f"Prize Distribution - {len(standings.entries)} teams")
@@ -185,6 +186,27 @@ if standings:
                 print(f"{entry.team_name}: ${prize:,.0f}")
 ```
 
+### Filter by Stage
+
+```python title="Filter standings by stage"
+import vlrdevapi as vlr
+
+# Discover available stage names (case-insensitive)
+stages = vlr.events.stages(event_id=2498)
+stage_names = [stage.name for stage in stages]
+print("Available stages:", stage_names)
+
+# Fetch only the Playoffs standings
+standings = vlr.events.standings(event_id=2498, stage="Playoffs")
+
+if standings:
+    print(f"Source: {standings.url}")
+    for entry in standings.entries[:5]:
+        print(f"{entry.place}: {entry.team_name} - {entry.prize or 'N/A'}")
+else:
+    print("Standings unavailable for the requested stage")
+```
+
 ### Find Team Placement
 
 ```python title="Find team placement"
@@ -210,7 +232,7 @@ def find_team_placement(event_id, team_name):
     return None
 
 # Find a specific team
-result = find_team_placement(1189, "LOUD")
+result = find_team_placement(2498, "LOUD")
 
 if result:
     print(f"Team: {result['team_name']}")
@@ -244,7 +266,7 @@ def compare_event_prizes(event_ids):
     return results
 
 # Compare multiple events
-events_to_compare = [1189, 1190, 1191]  # Replace with actual event IDs
+events_to_compare = [2498, 2498, 2498]  # Replace with actual event IDs
 comparison = compare_event_prizes(events_to_compare)
 
 print("Event Prize Comparison:")
@@ -272,6 +294,7 @@ Always check if the return value is not `None` before accessing properties.
 - Team IDs may be `None` for teams that haven't been determined yet
 - The `note` field may contain additional information like qualification status
 - Standings are typically available only for completed or ongoing events
+- Use `events.stages()` to list valid stage names before calling `events.standings()` with the `stage` parameter
 
 ## Related
 

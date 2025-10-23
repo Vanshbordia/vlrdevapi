@@ -86,7 +86,7 @@ Returns event header information or `None` if the event is not found.
 import vlrdevapi as vlr
 
 # Get event details
-event = vlr.events.info(event_id=1189)
+event = vlr.events.info(event_id=2498)
 
 if event:
     print(f"Event: {event.name}")
@@ -109,7 +109,7 @@ else:
 import vlrdevapi as vlr
 
 # Get event info and matches
-event = vlr.events.info(event_id=1189)
+event = vlr.events.info(event_id=2498)
 
 if event:
     print(f"=== {event.name} ===")
@@ -129,7 +129,7 @@ if event:
 import vlrdevapi as vlr
 
 # Check if event exists and get basic info
-event_info = vlr.events.info(event_id=1189)
+event_info = vlr.events.info(event_id=2498)
 
 if event_info is None:
     print("Event does not exist")
@@ -171,7 +171,7 @@ Dates: {event.date_text or 'TBD'}
     
     return card.strip()
 
-print(format_event_card(1189))
+print(format_event_card(2498))
 ```
 
 ## Error Handling

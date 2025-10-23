@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
 from bs4 import BeautifulSoup
 
 from ..constants import VLR_BASE, DEFAULT_TIMEOUT
@@ -14,7 +13,7 @@ from ..utils import extract_text, absolute_url, extract_id_from_url
 from .models import TeamInfo, SocialLink, PreviousTeam, SuccessorTeam
 
 
-def info(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[TeamInfo]:
+def info(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> TeamInfo | None:
     """
     Get team information.
     
@@ -51,10 +50,13 @@ def info(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[TeamInfo]:
     tag = extract_text(tag_el) if tag_el else None
     
     # Extract logo URL
-    logo_url = None
+    logo_url: str | None = None
     logo_img = header.select_one(".team-header-logo img")
-    if logo_img and logo_img.get("src"):
-        logo_url = absolute_url(logo_img.get("src"))
+    if logo_img:
+        src_val = logo_img.get("src")
+        src = src_val if isinstance(src_val, str) else None
+        if src:
+            logo_url = absolute_url(src)
     
     # Check if team is active
     is_active = True
@@ -65,23 +67,26 @@ def info(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[TeamInfo]:
             is_active = False
     
     # Extract country
-    country = None
+    country: str | None = None
     country_el = header.select_one(".team-header-country")
     if country_el:
         flag = country_el.select_one(".flag")
         if flag:
-            for cls in flag.get("class", []):
+            classes_val = flag.get("class")
+            classes: list[str] = [c for c in classes_val if isinstance(c, str)] if isinstance(classes_val, (list, tuple)) else []
+            for cls in classes:
                 if cls.startswith("mod-") and cls != "mod-dark":
                     code = cls.removeprefix("mod-")
                     country = map_country_code(code)
                     break
     
     # Extract social links
-    socials: List[SocialLink] = []
+    socials: list[SocialLink] = []
     links_container = header.select_one(".team-header-links")
     if links_container:
         for anchor in links_container.select("a[href]"):
-            href = anchor.get("href", "").strip()
+            href_val = anchor.get("href")
+            href = (href_val if isinstance(href_val, str) else "").strip()
             label = extract_text(anchor).strip()
             # Skip empty links
             if href and label and href != "":
@@ -89,14 +94,15 @@ def info(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[TeamInfo]:
                 socials.append(SocialLink(label=label, url=full_url))
     
     # Extract previous and current team information
-    previous_team = None
-    current_team = None
+    previous_team: PreviousTeam | None = None
+    current_team: SuccessorTeam | None = None
     successor_el = header.select_one(".team-header-name-successor")
     if successor_el:
         successor_text = extract_text(successor_el).lower()
         link = successor_el.select_one("a[href]")
         if link:
-            href = link.get("href", "")
+            href_val = link.get("href")
+            href = href_val if isinstance(href_val, str) else None
             linked_team_id = extract_id_from_url(href, "team")
             linked_name = extract_text(link)
             if linked_name:

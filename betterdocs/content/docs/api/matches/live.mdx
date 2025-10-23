@@ -1,6 +1,6 @@
 ---
 title: matches.live()
-description: Get live matches
+description: Get live matches (supports optional limit)
 ---
 
 import { TypeTable } from 'fumadocs-ui/components/type-table';
@@ -24,7 +24,7 @@ result = vlr.matches.live(
   type={{
     limit: {
       type: 'int | None',
-      description: 'Maximum number of matches to return (None returns all live matches)',
+      description: 'Maximum number of matches to return (None returns all live matches). Internally capped at 500.',
       default: 'None',
     },
     timeout: {
@@ -117,8 +117,8 @@ Returns a list of live matches. Each `Match` object contains the same fields as 
 ```python title="Get live matches"
 import vlrdevapi as vlr
 
-# Get all live matches
-live_matches = vlr.matches.live()
+# Get up to 5 live matches
+live_matches = vlr.matches.live(limit=5)
 
 if live_matches:
     print(f"LIVE: {len(live_matches)} match(es) in progress")
@@ -133,27 +133,20 @@ else:
 
 ### Monitor Live Matches
 
-```python title="Monitor live matches"
+```python title="Monitor live matches (skeleton)"
 import vlrdevapi as vlr
-import time
 
-def monitor_live_matches(interval=60):
-    """Check for live matches every interval seconds"""
-    while True:
-        matches = vlr.matches.live()
-        
-        if matches:
-            print(f"\n{len(matches)} live match(es):")
-            for m in matches:
-                print(f"  {m.team1.name} vs {m.team2.name}")
-                print(f"    Event: {m.event}")
-        else:
-            print("No live matches")
-        
-        time.sleep(interval)
+def get_live_snapshot():
+    matches = vlr.matches.live()
+    if matches:
+        print(f"\n{len(matches)} live match(es):")
+        for m in matches:
+            print(f"  {m.team1.name} vs {m.team2.name}")
+            print(f"    Event: {m.event}")
+    else:
+        print("No live matches")
 
-# Run monitor (uncomment to use)
-# monitor_live_matches(300)  # Check every 5 minutes
+# Schedule get_live_snapshot() with your preferred scheduler (cron, APScheduler, etc.)
 ```
 
 ### Get Live Match Details

@@ -224,8 +224,8 @@ class TestPlayersIntegration:
         stats = vlr.players.agent_stats(player_id=457)
         assert isinstance(stats, list)
     
-    def test_pydantic_models_immutable(self, mock_fetch_html):
-        """Test that models are immutable."""
+    def test_models_immutable(self, mock_fetch_html):
+        """Test that models are immutable (frozen dataclasses)."""
         profile = vlr.players.profile(player_id=457)
         if profile:
             with pytest.raises(Exception):

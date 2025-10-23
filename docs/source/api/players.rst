@@ -13,6 +13,12 @@ Get comprehensive player data including profiles, team history, match records, a
    :undoc-members:
    :show-inheritance:
 
+Typing Notes
+------------
+
+* Return types use modern Python typing, e.g. ``Profile | None``, ``list[Match]`` and ``str | None``.
+* List fields like ``socials``, ``current_teams``, and ``past_teams`` are always lists (possibly empty), never ``None``.
+
 Functions
 ---------
 

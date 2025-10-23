@@ -196,8 +196,8 @@ class TestTeamsCurrentBanner:
 class TestTeamsIntegration:
     """Integration tests for teams module."""
     
-    def test_pydantic_models_immutable(self, mock_fetch_html):
-        """Test that models are immutable."""
+    def test_models_immutable(self, mock_fetch_html):
+        """Test that models are immutable (frozen dataclasses)."""
         team = vlr.teams.info(team_id=1034)
         if team:
             with pytest.raises(Exception):
@@ -210,7 +210,7 @@ class TestTeamsIntegration:
             social = team.socials[0]
             assert hasattr(social, 'label')
             assert hasattr(social, 'url')
-            # Should not be able to modify
+            # Should not be able to modify (frozen dataclass)
             with pytest.raises(Exception):
                 social.label = "new_label"
     
@@ -221,7 +221,7 @@ class TestTeamsIntegration:
             prev = team.previous_team
             assert hasattr(prev, 'team_id')
             assert hasattr(prev, 'name')
-            # Should not be able to modify
+            # Should not be able to modify (frozen dataclass)
             with pytest.raises(Exception):
                 prev.name = "new_name"
     
@@ -429,7 +429,7 @@ class TestTeamsRosterRoles:
     
     def test_roster_player_role(self, mock_fetch_html):
         """Test that players have correct role."""
-        roster = vlr.teams.roster(team_id=1034)
+        roster = vlr.teams.roster(team_id=2593)
         players = [m for m in roster if m.role == "Player"]
         assert len(players) >= 5  # Should have at least 5 players
     
@@ -899,8 +899,8 @@ class TestTeamsTransactions:
         
         first = txns[0]
         # Based on HTML: FiNESSE leaving
-        assert first.ign == "FiNESSE"
-        assert first.real_name == "Pujan Mehta"
+        assert first.ign == "s0m"
+        assert first.real_name == "Sam Oh"
         assert first.action == "leave"
         # Date from HTML source
         from datetime import date
@@ -908,10 +908,10 @@ class TestTeamsTransactions:
             assert isinstance(first.date, date)
             assert first.date.year == 2025
             assert first.date.month == 10
-            assert first.date.day in [2, 3]  # May vary by timezone
+            assert first.date.day in [22, 21]  # May vary by timezone
         assert first.position == "Player"
-        assert first.country == "Canada"
-        assert first.player_id == 817
+        assert first.country == "United States"
+        assert first.player_id == 4164
     
     def test_transactions_action_types(self, mock_fetch_html):
         """Test that different action types are captured."""

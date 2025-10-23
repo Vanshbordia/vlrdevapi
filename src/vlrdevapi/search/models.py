@@ -2,72 +2,67 @@
 
 from __future__ import annotations
 
-from typing import Optional, Literal
-from pydantic import BaseModel, Field, ConfigDict
+from typing import Literal
+from dataclasses import dataclass, field
 
 
-class SearchPlayerResult(BaseModel):
+@dataclass(frozen=True)
+class SearchPlayerResult:
     """Player search result."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    player_id: int = Field(description="Player ID")
-    url: str = Field(description="Player URL")
-    ign: Optional[str] = Field(None, description="In-game name")
-    real_name: Optional[str] = Field(None, description="Real name")
-    country: Optional[str] = Field(None, description="Country")
-    image_url: Optional[str] = Field(None, description="Player image URL")
-    result_type: Literal["player"] = Field(default="player", description="Result type")
+
+    player_id: int
+    url: str
+    ign: str | None = None
+    real_name: str | None = None
+    country: str | None = None
+    image_url: str | None = None
+    result_type: Literal["player"] = "player"
 
 
-class SearchTeamResult(BaseModel):
+@dataclass(frozen=True)
+class SearchTeamResult:
     """Team search result."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    team_id: int = Field(description="Team ID")
-    url: str = Field(description="Team URL")
-    name: Optional[str] = Field(None, description="Team name")
-    country: Optional[str] = Field(None, description="Country")
-    logo_url: Optional[str] = Field(None, description="Team logo URL")
-    is_inactive: bool = Field(False, description="Whether team is inactive")
-    result_type: Literal["team"] = Field(default="team", description="Result type")
+
+    team_id: int
+    url: str
+    name: str | None = None
+    country: str | None = None
+    logo_url: str | None = None
+    is_inactive: bool = False
+    result_type: Literal["team"] = "team"
 
 
-class SearchEventResult(BaseModel):
+@dataclass(frozen=True)
+class SearchEventResult:
     """Event search result."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    event_id: int = Field(description="Event ID")
-    url: str = Field(description="Event URL")
-    name: Optional[str] = Field(None, description="Event name")
-    date_range: Optional[str] = Field(None, description="Event date range")
-    prize: Optional[str] = Field(None, description="Prize pool")
-    image_url: Optional[str] = Field(None, description="Event image URL")
-    result_type: Literal["event"] = Field(default="event", description="Result type")
+
+    event_id: int
+    url: str
+    name: str | None = None
+    date_range: str | None = None
+    prize: str | None = None
+    image_url: str | None = None
+    result_type: Literal["event"] = "event"
 
 
-class SearchSeriesResult(BaseModel):
+@dataclass(frozen=True)
+class SearchSeriesResult:
     """Series search result."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    series_id: int = Field(description="Series ID")
-    url: str = Field(description="Series URL")
-    name: Optional[str] = Field(None, description="Series name")
-    image_url: Optional[str] = Field(None, description="Series image URL")
-    result_type: Literal["series"] = Field(default="series", description="Result type")
+
+    series_id: int
+    url: str
+    name: str | None = None
+    image_url: str | None = None
+    result_type: Literal["series"] = "series"
 
 
-class SearchResults(BaseModel):
+@dataclass(frozen=True)
+class SearchResults:
     """Combined search results."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    query: str = Field(description="Search query")
-    total_results: int = Field(description="Total number of results found")
-    players: list[SearchPlayerResult] = Field(default_factory=list, description="Player results")
-    teams: list[SearchTeamResult] = Field(default_factory=list, description="Team results")
-    events: list[SearchEventResult] = Field(default_factory=list, description="Event results")
-    series: list[SearchSeriesResult] = Field(default_factory=list, description="Series results")
+
+    query: str
+    total_results: int
+    players: list[SearchPlayerResult] = field(default_factory=list)
+    teams: list[SearchTeamResult] = field(default_factory=list)
+    events: list[SearchEventResult] = field(default_factory=list)
+    series: list[SearchSeriesResult] = field(default_factory=list)

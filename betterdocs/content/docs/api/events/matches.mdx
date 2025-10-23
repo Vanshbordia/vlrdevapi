@@ -33,7 +33,7 @@ result = vlr.events.matches(
     },
     stage: {
       type: 'str | None',
-      description: 'Optional stage filter (e.g., "Group Stage", "Playoffs")',
+      description: 'Optional stage filter. Must match a stage name from the dropdown (e.g., "Playoffs", "Regular Season"). Case-insensitive. See `events.stages()` for available names.',
       default: 'None',
     },
     limit: {
@@ -159,8 +159,8 @@ for match in matches:
 ```python title="Filter by stage"
 import vlrdevapi as vlr
 
-# Get only playoff matches
-matches = vlr.events.matches(event_id=1189, stage="Playoffs", limit=3)
+# Fetch only Playoffs matches using the stage filter
+matches = vlr.events.matches(event_id=2498, stage="Playoffs", limit=5)
 
 print(f"Found {len(matches)} playoff matches")
 for match in matches:

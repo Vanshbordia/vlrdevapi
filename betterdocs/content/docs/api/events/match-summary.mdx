@@ -125,7 +125,7 @@ Returns aggregated match statistics or `None` if not found.
 import vlrdevapi as vlr
 
 # Get match statistics for an event
-summary = vlr.events.match_summary(event_id=1189)
+summary = vlr.events.match_summary(event_id=2498)
 
 if summary:
     print(f"Event ID: {summary.event_id}")
@@ -164,38 +164,11 @@ if summary:
         print(" Event completed!")
 ```
 
-### Track Event Completion Over Time
+### Polling considerations
 
-```python title="Track event completion over time"
-import vlrdevapi as vlr
-import time
-
-def monitor_event_progress(event_id, interval_seconds=60):
-    """Monitor an event's progress over time"""
-    print(f"Monitoring event {event_id} every {interval_seconds} seconds...")
-    
-    last_completed = 0
-    
-    while True:
-        summary = vlr.events.match_summary(event_id)
-        
-        if not summary:
-            print("Event not found or summary unavailable")
-            break
-        
-        if summary.completed != last_completed:
-            print(f"Progress update: {summary.completed}/{summary.total_matches} matches completed")
-            last_completed = summary.completed
-            
-            if summary.completed == summary.total_matches:
-                print(" Event completed!")
-                break
-        
-        time.sleep(interval_seconds)
-
-# Monitor an active event (run in background)
-# monitor_event_progress(1189, 300)  # Check every 5 minutes
-```
+<Callout type="info" title="Avoid busy waiting">
+If you need periodic updates, use a scheduler in your app instead of `time.sleep` loops. The API is rate-limited and safe to call periodically.
+</Callout>
 
 ### Compare Event Sizes
 
@@ -218,7 +191,7 @@ def compare_events(event_ids):
     return comparisons
 
 # Compare multiple events
-event_ids = [1189, 1190, 1191]  # Replace with actual event IDs
+event_ids = [2498, 2498, 2498]  # Replace with actual event IDs
 comparison = compare_events(event_ids)
 
 print("Event Size Comparison:")
@@ -256,7 +229,7 @@ def create_progress_bar(event_id, width=50):
 [{bar}] {percentage:.1f}%
 Status: {'Completed' if summary.completed == summary.total_matches else f'{summary.ongoing} live, {summary.upcoming} upcoming'}"""
 
-print(create_progress_bar(1189))
+print(create_progress_bar(2498))
 ```
 
 ### Predict Event Duration

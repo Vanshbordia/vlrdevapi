@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import datetime
-from typing import List, Optional, Literal, Tuple, Dict
+from typing import Literal
 
-from pydantic import BaseModel, Field, ConfigDict
+from dataclasses import dataclass
 
 from bs4 import BeautifulSoup
 
@@ -16,22 +16,21 @@ from .exceptions import NetworkError
 from .utils import extract_text, extract_match_id, extract_country_code, parse_date, extract_id_from_url
 
 
-class Team(BaseModel):
+@dataclass(frozen=True)
+class Team:
     """Represents a team in a match."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    name: str = Field(description="Team name")
-    id: Optional[int] = Field(None, description="Team ID")
-    country: Optional[str] = Field(None, description="Team country")
-    score: Optional[int] = Field(None, description="Team score")
+
+    name: str
+    id: int | None = None
+    country: str | None = None
+    score: int | None = None
 
 
 # Lightweight cache for team IDs per match header
-_TEAM_ID_CACHE: Dict[int, Tuple[Optional[int], Optional[int]]] = {}
+_TEAM_ID_CACHE: dict[int, tuple[int | None, int | None]] = {}
 
 
-def _fetch_team_ids_batch(match_ids: List[int], timeout: float, max_workers: int = 4) -> Dict[int, Tuple[Optional[int], Optional[int]]]:
+def _fetch_team_ids_batch(match_ids: list[int], timeout: float, max_workers: int = 4) -> dict[int, tuple[int | None, int | None]]:
     """Fetch team IDs for multiple matches concurrently.
     
     Args:
@@ -46,8 +45,8 @@ def _fetch_team_ids_batch(match_ids: List[int], timeout: float, max_workers: int
         return {}
     
     # Check cache first and collect uncached IDs
-    results: Dict[int, Tuple[Optional[int], Optional[int]]] = {}
-    uncached_ids: List[int] = []
+    results: dict[int, tuple[int | None, int | None]] = {}
+    uncached_ids: list[int] = []
     
     for match_id in match_ids:
         if match_id in _TEAM_ID_CACHE:
@@ -79,8 +78,12 @@ def _fetch_team_ids_batch(match_ids: List[int], timeout: float, max_workers: int
                 
                 t1_link = header.select_one(".match-header-link.mod-1")
                 t2_link = header.select_one(".match-header-link.mod-2")
-                t1_id = extract_id_from_url(t1_link.get("href") if t1_link else None, "team")
-                t2_id = extract_id_from_url(t2_link.get("href") if t2_link else None, "team")
+                t1_href = t1_link.get("href") if t1_link else None
+                t2_href = t2_link.get("href") if t2_link else None
+                t1_href = t1_href if isinstance(t1_href, str) else None
+                t2_href = t2_href if isinstance(t2_href, str) else None
+                t1_id = extract_id_from_url(t1_href, "team")
+                t2_id = extract_id_from_url(t2_href, "team")
                 
                 _TEAM_ID_CACHE[match_id] = (t1_id, t2_id)
                 results[match_id] = (t1_id, t2_id)
@@ -91,36 +94,39 @@ def _fetch_team_ids_batch(match_ids: List[int], timeout: float, max_workers: int
     return results
 
 
-class Match(BaseModel):
+@dataclass(frozen=True)
+class Match:
     """Represents a match summary."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    match_id: int = Field(description="Unique match identifier")
-    team1: Team = Field(description="First team")
-    team2: Team = Field(description="Second team")
-    event_phase: str = Field(description="Event phase/stage")
-    event: str = Field(description="Event name")
-    date: Optional[datetime.date] = Field(None, description="Match date")
-    time: str = Field(description="Match time or status")
-    status: Literal["upcoming", "live", "completed"] = Field(description="Match status")
+
+    match_id: int
+    team1: Team
+    team2: Team
+    event_phase: str
+    event: str
+    time: str
+    status: Literal["upcoming", "live", "completed"]
+    date: datetime.date | None = None
 
 
-def _parse_matches(html: str, include_scores: bool) -> List[Match]:
+def _parse_matches(html: str, include_scores: bool) -> list[Match]:
     """Parse matches from HTML with batch fetching for team IDs."""
     soup = BeautifulSoup(html, "lxml")
+    # include_scores is currently not used but preserved for API compatibility
+    _ = include_scores
     
     # First pass: collect all match data
-    match_data: List[Tuple[int, List[str], List[Optional[str]], str, str, Optional[datetime.date], str, str, Optional[int], Optional[int]]] = []
+    match_data: list[tuple[int, list[str], list[str | None], str, str, datetime.date | None, str, Literal["upcoming", "live", "completed"], int | None, int | None]] = []
     
     for node in soup.select("a.match-item"):
-        match_id = extract_match_id(node.get("href"))
+        href = node.get("href")
+        href = href if isinstance(href, str) else None
+        match_id = extract_match_id(href)
         if not match_id:
             continue
             
         team_blocks = node.select(".match-item-vs-team")
 
-        teams: List[str] = []
+        teams: list[str] = []
         for tb in team_blocks[:2]:
             name_el = tb.select_one(".match-item-vs-team-name .text-of") or tb.select_one(".match-item-vs-team-name")
             name = extract_text(name_el)
@@ -130,7 +136,7 @@ def _parse_matches(html: str, include_scores: bool) -> List[Match]:
             continue
         teams = teams[:2]
 
-        countries: List[Optional[str]] = []
+        countries: list[str | None] = []
         for tb in team_blocks[:2]:
             code = extract_country_code(tb)
             countries.append(map_country_code(code) if code else None)
@@ -147,10 +153,11 @@ def _parse_matches(html: str, include_scores: bool) -> List[Match]:
         time_text = extract_text(time_node)
         date_text = extract_text(date_node)
         
-        match_date: Optional[datetime.date] = None
+        match_date: datetime.date | None = None
         if not date_text:
             label = node.find_previous("div", class_=["wf-label", "mod-large"])
-            if label and isinstance(label.get("class"), list) and "wf-label" in label.get("class") and "mod-large" in label.get("class"):
+            classes = label.get("class") if label else None
+            if label and isinstance(classes, list) and "wf-label" in classes and "mod-large" in classes:
                 direct_text = label.find(string=True, recursive=False)
                 date_text = (direct_text or "").strip()
         
@@ -176,7 +183,7 @@ def _parse_matches(html: str, include_scores: bool) -> List[Match]:
             raw_status = extract_text(ml_status).upper()
         
         if raw_status == "LIVE":
-            status = "live"
+            status: Literal["upcoming", "live", "completed"] = "live"
         elif team1_score is not None or team2_score is not None:
             status = "completed"
         else:
@@ -185,11 +192,11 @@ def _parse_matches(html: str, include_scores: bool) -> List[Match]:
         match_data.append((match_id, teams, countries, series, event, match_date, time_text, status, team1_score, team2_score))
     
     # Batch fetch team IDs for all matches concurrently
-    match_ids = [match_id for match_id, _, _, _, _, _, _, _, _, _ in match_data]
+    match_ids = [match_id for match_id, *_ in match_data]
     team_ids_map = _fetch_team_ids_batch(match_ids, timeout=DEFAULT_TIMEOUT, max_workers=4)
     
     # Second pass: build Match objects with team IDs
-    matches: List[Match] = []
+    matches: list[Match] = []
     
     for match_id, teams, countries, series, event, match_date, time_text, status, team1_score, team2_score in match_data:
         team1_id, team2_id = team_ids_map.get(match_id, (None, None))
@@ -221,10 +228,10 @@ def _parse_matches(html: str, include_scores: bool) -> List[Match]:
 
 
 def upcoming(
-    limit: Optional[int] = None,
-    page: Optional[int] = None,
+    limit: int | None = None,
+    page: int | None = None,
     timeout: float = DEFAULT_TIMEOUT,
-) -> List[Match]:
+) -> list[Match]:
     """
     Get upcoming matches.
     
@@ -258,7 +265,7 @@ def upcoming(
         all_matches = _parse_matches(html, include_scores=False)
         return [m for m in all_matches if m.status == "upcoming"]
     
-    results: List[Match] = []
+    results: list[Match] = []
     remaining = max(0, min(500, limit))
     cur_page = page or 1
     
@@ -284,10 +291,10 @@ def upcoming(
 
 
 def completed(
-    limit: Optional[int] = None,
-    page: Optional[int] = None,
+    limit: int | None = None,
+    page: int | None = None,
     timeout: float = DEFAULT_TIMEOUT,
-) -> List[Match]:
+) -> list[Match]:
     """
     Get completed matches.
     
@@ -318,7 +325,7 @@ def completed(
         all_matches = _parse_matches(html, include_scores=True)
         return [m for m in all_matches if m.status == "completed"]
     
-    results: List[Match] = []
+    results: list[Match] = []
     remaining = max(0, min(500, limit))
     cur_page = page or 1
     
@@ -343,7 +350,7 @@ def completed(
     return results
 
 
-def live(limit: Optional[int] = None, timeout: float = DEFAULT_TIMEOUT) -> List[Match]:
+def live(limit: int | None = None, timeout: float = DEFAULT_TIMEOUT) -> list[Match]:
     """
     Get live matches.
     
@@ -366,4 +373,9 @@ def live(limit: Optional[int] = None, timeout: float = DEFAULT_TIMEOUT) -> List[
         return []
     
     all_matches = _parse_matches(html, include_scores=False)
-    return [m for m in all_matches if m.status == "live"]
+    live_matches = [m for m in all_matches if m.status == "live"]
+    if limit is not None:
+        # Cap limit similarly to other endpoints for consistency
+        max_take = max(0, min(500, limit))
+        live_matches = live_matches[:max_take]
+    return live_matches

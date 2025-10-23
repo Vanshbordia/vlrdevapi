@@ -58,7 +58,7 @@ This section documents the main modules of `vlrdevapi`.
 ## Conventions
 
 - All functions are synchronous and use sensible defaults
-- Returns are Pydantic models with clear field descriptions
+- Returns are frozen Python dataclasses with clear type hints
 - Network failures typically return empty lists or None instead of raising
 
 ## Import

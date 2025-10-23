@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import List
 from bs4 import BeautifulSoup
 
 from ..constants import VLR_BASE, DEFAULT_TIMEOUT
@@ -13,7 +12,7 @@ from ..utils import extract_text, absolute_url, extract_id_from_url
 from .models import EventPlacement, PlacementDetail
 
 
-def placements(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[EventPlacement]:
+def placements(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> list[EventPlacement]:
     """
     Get event placements for a team.
     
@@ -39,11 +38,15 @@ def placements(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[EventPlac
         return []
     
     soup = BeautifulSoup(html, "lxml")
-    placements_list: List[EventPlacement] = []
+    placements_list: list[EventPlacement] = []
     
-    # Find the "Event Placements" section
-    placements_label = soup.find("h2", class_="wf-label mod-large", string=lambda t: t and "Event Placements" in t)
-    if not placements_label:
+    # Find the "Event Placements" section (avoid lambda in 'string' for type checker)
+    placements_label = None
+    for h2 in soup.select("h2.wf-label.mod-large"):
+        if "Event Placements" in extract_text(h2):
+            placements_label = h2
+            break
+    if placements_label is None:
         return []
     
     # Get the card that follows
@@ -56,7 +59,8 @@ def placements(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[EventPlac
     
     for item in event_items:
         # Extract event URL and ID
-        event_url_raw = item.get("href", "")
+        href_val = item.get("href")
+        event_url_raw = href_val if isinstance(href_val, str) else None
         event_id = extract_id_from_url(event_url_raw, "event")
         event_url = absolute_url(event_url_raw) if event_url_raw else None
         
@@ -75,7 +79,7 @@ def placements(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[EventPlac
             year = extract_text(direct_divs[-1])
         
         # Extract all placement details (can be multiple per event)
-        placement_details: List[PlacementDetail] = []
+        placement_details: list[PlacementDetail] = []
         
         # Find all divs with series info
         series_divs = item.select("div[style*='margin-top: 5px']")

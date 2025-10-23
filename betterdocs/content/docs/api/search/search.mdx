@@ -83,6 +83,13 @@ Returns a SearchResults object containing all matching results.
   }}
 />
 
+## Implementation Notes
+
+- Models returned by `vlrdevapi.search` are implemented as frozen Python dataclasses.
+- Optional fields use modern union syntax like `str | None`.
+- Result lists (`players`, `teams`, `events`, `series`) are always present; they may be empty but are never `None`.
+- For serialization, prefer `dataclasses.asdict(instance)` if you need a dict.
+
 ## Examples
 
 ### Unified Search

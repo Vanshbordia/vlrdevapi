@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import datetime
 import re
-from typing import List, Optional, Tuple
+from bs4.element import Tag
 
-from pydantic import BaseModel, Field, ConfigDict
+from dataclasses import dataclass, field
 from bs4 import BeautifulSoup
 
 from .constants import VLR_BASE, DEFAULT_TIMEOUT
@@ -23,96 +23,90 @@ from .utils import (
     normalize_whitespace,
 )
 
-class SocialLink(BaseModel):
+@dataclass(frozen=True)
+class SocialLink:
     """Player social media link."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    label: str = Field(description="Link label")
-    url: str = Field(description="Link URL")
+
+    label: str
+    url: str
 
 
-class Team(BaseModel):
+@dataclass(frozen=True)
+class Team:
     """Player team information."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    id: Optional[int] = Field(None, description="Team ID")
-    name: Optional[str] = Field(None, description="Team name")
-    role: str = Field(description="Player role")
-    joined_date: Optional[datetime.date] = Field(None, description="Join date")
-    left_date: Optional[datetime.date] = Field(None, description="Leave date")
+
+    role: str
+    id: int | None = None
+    name: str | None = None
+    joined_date: datetime.date | None = None
+    left_date: datetime.date | None = None
 
 
-class Profile(BaseModel):
+@dataclass(frozen=True)
+class Profile:
     """Player profile information."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    player_id: int = Field(description="Player ID")
-    handle: Optional[str] = Field(None, description="Player handle/IGN")
-    real_name: Optional[str] = Field(None, description="Real name")
-    country: Optional[str] = Field(None, description="Country")
-    avatar_url: Optional[str] = Field(None, description="Avatar URL")
-    socials: List[SocialLink] = Field(default_factory=list, description="Social links")
-    current_teams: List[Team] = Field(default_factory=list, description="Current teams")
-    past_teams: List[Team] = Field(default_factory=list, description="Past teams")
+
+    player_id: int
+    handle: str | None = None
+    real_name: str | None = None
+    country: str | None = None
+    avatar_url: str | None = None
+    socials: list[SocialLink] = field(default_factory=list)
+    current_teams: list[Team] = field(default_factory=list)
+    past_teams: list[Team] = field(default_factory=list)
 
 
-class MatchTeam(BaseModel):
+@dataclass(frozen=True)
+class MatchTeam:
     """Team in a player match."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    name: Optional[str] = Field(None, description="Team name")
-    tag: Optional[str] = Field(None, description="Team tag")
-    core: Optional[str] = Field(None, description="Core roster")
+
+    name: str | None = None
+    tag: str | None = None
+    core: str | None = None
 
 
-class Match(BaseModel):
+@dataclass(frozen=True)
+class Match:
     """Player match entry."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    match_id: int = Field(description="Match ID")
-    url: str = Field(description="Match URL")
-    event: Optional[str] = Field(None, description="Event name")
-    stage: Optional[str] = Field(None, description="Stage name (e.g., 'Group Stage')")
-    phase: Optional[str] = Field(None, description="Phase name (e.g., 'W1')")
-    player_team: MatchTeam = Field(description="Player's team")
-    opponent_team: MatchTeam = Field(description="Opponent team")
-    player_score: Optional[int] = Field(None, description="Player team score")
-    opponent_score: Optional[int] = Field(None, description="Opponent score")
-    result: Optional[str] = Field(None, description="Match result (win/loss/draw)")
-    date: Optional[datetime.date] = Field(None, description="Match date")
-    time: Optional[datetime.time] = Field(None, description="Match time")
-    time_text: Optional[str] = Field(None, description="Time text")
+
+    match_id: int
+    url: str
+    player_team: MatchTeam
+    opponent_team: MatchTeam
+    event: str | None = None
+    stage: str | None = None
+    phase: str | None = None
+    player_score: int | None = None
+    opponent_score: int | None = None
+    result: str | None = None
+    date: datetime.date | None = None
+    time: datetime.time | None = None
+    time_text: str | None = None
 
 
-class AgentStats(BaseModel):
+@dataclass(frozen=True)
+class AgentStats:
     """Player agent statistics."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    agent: Optional[str] = Field(None, description="Agent name")
-    agent_image_url: Optional[str] = Field(None, description="Agent image URL")
-    usage_count: Optional[int] = Field(None, description="Times played")
-    usage_percent: Optional[float] = Field(None, description="Usage percentage")
-    rounds_played: Optional[int] = Field(None, description="Rounds played")
-    rating: Optional[float] = Field(None, description="Rating")
-    acs: Optional[float] = Field(None, description="Average combat score")
-    kd: Optional[float] = Field(None, description="K/D ratio")
-    adr: Optional[float] = Field(None, description="Average damage per round")
-    kast: Optional[float] = Field(None, description="KAST percentage")
-    kpr: Optional[float] = Field(None, description="Kills per round")
-    apr: Optional[float] = Field(None, description="Assists per round")
-    fkpr: Optional[float] = Field(None, description="First kills per round")
-    fdpr: Optional[float] = Field(None, description="First deaths per round")
-    kills: Optional[int] = Field(None, description="Total kills")
-    deaths: Optional[int] = Field(None, description="Total deaths")
-    assists: Optional[int] = Field(None, description="Total assists")
-    first_kills: Optional[int] = Field(None, description="Total first kills")
-    first_deaths: Optional[int] = Field(None, description="Total first deaths")
+
+    agent: str | None = None
+    agent_image_url: str | None = None
+    usage_count: int | None = None
+    usage_percent: float | None = None
+    rounds_played: int | None = None
+    rating: float | None = None
+    acs: float | None = None
+    kd: float | None = None
+    adr: float | None = None
+    kast: float | None = None
+    kpr: float | None = None
+    apr: float | None = None
+    fkpr: float | None = None
+    fdpr: float | None = None
+    kills: int | None = None
+    deaths: int | None = None
+    assists: int | None = None
+    first_kills: int | None = None
+    first_deaths: int | None = None
 
 
 _MONTH_YEAR_RE = re.compile(
@@ -123,7 +117,7 @@ _MONTH_YEAR_RE = re.compile(
 _USAGE_RE = re.compile(r"\((\d+)\)\s*(\d+)%")
 
 
-def _parse_month_year(text: str) -> Optional[datetime.date]:
+def _parse_month_year(text: str) -> datetime.date | None:
     """Parse month-year format to date."""
     match = _MONTH_YEAR_RE.search(text)
     if not match:
@@ -136,7 +130,7 @@ def _parse_month_year(text: str) -> Optional[datetime.date]:
         return None
 
 
-def _parse_usage(text: Optional[str]) -> Tuple[Optional[int], Optional[float]]:
+def _parse_usage(text: str | None) -> tuple[int | None, float | None]:
     """Parse usage text like '(10) 50%'."""
     if not text:
         return None, None
@@ -148,7 +142,7 @@ def _parse_usage(text: Optional[str]) -> Tuple[Optional[int], Optional[float]]:
     return None, None
 
 
-def profile(player_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Profile]:
+def profile(player_id: int, timeout: float = DEFAULT_TIMEOUT) -> Profile | None:
     """
     Get player profile information.
     
@@ -179,38 +173,51 @@ def profile(player_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Profil
     avatar_url = None
     if header:
         avatar_img = header.select_one(".wf-avatar img")
-        if avatar_img and avatar_img.get("src"):
-            avatar_url = absolute_url(avatar_img.get("src"))
+        if avatar_img:
+            src_val = avatar_img.get("src")
+            src = src_val if isinstance(src_val, str) else None
+            if src:
+                avatar_url = absolute_url(src)
     
     # Parse socials
-    socials: List[SocialLink] = []
+    socials: list[SocialLink] = []
     if header:
         for anchor in header.select("a[href]"):
-            href = anchor.get("href")
+            href_val = anchor.get("href")
+            href = href_val if isinstance(href_val, str) else None
             label = extract_text(anchor)
             if href and label:
-                socials.append(SocialLink(label=label, url=absolute_url(href) or href))
+                url_or = absolute_url(href) or href
+                socials.append(SocialLink(label=label, url=url_or))
     
     # Parse country
     country = None
     if header:
         flag = header.select_one(".flag")
         if flag:
-            for cls in flag.get("class", []):
+            classes_val = flag.get("class")
+            classes: list[str] = list(classes_val) if isinstance(classes_val, (list, tuple)) else []
+            for cls in classes:
                 if cls.startswith("mod-") and cls != "mod-dark":
-                    code = cls.removeprefix("mod-")
+                    code: str = cls.removeprefix("mod-")
                     country = map_country_code(code)
                     break
     
     # Parse current teams
-    current_teams: List[Team] = []
-    label = soup.find("h2", class_="wf-label mod-large", string=lambda t: t and "Current Teams" in t)
+    current_teams: list[Team] = []
+    label = None
+    for h2 in soup.select("h2.wf-label.mod-large"):
+        text = extract_text(h2) or ""
+        if "current teams" in text.lower():
+            label = h2
+            break
     if label:
         card = label.find_next("div", class_="wf-card")
         if card:
             for anchor in card.select("a.wf-module-item"):
-                href = anchor.get("href", "").strip("/")
-                team_id = extract_id_from_url(href, "team")
+                href_val = anchor.get("href")
+                href = href_val.strip("/") if isinstance(href_val, str) else ""
+                team_id = extract_id_from_url(href, "team") if href else None
                 name_el = anchor.select_one("div[style][style*='font-weight']") or anchor
                 team_name = extract_text(name_el).strip() if name_el else None
                 
@@ -233,14 +240,20 @@ def profile(player_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Profil
                 ))
     
     # Parse past teams
-    past_teams: List[Team] = []
-    label = soup.find("h2", class_="wf-label mod-large", string=lambda t: t and "Past Teams" in t)
+    past_teams: list[Team] = []
+    label = None
+    for h2 in soup.select("h2.wf-label.mod-large"):
+        text = extract_text(h2) or ""
+        if "past teams" in text.lower():
+            label = h2
+            break
     if label:
         card = label.find_next("div", class_="wf-card")
         if card:
             for anchor in card.select("a.wf-module-item"):
-                href = anchor.get("href", "").strip("/")
-                team_id = extract_id_from_url(href, "team")
+                href_val = anchor.get("href")
+                href = href_val.strip("/") if isinstance(href_val, str) else ""
+                team_id = extract_id_from_url(href, "team") if href else None
                 name_el = anchor.select_one("div[style][style*='font-weight']") or anchor
                 team_name = extract_text(name_el).strip() if name_el else None
                 
@@ -282,10 +295,10 @@ def profile(player_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Profil
 
 def matches(
     player_id: int,
-    limit: Optional[int] = None,
-    page: Optional[int] = None,
+    limit: int | None = None,
+    page: int | None = None,
     timeout: float = DEFAULT_TIMEOUT,
-) -> List[Match]:
+) -> list[Match]:
     """
     Get player match history with batch fetching for pagination.
     
@@ -307,9 +320,9 @@ def matches(
         ...     print(f"{match.event} - {match.stage} {match.phase}: {match.result}")
     """
     start_page = page or 1
-    results: List[Match] = []
+    results: list[Match] = []
     
-    remaining: Optional[int]
+    remaining: int | None
     if limit is None:
         remaining = None
     else:
@@ -330,7 +343,7 @@ def matches(
             pages_to_fetch = 1
         
         # Build URLs for batch fetching
-        urls = []
+        urls: list[str] = []
         for i in range(pages_to_fetch):
             page_num = current_page + i
             suffix = f"?page={page_num}" if page_num > 1 else ""
@@ -341,7 +354,7 @@ def matches(
         batch_results = batch_fetch_html(urls, timeout=timeout, max_workers=min(3, len(urls)))
         
         # Process each page in order
-        for page_idx, url in enumerate(urls):
+        for url in urls:
             html = batch_results.get(url)
             
             if isinstance(html, Exception) or not html:
@@ -350,10 +363,11 @@ def matches(
                 break
             
             soup = BeautifulSoup(html, "lxml")
-            page_matches: List[Match] = []
+            page_matches: list[Match] = []
             
             for anchor in soup.select("a.wf-card.fc-flex.m-item"):
-                href = anchor.get("href")
+                href_val = anchor.get("href")
+                href = href_val if isinstance(href_val, str) else None
                 if not href:
                     continue
                 
@@ -392,7 +406,7 @@ def matches(
                 player_block = team_blocks[0] if team_blocks else None
                 opponent_block = team_blocks[-1] if len(team_blocks) > 1 else None
                 
-                def parse_team_block(block):
+                def parse_team_block(block: Tag | None) -> MatchTeam:
                     if not block:
                         return MatchTeam(name=None, tag=None, core=None)
                     name = extract_text(block.select_one(".m-item-team-name"))
@@ -405,13 +419,13 @@ def matches(
                 
                 # Parse result and scores
                 result_el = anchor.select_one(".m-item-result")
-                player_score = None
-                opponent_score = None
+                player_score: int | None = None
+                opponent_score: int | None = None
                 result = None
                 
                 if result_el:
-                    spans = [span.get_text(strip=True) for span in result_el.select("span")]
-                    scores = []
+                    spans: list[str] = [span.get_text(strip=True) for span in result_el.select("span")]
+                    scores: list[int] = []
                     for value in spans:
                         try:
                             scores.append(int(value))
@@ -422,7 +436,8 @@ def matches(
                     elif len(scores) == 1:
                         player_score = scores[0]
                     
-                    classes = result_el.get("class", [])
+                    classes_val = result_el.get("class")
+                    classes: list[str] = list(classes_val) if isinstance(classes_val, (list, tuple)) else []
                     if any("mod-win" == cls or cls.endswith("mod-win") for cls in classes):
                         result = "win"
                     elif any("mod-loss" == cls or cls.endswith("mod-loss") for cls in classes):
@@ -437,16 +452,16 @@ def matches(
                 time_text = None
                 
                 if date_el:
-                    parts = list(date_el.stripped_strings)
-                    if parts:
-                        date_text = parts[0]
+                    parts_list = list(date_el.stripped_strings)
+                    if parts_list:
+                        date_text = parts_list[0]
                         try:
                             match_date = datetime.datetime.strptime(date_text, "%Y/%m/%d").date()
                         except ValueError:
                             pass
                         
-                        if len(parts) > 1:
-                            time_text = parts[1]
+                        if len(parts_list) > 1:
+                            time_text = parts_list[1]
                             try:
                                 match_time = datetime.datetime.strptime(time_text, "%I:%M %p").time()
                             except ValueError:
@@ -498,7 +513,7 @@ def agent_stats(
     player_id: int,
     timespan: str = "all",
     timeout: float = DEFAULT_TIMEOUT
-) -> List[AgentStats]:
+) -> list[AgentStats]:
     """
     Get player agent statistics.
     
@@ -530,7 +545,7 @@ def agent_stats(
         return []
     
     rows = table.select("tbody tr")
-    stats: List[AgentStats] = []
+    stats: list[AgentStats] = []
     
     for row in rows:
         cells = row.find_all("td")
@@ -538,8 +553,11 @@ def agent_stats(
             continue
         
         agent_img = cells[0].select_one("img") if cells[0] else None
-        agent_name = agent_img.get("alt") if agent_img else None
-        agent_img_url = absolute_url(agent_img.get("src")) if agent_img and agent_img.get("src") else None
+        agent_name_val = agent_img.get("alt") if agent_img else None
+        agent_name = agent_name_val if isinstance(agent_name_val, str) else None
+        src_val = agent_img.get("src") if agent_img else None
+        src = src_val if isinstance(src_val, str) else None
+        agent_img_url = absolute_url(src) if src else None
         
         usage_text = normalize_whitespace(extract_text(cells[1]))
         usage_count, usage_percent = _parse_usage(usage_text)
@@ -561,7 +579,7 @@ def agent_stats(
         first_deaths = parse_int(extract_text(cells[16]))
         
         stats.append(AgentStats(
-            agent=normalize_whitespace(agent_name) if agent_name else None,
+            agent=normalize_whitespace(agent_name) if isinstance(agent_name, str) else None,
             agent_image_url=agent_img_url,
             usage_count=usage_count,
             usage_percent=usage_percent,

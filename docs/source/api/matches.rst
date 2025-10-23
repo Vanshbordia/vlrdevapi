@@ -27,7 +27,7 @@ Get upcoming scheduled matches.
 live
 ~~~~
 
-Get currently live matches.
+Get currently live matches. Supports an optional ``limit`` parameter to cap the number of returned matches (capped internally at 500 for consistency with other endpoints).
 
 .. autofunction:: vlrdevapi.matches.live
    :noindex:
@@ -46,7 +46,7 @@ Data Models
 Team
 ~~~~
 
-Team information in a match including name, short tag, ID, country, and score.
+Team information in a match including name, ID, country, and score.
 
 .. autoclass:: vlrdevapi.matches.Team
    :members:
@@ -88,8 +88,8 @@ Live Matches
 
    import vlrdevapi as vlr
 
-   # Get currently live matches only
-   live = vlr.matches.live()
+   # Get up to 5 currently live matches
+   live = vlr.matches.live(limit=5)
    
    for match in live:
        print(f"LIVE: {match.team1.name} vs {match.team2.name}")
@@ -119,6 +119,7 @@ Performance Notes
 * ``vlr.matches`` uses shared `httpx` clients with HTTP/2 and connection pooling, reducing latency for repeat calls.
 * `Team.id` is filled opportunistically by scraping the match header; it may be ``None`` when the team is TBD or hidden on VLR.gg.
 * Results are cached in process via ``vlr.fetcher``. Call ``vlr.fetcher.clear_cache()`` before refetching if you need fresh data.
+* Return types use modern Python typing: ``list[Match]``, ``int | None``, and ``Literal['upcoming','live','completed']`` for ``Match.status``.
 
 Pagination
 ~~~~~~~~~~

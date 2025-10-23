@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import List
 from bs4 import BeautifulSoup
 
 from ..constants import VLR_BASE, DEFAULT_TIMEOUT
@@ -14,7 +13,7 @@ from ..utils import extract_text, absolute_url, extract_id_from_url
 from .models import RosterMember
 
 
-def roster(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[RosterMember]:
+def roster(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> list[RosterMember]:
     """
     Get current team roster (active players and staff).
     
@@ -39,9 +38,14 @@ def roster(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[RosterMember]
     
     soup = BeautifulSoup(html, "lxml")
     
-    # Find the "Current Roster" section
-    roster_label = soup.find("h2", class_="wf-label mod-large", string=lambda t: t and "Current" in t and "Roster" in t)
-    if not roster_label:
+    # Find the "Current Roster" section (avoid lambda in 'string' for type checker)
+    roster_label = None
+    for h2 in soup.select("h2.wf-label.mod-large"):
+        text = extract_text(h2)
+        if "Current" in text and "Roster" in text:
+            roster_label = h2
+            break
+    if roster_label is None:
         return []
     
     # Get the roster card that follows
@@ -49,7 +53,7 @@ def roster(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[RosterMember]
     if not roster_card:
         return []
     
-    members: List[RosterMember] = []
+    members: list[RosterMember] = []
     
     # Process all roster items
     for item in roster_card.select(".team-roster-item"):
@@ -58,16 +62,18 @@ def roster(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[RosterMember]
             continue
         
         # Extract player ID from URL
-        href = anchor.get("href", "")
+        href_val = anchor.get("href")
+        href = href_val if isinstance(href_val, str) else None
         player_id = extract_id_from_url(href, "player")
         
         # Extract photo URL
         photo_url = None
         photo_img = item.select_one(".team-roster-item-img img")
-        if photo_img and photo_img.get("src"):
-            src = photo_img.get("src")
+        if photo_img:
+            src_val = photo_img.get("src")
+            src = src_val if isinstance(src_val, str) else None
             # Skip placeholder images
-            if "ph/sil.png" not in src:
+            if src and "ph/sil.png" not in src:
                 photo_url = absolute_url(src)
         
         # Extract IGN (in-game name)
@@ -85,7 +91,9 @@ def roster(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[RosterMember]
             # Extract country from flag
             flag = alias_el.select_one(".flag")
             if flag:
-                for cls in flag.get("class", []):
+                classes_val = flag.get("class")
+                classes: list[str] = [str(c) for c in classes_val] if isinstance(classes_val, (list, tuple)) else []
+                for cls in classes:
                     if cls.startswith("mod-") and cls != "mod-dark":
                         code = cls.removeprefix("mod-")
                         country = map_country_code(code)

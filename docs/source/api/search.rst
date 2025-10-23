@@ -67,6 +67,14 @@ Search for series only.
 Data Models
 -----------
 
+Implementation Notes
+~~~~~~~~~~~~~~~~~~~
+
+- Models in ``vlrdevapi.search`` are implemented as standard Python frozen dataclasses.
+- Optional fields use modern union syntax like ``str | None`` (PEP 604).
+- Result lists (e.g., ``players``, ``teams``, ``events``, ``series``) are always present; they may be empty but are never ``None``.
+- If you need to serialize a model, use ``dataclasses.asdict()``.
+
 SearchResults
 ~~~~~~~~~~~~~
 

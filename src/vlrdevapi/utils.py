@@ -3,10 +3,9 @@
 import datetime
 import re
 from functools import lru_cache
-from typing import Optional, Tuple, List
 from urllib import parse
 
-from bs4 import BeautifulSoup, Tag
+from bs4 import Tag
 
 from .constants import VLR_BASE
 
@@ -20,7 +19,7 @@ _DAY_ONLY_RE = re.compile(r"^\d{1,2}$")
 _DAY_YEAR_RE = re.compile(r"^\d{1,2},\s*\d{4}$")
 
 
-def extract_text(element: Optional[Tag]) -> str:
+def extract_text(element: Tag | None) -> str:
     """Extract text from a BeautifulSoup element."""
     return element.get_text(strip=True) if element else ""
 
@@ -31,7 +30,7 @@ def normalize_whitespace(text: str) -> str:
     return _WHITESPACE_RE.sub(" ", text).strip()
 
 
-def absolute_url(url: Optional[str]) -> Optional[str]:
+def absolute_url(url: str | None) -> str | None:
     """Convert relative URL to absolute URL."""
     if not url:
         return None
@@ -42,7 +41,7 @@ def absolute_url(url: Optional[str]) -> Optional[str]:
     return parse.urljoin(f"{VLR_BASE}/", url.lstrip("/"))
 
 
-def parse_int(text: Optional[str]) -> Optional[int]:
+def parse_int(text: str | None) -> int | None:
     """Parse integer from text, returning None if invalid."""
     if text is None:
         return None
@@ -56,7 +55,7 @@ def parse_int(text: Optional[str]) -> Optional[int]:
 
 
 @lru_cache(maxsize=256)
-def parse_float(text: Optional[str]) -> Optional[float]:
+def parse_float(text: str | None) -> float | None:
     """Parse float from text, returning None if invalid."""
     if text is None:
         return None
@@ -70,7 +69,7 @@ def parse_float(text: Optional[str]) -> Optional[float]:
         return None
 
 
-def parse_percent(text: Optional[str]) -> Optional[float]:
+def parse_percent(text: str | None) -> float | None:
     """Parse percentage from text, returning as decimal (0-1)."""
     if text is None:
         return None
@@ -86,7 +85,7 @@ def parse_percent(text: Optional[str]) -> Optional[float]:
     return numeric
 
 
-def extract_id_from_url(url: Optional[str], prefix: str) -> Optional[int]:
+def extract_id_from_url(url: str | None, prefix: str) -> int | None:
     """
     Extract ID from URL path.
     
@@ -110,7 +109,7 @@ def extract_id_from_url(url: Optional[str], prefix: str) -> Optional[int]:
     return None
 
 
-def extract_match_id(href: Optional[str]) -> Optional[int]:
+def extract_match_id(href: str | None) -> int | None:
     """Extract match ID from href (format: /12345/slug)."""
     if not href:
         return None
@@ -121,20 +120,22 @@ def extract_match_id(href: Optional[str]) -> Optional[int]:
         return None
 
 
-def extract_country_code(element: Optional[Tag]) -> Optional[str]:
+def extract_country_code(element: Tag | None) -> str | None:
     """Extract country code from flag element."""
     if not element:
         return None
     flag = element.select_one(".flag")
     if not flag:
         return None
-    for cls in flag.get("class", []):
+    classes_val = flag.get("class")
+    classes: list[str] = [c for c in classes_val if isinstance(c, str)] if isinstance(classes_val, (list, tuple)) else []
+    for cls in classes:
         if cls.startswith("mod-") and cls != "mod-dark":
             return cls.removeprefix("mod-")
     return None
 
 
-def parse_date(text: str, formats: List[str]) -> Optional[datetime.date]:
+def parse_date(text: str, formats: list[str]) -> datetime.date | None:
     """
     Try to parse date from text using multiple formats.
     
@@ -153,7 +154,7 @@ def parse_date(text: str, formats: List[str]) -> Optional[datetime.date]:
     return None
 
 
-def parse_time(text: str, formats: List[str]) -> Optional[datetime.time]:
+def parse_time(text: str, formats: list[str]) -> datetime.time | None:
     """
     Try to parse time from text using multiple formats.
     
@@ -172,7 +173,7 @@ def parse_time(text: str, formats: List[str]) -> Optional[datetime.time]:
     return None
 
 
-def split_date_range(text: Optional[str]) -> Tuple[Optional[str], Optional[str]]:
+def split_date_range(text: str | None) -> tuple[str | None, str | None]:
     """
     Split date range text into start and end parts.
     

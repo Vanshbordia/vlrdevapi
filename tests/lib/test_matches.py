@@ -181,12 +181,12 @@ class TestMatchesIntegration:
             assert hasattr(match, 'time')
             assert hasattr(match, 'date')
     
-    def test_pydantic_model_immutable(self, mock_fetch_html):
-        """Test that Match models are immutable (frozen)."""
+    def test_models_immutable(self, mock_fetch_html):
+        """Test that Match models are immutable (frozen dataclasses)."""
         matches = vlr.matches.upcoming(limit=1)
         if matches:
             match = matches[0]
-            with pytest.raises(Exception):  # Pydantic raises ValidationError or AttributeError
+            with pytest.raises(Exception):
                 match.match_id = 999
 
 

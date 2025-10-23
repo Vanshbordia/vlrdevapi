@@ -150,13 +150,17 @@ Get Team Information
 
    # Get team information
    team_info = vlr.teams.info(team_id=799)
-   print(f"{team_info.name} ({team_info.tag})")
-   print(f"Country: {team_info.country}")
-   print(f"Active: {team_info.is_active}")
+   if team_info:
+       print(f"{team_info.name} ({team_info.tag})")
+       print(f"Country: {team_info.country}")
+       print(f"Active: {team_info.is_active}")
+   else:
+       print("Team not found")
    
    # Access social links
-   for social in team_info.socials:
-       print(f"{social.label}: {social.url}")
+   if team_info and team_info.socials:
+       for social in team_info.socials:
+           print(f"{social.label}: {social.url}")
 
 Get Team Roster
 ~~~~~~~~~~~~~~~

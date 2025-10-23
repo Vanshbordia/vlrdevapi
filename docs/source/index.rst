@@ -20,7 +20,7 @@ Key Features
 ~~~~~~~~~~~~
 
 - **Complete Coverage**: Events, matches, players, teams, series, and search modules
-- **Type-Safe Models**: Pydantic v2 models with validated, immutable data classes
+- **Type-Safe Models**: Frozen Python dataclasses with rich type hints
 - **Modern Fetcher**: Shared `httpx` clients with retry logic, HTTP/2 multiplexing, Brotli/gzip decoding, and in-process caching
 - **Ergonomic API**: Pythonic entrypoints under ``vlr`` with practical examples
 - **Well-Tested**: HTML fixtures and test suite for regression safety
