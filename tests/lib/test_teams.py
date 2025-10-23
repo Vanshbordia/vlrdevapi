@@ -1,5 +1,6 @@
 """Tests for teams module using real HTML sources."""
 
+from datetime import date
 import pytest
 import vlrdevapi as vlr
 
