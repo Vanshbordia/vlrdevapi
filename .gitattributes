@@ -1,1 +1,3 @@
 test/html_sources/*.html linguist-detectable=false
+tests/html_sources/*.html linguist-detectable=false
+betterdocs/* linguist-detectable=false
