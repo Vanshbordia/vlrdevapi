@@ -66,6 +66,7 @@ Documentation Contents
    examples
    performance
    rate-limiting
+   config
 
 .. toctree::
    :maxdepth: 2

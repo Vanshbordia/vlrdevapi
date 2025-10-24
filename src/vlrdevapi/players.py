@@ -9,7 +9,7 @@ from bs4.element import Tag
 from dataclasses import dataclass, field
 from bs4 import BeautifulSoup
 
-from .constants import VLR_BASE, DEFAULT_TIMEOUT
+from .config import get_config
 from .countries import map_country_code
 from .fetcher import fetch_html, batch_fetch_html
 from .exceptions import NetworkError
@@ -22,6 +22,8 @@ from .utils import (
     parse_percent,
     normalize_whitespace,
 )
+
+_config = get_config()
 
 @dataclass(frozen=True)
 class SocialLink:
@@ -142,7 +144,7 @@ def _parse_usage(text: str | None) -> tuple[int | None, float | None]:
     return None, None
 
 
-def profile(player_id: int, timeout: float = DEFAULT_TIMEOUT) -> Profile | None:
+def profile(player_id: int, timeout: float | None = None) -> Profile | None:
     """
     Get player profile information.
     
@@ -158,9 +160,10 @@ def profile(player_id: int, timeout: float = DEFAULT_TIMEOUT) -> Profile | None:
         >>> profile = vlr.players.profile(player_id=123)
         >>> print(f"{profile.handle} from {profile.country}")
     """
-    url = f"{VLR_BASE}/player/{player_id}"
+    url = f"{_config.vlr_base}/player/{player_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return None
     
@@ -297,7 +300,7 @@ def matches(
     player_id: int,
     limit: int | None = None,
     page: int | None = None,
-    timeout: float = DEFAULT_TIMEOUT,
+    timeout: float | None = None,
 ) -> list[Match]:
     """
     Get player match history with batch fetching for pagination.
@@ -347,11 +350,12 @@ def matches(
         for i in range(pages_to_fetch):
             page_num = current_page + i
             suffix = f"?page={page_num}" if page_num > 1 else ""
-            url = f"{VLR_BASE}/player/matches/{player_id}{suffix}"
+            url = f"{_config.vlr_base}/player/matches/{player_id}{suffix}"
             urls.append(url)
         
         # Batch fetch all pages concurrently
-        batch_results = batch_fetch_html(urls, timeout=timeout, max_workers=min(3, len(urls)))
+        effective_timeout = timeout if timeout is not None else _config.default_timeout
+        batch_results = batch_fetch_html(urls, timeout=effective_timeout, max_workers=min(3, len(urls)))
         
         # Process each page in order
         for url in urls:
@@ -512,7 +516,7 @@ def matches(
 def agent_stats(
     player_id: int,
     timespan: str = "all",
-    timeout: float = DEFAULT_TIMEOUT
+    timeout: float | None = None
 ) -> list[AgentStats]:
     """
     Get player agent statistics.
@@ -532,7 +536,7 @@ def agent_stats(
         ...     print(f"{stat.agent}: {stat.rating} rating, {stat.acs} ACS")
     """
     timespan = timespan or "all"
-    url = f"{VLR_BASE}/player/{player_id}/?timespan={timespan}"
+    url = f"{_config.vlr_base}/player/{player_id}/?timespan={timespan}"
     
     try:
         html = fetch_html(url, timeout)

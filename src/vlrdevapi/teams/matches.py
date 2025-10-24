@@ -7,13 +7,14 @@ from typing import TypedDict
 
 from bs4 import BeautifulSoup
 
-from ..constants import VLR_BASE, DEFAULT_TIMEOUT
+from ..config import get_config
 from ..fetcher import fetch_html, batch_fetch_html
 from ..exceptions import NetworkError
 from ..utils import extract_text, absolute_url, extract_id_from_url
 
 from .models import TeamMatch, MatchTeam
 
+_config = get_config()
 
 def _parse_match_datetime(date_str: str | None, time_str: str | None) -> datetime | None:
     """
@@ -109,7 +110,7 @@ def _extract_match_id_from_url(url: str) -> int | None:
 
 
 # pyright: reportUnusedFunction=false
-def _get_team_ids_from_match(match_url: str, timeout: float = DEFAULT_TIMEOUT) -> tuple[int | None, int | None]:
+def _get_team_ids_from_match(match_url: str, timeout: float | None = None) -> tuple[int | None, int | None]:
     """
     Get team IDs by fetching the match page.
     
@@ -121,7 +122,8 @@ def _get_team_ids_from_match(match_url: str, timeout: float = DEFAULT_TIMEOUT) -
         Tuple of (team1_id, team2_id)
     """
     try:
-        html = fetch_html(match_url, timeout)
+        effective_timeout = timeout if timeout is not None else _config.default_timeout
+        html = fetch_html(match_url, effective_timeout)
         soup = BeautifulSoup(html, "lxml")
         
         # Find team links in the match header
@@ -144,7 +146,7 @@ def _get_team_ids_from_match(match_url: str, timeout: float = DEFAULT_TIMEOUT) -
         return None, None
 
 
-def _get_team_ids_batch(match_urls: list[str], timeout: float = DEFAULT_TIMEOUT) -> dict[str, tuple[int | None, int | None]]:
+def _get_team_ids_batch(match_urls: list[str], timeout: float | None = None) -> dict[str, tuple[int | None, int | None]]:
     """Get team IDs for multiple matches concurrently.
     
     Args:
@@ -158,7 +160,8 @@ def _get_team_ids_batch(match_urls: list[str], timeout: float = DEFAULT_TIMEOUT)
         return {}
     
     # Batch fetch all match pages concurrently
-    batch_results = batch_fetch_html(match_urls, timeout=timeout, max_workers=min(4, len(match_urls)))
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
+    batch_results = batch_fetch_html(match_urls, timeout=effective_timeout, max_workers=min(4, len(match_urls)))
     
     # Parse team IDs from each page
     results: dict[str, tuple[int | None, int | None]] = {}
@@ -195,7 +198,7 @@ def _get_team_ids_batch(match_urls: list[str], timeout: float = DEFAULT_TIMEOUT)
     return results
 
 
-def upcoming_matches(team_id: int, limit: int | None = None, timeout: float = DEFAULT_TIMEOUT) -> list[TeamMatch]:
+def upcoming_matches(team_id: int, limit: int | None = None, timeout: float | None = None) -> list[TeamMatch]:
     """
     Get upcoming matches for a team.
     
@@ -219,13 +222,14 @@ def upcoming_matches(team_id: int, limit: int | None = None, timeout: float = DE
     all_matches: list[TeamMatch] = []
     page = 1
     
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     while True:
-        url = f"{VLR_BASE}/team/matches/{team_id}/?group=upcoming"
+        url = f"{_config.vlr_base}/team/matches/{team_id}/?group=upcoming"
         if page > 1:
             url += f"&page={page}"
         
         try:
-            html = fetch_html(url, timeout)
+            html = fetch_html(url, effective_timeout)
         except NetworkError:
             break
         
@@ -234,7 +238,7 @@ def upcoming_matches(team_id: int, limit: int | None = None, timeout: float = DE
         if limit is not None:
             remaining = limit - len(all_matches)
         
-        matches = _parse_matches(html, timeout, limit=remaining)
+        matches = _parse_matches(html, effective_timeout, limit=remaining)
         
         if not matches:
             break
@@ -254,7 +258,7 @@ def upcoming_matches(team_id: int, limit: int | None = None, timeout: float = DE
     return all_matches
 
 
-def completed_matches(team_id: int, limit: int | None = None, timeout: float = DEFAULT_TIMEOUT) -> list[TeamMatch]:
+def completed_matches(team_id: int, limit: int | None = None, timeout: float | None = None) -> list[TeamMatch]:
     """
     Get completed matches for a team.
     
@@ -277,8 +281,9 @@ def completed_matches(team_id: int, limit: int | None = None, timeout: float = D
     all_matches: list[TeamMatch] = []
     page = 1
     
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     while True:
-        url = f"{VLR_BASE}/team/matches/{team_id}/?group=completed"
+        url = f"{_config.vlr_base}/team/matches/{team_id}/?group=completed"
         if page > 1:
             url += f"&page={page}"
         
@@ -329,7 +334,7 @@ class _MatchData(TypedDict):
     match_datetime: datetime | None
 
 
-def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT, limit: int | None = None) -> list[TeamMatch]:
+def _parse_matches(html: str, timeout: float | None = None, limit: int | None = None) -> list[TeamMatch]:
     """Parse matches from HTML with batch fetching for team IDs.
     
     Args:

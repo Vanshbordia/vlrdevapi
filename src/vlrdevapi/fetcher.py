@@ -11,19 +11,14 @@ from typing import Optional
 
 import httpx
 
-from .constants import (
-    DEFAULT_TIMEOUT,
-    DEFAULT_USER_AGENT,
-    MAX_RETRIES,
-    BACKOFF_FACTOR,
-    DEFAULT_RATE_LIMIT,
-    DEFAULT_RATE_LIMIT_ENABLED,
-)
+from .config import get_config
 from .exceptions import NetworkError, RateLimitError
 
 
+_config = get_config()
+
 _DEFAULT_HEADERS = {
-    "User-Agent": DEFAULT_USER_AGENT,
+    "User-Agent": _config.default_user_agent,
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
     "Accept-Charset": "utf-8",
@@ -56,8 +51,8 @@ _thread_pool_lock = threading.Lock()
 DEFAULT_MAX_WORKERS = 4  # Default number of concurrent workers
 
 # Rate limiting configuration
-_rate_limit_enabled = DEFAULT_RATE_LIMIT_ENABLED
-_rate_limit_requests_per_second = float(DEFAULT_RATE_LIMIT)
+_rate_limit_enabled = bool(_config.default_rate_limit_enabled)
+_rate_limit_requests_per_second = float(_config.default_rate_limit)
 _rate_limit_lock = threading.Lock()
 _rate_limit_async_lock: Optional[asyncio.Lock] = None
 
@@ -177,7 +172,7 @@ def _build_headers(user_agent: str) -> dict[str, str]:
 
 
 def _compute_timeout(timeout: float) -> httpx.Timeout:
-    timeout_value = timeout if timeout is not None else DEFAULT_TIMEOUT
+    timeout_value = timeout if timeout is not None else _config.default_timeout
     return httpx.Timeout(timeout_value)
 
 
@@ -192,7 +187,7 @@ def _get_sync_client(use_http1: bool = False) -> httpx.Client:
                     _sync_client_http1 = httpx.Client(
                         http2=False,
                         headers=_DEFAULT_HEADERS.copy(),
-                        timeout=httpx.Timeout(DEFAULT_TIMEOUT),
+                        timeout=httpx.Timeout(_config.default_timeout),
                         follow_redirects=True,
                         limits=httpx.Limits(
                             max_connections=100,
@@ -208,7 +203,7 @@ def _get_sync_client(use_http1: bool = False) -> httpx.Client:
                     _sync_client = httpx.Client(
                         http2=True,
                         headers=_DEFAULT_HEADERS.copy(),
-                        timeout=httpx.Timeout(DEFAULT_TIMEOUT),
+                        timeout=httpx.Timeout(_config.default_timeout),
                         follow_redirects=True,
                         limits=httpx.Limits(
                             max_connections=100,
@@ -233,7 +228,7 @@ async def _get_async_client(use_http1: bool = False) -> httpx.AsyncClient:
                     _async_client_http1 = httpx.AsyncClient(
                         http2=False,
                         headers=_DEFAULT_HEADERS.copy(),
-                        timeout=httpx.Timeout(DEFAULT_TIMEOUT),
+                        timeout=httpx.Timeout(_config.default_timeout),
                         follow_redirects=True,
                         limits=httpx.Limits(
                             max_connections=100,
@@ -251,7 +246,7 @@ async def _get_async_client(use_http1: bool = False) -> httpx.AsyncClient:
                     _async_client = httpx.AsyncClient(
                         http2=True,
                         headers=_DEFAULT_HEADERS.copy(),
-                        timeout=httpx.Timeout(DEFAULT_TIMEOUT),
+                        timeout=httpx.Timeout(_config.default_timeout),
                         follow_redirects=True,
                         limits=httpx.Limits(
                             max_connections=100,
@@ -264,10 +259,10 @@ async def _get_async_client(use_http1: bool = False) -> httpx.AsyncClient:
 
 def fetch_html_with_retry(
     url: str,
-    timeout: float = DEFAULT_TIMEOUT,
-    max_retries: int = MAX_RETRIES,
-    backoff_factor: float = BACKOFF_FACTOR,
-    user_agent: str = DEFAULT_USER_AGENT,
+    timeout: float | None = None,
+    max_retries: int | None = None,
+    backoff_factor: float | None = None,
+    user_agent: str | None = None,
 ) -> str:
     """
     Fetch HTML with retry logic, connection pooling, rate limiting, and exponential backoff.
@@ -291,12 +286,18 @@ def fetch_html_with_retry(
     if rate_limiter:
         rate_limiter.acquire()
     
-    headers = _build_headers(user_agent)
-    request_timeout = _compute_timeout(timeout)
+    # Resolve dynamic defaults
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
+    effective_retries = int(max_retries if max_retries is not None else _config.max_retries)
+    effective_backoff = float(backoff_factor if backoff_factor is not None else _config.backoff_factor)
+    effective_ua = user_agent if user_agent is not None else _config.default_user_agent
+
+    headers = _build_headers(effective_ua)
+    request_timeout = _compute_timeout(effective_timeout)
     last_exception: Optional[Exception] = None
     http2_failed = False
 
-    for attempt in range(max_retries + 1):
+    for attempt in range(effective_retries + 1):
         # Use HTTP/1.1 if HTTP/2 previously failed
         client = _get_sync_client(use_http1=http2_failed)
         
@@ -313,11 +314,11 @@ def fetch_html_with_retry(
         else:
             status = response.status_code
             if status == 429:
-                raise RateLimitError(f"Rate limited on {url}")
+                raise RateLimitError("Rate limited", url=url, status_code=429)
             if status >= 500:
-                last_exception = NetworkError(f"HTTP {status} on {url}")
+                last_exception = NetworkError("Server error", url=url, status_code=status)
             elif status >= 400:
-                raise NetworkError(f"HTTP {status} on {url}")
+                raise NetworkError("Client error", url=url, status_code=status)
             else:
                 # Force UTF-8 decoding to ensure consistent unicode behavior
                 try:
@@ -326,25 +327,29 @@ def fetch_html_with_retry(
                     pass
                 return response.text
 
-        if attempt < max_retries and last_exception is not None:
-            delay = backoff_factor * (2 ** attempt)
+        if attempt < effective_retries and last_exception is not None:
+            delay = effective_backoff * (2 ** attempt)
             time.sleep(delay)
         else:
             break
 
     if last_exception is None:
-        raise NetworkError(f"Failed to fetch {url} after {max_retries} retries")
+        raise NetworkError(
+            f"Failed to fetch after {effective_retries} retries",
+            url=url,
+            context={"max_retries": effective_retries},
+        )
     if isinstance(last_exception, NetworkError):
         raise last_exception
-    raise NetworkError(f"Failed to fetch {url}: {last_exception}") from last_exception
+    raise NetworkError(f"Failed to fetch: {last_exception}", url=url, context={"cause": str(last_exception)}) from last_exception
 
 
 async def fetch_html_with_retry_async(
     url: str,
-    timeout: float = DEFAULT_TIMEOUT,
-    max_retries: int = MAX_RETRIES,
-    backoff_factor: float = BACKOFF_FACTOR,
-    user_agent: str = DEFAULT_USER_AGENT,
+    timeout: float | None = None,
+    max_retries: int | None = None,
+    backoff_factor: float | None = None,
+    user_agent: str | None = None,
 ) -> str:
     """Async counterpart to `fetch_html_with_retry` using shared async client."""
 
@@ -353,12 +358,18 @@ async def fetch_html_with_retry_async(
     if rate_limiter:
         await rate_limiter.acquire_async()
 
-    headers = _build_headers(user_agent)
-    request_timeout = _compute_timeout(timeout)
+    # Resolve dynamic defaults
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
+    effective_retries = int(max_retries if max_retries is not None else _config.max_retries)
+    effective_backoff = float(backoff_factor if backoff_factor is not None else _config.backoff_factor)
+    effective_ua = user_agent if user_agent is not None else _config.default_user_agent
+
+    headers = _build_headers(effective_ua)
+    request_timeout = _compute_timeout(effective_timeout)
     last_exception: Optional[Exception] = None
     http2_failed = False
 
-    for attempt in range(max_retries + 1):
+    for attempt in range(effective_retries + 1):
         # Use HTTP/1.1 if HTTP/2 previously failed
         client = await _get_async_client(use_http1=http2_failed)
         
@@ -375,11 +386,11 @@ async def fetch_html_with_retry_async(
         else:
             status = response.status_code
             if status == 429:
-                raise RateLimitError(f"Rate limited on {url}")
+                raise RateLimitError("Rate limited", url=url, status_code=429)
             if status >= 500:
-                last_exception = NetworkError(f"HTTP {status} on {url}")
+                last_exception = NetworkError("Server error", url=url, status_code=status)
             elif status >= 400:
-                raise NetworkError(f"HTTP {status} on {url}")
+                raise NetworkError("Client error", url=url, status_code=status)
             else:
                 try:
                     response.encoding = "utf-8"
@@ -387,24 +398,28 @@ async def fetch_html_with_retry_async(
                     pass
                 return response.text
 
-        if attempt < max_retries and last_exception is not None:
-            delay = backoff_factor * (2 ** attempt)
+        if attempt < effective_retries and last_exception is not None:
+            delay = effective_backoff * (2 ** attempt)
             await asyncio.sleep(delay)
         else:
             break
 
     if last_exception is None:
-        raise NetworkError(f"Failed to fetch {url} after {max_retries} retries")
+        raise NetworkError(
+            f"Failed to fetch after {effective_retries} retries",
+            url=url,
+            context={"max_retries": effective_retries},
+        )
     if isinstance(last_exception, NetworkError):
         raise last_exception
-    raise NetworkError(f"Failed to fetch {url}: {last_exception}") from last_exception
+    raise NetworkError(f"Failed to fetch: {last_exception}", url=url, context={"cause": str(last_exception)}) from last_exception
 
 
 # Cache for HTML to avoid redundant fetches in tests/same session
 _HTML_CACHE: dict[str, str] = {}
 
 
-def fetch_html(url: str, timeout: float = DEFAULT_TIMEOUT, use_cache: bool = True) -> str:
+def fetch_html(url: str, timeout: float | None = None, use_cache: bool = True) -> str:
     """
     Public interface for fetching HTML with caching and retries.
 
@@ -430,7 +445,7 @@ def fetch_html(url: str, timeout: float = DEFAULT_TIMEOUT, use_cache: bool = Tru
 
 async def fetch_html_async(
     url: str,
-    timeout: float = DEFAULT_TIMEOUT,
+    timeout: float | None = None,
     use_cache: bool = True,
 ) -> str:
     """Async convenience helper mirroring `fetch_html`."""
@@ -459,7 +474,7 @@ def _get_thread_pool(max_workers: int = DEFAULT_MAX_WORKERS) -> ThreadPoolExecut
 
 def batch_fetch_html(
     urls: list[str],
-    timeout: float = DEFAULT_TIMEOUT,
+    timeout: float | None = None,
     use_cache: bool = True,
     max_workers: int = DEFAULT_MAX_WORKERS,
 ) -> dict[str, str | Exception]:
@@ -551,14 +566,9 @@ def get_rate_limit() -> float:
 
 
 def reset_rate_limit() -> None:
-    """Reset rate limiting to defaults from constants.
-    
-    Restores enabled/disabled state and the default RPS, and refreshes the
-    active limiter instance.
-    """
     configure_rate_limit(
-        requests_per_second=float(DEFAULT_RATE_LIMIT),
-        enabled=bool(DEFAULT_RATE_LIMIT_ENABLED),
+        requests_per_second=float(_config.default_rate_limit),
+        enabled=bool(_config.default_rate_limit_enabled),
     )
 
 

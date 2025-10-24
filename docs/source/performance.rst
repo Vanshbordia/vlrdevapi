@@ -76,11 +76,11 @@ Minimize API calls by batching or paginating operations:
 
    import vlrdevapi as vlr
    # Efficient: Request a larger batch once
-   matches = vlr.matches.upcoming(limit=20)
+   matches = vlr.matches.upcoming(limit=5)
 
 .. code-block:: python
 
    import vlrdevapi as vlr
    # Paginate when you need historical data
-   page1 = vlr.matches.completed(limit=20, page=1)
-   page2 = vlr.matches.completed(limit=20, page=2)
+   page1 = vlr.matches.completed(limit=5, page=1)
+   page2 = vlr.matches.completed(limit=5, page=2)

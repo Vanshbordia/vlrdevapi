@@ -42,6 +42,7 @@ dependencies = [
     "beautifulsoup4>=4.12",
     "httpx[brotli,http2]>=0.27",
     "lxml>=5.0",
+    "pytest>=8.4.2",
 ]
 
 [project.urls]

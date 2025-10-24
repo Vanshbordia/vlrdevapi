@@ -8,11 +8,13 @@ from dataclasses import dataclass, field
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-from .constants import VLR_BASE, DEFAULT_TIMEOUT
+from .config import get_config
 from .countries import COUNTRY_MAP
 from .fetcher import fetch_html, batch_fetch_html
 from .exceptions import NetworkError
 from .utils import extract_text, parse_int, extract_id_from_url
+
+_config = get_config()
 
 # Pre-compiled regex patterns for performance
 _WHITESPACE_RE = re.compile(r"\s+")
@@ -150,7 +152,7 @@ def _fetch_team_meta_batch(team_ids: list[int], timeout: float) -> dict[int, tup
         return {}
     
     # Build URLs for all teams
-    urls = [f"{VLR_BASE}/team/{team_id}" for team_id in team_ids]
+    urls = [f"{_config.vlr_base}/team/{team_id}" for team_id in team_ids]
     
     # Batch fetch all team pages concurrently
     batch_results = batch_fetch_html(urls, timeout=timeout, max_workers=min(2, len(urls)))
@@ -228,7 +230,7 @@ def _parse_note_for_picks_bans(
     
     return ordered_actions, picks, bans, remaining
 
-def info(match_id: int, timeout: float = DEFAULT_TIMEOUT) -> Info | None:
+def info(match_id: int, timeout: float | None = None) -> Info | None:
     """
     Get series information.
     
@@ -245,9 +247,10 @@ def info(match_id: int, timeout: float = DEFAULT_TIMEOUT) -> Info | None:
         >>> print(f"{info.teams[0].name} vs {info.teams[1].name}")
         >>> print(f"Score: {info.score[0]}-{info.score[1]}")
     """
-    url = f"{VLR_BASE}/{match_id}"
+    url = f"{_config.vlr_base}/{match_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return None
     
@@ -396,7 +399,7 @@ def info(match_id: int, timeout: float = DEFAULT_TIMEOUT) -> Info | None:
     )
 
 
-def matches(series_id: int, limit: int | None = None, timeout: float = DEFAULT_TIMEOUT) -> list[MapPlayers]:
+def matches(series_id: int, limit: int | None = None, timeout: float | None = None) -> list[MapPlayers]:
     """
     Get detailed match statistics for a series.
     
@@ -416,9 +419,10 @@ def matches(series_id: int, limit: int | None = None, timeout: float = DEFAULT_T
         ...     for player in map_data.players:
         ...         print(f"  {player.name}: {player.acs} ACS")
     """
-    url = f"{VLR_BASE}/{series_id}"
+    url = f"{_config.vlr_base}/{series_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return []
     

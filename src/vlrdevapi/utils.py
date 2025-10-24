@@ -8,7 +8,9 @@ from urllib import parse
 
 from bs4 import Tag
 
-from .constants import VLR_BASE
+from .config import get_config
+
+_config = get_config()
 
 # Pre-compiled regex patterns for performance
 _WHITESPACE_RE = re.compile(r"\s+")
@@ -46,7 +48,7 @@ def absolute_url(url: str | None) -> str | None:
         return f"https:{url}"
     if url.startswith("http"):
         return url
-    return parse.urljoin(f"{VLR_BASE}/", url.lstrip("/"))
+    return parse.urljoin(f"{_config.vlr_base}/", url.lstrip("/"))
 
 
 def parse_int(text: str | None) -> int | None:

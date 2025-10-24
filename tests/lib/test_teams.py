@@ -1,8 +1,29 @@
 """Tests for teams module using real HTML sources."""
 
 from datetime import date
+from urllib.parse import urlparse
 import pytest
 import vlrdevapi as vlr
+
+
+def _host_matches(url: str, allowed_domains) -> bool:
+    """Return True if URL's hostname matches any allowed domain (including subdomains).
+
+    Example: allowed_domains=["owcdn.net"] allows hostnames like
+    "owcdn.net" and "static.owcdn.net".
+    """
+    try:
+        host = urlparse(url).hostname or ""
+    except Exception:
+        return False
+    host = host.lower().strip(".")
+    for domain in allowed_domains:
+        d = (domain or "").lower().lstrip(".")
+        if not d:
+            continue
+        if host == d or host.endswith("." + d):
+            return True
+    return False
 
 
 class TestTeamsInfo:
@@ -63,7 +84,7 @@ class TestTeamsActiveTeam:
         assert team is not None
         assert team.logo_url is not None
         assert isinstance(team.logo_url, str)
-        assert "owcdn.net" in team.logo_url
+        assert _host_matches(team.logo_url, ["owcdn.net"])
         assert team.logo_url.startswith("https://")
     
     def test_active_team_country(self, mock_fetch_html):
@@ -252,7 +273,7 @@ class TestTeamsEdgeCases:
         if team and team.logo_url:
             # Should be absolute URL with https
             assert team.logo_url.startswith("https://")
-            assert "owcdn.net" in team.logo_url
+            assert _host_matches(team.logo_url, ["owcdn.net"])
     
     def test_social_links_no_empty_entries(self, mock_fetch_html):
         """Test that empty social links are filtered out."""
@@ -422,7 +443,7 @@ class TestTeamsRoster:
         for member in roster:
             if member.photo_url:
                 assert member.photo_url.startswith("https://")
-                assert "owcdn.net" in member.photo_url
+                assert _host_matches(member.photo_url, ["owcdn.net"])
 
 
 class TestTeamsRosterRoles:
@@ -650,7 +671,7 @@ class TestTeamsCompletedMatches:
             # Test URLs
             if match.match_url:
                 assert match.match_url.startswith("https://")
-                assert "vlr.gg" in match.match_url
+                assert _host_matches(match.match_url, ["vlr.gg"])
 
 
 class TestTeamsMatchesIntegration:

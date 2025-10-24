@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from bs4 import BeautifulSoup
 
-from ..constants import VLR_BASE, DEFAULT_TIMEOUT
+from ..config import get_config
 from ..fetcher import fetch_html  # Uses connection pooling automatically
 from ..exceptions import NetworkError
 from ..utils import extract_text, absolute_url, extract_id_from_url
@@ -12,7 +12,10 @@ from ..utils import extract_text, absolute_url, extract_id_from_url
 from .models import EventPlacement, PlacementDetail
 
 
-def placements(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> list[EventPlacement]:
+_config = get_config()
+
+
+def placements(team_id: int, timeout: float | None = None) -> list[EventPlacement]:
     """
     Get event placements for a team.
     
@@ -31,9 +34,10 @@ def placements(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> list[EventPlac
         ...     for detail in placement.placements:
         ...         print(f"  {detail.series} - {detail.place}: {detail.prize_money}")
     """
-    url = f"{VLR_BASE}/team/{team_id}"
+    url = f"{_config.vlr_base}/team/{team_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return []
     

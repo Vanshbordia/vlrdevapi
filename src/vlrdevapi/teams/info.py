@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from bs4 import BeautifulSoup
 
-from ..constants import VLR_BASE, DEFAULT_TIMEOUT
+from ..config import get_config
 from ..countries import map_country_code
 from ..fetcher import fetch_html  # Uses connection pooling automatically
 from ..exceptions import NetworkError
@@ -12,8 +12,10 @@ from ..utils import extract_text, absolute_url, extract_id_from_url
 
 from .models import TeamInfo, SocialLink, PreviousTeam, SuccessorTeam
 
+_config = get_config()
 
-def info(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> TeamInfo | None:
+
+def info(team_id: int, timeout: float | None = None) -> TeamInfo | None:
     """
     Get team information.
     
@@ -29,9 +31,10 @@ def info(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> TeamInfo | None:
         >>> team = vlr.teams.info(team_id=1034)
         >>> print(f"{team.name} ({team.tag}) - {team.country}")
     """
-    url = f"{VLR_BASE}/team/{team_id}"
+    url = f"{_config.vlr_base}/team/{team_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return None
     

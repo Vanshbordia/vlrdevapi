@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-from .constants import VLR_BASE, DEFAULT_TIMEOUT
+from .config import get_config
 from .countries import map_country_code, COUNTRY_MAP
 from .fetcher import fetch_html, batch_fetch_html
 from .exceptions import NetworkError
@@ -32,6 +32,8 @@ from .utils import (
     parse_int,
     normalize_whitespace,
 )
+
+_config = get_config()
 
 
 # Enums for autocomplete
@@ -187,7 +189,7 @@ def list_events(
     status: EventStatus | StatusFilter = EventStatus.ALL,
     page: int = 1,
     limit: int | None = None,
-    timeout: float = DEFAULT_TIMEOUT,
+    timeout: float | None = None,
 ) -> list[ListEvent]:
     """
     List events with filters.
@@ -220,12 +222,13 @@ def list_events(
     if page > 1:
         base_params["page"] = str(page)
     
-    url = f"{VLR_BASE}/events"
+    url = f"{_config.vlr_base}/events"
     if base_params:
         url = f"{url}?{parse.urlencode(base_params)}"
     
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return []
     
@@ -304,21 +307,22 @@ def list_events(
             end_text=end_text,
             prize=prize,
             status=card_status,
-            url=parse.urljoin(f"{VLR_BASE}/", href.lstrip("/")),
+            url=parse.urljoin(f"{_config.vlr_base}/", href.lstrip("/")),
         ))
     
     return results
 
 
-def stages(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> list[EventStage]:
+def stages(event_id: int, timeout: float | None = None) -> list[EventStage]:
     """List available stages for an event's matches page.
     
     Returns a list of stage options with their series_id and URL. The special
     "All Stages" option will have series_id="all".
     """
-    url = f"{VLR_BASE}/event/matches/{event_id}"
+    url = f"{_config.vlr_base}/event/matches/{event_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return []
     soup = BeautifulSoup(html, "lxml")
@@ -331,7 +335,7 @@ def stages(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> list[EventStage]:
         href = a.get("href")
         if not href or not isinstance(href, str):
             continue
-        full_url = parse.urljoin(f"{VLR_BASE}/", href.lstrip("/"))
+        full_url = parse.urljoin(f"{_config.vlr_base}/", href.lstrip("/"))
         # Parse series_id from query (?series_id=...)
         parsed = parse.urlparse(full_url)
         qs = parse.parse_qs(parsed.query)
@@ -416,7 +420,7 @@ def _normalize_regions(tags: list[str]) -> list[str]:
     return countries_canonical
 
 
-def info(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Info | None:
+def info(event_id: int, timeout: float | None = None) -> Info | None:
     """
     Get event header/info.
     
@@ -432,9 +436,10 @@ def info(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Info | None:
         >>> event_info = vlr.events.info(event_id=123)
         >>> print(f"{event_info.name} - {event_info.prize}")
     """
-    url = f"{VLR_BASE}/event/{event_id}"
+    url = f"{_config.vlr_base}/event/{event_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return None
     
@@ -497,7 +502,7 @@ def _get_match_team_ids_batch(match_ids: list[int], timeout: float, max_workers:
         return {}
     
     # Build URLs for all match pages
-    urls = [f"{VLR_BASE}/{match_id}" for match_id in match_ids]
+    urls = [f"{_config.vlr_base}/{match_id}" for match_id in match_ids]
     
     # Fetch all match pages concurrently
     results = batch_fetch_html(urls, timeout=timeout, max_workers=max_workers)
@@ -535,7 +540,7 @@ def _get_match_team_ids_batch(match_ids: list[int], timeout: float, max_workers:
     return team_ids_map
 
 
-def matches(event_id: int, stage: str | None = None, limit: int | None = None, timeout: float = DEFAULT_TIMEOUT) -> list[Match]:
+def matches(event_id: int, stage: str | None = None, limit: int | None = None, timeout: float | None = None) -> list[Match]:
     """
     Get event matches with team IDs.
     
@@ -554,9 +559,10 @@ def matches(event_id: int, stage: str | None = None, limit: int | None = None, t
         >>> for match in matches:
         ...     print(f"{match.teams[0].name} (ID: {match.teams[0].id}) vs {match.teams[1].name} (ID: {match.teams[1].id})")
     """
-    url = f"{VLR_BASE}/event/matches/{event_id}"
+    url = f"{_config.vlr_base}/event/matches/{event_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return []
     
@@ -575,13 +581,13 @@ def matches(event_id: int, stage: str | None = None, limit: int | None = None, t
                 continue
             # Normalize text for matching
             key = text.lower()
-            stage_map[key] = parse.urljoin(f"{VLR_BASE}/", href.lstrip("/"))
+            stage_map[key] = parse.urljoin(f"{_config.vlr_base}/", href.lstrip("/"))
         # Try to match requested stage (case-insensitive)
         target = stage.strip().lower()
         stage_url = stage_map.get(target)
         if stage_url:
             try:
-                html = fetch_html(stage_url, timeout)
+                html = fetch_html(stage_url, effective_timeout)
                 soup = BeautifulSoup(html, "lxml")
             except NetworkError:
                 return []
@@ -655,7 +661,7 @@ def matches(event_id: int, stage: str | None = None, limit: int | None = None, t
             match_date = parse_date(text, ["%a, %B %d, %Y", "%A, %B %d, %Y", "%B %d, %Y"])
         
         time_text = extract_text(card.select_one(".match-item-time")) or None
-        match_url = parse.urljoin(f"{VLR_BASE}/", href_str.lstrip("/")) if href_str else ""
+        match_url = parse.urljoin(f"{_config.vlr_base}/", href_str.lstrip("/")) if href_str else ""
         
         match_data.append((match_id, match_url, teams, match_status, stage_name or "", phase or "", match_date, time_text))
     
@@ -665,7 +671,7 @@ def matches(event_id: int, stage: str | None = None, limit: int | None = None, t
     
     # Fetch team IDs concurrently using batch fetching (only for limited matches)
     match_ids = [match_id for match_id, _, _, _, _, _, _, _ in match_data]
-    team_ids_map = _get_match_team_ids_batch(match_ids, timeout, max_workers=4)
+    team_ids_map = _get_match_team_ids_batch(match_ids, effective_timeout, max_workers=4)
     
     results: list[Match] = []
     
@@ -706,7 +712,7 @@ def matches(event_id: int, stage: str | None = None, limit: int | None = None, t
     return results
 
 
-def match_summary(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> MatchSummary | None:
+def match_summary(event_id: int, timeout: float | None = None) -> MatchSummary | None:
     """
     Get event match summary.
     
@@ -722,9 +728,10 @@ def match_summary(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> MatchSumma
         >>> summary = vlr.events.match_summary(event_id=123)
         >>> print(f"Total: {summary.total_matches}, Completed: {summary.completed}")
     """
-    url = f"{VLR_BASE}/event/matches/{event_id}"
+    url = f"{_config.vlr_base}/event/matches/{event_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return None
     
@@ -768,7 +775,7 @@ def match_summary(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> MatchSumma
     )
 
 
-def standings(event_id: int, stage: str | None = None, timeout: float = DEFAULT_TIMEOUT) -> Standings | None:
+def standings(event_id: int, stage: str | None = None, timeout: float | None = None) -> Standings | None:
     """
     Get event standings.
     
@@ -786,9 +793,10 @@ def standings(event_id: int, stage: str | None = None, timeout: float = DEFAULT_
         >>> for entry in standings.entries:
         ...     print(f"{entry.place}. {entry.team_name} - {entry.prize}")
     """
-    url = f"{VLR_BASE}/event/{event_id}"
+    url = f"{_config.vlr_base}/event/{event_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return None
     
@@ -808,7 +816,7 @@ def standings(event_id: int, stage: str | None = None, timeout: float = DEFAULT_
             if not href or not isinstance(href, str):
                 continue
             key = name.lower()
-            stage_map[key] = parse.urljoin(f"{VLR_BASE}/", href.lstrip("/"))
+            stage_map[key] = parse.urljoin(f"{_config.vlr_base}/", href.lstrip("/"))
         target = stage.strip().lower()
         selected = stage_map.get(target)
         if selected:
@@ -820,7 +828,7 @@ def standings(event_id: int, stage: str | None = None, timeout: float = DEFAULT_
             canonical_href = canonical_link.get("href") if canonical_link else None
             canonical = canonical_href if isinstance(canonical_href, str) else None
             if not canonical:
-                canonical = f"{VLR_BASE}/event/{event_id}"
+                canonical = f"{_config.vlr_base}/event/{event_id}"
             base = canonical.rstrip("/")
             standings_url = f"{base}/prize-distribution"
     else:
@@ -829,12 +837,12 @@ def standings(event_id: int, stage: str | None = None, timeout: float = DEFAULT_
         canonical_href = canonical_link.get("href") if canonical_link else None
         canonical = canonical_href if isinstance(canonical_href, str) else None
         if not canonical:
-            canonical = f"{VLR_BASE}/event/{event_id}"
+            canonical = f"{_config.vlr_base}/event/{event_id}"
         base = canonical.rstrip("/")
         standings_url = f"{base}/prize-distribution"
     
     try:
-        html = fetch_html(standings_url, timeout)
+        html = fetch_html(standings_url, effective_timeout)
     except NetworkError:
         return None
     

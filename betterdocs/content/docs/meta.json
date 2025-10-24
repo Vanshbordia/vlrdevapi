@@ -10,7 +10,8 @@
       "title": "Getting Started",
       "items": [
         { "type": "doc", "slug": "/installation", "title": "Installation" },
-        { "type": "doc", "slug": "/getting-started", "title": "Quick Start" }
+        { "type": "doc", "slug": "/getting-started", "title": "Quick Start" },
+        { "type": "doc", "slug": "/config", "title": "Configuration" }
       ]
     },
     {

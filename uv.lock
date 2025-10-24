@@ -498,6 +498,7 @@ dependencies = [
     { name = "beautifulsoup4" },
     { name = "httpx", extra = ["brotli", "http2"] },
     { name = "lxml" },
+    { name = "pytest" },
 ]
 
 [package.optional-dependencies]
@@ -514,6 +515,7 @@ requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.12" },
     { name = "httpx", extras = ["brotli", "http2"], specifier = ">=0.27" },
     { name = "lxml", specifier = ">=5.0" },
+    { name = "pytest", specifier = ">=8.4.2" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.6.0" },

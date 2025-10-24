@@ -90,6 +90,9 @@ from .status import check_status
 # Import rate limit configuration and helpers
 from .fetcher import configure_rate_limit, get_rate_limit, reset_rate_limit
 
+# Import configuration functions
+from .config import configure, reset_config
+
 __all__ = [
     # Modules - these are the main API entry points
     "matches",
@@ -117,6 +120,8 @@ __all__ = [
     "configure_rate_limit",
     "get_rate_limit",
     "reset_rate_limit",
+    "configure",
+    "reset_config",
 ]
 
 # Note: Models are NOT exported at the top level to prevent confusion.

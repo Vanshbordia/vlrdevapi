@@ -6,7 +6,7 @@ from datetime import date
 from collections import defaultdict
 from bs4 import BeautifulSoup
 
-from ..constants import VLR_BASE, DEFAULT_TIMEOUT
+from ..config import get_config
 from ..countries import map_country_code
 from ..fetcher import fetch_html  # Uses connection pooling automatically
 from ..exceptions import NetworkError
@@ -14,6 +14,7 @@ from ..utils import extract_text, extract_id_from_url, normalize_whitespace, ext
 
 from .models import PlayerTransaction, PreviousPlayer
 
+_config = get_config()
 
 def _parse_transaction_date(date_str: str | None) -> date | None:
     """
@@ -37,7 +38,7 @@ def _parse_transaction_date(date_str: str | None) -> date | None:
         return None
 
 
-def transactions(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> list[PlayerTransaction]:
+def transactions(team_id: int, timeout: float | None = None) -> list[PlayerTransaction]:
     """
     Get all team transactions (joins, leaves, inactive status changes, etc.).
     
@@ -78,9 +79,10 @@ def transactions(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> list[PlayerT
         Transaction actions include: 'join', 'leave', 'inactive', and others.
         All text fields are cleaned of extra whitespace, tabs, and newlines.
     """
-    url = f"{VLR_BASE}/team/transactions/{team_id}"
+    url = f"{_config.vlr_base}/team/transactions/{team_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return []
     
@@ -175,7 +177,7 @@ def transactions(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> list[PlayerT
     return transactions_list
 
 
-def previous_players(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> list[PreviousPlayer]:
+def previous_players(team_id: int, timeout: float | None = None) -> list[PreviousPlayer]:
     """
     Get all previous and current players with their status calculated from transaction history.
     

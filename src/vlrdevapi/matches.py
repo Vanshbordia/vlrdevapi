@@ -9,11 +9,13 @@ from dataclasses import dataclass
 
 from bs4 import BeautifulSoup
 
-from .constants import VLR_BASE, DEFAULT_TIMEOUT
+from .config import get_config
 from .countries import map_country_code
-from .fetcher import fetch_html, batch_fetch_html
+from .fetcher import fetch_html, batch_fetch_html, fetch_html_with_retry
 from .exceptions import NetworkError
 from .utils import extract_text, extract_match_id, extract_country_code, parse_date, extract_id_from_url
+
+_config = get_config()
 
 
 @dataclass(frozen=True)
@@ -56,7 +58,7 @@ def _fetch_team_ids_batch(match_ids: list[int], timeout: float, max_workers: int
     
     # Fetch uncached matches concurrently
     if uncached_ids:
-        urls = [f"{VLR_BASE}/{match_id}" for match_id in uncached_ids]
+        urls = [f"{_config.vlr_base}/{match_id}" for match_id in uncached_ids]
         batch_results = batch_fetch_html(urls, timeout=timeout, max_workers=max_workers)
         
         for match_id, url in zip(uncached_ids, urls):
@@ -193,7 +195,7 @@ def _parse_matches(html: str, include_scores: bool) -> list[Match]:
     
     # Batch fetch team IDs for all matches concurrently
     match_ids = [match_id for match_id, *_ in match_data]
-    team_ids_map = _fetch_team_ids_batch(match_ids, timeout=DEFAULT_TIMEOUT, max_workers=4)
+    team_ids_map = _fetch_team_ids_batch(match_ids, timeout=_config.default_timeout, max_workers=4)
     
     # Second pass: build Match objects with team IDs
     matches: list[Match] = []
@@ -230,7 +232,7 @@ def _parse_matches(html: str, include_scores: bool) -> list[Match]:
 def upcoming(
     limit: int | None = None,
     page: int | None = None,
-    timeout: float = DEFAULT_TIMEOUT,
+    timeout: float | None = None,
 ) -> list[Match]:
     """
     Get upcoming matches.
@@ -253,13 +255,14 @@ def upcoming(
         >>> # Team IDs may be None if a team is TBD
         >>> ids = (match.team1.id, match.team2.id)
     """
-    url = f"{VLR_BASE}/matches"
+    url = f"{_config.vlr_base}/matches"
     
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     if limit is None:
         try:
             if page:
                 url = f"{url}?page={page}"
-            html = fetch_html(url, timeout)
+            html = fetch_html_with_retry(url, timeout=effective_timeout)
         except NetworkError:
             return []
         all_matches = _parse_matches(html, include_scores=False)
@@ -272,7 +275,7 @@ def upcoming(
     while remaining > 0:
         try:
             page_url = url if cur_page == 1 else f"{url}?page={cur_page}"
-            html = fetch_html(page_url, timeout)
+            html = fetch_html_with_retry(page_url, timeout=effective_timeout)
         except NetworkError:
             break
         
@@ -293,7 +296,7 @@ def upcoming(
 def completed(
     limit: int | None = None,
     page: int | None = None,
-    timeout: float = DEFAULT_TIMEOUT,
+    timeout: float | None = None,
 ) -> list[Match]:
     """
     Get completed matches.
@@ -313,13 +316,14 @@ def completed(
         ...     score = f"{match.team1.score}-{match.team2.score}"
         ...     print(f"{match.team1.name} vs {match.team2.name} - {score}")
     """
-    url = f"{VLR_BASE}/matches/results"
+    url = f"{_config.vlr_base}/matches/results"
     
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     if limit is None:
         try:
             if page:
                 url = f"{url}?page={page}"
-            html = fetch_html(url, timeout)
+            html = fetch_html_with_retry(url, timeout=effective_timeout)
         except NetworkError:
             return []
         all_matches = _parse_matches(html, include_scores=True)
@@ -332,7 +336,7 @@ def completed(
     while remaining > 0:
         try:
             page_url = url if cur_page == 1 else f"{url}?page={cur_page}"
-            html = fetch_html(page_url, timeout)
+            html = fetch_html_with_retry(page_url, timeout=effective_timeout)
         except NetworkError:
             break
         
@@ -350,7 +354,7 @@ def completed(
     return results
 
 
-def live(limit: int | None = None, timeout: float = DEFAULT_TIMEOUT) -> list[Match]:
+def live(limit: int | None = None, timeout: float | None = None) -> list[Match]:
     """
     Get live matches.
     
@@ -367,8 +371,9 @@ def live(limit: int | None = None, timeout: float = DEFAULT_TIMEOUT) -> list[Mat
         >>> for match in matches:
         ...     print(f"LIVE: {match.team1.name} vs {match.team2.name}")
     """
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(f"{VLR_BASE}/matches", timeout)
+        html = fetch_html_with_retry(f"{_config.vlr_base}/matches", timeout=effective_timeout)
     except NetworkError:
         return []
     
