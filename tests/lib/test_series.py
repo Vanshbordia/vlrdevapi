@@ -157,8 +157,8 @@ class TestSeriesIntegration:
         maps = vlr.series.matches(series_id=530935)
         assert isinstance(maps, list)
     
-    def test_pydantic_models_immutable(self, mock_fetch_html):
-        """Test that models are immutable."""
+    def test_models_immutable(self, mock_fetch_html):
+        """Test that models are immutable (frozen dataclasses)."""
         info = vlr.series.info(match_id=530935)
         if info:
             with pytest.raises(Exception):

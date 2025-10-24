@@ -1,12 +1,16 @@
 """VLR.gg status checking utilities."""
 
 from urllib import request
+from http.client import HTTPResponse
+from typing import cast
 
-from .constants import VLR_BASE, DEFAULT_TIMEOUT
-from .exceptions import NetworkError
+from .config import get_config
 
 
-def check_status(timeout: float = DEFAULT_TIMEOUT) -> bool:
+_config = get_config()
+
+
+def check_status(timeout: float = None) -> bool:
     """
     Check if vlr.gg is accessible.
     
@@ -16,10 +20,13 @@ def check_status(timeout: float = DEFAULT_TIMEOUT) -> bool:
     Returns:
         True if vlr.gg responds with a successful status code.
     """
-    url = f"{VLR_BASE}/"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
+    url = f"{_config.vlr_base}/"
     req = request.Request(url, method="HEAD", headers={"User-Agent": "Mozilla/5.0"})
     try:
-        with request.urlopen(req, timeout=timeout) as response:
-            return 200 <= getattr(response, "status", 500) < 400
+        # Cast to a concrete response type to avoid Any in type checking
+        with cast(HTTPResponse, request.urlopen(req, timeout=effective_timeout)) as response:
+            status: int = getattr(response, "status", 500)
+            return 200 <= status < 400
     except Exception:
         return False

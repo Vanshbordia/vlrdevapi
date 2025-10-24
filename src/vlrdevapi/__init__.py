@@ -27,7 +27,41 @@ Example usage:
     ...     print(f"{member.ign} - {member.role}")
 """
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
+
+# Configure stdout/stderr error handling without changing the environment's encoding.
+# This avoids UnicodeEncodeError on legacy consoles while preventing decoding mismatches
+# in subprocess readers (e.g., Sphinx doctest capturing with cp1252 on Windows).
+import sys
+import io
+
+def _soft_configure_stream(stream: object) -> None:
+    try:
+        # Prefer Python 3.7+ API to keep existing encoding and only relax errors
+        if hasattr(stream, 'reconfigure'):
+            stream.reconfigure(errors='replace')  # type: ignore[attr-defined]
+            return
+    except Exception:
+        pass
+    # Fallback: wrap using the same encoding if available
+    try:
+        encoding = getattr(stream, 'encoding', None) or 'utf-8'
+        buffer = getattr(stream, 'buffer', None)
+        if buffer is not None:
+            wrapped = io.TextIOWrapper(buffer, encoding=encoding, errors='replace', line_buffering=True)
+            # Assign back only if it looks like a real text stream
+            if stream is sys.stdout:
+                sys.stdout = wrapped  # type: ignore[assignment]
+            elif stream is sys.stderr:
+                sys.stderr = wrapped  # type: ignore[assignment]
+    except Exception:
+        # Best-effort: ignore if the environment is unusual (e.g., IDE-managed streams)
+        pass
+
+if sys.stdout is not None:
+    _soft_configure_stream(sys.stdout)
+if sys.stderr is not None:
+    _soft_configure_stream(sys.stderr)
 
 # Import modules for clean API access
 from . import matches
@@ -38,8 +72,8 @@ from . import status
 from . import teams
 from . import search
 
-# Import enums for autocomplete
-from .events import EventTier, EventStatus
+# Import enums and helper models for autocomplete
+from .events import EventTier, EventStatus, EventStage
 
 # Import exceptions for error handling
 from .exceptions import (
@@ -53,8 +87,11 @@ from .exceptions import (
 # Import status function for convenience
 from .status import check_status
 
-# Import rate limit configuration
-from .fetcher import configure_rate_limit
+# Import rate limit configuration and helpers
+from .fetcher import configure_rate_limit, get_rate_limit, reset_rate_limit
+
+# Import configuration functions
+from .config import configure, reset_config
 
 __all__ = [
     # Modules - these are the main API entry points
@@ -69,6 +106,7 @@ __all__ = [
     # Enums for autocomplete
     "EventTier",
     "EventStatus",
+    "EventStage",
     
     # Exceptions for error handling
     "VlrdevapiError",
@@ -80,6 +118,10 @@ __all__ = [
     # Convenience functions
     "check_status",
     "configure_rate_limit",
+    "get_rate_limit",
+    "reset_rate_limit",
+    "configure",
+    "reset_config",
 ]
 
 # Note: Models are NOT exported at the top level to prevent confusion.

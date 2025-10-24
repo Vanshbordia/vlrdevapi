@@ -48,7 +48,6 @@ The `vlr.search` module provides high-level search helpers that return typed res
 
 ```python title="Search for teams and players"
 import vlrdevapi
-import time
 
 # Unified search
 results = vlrdevapi.search.search("sentinels")
@@ -57,27 +56,17 @@ print(f"Total results: {results.total_results}")
 # Players
 for p in results.players:
     print(f"Player: {p.ign} ({p.real_name}) - {p.country}")
-    time.sleep(0.5)  # Small delay to avoid overwhelming the server
 
 # Teams
 for t in results.teams:
     status = "Inactive" if t.is_inactive else "Active"
     print(f"Team: {t.name} - {t.country} ({status})")
-    time.sleep(0.5)  # Small delay to avoid overwhelming the server
 
 # Or use specific search
 players = vlrdevapi.search.search_players("tenz")
 for p in players:
     print(f"{p.ign}: {p.url}")
-    time.sleep(0.5)  # Small delay to avoid overwhelming the server
 ```
-
-## Notes
-
-- Network issues return empty categories. Always check lengths before iterating.
-- Player and team results are enriched using `players.profile()` and `teams.info()` when possible.
-- Use specific helpers like `search_players()` if you only need one type.
-
 
 ## Source
 

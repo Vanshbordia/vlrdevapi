@@ -12,7 +12,7 @@ Access Valorant esports data from VLR.gg with a clean, type-safe Python API. Get
 ## Features
 
 - **Complete Data Access**: Events, matches, players, teams, series, and search
-- **Type-Safe**: Full Pydantic models with validation
+- **Type-Safe**: Frozen Python dataclasses with rich type hints
 - **Production-Ready**: Error handling, retry logic, and rate limiting
 - **Easy to Use**: Simple, intuitive API design
 

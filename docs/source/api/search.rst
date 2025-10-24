@@ -150,3 +150,5 @@ Type-Specific Searches
    
    # Search only events
    events = vlr.search.search_events("champions")
+
+See more examples: :doc:`../examples`

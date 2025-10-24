@@ -112,23 +112,6 @@ for coach in coaches:
     print(f"Coach: {coach.real_name or coach.ign}")
 ```
 
-### Get Player IDs
-
-```python title="Get player IDs"
-import vlrdevapi as vlr
-
-roster = vlr.teams.roster(team_id=1034)
-
-# Get all player IDs
-player_ids = [m.player_id for m in roster if m.player_id is not None]
-
-print(f"Found {len(player_ids)} players with IDs")
-for player_id in player_ids:
-    # Get detailed player info
-    player = vlr.players.profile(player_id)
-    if player:
-        print(f"  {player.handle}: {player.country}")
-```
 
 ## Error Handling
 
@@ -138,13 +121,7 @@ for player_id in player_ids:
 
 The function never raises exceptions, making it safe to use without try-catch blocks.
 
-## Tips
 
-- Check list length before accessing: `if roster:`
-- All optional fields can be `None` - check before using
-- Use `is_captain` to identify team captain
-- The `role` field is always present
-- Combine with `players.profile()` to get detailed player information
 
 ## Related
 

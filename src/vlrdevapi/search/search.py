@@ -8,7 +8,7 @@ from urllib import parse
 
 from bs4 import BeautifulSoup
 
-from ..constants import VLR_BASE, DEFAULT_TIMEOUT
+from ..config import get_config
 
 # Pre-compiled regex pattern for performance
 _INACTIVE_RE = re.compile(r'\s*\(inactive\s*\)\s*', re.IGNORECASE)
@@ -30,6 +30,7 @@ from .models import (
     SearchResults,
 )
 
+_config = get_config()
 
 SearchType = Literal["all", "players", "teams", "events", "series"]
 
@@ -161,7 +162,7 @@ def _parse_search_results(
 def search(
     query: str,
     search_type: SearchType = "all",
-    timeout: float = DEFAULT_TIMEOUT,
+    timeout: float | None = None,
 ) -> SearchResults:
     """
     Search VLR.gg for players, teams, events, and series.
@@ -204,9 +205,10 @@ def search(
         "q": query,
         "type": type_param,
     }
-    url = f"{VLR_BASE}/search/?{parse.urlencode(params)}"
+    url = f"{_config.vlr_base}/search/?{parse.urlencode(params)}"
     
-    html = fetch_html(url, timeout)
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
+    html = fetch_html(url, effective_timeout)
     soup = BeautifulSoup(html, "lxml")
     
     results = _parse_search_results(soup, query)
@@ -215,8 +217,8 @@ def search(
     enriched_players: List[SearchPlayerResult] = []
     if results.players:
         # Batch fetch all player profiles concurrently
-        player_urls = [f"{VLR_BASE}/player/{p.player_id}" for p in results.players]
-        player_htmls = batch_fetch_html(player_urls, timeout=timeout, max_workers=min(4, len(player_urls)))
+        player_urls = [f"{_config.vlr_base}/player/{p.player_id}" for p in results.players]
+        player_htmls = batch_fetch_html(player_urls, timeout=effective_timeout, max_workers=min(4, len(player_urls)))
         
         for p, url in zip(results.players, player_urls):
             country = p.country
@@ -268,8 +270,8 @@ def search(
     enriched_teams: List[SearchTeamResult] = []
     if results.teams:
         # Batch fetch all team info pages concurrently
-        team_urls = [f"{VLR_BASE}/team/{t.team_id}" for t in results.teams]
-        team_htmls = batch_fetch_html(team_urls, timeout=timeout, max_workers=min(4, len(team_urls)))
+        team_urls = [f"{_config.vlr_base}/team/{t.team_id}" for t in results.teams]
+        team_htmls = batch_fetch_html(team_urls, timeout=effective_timeout, max_workers=min(4, len(team_urls)))
         
         for t, url in zip(results.teams, team_urls):
             country = t.country
@@ -335,7 +337,7 @@ def search(
 
 def search_players(
     query: str,
-    timeout: float = DEFAULT_TIMEOUT,
+    timeout: float | None = None,
 ) -> list[SearchPlayerResult]:
     """
     Search for players only.
@@ -359,7 +361,7 @@ def search_players(
 
 def search_teams(
     query: str,
-    timeout: float = DEFAULT_TIMEOUT,
+    timeout: float | None = None,
 ) -> list[SearchTeamResult]:
     """
     Search for teams only.
@@ -383,7 +385,7 @@ def search_teams(
 
 def search_events(
     query: str,
-    timeout: float = DEFAULT_TIMEOUT,
+    timeout: float | None = None,
 ) -> list[SearchEventResult]:
     """
     Search for events only.
@@ -407,7 +409,7 @@ def search_events(
 
 def search_series(
     query: str,
-    timeout: float = DEFAULT_TIMEOUT,
+    timeout: float | None = None,
 ) -> list[SearchSeriesResult]:
     """
     Search for series only.

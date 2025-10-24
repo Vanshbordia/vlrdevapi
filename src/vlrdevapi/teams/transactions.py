@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from typing import List, Dict, Optional
 from datetime import date
 from collections import defaultdict
 from bs4 import BeautifulSoup
 
-from ..constants import VLR_BASE, DEFAULT_TIMEOUT
+from ..config import get_config
 from ..countries import map_country_code
 from ..fetcher import fetch_html  # Uses connection pooling automatically
 from ..exceptions import NetworkError
@@ -15,8 +14,9 @@ from ..utils import extract_text, extract_id_from_url, normalize_whitespace, ext
 
 from .models import PlayerTransaction, PreviousPlayer
 
+_config = get_config()
 
-def _parse_transaction_date(date_str: Optional[str]) -> Optional[date]:
+def _parse_transaction_date(date_str: str | None) -> date | None:
     """
     Parse transaction date string into a date object.
     
@@ -38,7 +38,7 @@ def _parse_transaction_date(date_str: Optional[str]) -> Optional[date]:
         return None
 
 
-def transactions(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[PlayerTransaction]:
+def transactions(team_id: int, timeout: float | None = None) -> list[PlayerTransaction]:
     """
     Get all team transactions (joins, leaves, inactive status changes, etc.).
     
@@ -79,9 +79,10 @@ def transactions(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[PlayerT
         Transaction actions include: 'join', 'leave', 'inactive', and others.
         All text fields are cleaned of extra whitespace, tabs, and newlines.
     """
-    url = f"{VLR_BASE}/team/transactions/{team_id}"
+    url = f"{_config.vlr_base}/team/transactions/{team_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return []
     
@@ -96,7 +97,7 @@ def transactions(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[PlayerT
     if not tbody:
         return []
     
-    transactions_list: List[PlayerTransaction] = []
+    transactions_list: list[PlayerTransaction] = []
     
     # Process each transaction row
     for row in tbody.select("tr.txn-item"):
@@ -130,7 +131,8 @@ def transactions(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[PlayerT
             # Get player link
             player_link = player_td.select_one("a[href]")
             if player_link:
-                href = player_link.get("href", "")
+                href_val = player_link.get("href")
+                href = href_val if isinstance(href_val, str) else None
                 player_id = extract_id_from_url(href, "player")
                 ign = normalize_whitespace(extract_text(player_link))
                 if ign == "":
@@ -155,7 +157,9 @@ def transactions(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[PlayerT
         if reference_td:
             ref_link = reference_td.select_one("a[href]")
             if ref_link:
-                reference_url = normalize_whitespace(ref_link.get("href", ""))
+                href_val = ref_link.get("href")
+                href = href_val if isinstance(href_val, str) else None
+                reference_url = normalize_whitespace(href or "")
                 if reference_url == "":
                     reference_url = None
         
@@ -173,7 +177,7 @@ def transactions(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[PlayerT
     return transactions_list
 
 
-def previous_players(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[PreviousPlayer]:
+def previous_players(team_id: int, timeout: float | None = None) -> list[PreviousPlayer]:
     """
     Get all previous and current players with their status calculated from transaction history.
     
@@ -243,8 +247,8 @@ def previous_players(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[Pre
     txns = transactions(team_id, timeout)
     
     # Group transactions by player
-    player_txns: Dict[int, List[PlayerTransaction]] = defaultdict(list)
-    player_info: Dict[int, Dict] = {}
+    player_txns: dict[int, list[PlayerTransaction]] = defaultdict(list)
+    player_info: dict[int, dict[str, str | None]] = {}
     
     for txn in txns:
         if txn.player_id is None:
@@ -272,7 +276,7 @@ def previous_players(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[Pre
                 player_info[txn.player_id]['position'] = txn.position
     
     # Calculate status for each player
-    players: List[PreviousPlayer] = []
+    players: list[PreviousPlayer] = []
     
     for player_id, txn_list in player_txns.items():
         # Sort transactions by date (most recent first)
@@ -288,7 +292,7 @@ def previous_players(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[Pre
         
         # Separate transactions with known dates from unknown dates
         txns_with_dates = [t for t in sorted_txns if t.date is not None]
-        txns_without_dates = [t for t in sorted_txns if t.date is None]
+        _txns_without_dates = [t for t in sorted_txns if t.date is None]
         
         # Find join and leave dates (most recent of each)
         # Process chronologically to track the player's journey
@@ -336,7 +340,7 @@ def previous_players(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[Pre
             else:
                 status = "Unknown"
         
-        info = player_info[player_id]
+        info = player_info.get(player_id, {'ign': None, 'real_name': None, 'country': None, 'position': None})
         
         players.append(PreviousPlayer(
             player_id=player_id,

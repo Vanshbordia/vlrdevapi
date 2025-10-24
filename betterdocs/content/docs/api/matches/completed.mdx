@@ -147,29 +147,6 @@ for m in matches:
         print(f"{m.team1.name} {m.team1.score}-{m.team2.score} {m.team2.name}")
 ```
 
-### Analyze Match Results
-
-```python title="Analyze match results"
-import vlrdevapi as vlr
-from collections import Counter
-
-# Get recent matches
-matches = vlr.matches.completed(limit=50)
-
-# Count wins per team
-team_wins = Counter()
-for m in matches:
-    if m.team1.score is not None and m.team2.score is not None:
-        if m.team1.score > m.team2.score:
-            team_wins[m.team1.name] += 1
-        elif m.team2.score > m.team1.score:
-            team_wins[m.team2.name] += 1
-
-# Show top teams
-print("Top teams by recent wins:")
-for team, wins in team_wins.most_common(5):
-    print(f"{team}: {wins} wins")
-```
 
 ### Get Detailed Match Info
 
@@ -215,13 +192,7 @@ for m in vct_matches:
 
 The function never raises exceptions, making it safe to use without try-catch blocks.
 
-## Tips
 
-- Scores represent maps won, not rounds
-- Combine with `series.info(match_id)` for detailed per-map statistics
-- Team IDs are enriched by quickly opening the match header (cached)
-- Use pagination to browse through historical matches
-- The `status` field will always be `"completed"` for this endpoint
 
 ## Related
 

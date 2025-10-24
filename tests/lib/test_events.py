@@ -256,8 +256,8 @@ class TestEventsIntegration:
             # Info might be None if HTML doesn't match
             assert info is None or info is not None
     
-    def test_pydantic_models_immutable(self, mock_fetch_html):
-        """Test that models are immutable."""
+    def test_models_immutable(self, mock_fetch_html):
+        """Test that models are immutable (frozen dataclasses)."""
         events = vlr.events.list_events()
         if events:
             with pytest.raises(Exception):

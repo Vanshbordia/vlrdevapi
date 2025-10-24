@@ -103,23 +103,6 @@ for match in matches:
     print(f"  {match.team1.name} {score} {match.team2.name}")
 ```
 
-### Analyze Win Rate
-
-```python title="Analyze win rate"
-import vlrdevapi as vlr
-
-matches = vlr.teams.completed_matches(team_id=799, limit=3)
-team_info = vlr.teams.info(team_id=799)
-
-if team_info:
-    team_name = team_info.name
-    wins = sum(1 for m in matches 
-               if m.team1.score is not None and m.team2.score is not None
-               and ((m.team1.name == team_name and m.team1.score > m.team2.score)
-                    or (m.team2.name == team_name and m.team2.score > m.team1.score)))
-    
-    print(f"{team_name}: {wins} wins in last {len(matches)} matches")
-```
 
 ### Get Match Details
 
@@ -145,13 +128,7 @@ for match in matches:
 
 The function never raises exceptions, making it safe to use without try-catch blocks.
 
-## Tips
 
-- Check list length before accessing: `if matches:`
-- All optional fields can be `None` - check before using
-- Use `match_id` to get detailed match information with `series.info()`
-- Scores represent maps won, not rounds
-- The `limit` parameter fetches across multiple pages if needed
 
 ## Related
 

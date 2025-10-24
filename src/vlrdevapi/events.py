@@ -11,15 +11,16 @@ This module provides access to:
 from __future__ import annotations
 
 import datetime
-from typing import List, Optional, Tuple, Literal, Dict
+from typing import Literal
 from urllib import parse
 from enum import Enum
 
-from pydantic import BaseModel, Field, ConfigDict
+from dataclasses import dataclass, field
 from bs4 import BeautifulSoup
+from bs4.element import Tag
 
-from .constants import VLR_BASE, DEFAULT_TIMEOUT
-from .countries import map_country_code
+from .config import get_config
+from .countries import map_country_code, COUNTRY_MAP
 from .fetcher import fetch_html, batch_fetch_html
 from .exceptions import NetworkError
 from .utils import (
@@ -28,10 +29,11 @@ from .utils import (
     extract_country_code,
     split_date_range,
     parse_date,
-    normalize_name,
     parse_int,
     normalize_whitespace,
 )
+
+_config = get_config()
 
 
 # Enums for autocomplete
@@ -58,7 +60,7 @@ class EventStatus(str, Enum):
 TierName = Literal["all", "vct", "vcl", "t3", "gc", "cg", "offseason"]
 StatusFilter = Literal["all", "upcoming", "ongoing", "completed"]
 
-_TIER_TO_ID: Dict[str, str] = {
+_TIER_TO_ID: dict[str, str] = {
     "all": "all",
     "vct": "60",
     "vcl": "61",
@@ -69,125 +71,126 @@ _TIER_TO_ID: Dict[str, str] = {
 }
 
 
-class ListEvent(BaseModel):
+@dataclass(frozen=True)
+class ListEvent:
     """Event summary from events listing."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    id: int = Field(description="Event ID")
-    name: str = Field(description="Event name")
-    region: Optional[str] = Field(None, description="Event region")
-    tier: Optional[str] = Field(None, description="Event tier")
-    start_date: Optional[datetime.date] = Field(None, description="Start date")
-    end_date: Optional[datetime.date] = Field(None, description="End date")
-    start_text: Optional[str] = Field(None, description="Start date text")
-    end_text: Optional[str] = Field(None, description="End date text")
-    prize: Optional[str] = Field(None, description="Prize pool")
-    status: Literal["upcoming", "ongoing", "completed"] = Field(description="Event status")
-    url: str = Field(description="Event URL")
+
+    id: int
+    name: str
+    status: Literal["upcoming", "ongoing", "completed"]
+    url: str
+    region: str | None = None
+    tier: str | None = None
+    start_date: datetime.date | None = None
+    end_date: datetime.date | None = None
+    start_text: str | None = None
+    end_text: str | None = None
+    prize: str | None = None
 
 
-class Info(BaseModel):
+@dataclass(frozen=True)
+class Info:
     """Event header/info details."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    id: int = Field(description="Event ID")
-    name: str = Field(description="Event name")
-    subtitle: Optional[str] = Field(None, description="Event subtitle")
-    date_text: Optional[str] = Field(None, description="Date range text")
-    prize: Optional[str] = Field(None, description="Prize pool")
-    location: Optional[str] = Field(None, description="Event location")
-    regions: List[str] = Field(default_factory=list, description="Event regions")
+
+    id: int
+    name: str
+    subtitle: str | None = None
+    date_text: str | None = None
+    prize: str | None = None
+    location: str | None = None
+    regions: list[str] = field(default_factory=list)
 
 
-class MatchTeam(BaseModel):
+@dataclass(frozen=True)
+class MatchTeam:
     """Team in an event match."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    id: Optional[int] = Field(None, description="Team ID")
-    name: str = Field(description="Team name")
-    country: Optional[str] = Field(None, description="Team country")
-    score: Optional[int] = Field(None, description="Team score")
-    is_winner: Optional[bool] = Field(None, description="Whether team won")
+
+    name: str
+    id: int | None = None
+    country: str | None = None
+    score: int | None = None
+    is_winner: bool | None = None
 
 
-class Match(BaseModel):
+@dataclass(frozen=True)
+class Match:
     """Event match entry."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    match_id: int = Field(description="Match ID")
-    event_id: int = Field(description="Event ID")
-    stage: Optional[str] = Field(None, description="Stage name")
-    phase: Optional[str] = Field(None, description="Phase name")
-    status: str = Field(description="Match status")
-    date: Optional[datetime.date] = Field(None, description="Match date")
-    time: Optional[str] = Field(None, description="Match time")
-    teams: Tuple[MatchTeam, MatchTeam] = Field(description="Match teams")
-    url: str = Field(description="Match URL")
+
+    match_id: int
+    event_id: int
+    status: str
+    teams: tuple["MatchTeam", "MatchTeam"]
+    url: str
+    stage: str | None = None
+    phase: str | None = None
+    date: datetime.date | None = None
+    time: str | None = None
 
 
-class StageMatches(BaseModel):
+@dataclass(frozen=True)
+class StageMatches:
     """Match summary for a stage."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    name: str = Field(description="Stage name")
-    match_count: int = Field(description="Total matches")
-    completed: int = Field(description="Completed matches")
-    upcoming: int = Field(description="Upcoming matches")
-    ongoing: int = Field(description="Ongoing matches")
-    start_date: Optional[datetime.date] = Field(None, description="Stage start date")
-    end_date: Optional[datetime.date] = Field(None, description="Stage end date")
+
+    name: str
+    match_count: int
+    completed: int
+    upcoming: int
+    ongoing: int
+    start_date: datetime.date | None = None
+    end_date: datetime.date | None = None
 
 
-class MatchSummary(BaseModel):
+@dataclass(frozen=True)
+class MatchSummary:
     """Event matches summary."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    event_id: int = Field(description="Event ID")
-    total_matches: int = Field(description="Total matches")
-    completed: int = Field(description="Completed matches")
-    upcoming: int = Field(description="Upcoming matches")
-    ongoing: int = Field(description="Ongoing matches")
-    stages: List[StageMatches] = Field(default_factory=list, description="Stage summaries")
+
+    event_id: int
+    total_matches: int
+    completed: int
+    upcoming: int
+    ongoing: int
+    stages: list["StageMatches"] = field(default_factory=list)
 
 
-class StandingEntry(BaseModel):
+@dataclass(frozen=True)
+class StandingEntry:
     """Single standing entry."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    place: str = Field(description="Placement")
-    prize: Optional[str] = Field(None, description="Prize amount")
-    team_id: Optional[int] = Field(None, description="Team ID")
-    team_name: Optional[str] = Field(None, description="Team name")
-    team_country: Optional[str] = Field(None, description="Team country")
-    note: Optional[str] = Field(None, description="Additional note")
+
+    place: str
+    prize: str | None = None
+    team_id: int | None = None
+    team_name: str | None = None
+    team_country: str | None = None
+    note: str | None = None
 
 
-class Standings(BaseModel):
+@dataclass(frozen=True)
+class Standings:
     """Event standings."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    event_id: int = Field(description="Event ID")
-    stage_path: str = Field(description="Stage path")
-    entries: List[StandingEntry] = Field(default_factory=list, description="Standing entries")
-    url: str = Field(description="Standings URL")
+
+    event_id: int
+    stage_path: str
+    url: str
+    entries: list["StandingEntry"] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class EventStage:
+    """Available stage option for an event matches page."""
+
+    name: str
+    series_id: str
+    url: str
 
 
 def list_events(
     tier: EventTier | TierName = EventTier.ALL,
-    region: Optional[str] = None,
+    region: str | None = None,
     status: EventStatus | StatusFilter = EventStatus.ALL,
     page: int = 1,
-    limit: Optional[int] = None,
-    timeout: float = DEFAULT_TIMEOUT,
-) -> List[ListEvent]:
+    limit: int | None = None,
+    timeout: float | None = None,
+) -> list[ListEvent]:
     """
     List events with filters.
     
@@ -209,7 +212,7 @@ def list_events(
         >>> for event in events:
         ...     print(f"{event.name} - {event.status}")
     """
-    base_params: Dict[str, str] = {}
+    base_params: dict[str, str] = {}
     tier_str = tier.value if isinstance(tier, EventTier) else tier
     status_str = status.value if isinstance(status, EventStatus) else status
     tier_id = _TIER_TO_ID.get(tier_str, "60")
@@ -219,23 +222,24 @@ def list_events(
     if page > 1:
         base_params["page"] = str(page)
     
-    url = f"{VLR_BASE}/events"
+    url = f"{_config.vlr_base}/events"
     if base_params:
         url = f"{url}?{parse.urlencode(base_params)}"
     
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return []
     
     soup = BeautifulSoup(html, "lxml")
-    results: List[ListEvent] = []
+    results: list[ListEvent] = []
     
     for card in soup.select(".events-container a.event-item[href*='/event/']"):
         if limit is not None and len(results) >= limit:
             break
         href = card.get("href")
-        if not href:
+        if not href or not isinstance(href, str):
             continue
         
         name = extract_text(card.select_one(".event-item-title, .text-of")) or extract_text(card)
@@ -267,17 +271,23 @@ def list_events(
         card_status = "upcoming"
         status_el = card.select_one(".event-item-desc-item-status")
         if status_el:
-            classes = status_el.get("class", [])
-            if any("mod-ongoing" in str(c) for c in classes):
-                card_status = "ongoing"
-            elif any("mod-completed" in str(c) for c in classes):
+            classes_raw = status_el.get("class")
+            classes: list[str] = []
+            if isinstance(classes_raw, list):
+                classes = classes_raw
+            elif isinstance(classes_raw, str):
+                classes = [classes_raw]
+            classes_list = classes
+            if any("mod-completed" in str(c) for c in classes_list):
                 card_status = "completed"
+            elif any("mod-ongoing" in str(c) for c in classes_list):
+                card_status = "ongoing"
         
         if status_str != "all" and card_status != status_str:
             continue
         
         # Parse region
-        region_name: Optional[str] = None
+        region_name: str | None = None
         flag = card.select_one(".event-item-desc-item.mod-location .flag")
         if flag:
             code = extract_country_code(card.select_one(".event-item-desc-item.mod-location"))
@@ -297,13 +307,120 @@ def list_events(
             end_text=end_text,
             prize=prize,
             status=card_status,
-            url=parse.urljoin(f"{VLR_BASE}/", href.lstrip("/")),
+            url=parse.urljoin(f"{_config.vlr_base}/", href.lstrip("/")),
         ))
     
     return results
 
 
-def info(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Info]:
+def stages(event_id: int, timeout: float | None = None) -> list[EventStage]:
+    """List available stages for an event's matches page.
+    
+    Returns a list of stage options with their series_id and URL. The special
+    "All Stages" option will have series_id="all".
+    """
+    url = f"{_config.vlr_base}/event/matches/{event_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
+    try:
+        html = fetch_html(url, effective_timeout)
+    except NetworkError:
+        return []
+    soup = BeautifulSoup(html, "lxml")
+    dropdown = soup.select_one("span.wf-dropdown.mod-all")
+    if not dropdown:
+        return []
+    stages_list: list[EventStage] = []
+    for a in dropdown.select("a"):
+        name = (extract_text(a) or "").strip()
+        href = a.get("href")
+        if not href or not isinstance(href, str):
+            continue
+        full_url = parse.urljoin(f"{_config.vlr_base}/", href.lstrip("/"))
+        # Parse series_id from query (?series_id=...)
+        parsed = parse.urlparse(full_url)
+        qs = parse.parse_qs(parsed.query)
+        sid = (qs.get("series_id", ["all"]))[0] or "all"
+        stages_list.append(EventStage(name=name, series_id=sid, url=full_url))
+    return stages_list
+
+
+def _normalize_regions(tags: list[str]) -> list[str]:
+    """Normalize region tags according to business rules.
+
+    Rules:
+    - Allowed main regions: EMEA, Pacific, China, Americas
+    - If multiple of these main regions are present, return ["international"]
+    - If exactly one main region is present, keep it as first; then include only valid countries
+      (any value present in COUNTRY_MAP values). Discard anything else.
+    - If no main region is present, return only valid countries (if any). Otherwise, return [].
+    """
+    if not tags:
+        return []
+
+    # Deduplicate while preserving order
+    seen: set[str] = set()
+    unique_tags: list[str] = []
+    for t in tags:
+        t_norm = (t or "").strip()
+        if not t_norm:
+            continue
+        if t_norm not in seen:
+            seen.add(t_norm)
+            unique_tags.append(t_norm)
+
+    # Canonical main region names and case-insensitive detection
+    REGION_CANON = {
+        "emea": "EMEA",
+        "pacific": "Pacific",
+        "china": "China",
+        "americas": "Americas",
+    }
+    country_name_set_lower = {v.lower(): v for v in COUNTRY_MAP.values()}
+
+    # Resolve main regions case-insensitively to canonical casing
+    main_regions_canonical: list[str] = []
+    for t in unique_tags:
+        key = t.lower()
+        if key in REGION_CANON and REGION_CANON[key] not in main_regions_canonical:
+            main_regions_canonical.append(REGION_CANON[key])
+
+    # Resolve countries case-insensitively to canonical names
+    countries_canonical: list[str] = []
+    for t in unique_tags:
+        v = country_name_set_lower.get(t.lower())
+        if v and v not in countries_canonical:
+            countries_canonical.append(v)
+
+    # Exclude any country entries that are actually main regions (e.g., "China")
+    countries_canonical = [c for c in countries_canonical if c not in REGION_CANON.values()]
+
+    if len(main_regions_canonical) >= 2:
+        # International followed by all detected main regions and valid countries, no duplicates
+        combined = ["International"] + main_regions_canonical + countries_canonical
+        seen_out: set[str] = set()
+        out: list[str] = []
+        for x in combined:
+            if x not in seen_out:
+                seen_out.add(x)
+                out.append(x)
+        return out
+
+    if len(main_regions_canonical) == 1:
+        combined = [main_regions_canonical[0]] + countries_canonical
+        seen_out: set[str] = set()
+        out: list[str] = []
+        for x in combined:
+            if x not in seen_out:
+                seen_out.add(x)
+                out.append(x)
+        return out
+
+    # No main regions; include only valid countries
+    # No main regions; include only valid countries (deduped already)
+    return countries_canonical
+
+
+def info(event_id: int, timeout: float | None = None) -> Info | None:
     """
     Get event header/info.
     
@@ -319,9 +436,10 @@ def info(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Info]:
         >>> event_info = vlr.events.info(event_id=123)
         >>> print(f"{event_info.name} - {event_info.prize}")
     """
-    url = f"{VLR_BASE}/event/{event_id}"
+    url = f"{_config.vlr_base}/event/{event_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return None
     
@@ -333,14 +451,14 @@ def info(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Info]:
     name_el = header.select_one(".wf-title")
     subtitle_el = header.select_one(".event-desc-subtitle")
     
-    regions: List[str] = []
+    regions: list[str] = []
     for a in header.select(".event-tag-container a"):
         txt = extract_text(a)
         if txt and txt not in regions:
             regions.append(txt)
     
     # Extract desc values
-    def extract_desc_value(label: str) -> Optional[str]:
+    def extract_desc_value(label: str) -> str | None:
         for item in header.select(".event-desc-item"):
             label_el = item.select_one(".event-desc-item-label")
             if not label_el or extract_text(label_el) != label:
@@ -365,11 +483,11 @@ def info(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[Info]:
         date_text=date_text,
         prize=prize_text,
         location=location_text,
-        regions=regions,
+        regions=_normalize_regions(regions),
     )
 
 
-def _get_match_team_ids_batch(match_ids: List[int], timeout: float, max_workers: int = 4) -> Dict[int, Tuple[Optional[int], Optional[int]]]:
+def _get_match_team_ids_batch(match_ids: list[int], timeout: float, max_workers: int = 4) -> dict[int, tuple[int | None, int | None]]:
     """Get team IDs for multiple matches concurrently.
     
     Args:
@@ -384,13 +502,13 @@ def _get_match_team_ids_batch(match_ids: List[int], timeout: float, max_workers:
         return {}
     
     # Build URLs for all match pages
-    urls = [f"{VLR_BASE}/{match_id}" for match_id in match_ids]
+    urls = [f"{_config.vlr_base}/{match_id}" for match_id in match_ids]
     
     # Fetch all match pages concurrently
     results = batch_fetch_html(urls, timeout=timeout, max_workers=max_workers)
     
     # Parse team IDs from each page
-    team_ids_map: Dict[int, Tuple[Optional[int], Optional[int]]] = {}
+    team_ids_map: dict[int, tuple[int | None, int | None]] = {}
     
     for match_id, url in zip(match_ids, urls):
         content = results.get(url)
@@ -406,12 +524,14 @@ def _get_match_team_ids_batch(match_ids: List[int], timeout: float, max_workers:
             team2_id = None
             
             if len(team_links) >= 1:
-                href1 = team_links[0].get("href", "")
-                team1_id = extract_id_from_url(href1, "team")
+                href1 = team_links[0].get("href")
+                href1_str = href1 if isinstance(href1, str) else ""
+                team1_id = extract_id_from_url(href1_str, "team")
             
             if len(team_links) >= 2:
-                href2 = team_links[1].get("href", "")
-                team2_id = extract_id_from_url(href2, "team")
+                href2 = team_links[1].get("href")
+                href2_str = href2 if isinstance(href2, str) else ""
+                team2_id = extract_id_from_url(href2_str, "team")
             
             team_ids_map[match_id] = (team1_id, team2_id)
         except Exception:
@@ -420,7 +540,7 @@ def _get_match_team_ids_batch(match_ids: List[int], timeout: float, max_workers:
     return team_ids_map
 
 
-def matches(event_id: int, stage: Optional[str] = None, limit: Optional[int] = None, timeout: float = DEFAULT_TIMEOUT) -> List[Match]:
+def matches(event_id: int, stage: str | None = None, limit: int | None = None, timeout: float | None = None) -> list[Match]:
     """
     Get event matches with team IDs.
     
@@ -439,24 +559,50 @@ def matches(event_id: int, stage: Optional[str] = None, limit: Optional[int] = N
         >>> for match in matches:
         ...     print(f"{match.teams[0].name} (ID: {match.teams[0].id}) vs {match.teams[1].name} (ID: {match.teams[1].id})")
     """
-    url = f"{VLR_BASE}/event/matches/{event_id}"
+    url = f"{_config.vlr_base}/event/matches/{event_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return []
     
     soup = BeautifulSoup(html, "lxml")
-    match_data: List[Tuple[int, str, List[MatchTeam], str, str, Optional[datetime.date], Optional[str]]] = []
+
+    # If a stage is provided, find the corresponding stage link and refetch the page
+    if stage:
+        # Collect stage options from dropdown
+        dropdown = soup.select_one("span.wf-dropdown.mod-all")
+        options: list[Tag] = dropdown.select("a") if dropdown else []
+        stage_map: dict[str, str] = {}
+        for a in options:
+            text = (extract_text(a) or "").strip()
+            href = a.get("href")
+            if not href or not isinstance(href, str):
+                continue
+            # Normalize text for matching
+            key = text.lower()
+            stage_map[key] = parse.urljoin(f"{_config.vlr_base}/", href.lstrip("/"))
+        # Try to match requested stage (case-insensitive)
+        target = stage.strip().lower()
+        stage_url = stage_map.get(target)
+        if stage_url:
+            try:
+                html = fetch_html(stage_url, effective_timeout)
+                soup = BeautifulSoup(html, "lxml")
+            except NetworkError:
+                return []
+    match_data: list[tuple[int, str, list[MatchTeam], str, str, str, datetime.date | None, str | None]] = []
     
     for card in soup.select("a.match-item"):
         if limit is not None and len(match_data) >= limit:
             break
         href = card.get("href")
-        match_id = parse_int(href.strip("/").split("/")[0]) if href else None
+        href_str = href if isinstance(href, str) else None
+        match_id = parse_int(href_str.strip("/").split("/")[0]) if href_str else None
         if not match_id:
             continue
         
-        teams = []
+        teams: list[MatchTeam] = []
         for team_el in card.select(".match-item-vs-team")[:2]:
             name_el = team_el.select_one(".match-item-vs-team-name .text-of") or team_el.select_one(".match-item-vs-team-name")
             name = extract_text(name_el)
@@ -486,10 +632,16 @@ def matches(event_id: int, stage: Optional[str] = None, limit: Optional[int] = N
         ml = card.select_one(".match-item-eta .ml")
         match_status = "upcoming"
         if ml:
-            classes = ml.get("class", [])
-            if any("mod-completed" in str(c) for c in classes):
+            classes_raw = ml.get("class")
+            classes: list[str] = []
+            if isinstance(classes_raw, list):
+                classes = classes_raw
+            elif isinstance(classes_raw, str):
+                classes = [classes_raw]
+            classes_list = classes
+            if any("mod-completed" in str(c) for c in classes_list):
                 match_status = "completed"
-            elif any("mod-live" in str(c) or "mod-ongoing" in str(c) for c in classes):
+            elif any("mod-live" in str(c) or "mod-ongoing" in str(c) for c in classes_list):
                 match_status = "ongoing"
         
         # Parse stage/phase
@@ -501,7 +653,7 @@ def matches(event_id: int, stage: Optional[str] = None, limit: Optional[int] = N
             stage_name = stage_name.replace(phase, "").strip()
         
         # Parse date
-        match_date = None
+        match_date: datetime.date | None = None
         label = card.find_previous("div", class_="wf-label mod-large")
         if label:
             texts = [frag.strip() for frag in label.find_all(string=True, recursive=False)]
@@ -509,7 +661,7 @@ def matches(event_id: int, stage: Optional[str] = None, limit: Optional[int] = N
             match_date = parse_date(text, ["%a, %B %d, %Y", "%A, %B %d, %Y", "%B %d, %Y"])
         
         time_text = extract_text(card.select_one(".match-item-time")) or None
-        match_url = parse.urljoin(f"{VLR_BASE}/", href.lstrip("/"))
+        match_url = parse.urljoin(f"{_config.vlr_base}/", href_str.lstrip("/")) if href_str else ""
         
         match_data.append((match_id, match_url, teams, match_status, stage_name or "", phase or "", match_date, time_text))
     
@@ -519,9 +671,9 @@ def matches(event_id: int, stage: Optional[str] = None, limit: Optional[int] = N
     
     # Fetch team IDs concurrently using batch fetching (only for limited matches)
     match_ids = [match_id for match_id, _, _, _, _, _, _, _ in match_data]
-    team_ids_map = _get_match_team_ids_batch(match_ids, timeout, max_workers=4)
+    team_ids_map = _get_match_team_ids_batch(match_ids, effective_timeout, max_workers=4)
     
-    results: List[Match] = []
+    results: list[Match] = []
     
     for match_id, match_url, teams, match_status, stage_name, phase, match_date, time_text in match_data:
         # Get team IDs from batch results
@@ -560,7 +712,7 @@ def matches(event_id: int, stage: Optional[str] = None, limit: Optional[int] = N
     return results
 
 
-def match_summary(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[MatchSummary]:
+def match_summary(event_id: int, timeout: float | None = None) -> MatchSummary | None:
     """
     Get event match summary.
     
@@ -576,9 +728,10 @@ def match_summary(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[M
         >>> summary = vlr.events.match_summary(event_id=123)
         >>> print(f"Total: {summary.total_matches}, Completed: {summary.completed}")
     """
-    url = f"{VLR_BASE}/event/matches/{event_id}"
+    url = f"{_config.vlr_base}/event/matches/{event_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return None
     
@@ -595,14 +748,17 @@ def match_summary(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[M
         
         # Parse status
         ml = card.select_one(".match-item-eta .ml")
-        match_status = "upcoming"
         if ml:
-            classes = ml.get("class", [])
-            if any("mod-completed" in str(c) for c in classes):
-                match_status = "completed"
+            classes_raw = ml.get("class")
+            classes: list[str] = []
+            if isinstance(classes_raw, list):
+                classes = classes_raw
+            elif isinstance(classes_raw, str):
+                classes = [classes_raw]
+            classes_list = classes
+            if any("mod-completed" in str(c) for c in classes_list):
                 completed += 1
-            elif any("mod-live" in str(c) or "mod-ongoing" in str(c) for c in classes):
-                match_status = "ongoing"
+            elif any("mod-live" in str(c) or "mod-ongoing" in str(c) for c in classes_list):
                 ongoing += 1
             else:
                 upcoming += 1
@@ -619,7 +775,7 @@ def match_summary(event_id: int, timeout: float = DEFAULT_TIMEOUT) -> Optional[M
     )
 
 
-def standings(event_id: int, stage: Optional[str] = None, timeout: float = DEFAULT_TIMEOUT) -> Optional[Standings]:
+def standings(event_id: int, stage: str | None = None, timeout: float | None = None) -> Standings | None:
     """
     Get event standings.
     
@@ -637,30 +793,69 @@ def standings(event_id: int, stage: Optional[str] = None, timeout: float = DEFAU
         >>> for entry in standings.entries:
         ...     print(f"{entry.place}. {entry.team_name} - {entry.prize}")
     """
-    url = f"{VLR_BASE}/event/{event_id}"
+    url = f"{_config.vlr_base}/event/{event_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return None
     
     soup = BeautifulSoup(html, "lxml")
     
-    # Find canonical URL
-    canonical_link = soup.select_one("link[rel='canonical']")
-    canonical = canonical_link.get("href") if canonical_link else None
-    if not canonical:
-        canonical = f"{VLR_BASE}/event/{event_id}"
-    
-    base = canonical.rstrip("/")
-    standings_url = f"{base}/prize-distribution"
+    # Build base URL for the selected stage (if any)
+    standings_url: str
+    if stage:
+        # Parse header subnav for stage links
+        subnav = soup.select_one(".wf-card.mod-header .wf-subnav")
+        stage_links: list[Tag] = subnav.select("a.wf-subnav-item") if subnav else []
+        stage_map: dict[str, str] = {}
+        for a in stage_links:
+            title_el: Tag | None = a.select_one(".wf-subnav-item-title") if isinstance(a, Tag) else None
+            name = (extract_text(title_el) or extract_text(a) or "").strip()
+            href = a.get("href")
+            if not href or not isinstance(href, str):
+                continue
+            key = name.lower()
+            stage_map[key] = parse.urljoin(f"{_config.vlr_base}/", href.lstrip("/"))
+        target = stage.strip().lower()
+        selected = stage_map.get(target)
+        if selected:
+            base = selected.rstrip("/")
+            standings_url = f"{base}/prize-distribution"
+        else:
+            # Fallback to default
+            canonical_link = soup.select_one("link[rel='canonical']")
+            canonical_href = canonical_link.get("href") if canonical_link else None
+            canonical = canonical_href if isinstance(canonical_href, str) else None
+            if not canonical:
+                canonical = f"{_config.vlr_base}/event/{event_id}"
+            base = canonical.rstrip("/")
+            standings_url = f"{base}/prize-distribution"
+    else:
+        # Default "All"
+        canonical_link = soup.select_one("link[rel='canonical']")
+        canonical_href = canonical_link.get("href") if canonical_link else None
+        canonical = canonical_href if isinstance(canonical_href, str) else None
+        if not canonical:
+            canonical = f"{_config.vlr_base}/event/{event_id}"
+        base = canonical.rstrip("/")
+        standings_url = f"{base}/prize-distribution"
     
     try:
-        html = fetch_html(standings_url, timeout)
+        html = fetch_html(standings_url, effective_timeout)
     except NetworkError:
         return None
     
     soup = BeautifulSoup(html, "lxml")
-    label = soup.find("div", class_="wf-label mod-large", string=lambda t: t and "Prize Distribution" in t)
+    
+    # Find the label element by scanning text instead of using a callable in 'string='
+    labels = soup.find_all("div", class_="wf-label mod-large")
+    label = None
+    for el in labels:
+        txt = el.get_text(strip=True)
+        if txt and "Prize Distribution" in txt:
+            label = el
+            break
     if not label:
         return None
     
@@ -672,11 +867,18 @@ def standings(event_id: int, stage: Optional[str] = None, timeout: float = DEFAU
     if not table:
         return None
     
-    entries: List[StandingEntry] = []
+    entries: list[StandingEntry] = []
     tbody = table.select_one("tbody")
     if tbody:
         for row in tbody.select("tr"):
-            if "standing-toggle" in row.get("class", []):
+            row_classes_raw = row.get("class")
+            row_classes: list[str] = []
+            if isinstance(row_classes_raw, list):
+                row_classes = row_classes_raw
+            elif isinstance(row_classes_raw, str):
+                row_classes = [row_classes_raw]
+            row_classes_list = row_classes
+            if "standing-toggle" in row_classes_list:
                 continue
             
             cells = row.find_all("td")
@@ -696,15 +898,16 @@ def standings(event_id: int, stage: Optional[str] = None, timeout: float = DEFAU
             
             anchor = cells[2].select_one("a.standing-item-team")
             if anchor:
-                href = anchor.get("href", "").strip("/")
-                team_id = extract_id_from_url(href, "team")
+                href = anchor.get("href", "")
+                href_str = href if isinstance(href, str) else ""
+                team_id = extract_id_from_url(href_str.strip("/"), "team")
                 
                 name_el = anchor.select_one(".standing-item-team-name")
                 country_el = name_el.select_one(".ge-text-light") if name_el else None
                 if country_el:
                     text = extract_text(country_el)
                     country = map_country_code(text) or text or None
-                    country_el.extract()
+                    _ = country_el.extract()
                 
                 if name_el:
                     team_name = extract_text(name_el) or None

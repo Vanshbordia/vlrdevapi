@@ -120,26 +120,6 @@ for event in placements_2024:
     print(f"  {event.event_name}")
 ```
 
-### Calculate Total Prize Money
-
-```python title="Calculate total prize money"
-import vlrdevapi as vlr
-import re
-
-placements = vlr.teams.placements(team_id=799)
-
-total_prize = 0
-for event in placements:
-    for detail in event.placements:
-        if detail.prize_money:
-            # Extract numeric value from prize string
-            match = re.search(r'\$([\d,]+)', detail.prize_money)
-            if match:
-                amount = int(match.group(1).replace(',', ''))
-                total_prize += amount
-
-print(f"Total prize money: ${total_prize:,}")
-```
 
 ## Error Handling
 
@@ -149,13 +129,7 @@ print(f"Total prize money: ${total_prize:,}")
 
 The function never raises exceptions, making it safe to use without try-catch blocks.
 
-## Tips
 
-- Check list length before accessing: `if placements:`
-- All optional fields can be `None` - check before using
-- Placements are sorted by year (most recent first)
-- Combine with `events.info(event_id)` to get full event details
-- The `placements` field is always a list, never `None`
 
 ## Related
 

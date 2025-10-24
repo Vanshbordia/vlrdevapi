@@ -1,17 +1,16 @@
 Data Models
 ===========
 
-All data returned by vlrdevapi is structured using Pydantic models with full type hints and validation.
+All data returned by vlrdevapi is structured using standard Python frozen dataclasses with full type hints.
 
 Model Features
 --------------
 
 All models are:
 
-- **Immutable**: Models are frozen and cannot be modified after creation
-- **Type-safe**: Full type hints for all fields
-- **Validated**: Pydantic validates data on creation
-- **Serializable**: Can be converted to dict or JSON
+- **Immutable**: Models are frozen (`frozen=True`) and cannot be modified after creation
+- **Type-safe**: Full type hints for all fields (including `str | None` unions)
+- **Serializable**: Easily converted to `dict`/JSON using `dataclasses.asdict`
 
 Common Patterns
 ---------------
@@ -39,16 +38,19 @@ Converting to Dictionary
 
 .. code-block:: python
 
+   import json
+   from dataclasses import asdict
    import vlrdevapi as vlr
 
    profile = vlr.players.profile(player_id=4164)
    
    # Convert to dict
-   data = profile.model_dump()
+   data = asdict(profile)
    print(data)
    
    # Convert to JSON
-   json_str = profile.model_dump_json()
+   # Note: use default=str to serialize datetime/date objects
+   json_str = json.dumps(data, default=str)
 
 Optional Fields
 ~~~~~~~~~~~~~~~
@@ -166,30 +168,17 @@ Literals
 
 Example: status field can only be "upcoming", "live", or "completed"
 
-Validation
-----------
+Runtime Validation
+------------------
 
-Pydantic validates all data:
+Models are plain dataclasses and do not perform runtime validation. They rely on the library's HTML parsing logic and Python type hints.
+
+Tips:
 
 .. code-block:: python
 
-   from vlrdevapi.events import ListEvent
-   
-   # Valid data
-   event = ListEvent(
-       id=123,
-       name="Champions 2025",
-       status="ongoing",
-       url="https://www.vlr.gg/event/123"
-   )
-   
-   # Invalid status will raise ValidationError
-   # event = ListEvent(
-   #     id=123,
-   #     name="Champions 2025",
-   #     status="invalid",  # Not in allowed values
-   #     url="https://www.vlr.gg/event/123"
-   # )
+   # Prefer using type checkers (pyright/mypy) during development
+   # and validate inputs/outputs in your own code where necessary.
 
 Best Practices
 --------------

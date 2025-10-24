@@ -142,12 +142,4 @@ Agent Statistics
        if stat.agent and stat.agent != "All":
            print(f"{stat.agent}: {stat.rating:.2f} rating, {stat.acs:.0f} ACS")
 
-Timespan Options
-~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-   import vlrdevapi as vlr
-   # Available timespans: "30d", "60d", "90d", "all"
-   stats_30d = vlr.players.agent_stats(player_id=4164, timespan="30d")
-   stats_all = vlr.players.agent_stats(player_id=4164, timespan="all")
+See more examples: :doc:`../examples`

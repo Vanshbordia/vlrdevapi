@@ -94,6 +94,7 @@ COUNTRY_MAP = {
     "ki": "Kiribati",
     "kp": "North Korea",
     "kr": "South Korea",
+    "k" : "Korea",
     "kw": "Kuwait",
     "ky": "Cayman Islands",
     "kz": "Kazakhstan",

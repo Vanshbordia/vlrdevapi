@@ -94,7 +94,6 @@ for e in events:
 
 ```python title="Get event details"
 import vlrdevapi as vlr
-import time
 
 # Search and get full info
 events = vlr.search.search_events("vct")
@@ -109,26 +108,6 @@ for event in events[:3]:  # First 3 results
         print(f"  Prize: {event_info.prize}")
         print(f"  Location: {event_info.location}")
         print(f"  Dates: {event_info.date_text}")
-    time.sleep(1)  # Small delay to avoid overwhelming the server
-```
-
-### Search and Get Matches
-
-```python title="Search and get matches"
-import vlrdevapi as vlr
-
-# Search for event
-events = vlr.search.search_events("masters")
-
-if events:
-    event = events[0]  # First result
-    print(f"Event: {event.name}")
-    
-    # Get matches for this event
-    matches = vlr.events.matches(event.event_id, limit=5)
-    print(f"\nUpcoming matches: {len(matches)}")
-    for match in matches:
-        print(f"  {match.teams[0].name} vs {match.teams[1].name}")
 ```
 
 ## Error Handling
@@ -139,13 +118,7 @@ if events:
 
 The function never raises exceptions, making it safe to use without try-catch blocks.
 
-## Tips
-
-- Check list length before accessing results: `if events:`
-- All optional fields can be `None` - check before using
-- Use the `event_id` to fetch detailed information with `events.info()`
-- Combine with `events.matches()` to get event matches
-- The `prize` field includes currency formatting from VLR.gg
+ 
 
 ## Related
 

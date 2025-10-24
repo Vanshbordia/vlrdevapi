@@ -47,12 +47,6 @@ for m in matches:
         print(f"  IDs: {m.team1.id} vs {m.team2.id}")
 ```
 
-## Notes
-
-- Team IDs are enriched by quickly opening the match header. They may be `None` for TBD teams.
-- Network failures return an empty list.
-- All functions support pagination for browsing large result sets.
-
 ## Source
 
 Data scraped from: `https://www.vlr.gg/matches` and `https://www.vlr.gg/matches/results`

@@ -1,0 +1,114 @@
+---
+title: events.stages()
+description: List available stage filters for an event
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { ListChecks, CalendarSearch } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+stages = vlr.events.stages(
+    event_id: int,
+    timeout: float = 5.0,
+) -> list[EventStage]
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    event_id: {
+      type: 'int',
+      description: 'Event identifier used on VLR.gg',
+      required: true,
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `list[EventStage]`
+
+Each item describes a selectable stage option from the matches page dropdown.
+
+<TypeTable
+  type={{
+    name: {
+      type: 'str',
+      description: 'Display name shown in the stage dropdown',
+      required: true,
+    },
+    series_id: {
+      type: 'str',
+      description: 'Series identifier used by VLR.gg ("all" or numeric string)',
+      required: true,
+    },
+    url: {
+      type: 'str',
+      description: 'Fully-qualified URL for the matches page filtered to this stage',
+      required: true,
+    },
+  }}
+/>
+
+## Examples
+
+### List stages for an event
+
+```python title="List stages"
+import vlrdevapi as vlr
+
+stages = vlr.events.stages(event_id=2498)
+
+for stage in stages:
+    print(f"{stage.series_id}: {stage.name} -> {stage.url}")
+```
+
+### Combine with events.matches()
+
+```python title="Fetch matches for a specific stage"
+import vlrdevapi as vlr
+
+stages = vlr.events.stages(event_id=2498)
+playoffs = next((s for s in stages if s.name.lower() == 'playoffs'), None)
+
+if playoffs:
+    matches = vlr.events.matches(event_id=2498, stage=playoffs.name)
+    print(f"Found {len(matches)} matches in {playoffs.name}")
+else:
+    print('Playoffs stage not available')
+```
+
+## Error Handling
+
+- **Network failures**: Returns `[]`
+- **Invalid event ID**: Returns `[]`
+- **No stage dropdown**: Returns `[]`
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/events/matches"
+    title="events.matches()"
+    description="Fetch matches, optionally filtered by stage"
+    icon={<ListChecks className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/events/list-events"
+    title="events.list_events()"
+    description="Browse and filter events"
+    icon={<CalendarSearch className="h-5 w-5" />}
+  />
+</Cards>

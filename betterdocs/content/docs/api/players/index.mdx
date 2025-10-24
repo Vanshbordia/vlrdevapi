@@ -53,13 +53,6 @@ for s in stats[:3]:
     print(f"{s.agent}: {s.acs} ACS, {s.rating} Rating")
 ```
 
-## Notes
-
-- Returns `None`/`[]` on network failure to keep flows simple.
-- Player IDs can be found via search or from match/team rosters.
-- Agent stats support timespans: "all", "60d", "90d".
-
-
 ## Source
 
 Data scraped from: `https://www.vlr.gg/player/{player_id}` and `https://www.vlr.gg/player/matches/{player_id}`

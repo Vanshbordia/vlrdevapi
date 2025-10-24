@@ -221,43 +221,6 @@ for map_data in maps:
             print(f"Round {round_result.number}: {winner} wins ({method}) - Score: {score}")
 ```
 
-### Compare Team Performance
-
-```python title="Compare team performance"
-import vlrdevapi as vlr
-
-# Get all maps
-maps = vlr.series.matches(series_id=511536)
-
-for map_data in maps:
-    if map_data.teams:
-        team1, team2 = map_data.teams
-        print(f"\n{map_data.map_name}:")
-        print(f"  {team1.name}: {team1.score} rounds")
-        print(f"    ATK: {team1.attacker_rounds}, DEF: {team1.defender_rounds}")
-        print(f"  {team2.name}: {team2.score} rounds")
-        print(f"    ATK: {team2.attacker_rounds}, DEF: {team2.defender_rounds}")
-```
-
-### Get Aggregate Stats
-
-```python title="Get aggregate stats"
-import vlrdevapi as vlr
-
-# Get map stats
-maps = vlr.series.matches(series_id=511536)
-
-# Find aggregate stats (game_id == "All")
-aggregate = next((m for m in maps if m.game_id == "All"), None)
-
-if aggregate:
-    print("Series Aggregate Stats:")
-    for player in aggregate.players:
-        print(f"\n{player.name}:")
-        print(f"  ACS: {player.acs}")
-        print(f"  K/D/A: {player.k}/{player.d}/{player.a}")
-        print(f"  Rating: {player.r}")
-```
 
 ## Error Handling
 
@@ -267,14 +230,7 @@ if aggregate:
 
 The function never raises exceptions, making it safe to use without try-catch blocks.
 
-## Tips
 
-- The `players` field is always a list, never `None` - check with `if map_data.players:`
-- All numeric stats can be `None` - check before using
-- The first map in results may be aggregate stats with `game_id == "All"`
-- Use `teams` to get map scores and side performance (attacker/defender rounds)
-- The `rounds` field contains detailed round-by-round results when available
-- Combine with `series.info()` to get match header and picks/bans
 
 ## Related
 

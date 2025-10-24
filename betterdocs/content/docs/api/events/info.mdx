@@ -86,7 +86,7 @@ Returns event header information or `None` if the event is not found.
 import vlrdevapi as vlr
 
 # Get event details
-event = vlr.events.info(event_id=1189)
+event = vlr.events.info(event_id=2498)
 
 if event:
     print(f"Event: {event.name}")
@@ -109,7 +109,7 @@ else:
 import vlrdevapi as vlr
 
 # Get event info and matches
-event = vlr.events.info(event_id=1189)
+event = vlr.events.info(event_id=2498)
 
 if event:
     print(f"=== {event.name} ===")
@@ -129,7 +129,7 @@ if event:
 import vlrdevapi as vlr
 
 # Check if event exists and get basic info
-event_info = vlr.events.info(event_id=1189)
+event_info = vlr.events.info(event_id=2498)
 
 if event_info is None:
     print("Event does not exist")
@@ -144,55 +144,13 @@ else:
         print("Single region or global event")
 ```
 
-### Format Event Display
-
-```python title="Format event display"
-import vlrdevapi as vlr
-
-def format_event_card(event_id):
-    event = vlr.events.info(event_id)
-    if not event:
-        return "Event not found"
-    
-    card = f"""
-{event.name}
-"""
-    if event.subtitle:
-        card += f"   {event.subtitle}\n"
-    
-    card += f"""
-Prize: {event.prize or 'TBD'}
-Location: {event.location or 'Online'}
-Dates: {event.date_text or 'TBD'}
-"""
-    
-    if event.regions:
-        card += f"Regions: {', '.join(event.regions)}\n"
-    
-    return card.strip()
-
-print(format_event_card(1189))
-```
-
 ## Error Handling
-
-<Callout type="info">
-This function returns `None` instead of raising exceptions, making it safe to use without try-catch blocks.
-</Callout>
 
 - **Network failures**: Returns `None`
 - **Invalid event ID**: Returns `None`
 - **Event not found**: Returns `None`
 
 Always check if the return value is not `None` before accessing properties.
-
-## Tips
-
-- The `regions` field is always a list (never `None`), but may be empty `[]`
-- Use `date_text` for display purposes; it contains human-readable date ranges
-- The `prize` field includes currency symbols and formatting from VLR.gg
-- Combine with `matches()` and `standings()` to get complete event data
-- Event IDs can be obtained from `list_events()` or search results
 
 ## Related
 

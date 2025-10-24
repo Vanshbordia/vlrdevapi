@@ -2,19 +2,21 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
 from datetime import datetime
+from typing import TypedDict
+
 from bs4 import BeautifulSoup
 
-from ..constants import VLR_BASE, DEFAULT_TIMEOUT
+from ..config import get_config
 from ..fetcher import fetch_html, batch_fetch_html
 from ..exceptions import NetworkError
 from ..utils import extract_text, absolute_url, extract_id_from_url
 
 from .models import TeamMatch, MatchTeam
 
+_config = get_config()
 
-def _parse_match_datetime(date_str: Optional[str], time_str: Optional[str]) -> Optional[datetime]:
+def _parse_match_datetime(date_str: str | None, time_str: str | None) -> datetime | None:
     """
     Parse match date and time strings into a datetime object.
     
@@ -80,7 +82,7 @@ def _parse_match_datetime(date_str: Optional[str], time_str: Optional[str]) -> O
         return None
 
 
-def _extract_match_id_from_url(url: str) -> Optional[int]:
+def _extract_match_id_from_url(url: str) -> int | None:
     """
     Extract match ID from match URL.
     
@@ -107,7 +109,8 @@ def _extract_match_id_from_url(url: str) -> Optional[int]:
     return None
 
 
-def _get_team_ids_from_match(match_url: str, timeout: float = DEFAULT_TIMEOUT) -> tuple[Optional[int], Optional[int]]:
+# pyright: reportUnusedFunction=false
+def _get_team_ids_from_match(match_url: str, timeout: float | None = None) -> tuple[int | None, int | None]:
     """
     Get team IDs by fetching the match page.
     
@@ -119,7 +122,8 @@ def _get_team_ids_from_match(match_url: str, timeout: float = DEFAULT_TIMEOUT) -
         Tuple of (team1_id, team2_id)
     """
     try:
-        html = fetch_html(match_url, timeout)
+        effective_timeout = timeout if timeout is not None else _config.default_timeout
+        html = fetch_html(match_url, effective_timeout)
         soup = BeautifulSoup(html, "lxml")
         
         # Find team links in the match header
@@ -130,9 +134,10 @@ def _get_team_ids_from_match(match_url: str, timeout: float = DEFAULT_TIMEOUT) -
         
         if len(team_links) >= 2:
             # Extract team IDs from the links
-            team1_href = team_links[0].get("href", "")
-            team2_href = team_links[1].get("href", "")
-            
+            t1_val = team_links[0].get("href")
+            t2_val = team_links[1].get("href")
+            team1_href = t1_val if isinstance(t1_val, str) else None
+            team2_href = t2_val if isinstance(t2_val, str) else None
             team1_id = extract_id_from_url(team1_href, "team")
             team2_id = extract_id_from_url(team2_href, "team")
         
@@ -141,7 +146,7 @@ def _get_team_ids_from_match(match_url: str, timeout: float = DEFAULT_TIMEOUT) -
         return None, None
 
 
-def _get_team_ids_batch(match_urls: List[str], timeout: float = DEFAULT_TIMEOUT) -> dict[str, tuple[Optional[int], Optional[int]]]:
+def _get_team_ids_batch(match_urls: list[str], timeout: float | None = None) -> dict[str, tuple[int | None, int | None]]:
     """Get team IDs for multiple matches concurrently.
     
     Args:
@@ -155,10 +160,11 @@ def _get_team_ids_batch(match_urls: List[str], timeout: float = DEFAULT_TIMEOUT)
         return {}
     
     # Batch fetch all match pages concurrently
-    batch_results = batch_fetch_html(match_urls, timeout=timeout, max_workers=min(4, len(match_urls)))
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
+    batch_results = batch_fetch_html(match_urls, timeout=effective_timeout, max_workers=min(4, len(match_urls)))
     
     # Parse team IDs from each page
-    results: dict[str, tuple[Optional[int], Optional[int]]] = {}
+    results: dict[str, tuple[int | None, int | None]] = {}
     
     for match_url in match_urls:
         html = batch_results.get(match_url)
@@ -178,9 +184,10 @@ def _get_team_ids_batch(match_urls: List[str], timeout: float = DEFAULT_TIMEOUT)
             
             if len(team_links) >= 2:
                 # Extract team IDs from the links
-                team1_href = team_links[0].get("href", "")
-                team2_href = team_links[1].get("href", "")
-                
+                t1_val = team_links[0].get("href")
+                t2_val = team_links[1].get("href")
+                team1_href = t1_val if isinstance(t1_val, str) else None
+                team2_href = t2_val if isinstance(t2_val, str) else None
                 team1_id = extract_id_from_url(team1_href, "team")
                 team2_id = extract_id_from_url(team2_href, "team")
             
@@ -191,7 +198,7 @@ def _get_team_ids_batch(match_urls: List[str], timeout: float = DEFAULT_TIMEOUT)
     return results
 
 
-def upcoming_matches(team_id: int, limit: Optional[int] = None, timeout: float = DEFAULT_TIMEOUT) -> List[TeamMatch]:
+def upcoming_matches(team_id: int, limit: int | None = None, timeout: float | None = None) -> list[TeamMatch]:
     """
     Get upcoming matches for a team.
     
@@ -212,16 +219,17 @@ def upcoming_matches(team_id: int, limit: Optional[int] = None, timeout: float =
         ...     else:
         ...         print(f"{match.team1.name} vs {match.team2.name}")
     """
-    all_matches: List[TeamMatch] = []
+    all_matches: list[TeamMatch] = []
     page = 1
     
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     while True:
-        url = f"{VLR_BASE}/team/matches/{team_id}/?group=upcoming"
+        url = f"{_config.vlr_base}/team/matches/{team_id}/?group=upcoming"
         if page > 1:
             url += f"&page={page}"
         
         try:
-            html = fetch_html(url, timeout)
+            html = fetch_html(url, effective_timeout)
         except NetworkError:
             break
         
@@ -230,7 +238,7 @@ def upcoming_matches(team_id: int, limit: Optional[int] = None, timeout: float =
         if limit is not None:
             remaining = limit - len(all_matches)
         
-        matches = _parse_matches(html, timeout, limit=remaining)
+        matches = _parse_matches(html, effective_timeout, limit=remaining)
         
         if not matches:
             break
@@ -250,7 +258,7 @@ def upcoming_matches(team_id: int, limit: Optional[int] = None, timeout: float =
     return all_matches
 
 
-def completed_matches(team_id: int, limit: Optional[int] = None, timeout: float = DEFAULT_TIMEOUT) -> List[TeamMatch]:
+def completed_matches(team_id: int, limit: int | None = None, timeout: float | None = None) -> list[TeamMatch]:
     """
     Get completed matches for a team.
     
@@ -270,11 +278,12 @@ def completed_matches(team_id: int, limit: Optional[int] = None, timeout: float 
         ...     if match.match_datetime:
         ...         print(f"  Date: {match.match_datetime.strftime('%B %d, %Y')}")
     """
-    all_matches: List[TeamMatch] = []
+    all_matches: list[TeamMatch] = []
     page = 1
     
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     while True:
-        url = f"{VLR_BASE}/team/matches/{team_id}/?group=completed"
+        url = f"{_config.vlr_base}/team/matches/{team_id}/?group=completed"
         if page > 1:
             url += f"&page={page}"
         
@@ -308,7 +317,24 @@ def completed_matches(team_id: int, limit: Optional[int] = None, timeout: float 
     return all_matches
 
 
-def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT, limit: Optional[int] = None) -> List[TeamMatch]:
+class _MatchData(TypedDict):
+    match_id: int | None
+    match_url: str | None
+    tournament_name: str | None
+    phase: str | None
+    series: str | None
+    team1_name: str | None
+    team1_tag: str | None
+    team1_logo: str | None
+    team2_name: str | None
+    team2_tag: str | None
+    team2_logo: str | None
+    score_team1: int | None
+    score_team2: int | None
+    match_datetime: datetime | None
+
+
+def _parse_matches(html: str, timeout: float | None = None, limit: int | None = None) -> list[TeamMatch]:
     """Parse matches from HTML with batch fetching for team IDs.
     
     Args:
@@ -325,8 +351,8 @@ def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT, limit: Optional[
     match_items = soup.select("a.m-item")
     
     # First pass: collect all match data and URLs
-    match_data_list = []
-    match_urls_to_fetch = []
+    match_data_list: list[_MatchData] = []
+    match_urls_to_fetch: list[str] = []
     
     for item in match_items:
         # Early stop if we've reached the limit
@@ -334,8 +360,9 @@ def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT, limit: Optional[
             break
         
         # Extract match URL and ID
-        match_url_raw = item.get("href", "")
-        match_id = _extract_match_id_from_url(match_url_raw)
+        match_url_val = item.get("href")
+        match_url_raw = match_url_val if isinstance(match_url_val, str) else None
+        match_id = _extract_match_id_from_url(match_url_raw) if isinstance(match_url_raw, str) else None
         match_url = absolute_url(match_url_raw) if match_url_raw else None
         
         # Extract tournament name
@@ -385,8 +412,9 @@ def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT, limit: Optional[
         
         # Extract team 1 logo (left logo) - skip default logos
         team1_logo_el = item.select_one(".m-item-logo:not(.mod-right) img")
-        if team1_logo_el and team1_logo_el.get("src"):
-            src = team1_logo_el.get("src")
+        if team1_logo_el:
+            src_val = team1_logo_el.get("src")
+            src = src_val if isinstance(src_val, str) else None
             # Skip default/placeholder logos
             if src and "vlr.png" not in src and "tmp/" not in src:
                 team1_logo = absolute_url(src)
@@ -408,8 +436,9 @@ def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT, limit: Optional[
         
         # Extract team 2 logo (right logo) - skip default logos
         team2_logo_el = item.select_one(".m-item-logo.mod-right img")
-        if team2_logo_el and team2_logo_el.get("src"):
-            src = team2_logo_el.get("src")
+        if team2_logo_el:
+            src_val = team2_logo_el.get("src")
+            src = src_val if isinstance(src_val, str) else None
             # Skip default/placeholder logos
             if src and "vlr.png" not in src and "tmp/" not in src:
                 team2_logo = absolute_url(src)
@@ -446,7 +475,7 @@ def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT, limit: Optional[
         match_datetime = _parse_match_datetime(date_str, time_str)
         
         # Store match data for later processing
-        match_data_list.append({
+        match_data: _MatchData = {
             'match_id': match_id,
             'match_url': match_url,
             'tournament_name': tournament_name,
@@ -461,7 +490,8 @@ def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT, limit: Optional[
             'score_team1': score_team1,
             'score_team2': score_team2,
             'match_datetime': match_datetime,
-        })
+        }
+        match_data_list.append(match_data)
         
         if match_url:
             match_urls_to_fetch.append(match_url)
@@ -470,11 +500,14 @@ def _parse_matches(html: str, timeout: float = DEFAULT_TIMEOUT, limit: Optional[
     team_ids_map = _get_team_ids_batch(match_urls_to_fetch, timeout)
     
     # Second pass: build TeamMatch objects with team IDs
-    matches: List[TeamMatch] = []
+    matches: list[TeamMatch] = []
     
     for data in match_data_list:
         match_url = data['match_url']
-        team1_id, team2_id = team_ids_map.get(match_url, (None, None)) if match_url else (None, None)
+        if isinstance(match_url, str):
+            team1_id, team2_id = team_ids_map.get(match_url, (None, None))
+        else:
+            team1_id, team2_id = (None, None)
         
         # Create team objects
         team1_obj = MatchTeam(

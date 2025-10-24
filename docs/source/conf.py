@@ -11,7 +11,7 @@ author = 'Vansh'
 try:
     release = _metadata.version("vlrdevapi")
 except _metadata.PackageNotFoundError:
-    release = "1.1.0"
+    release = "1.2.0"
 
 extensions = [
     'sphinx.ext.autodoc',
@@ -52,5 +52,4 @@ html_theme_options = {
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
-    'pydantic': ('https://docs.pydantic.dev/latest/', None),
 }

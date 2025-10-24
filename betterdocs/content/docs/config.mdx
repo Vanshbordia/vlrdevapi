@@ -1,0 +1,206 @@
+---
+title: Configuration
+description: Configure base URL, timeouts, user agent, retries, backoff, and rate limiting at runtime
+---
+
+import { Steps } from 'fumadocs-ui/components/steps';
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+## Overview
+
+The global configuration lets you control core runtime behavior across the library:
+
+- Base URL
+- Default timeout
+- Default User-Agent
+- Retries and backoff
+- Built-in rate limiting
+
+Changes take effect immediately and apply across modules like `fetcher`, `events`, `series`, `matches`, `players`, `teams`, and `search`.
+
+## Types
+
+Below are the core configuration fields and helper functions with their Python types.
+
+### Configuration fields
+
+<TypeTable
+  type={{
+    vlr_base: {
+      type: 'str',
+      description: 'Base URL for VLR.gg requests',
+      default: '"https://www.vlr.gg"',
+      required: true,
+    },
+    default_timeout: {
+      type: 'float',
+      description: 'Default HTTP timeout (seconds) for requests',
+      default: '5.0',
+      required: true,
+    },
+    default_user_agent: {
+      type: 'str',
+      description: 'Default User-Agent header used by the fetcher',
+      default: 'Chrome-like UA',
+      required: true,
+    },
+    max_retries: {
+      type: 'int',
+      description: 'Maximum number of retries for transient errors',
+      default: '3',
+      required: true,
+    },
+    backoff_factor: {
+      type: 'float',
+      description: 'Exponential backoff multiplier between retries',
+      default: '1.0',
+      required: true,
+    },
+    default_rate_limit: {
+      type: 'float',
+      description: 'Default requests-per-second (RPS) when rate limiting is enabled',
+      default: '10',
+      required: true,
+    },
+    default_rate_limit_enabled: {
+      type: 'bool',
+      description: 'Whether built-in rate limiting is enabled by default',
+      default: 'true',
+      required: true,
+    },
+  }}
+  title="Global configuration fields"
+  description="Values can be changed at runtime via vlr.configure(...) and restored with vlr.reset_config()"
+/>
+
+### Helper functions
+
+<TypeTable
+  type={{
+    configure: {
+      type: 'function',
+      description: 'Update one or more global configuration values at runtime',
+      params: [
+        { name: 'vlr_base', type: 'str | None', required: false },
+        { name: 'default_timeout', type: 'float | None', required: false },
+        { name: 'default_user_agent', type: 'str | None', required: false },
+        { name: 'max_retries', type: 'int | None', required: false },
+        { name: 'backoff_factor', type: 'float | None', required: false },
+        { name: 'default_rate_limit', type: 'float | None', required: false },
+        { name: 'default_rate_limit_enabled', type: 'bool | None', required: false },
+      ],
+      returns: { type: 'None' },
+    },
+    reset_config: {
+      type: 'function',
+      description: 'Reset all configuration values to library defaults',
+      returns: { type: 'None' },
+    },
+    configure_rate_limit: {
+      type: 'function',
+      description: 'Temporarily override current rate limiting behavior',
+      params: [
+        { name: 'requests_per_second', type: 'float | None', required: false },
+        { name: 'enabled', type: 'bool | None', required: false },
+      ],
+      returns: { type: 'None' },
+    },
+    reset_rate_limit: {
+      type: 'function',
+      description: 'Reset rate limit to current configured defaults',
+      returns: { type: 'None' },
+    },
+    get_rate_limit: {
+      type: 'function',
+      description: 'Get current RPS; returns 0.0 when disabled',
+      returns: { type: 'float' },
+    },
+  }}
+  title="Helpers"
+  description="Available functions for configuring global behavior and rate limiting"
+/>
+
+## Quick Examples
+
+### Increase timeout and retries
+
+```python
+import vlrdevapi as vlr
+
+# Increase default timeout and retry behavior
+vlr.configure(default_timeout=10.0, max_retries=5, backoff_factor=2.0)
+
+# Calls now use the new defaults
+events = vlr.events.list_events(limit=5)
+```
+
+### Custom User-Agent
+
+```python
+import vlrdevapi as vlr
+
+vlr.configure(default_user_agent="MyApp/1.0 (+https://example.com)")
+```
+
+### Change base URL (advanced)
+
+```python
+import vlrdevapi as vlr
+
+vlr.configure(vlr_base="https://my-proxy.example.com")
+```
+
+## Rate Limiting
+
+The client uses a lightweight token-bucket limiter. You can change whether it is enabled and what rate to use.
+
+```python
+import vlrdevapi as vlr
+
+# Disable
+vlr.configure(default_rate_limit_enabled=False)
+
+# Enable and set to 20 requests per second
+vlr.configure(default_rate_limit=20, default_rate_limit_enabled=True)
+
+# Temporarily override at runtime via fetcher helpers
+vlr.configure_rate_limit(requests_per_second=5, enabled=True)
+
+# Reset back to configured defaults
+vlr.reset_rate_limit()
+```
+
+## Reset to defaults
+
+```python
+import vlrdevapi as vlr
+
+vlr.reset_config()
+```
+
+## Per-call overrides
+
+You can still override settings per-call on `fetcher` functions.
+
+```python
+from vlrdevapi.fetcher import fetch_html
+
+# Override timeout just for this request
+html = fetch_html("https://www.vlr.gg/matches", timeout=2.5)
+```
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/rate-limiting"
+    title="Rate Limiting"
+    description="Control request throughput globally or at runtime"
+  />
+  <Card
+    href="/docs/getting-started"
+    title="Quick Start"
+    description="Install and make your first requests"
+  />
+</Cards>

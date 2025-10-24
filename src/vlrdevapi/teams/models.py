@@ -2,144 +2,132 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
 from datetime import datetime
 from datetime import date as date_type
-from pydantic import BaseModel, Field, ConfigDict
+from dataclasses import dataclass, field
 
 
-class SocialLink(BaseModel):
+@dataclass(frozen=True)
+class SocialLink:
     """Team social media link."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    label: str = Field(description="Link label")
-    url: str = Field(description="Link URL")
+
+    label: str
+    url: str
 
 
-class PreviousTeam(BaseModel):
+@dataclass(frozen=True)
+class PreviousTeam:
     """Information about a team's previous name/identity."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    team_id: Optional[int] = Field(None, description="Previous team ID")
-    name: Optional[str] = Field(None, description="Previous team name")
+
+    team_id: int | None = None
+    name: str | None = None
 
 
-class SuccessorTeam(BaseModel):
+@dataclass(frozen=True)
+class SuccessorTeam:
     """Information about a team's successor/current banner identity."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    team_id: Optional[int] = Field(None, description="Successor team ID")
-    name: Optional[str] = Field(None, description="Successor team name")
+
+    team_id: int | None = None
+    name: str | None = None
 
 
-class RosterMember(BaseModel):
+@dataclass(frozen=True)
+class RosterMember:
     """Team roster member (player or staff)."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    player_id: Optional[int] = Field(None, description="Player ID")
-    ign: Optional[str] = Field(None, description="In-game name")
-    real_name: Optional[str] = Field(None, description="Real name")
-    country: Optional[str] = Field(None, description="Country")
-    role: str = Field(description="Role (e.g., Player, Head Coach, Sub)")
-    is_captain: bool = Field(False, description="Whether player is team captain")
-    photo_url: Optional[str] = Field(None, description="Player photo URL")
+
+    role: str
+    player_id: int | None = None
+    ign: str | None = None
+    real_name: str | None = None
+    country: str | None = None
+    is_captain: bool = False
+    photo_url: str | None = None
 
 
-class TeamInfo(BaseModel):
+@dataclass(frozen=True)
+class TeamInfo:
     """Team information."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    team_id: int = Field(description="Team ID")
-    name: Optional[str] = Field(None, description="Team name")
-    tag: Optional[str] = Field(None, description="Team tag/short name")
-    logo_url: Optional[str] = Field(None, description="Team logo URL")
-    country: Optional[str] = Field(None, description="Country")
-    is_active: bool = Field(True, description="Whether team is active")
-    socials: List[SocialLink] = Field(default_factory=list, description="Social media links")
-    previous_team: Optional[PreviousTeam] = Field(None, description="Previous team identity if renamed")
-    current_team: Optional[SuccessorTeam] = Field(None, description="If inactive, team currently playing under this banner")
+
+    team_id: int
+    name: str | None = None
+    tag: str | None = None
+    logo_url: str | None = None
+    country: str | None = None
+    is_active: bool = True
+    socials: list[SocialLink] = field(default_factory=list)
+    previous_team: PreviousTeam | None = None
+    current_team: SuccessorTeam | None = None
 
 
-class MatchTeam(BaseModel):
+@dataclass(frozen=True)
+class MatchTeam:
     """Team information in a match context."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    team_id: Optional[int] = Field(None, description="Team ID")
-    name: Optional[str] = Field(None, description="Team name")
-    tag: Optional[str] = Field(None, description="Team tag/short name")
-    logo: Optional[str] = Field(None, description="Team logo URL")
-    score: Optional[int] = Field(None, description="Team score")
+
+    team_id: int | None = None
+    name: str | None = None
+    tag: str | None = None
+    logo: str | None = None
+    score: int | None = None
 
 
-class TeamMatch(BaseModel):
+@dataclass(frozen=True)
+class TeamMatch:
     """Team match information."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    match_id: Optional[int] = Field(None, description="Match ID")
-    match_url: Optional[str] = Field(None, description="Match URL")
-    tournament_name: Optional[str] = Field(None, description="Tournament name")
-    phase: Optional[str] = Field(None, description="Tournament phase (e.g., 'Playoffs')")
-    series: Optional[str] = Field(None, description="Series (e.g., 'GF', 'Semi Finals')")
-    team1: MatchTeam = Field(description="First team information")
-    team2: MatchTeam = Field(description="Second team information")
-    match_datetime: Optional[datetime] = Field(None, description="Match date and time")
+
+    team1: MatchTeam
+    team2: MatchTeam
+    match_id: int | None = None
+    match_url: str | None = None
+    tournament_name: str | None = None
+    phase: str | None = None
+    series: str | None = None
+    match_datetime: datetime | None = None
 
 
-class PlacementDetail(BaseModel):
-    """Individual placement detail within an event."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    series: Optional[str] = Field(None, description="Series/stage (e.g., 'Playoffs', '#5')")
-    place: Optional[str] = Field(None, description="Placement (e.g., '1st', '3rd-4th')")
-    prize_money: Optional[str] = Field(None, description="Prize money (e.g., '$28,256')")
+@dataclass(frozen=True)
+class PlacementDetail:
+    """Individual placement detail within an event.""" 
+
+    series: str | None = None
+    place: str | None = None
+    prize_money: str | None = None
 
 
-class EventPlacement(BaseModel):
+@dataclass(frozen=True)
+class EventPlacement:
     """Team event placement information."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    event_id: Optional[int] = Field(None, description="Event ID")
-    event_name: Optional[str] = Field(None, description="Event name")
-    event_url: Optional[str] = Field(None, description="Event URL")
-    placements: List[PlacementDetail] = Field(default_factory=list, description="List of placements in this event")
-    year: Optional[str] = Field(None, description="Year of the event")
+
+    event_id: int | None = None
+    event_name: str | None = None
+    event_url: str | None = None
+    placements: list[PlacementDetail] = field(default_factory=list)
+    year: str | None = None
 
 
-class PlayerTransaction(BaseModel):
+@dataclass(frozen=True)
+class PlayerTransaction:
     """Individual player transaction record."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    date: Optional[date_type] = Field(None, description="Transaction date")
-    action: Optional[str] = Field(None, description="Action type (join, leave, inactive, etc.)")
-    player_id: Optional[int] = Field(None, description="Player ID")
-    ign: Optional[str] = Field(None, description="In-game name")
-    real_name: Optional[str] = Field(None, description="Real name")
-    country: Optional[str] = Field(None, description="Country")
-    position: Optional[str] = Field(None, description="Position/role (Player, Head Coach, etc.)")
-    reference_url: Optional[str] = Field(None, description="Reference URL for transaction")
+
+    date: date_type | None = None
+    action: str | None = None
+    player_id: int | None = None
+    ign: str | None = None
+    real_name: str | None = None
+    country: str | None = None
+    position: str | None = None
+    reference_url: str | None = None
 
 
-class PreviousPlayer(BaseModel):
+@dataclass(frozen=True)
+class PreviousPlayer:
     """Previous player with calculated status."""
-    
-    model_config = ConfigDict(frozen=True)
-    
-    player_id: Optional[int] = Field(None, description="Player ID")
-    ign: Optional[str] = Field(None, description="In-game name")
-    real_name: Optional[str] = Field(None, description="Real name")
-    country: Optional[str] = Field(None, description="Country")
-    position: Optional[str] = Field(None, description="Position/role")
-    status: str = Field(description="Player status (Active, Left, Inactive, Unknown)")
-    join_date: Optional[date_type] = Field(None, description="Date joined team")
-    leave_date: Optional[date_type] = Field(None, description="Date left team")
-    transactions: List[PlayerTransaction] = Field(default_factory=list, description="All transactions for this player")
+
+    status: str
+    player_id: int | None = None
+    ign: str | None = None
+    real_name: str | None = None
+    country: str | None = None
+    position: str | None = None
+    join_date: date_type | None = None
+    leave_date: date_type | None = None
+    transactions: list[PlayerTransaction] = field(default_factory=list)

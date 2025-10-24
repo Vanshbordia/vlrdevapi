@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from typing import List
 from bs4 import BeautifulSoup
 
-from ..constants import VLR_BASE, DEFAULT_TIMEOUT
+from ..config import get_config
 from ..fetcher import fetch_html  # Uses connection pooling automatically
 from ..exceptions import NetworkError
 from ..utils import extract_text, absolute_url, extract_id_from_url
@@ -13,7 +12,10 @@ from ..utils import extract_text, absolute_url, extract_id_from_url
 from .models import EventPlacement, PlacementDetail
 
 
-def placements(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[EventPlacement]:
+_config = get_config()
+
+
+def placements(team_id: int, timeout: float | None = None) -> list[EventPlacement]:
     """
     Get event placements for a team.
     
@@ -32,18 +34,23 @@ def placements(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[EventPlac
         ...     for detail in placement.placements:
         ...         print(f"  {detail.series} - {detail.place}: {detail.prize_money}")
     """
-    url = f"{VLR_BASE}/team/{team_id}"
+    url = f"{_config.vlr_base}/team/{team_id}"
+    effective_timeout = timeout if timeout is not None else _config.default_timeout
     try:
-        html = fetch_html(url, timeout)
+        html = fetch_html(url, effective_timeout)
     except NetworkError:
         return []
     
     soup = BeautifulSoup(html, "lxml")
-    placements_list: List[EventPlacement] = []
+    placements_list: list[EventPlacement] = []
     
-    # Find the "Event Placements" section
-    placements_label = soup.find("h2", class_="wf-label mod-large", string=lambda t: t and "Event Placements" in t)
-    if not placements_label:
+    # Find the "Event Placements" section (avoid lambda in 'string' for type checker)
+    placements_label = None
+    for h2 in soup.select("h2.wf-label.mod-large"):
+        if "Event Placements" in extract_text(h2):
+            placements_label = h2
+            break
+    if placements_label is None:
         return []
     
     # Get the card that follows
@@ -56,7 +63,8 @@ def placements(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[EventPlac
     
     for item in event_items:
         # Extract event URL and ID
-        event_url_raw = item.get("href", "")
+        href_val = item.get("href")
+        event_url_raw = href_val if isinstance(href_val, str) else None
         event_id = extract_id_from_url(event_url_raw, "event")
         event_url = absolute_url(event_url_raw) if event_url_raw else None
         
@@ -75,7 +83,7 @@ def placements(team_id: int, timeout: float = DEFAULT_TIMEOUT) -> List[EventPlac
             year = extract_text(direct_divs[-1])
         
         # Extract all placement details (can be multiple per event)
-        placement_details: List[PlacementDetail] = []
+        placement_details: list[PlacementDetail] = []
         
         # Find all divs with series info
         series_divs = item.select("div[style*='margin-top: 5px']")

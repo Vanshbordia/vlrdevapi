@@ -133,35 +133,6 @@ for player in active:
     print(f"  {player.ign} - {player.position}")
 ```
 
-### Filter by Position
-
-```python title="Filter by position"
-import vlrdevapi as vlr
-
-players = vlr.teams.previous_players(team_id=1034)
-
-# Get coaches
-coaches = [p for p in players if p.position and "coach" in p.position.lower()]
-
-print(f"Coaches: {len(coaches)}")
-for coach in coaches:
-    print(f"  {coach.real_name or coach.ign} - {coach.status}")
-```
-
-### Access Transaction History
-
-```python title="Access transaction history"
-import vlrdevapi as vlr
-
-players = vlr.teams.previous_players(team_id=1034)
-
-if players:
-    player = players[0]
-    print(f"Transaction history for {player.ign}:")
-    for txn in player.transactions:
-        date_str = txn.date.strftime('%Y/%m/%d') if txn.date else 'Unknown'
-        print(f"  {date_str}: {txn.action}")
-```
 
 ## Error Handling
 
@@ -172,15 +143,7 @@ if players:
 
 The function never raises exceptions, making it safe to use without try-catch blocks.
 
-## Tips
 
-- Check list length before accessing: `if players:`
-- All optional fields can be `None` - check before using
-- Use this instead of `transactions()` when you need calculated player status
-- Players are sorted by most recent activity (latest transaction first)
-- The `transactions` field is always a list, never `None`
-- Players can have multiple join/leave cycles (rejoining after leaving)
-- Transaction dates can be `None` - always check before formatting
 
 ## Related
 
