@@ -65,11 +65,11 @@ Monitor an ongoing tournament:
        # Separate by status
        completed = [m for m in matches if m.status == "completed"]
        upcoming = [m for m in matches if m.status == "upcoming"]
-       live = [m for m in matches if m.status == "live"]
+       ongoing = [m for m in matches if m.status == "ongoing"]
        
        print(f"Completed: {len(completed)}")
        print(f"Upcoming: {len(upcoming)}")
-       print(f"Live: {len(live)}")
+       print(f"Ongoing: {len(ongoing)}")
        print()
        
        # Show recent results

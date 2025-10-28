@@ -165,25 +165,25 @@ for match in matches:
     print(f"{team1.name} vs {team2.name} - {match.status}")
 ```
 
-### Find Live Matches
+### Find Ongoing Matches
 
-```python title="Find live matches"
+```python title="Find ongoing matches"
 import vlrdevapi as vlr
 
-# Get matches and filter for live ones
+# Get matches and filter for ongoing ones
 matches = vlr.events.matches(event_id=1189)
 
-live_matches = [m for m in matches if m.status == "ongoing"]
+ongoing_matches = [m for m in matches if m.status == "ongoing"]
 
-if live_matches:
-    print(f" {len(live_matches)} live match(es) in progress:")
-    for match in live_matches:
+if ongoing_matches:
+    print(f" {len(ongoing_matches)} ongoing match(es) in progress:")
+    for match in ongoing_matches:
         team1, team2 = match.teams
         print(f"  {team1.name} vs {team2.name}")
         print(f"    Stage: {match.stage or 'Unknown'}")
         print(f"    Current Score: {team1.score or 0}-{team2.score or 0}")
 else:
-    print("No live matches currently")
+    print("No ongoing matches currently")
 ```
 
 ### Get Match Details with Team IDs
