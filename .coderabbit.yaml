@@ -1,9 +1,6 @@
-# CodeRabbit Configuration for VLR.gg API Library
-# This configuration optimizes code review for the vlrdevapi Python package
-
 # Language and framework detection
-language: python
-framework: pytest
++language: en-US
+
 
 # Paths to include in code review
 include:
