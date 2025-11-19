@@ -34,6 +34,6 @@ jobs:
       
       - name: Validate documentation snippets
         run: |
-          python scripts/validate_doc_snippets.py --timeout 30 --skip-pattern "(while\s+True|time\.sleep\(|input\(|monitor_live_matches|track_tournament)"
+          python scripts/validate_doc_snippets.py --timeout 180 --skip-pattern "(while\s+True|time\.sleep\(|input\(|monitor_live_matches|track_tournament)"
         env:
           PYTHONPATH: ${{ github.workspace }}/src

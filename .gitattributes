@@ -1,3 +1,7 @@
+# Exclude documentation from language stats
+betterdocs/** linguist-vendored
+docs/** linguist-vendored
+
+# Exclude test data
 test/html_sources/*.html linguist-detectable=false
 tests/html_sources/*.html linguist-detectable=false
-betterdocs/* linguist-detectable=false
