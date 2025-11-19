@@ -71,7 +71,7 @@ Returns aggregated match statistics or `None` if not found.
     },
     stages: {
       type: 'list[StageMatches]',
-      description: 'Stage-specific match summaries (currently always empty)',
+      description: 'Stage-specific match summaries including counts and date ranges',
       required: true,
     },
   }}
@@ -165,7 +165,6 @@ Always check if the return value is not `None` before accessing properties.
 
 ## Tips
 
-- The `stages` field is currently always an empty list `[]` (reserved for future implementation)
 - Use this function for quick event progress overview without fetching all match details
 - Combine with `matches()` to get detailed match information after checking the summary
 - All count fields (`total_matches`, `completed`, `upcoming`, `ongoing`) are always non-negative integers

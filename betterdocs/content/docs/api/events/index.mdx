@@ -66,7 +66,7 @@ events = vlr.events.list_events(
 )
 
 for e in events:
-    print(f"{e.name} ({e.tier})")
+    print(f"{e.name}")
     print(f"  Status: {e.status}")
     print(f"  Prize: {e.prize or 'N/A'}")
     print(f"  Dates: {e.start_text} - {e.end_text}")

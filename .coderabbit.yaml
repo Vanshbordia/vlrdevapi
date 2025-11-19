@@ -1,0 +1,226 @@
+# Language and framework detection
++language: en-US
+
+
+# Paths to include in code review
+include:
+  - "src/**/*.py"
+  - "tests/**/*.py"
+  - "pyproject.toml"
+  - "README.md"
+
+# Paths to exclude from code review
+exclude:
+  - "src/**/__pycache__/**"
+  - "tests/**/__pycache__/**"
+  - ".git/**"
+  - ".pytest_cache/**"
+  - ".venv/**"
+  - "uv.lock"
+  - "*.egg-info/**"
+
+# Review focus areas for a web scraping API library
+focus:
+  # Security considerations for web scraping
+  security:
+    - rate_limiting
+    - user_agent_handling
+    - input_validation
+    - error_handling
+  
+  # Performance for scraping operations
+  performance:
+    - async_operations
+    - memory_usage
+    - network_requests
+    - caching_strategies
+  
+  # Code quality specific to this library
+  code_quality:
+    - docstring_completeness
+    - type_hints
+    - error_handling
+    - logging
+    - test_coverage
+  
+  # API design principles
+  api_design:
+    - consistent_interfaces
+    - data_validation
+    - immutable_data_structures
+    - proper_exception_handling
+
+# Custom rules for VLR.gg specific patterns
+rules:
+  # Ensure proper error handling for network requests
+  - name: "network-error-handling"
+    pattern: "httpx\\.(get|post|request)"
+    message: "Network requests should have proper error handling with try/except blocks"
+    
+  # Check for rate limiting considerations
+  - name: "rate-limiting"
+    pattern: "await fetcher\\."
+    message: "Consider rate limiting for scraping operations to avoid being blocked"
+    
+  # Ensure data classes are frozen for immutability
+  - name: "immutable-dataclasses"
+    pattern: "@dataclass"
+    message: "Data classes should be frozen (frozen=True) for API data structures"
+    
+  # Check for proper documentation
+  - name: "public-api-docs"
+    pattern: "def [a-z_][a-z0-9_]*\\(self"
+    message: "Public methods should have comprehensive docstrings with examples"
+    
+  # Validate URL handling
+  - name: "url-validation"
+    pattern: "urlparse|URL\\("
+    message: "URLs should be validated and properly handled"
+
+# Documentation requirements
+documentation:
+  # Require docstrings for public API
+  public_methods:
+    required: true
+    include_examples: true
+    
+  # Module level documentation
+  modules:
+    required: true
+    include_usage_examples: true
+    
+  # Complex function documentation
+  complex_functions:
+    threshold: 10  # lines of code
+    required: true
+    include_parameters: true
+    include_returns: true
+    include_raises: true
+
+# Testing requirements
+testing:
+  # Minimum coverage requirements
+  coverage:
+    minimum: 80
+    exclude:
+      - "tests/**"
+      - "*/__pycache__/**"
+  
+  # Test structure requirements
+  structure:
+    require_fixtures: true
+    require_mocking: true  # Important for web scraping tests
+    
+  # Specific test types for this library
+  required_tests:
+    - unit_tests
+    - integration_tests
+    - error_handling_tests
+    
+  # Test naming conventions
+  naming:
+    pattern: "test_.*"
+    classes: "Test.*"
+
+# Code style and formatting
+style:
+  # Python specific style rules
+  python:
+    line_length: 88
+    use_black: true
+    use_ruff: true
+    import_sorting: true
+    
+  # Specific to this project
+  custom_rules:
+    - "Use type hints for all public API methods"
+    - "Prefer dataclasses over regular classes for data structures"
+    - "Include proper exception handling in all external calls"
+
+# Dependency management
+dependencies:
+  # Check for security vulnerabilities
+  security_scan: true
+  
+  # Check for outdated dependencies
+  outdated_check: true
+  
+  # Validate dependency versions
+  version_constraints:
+    "beautifulsoup4": ">=4.12"
+    "httpx": ">=0.27"
+    "lxml": ">=5.0"
+
+# Performance monitoring
+performance:
+  # Check for potential performance issues
+  slow_operations:
+    - "regex_complexity"
+    - "loop_efficiency"
+    - "memory_allocation"
+    
+  # Network operation optimization
+  network:
+    check_timeout_usage: true
+    check_retry_logic: true
+    check_connection_pooling: true
+
+# Integration with other tools
+integrations:
+  # GitHub Actions integration
+  github_actions:
+    check_workflows: true
+    validate_ci: true
+    
+  # PyPI package validation
+  pypi:
+    validate_metadata: true
+    check_version_format: true
+    
+  # Documentation integration
+  readthedocs:
+    validate_config: true
+    check_doc_build: true
+
+# Review severity levels
+severity:
+  high:
+    - security_vulnerabilities
+    - breaking_changes
+    - test_failures
+    
+  medium:
+    - performance_issues
+    - documentation_gaps
+    - code_style_violations
+    
+  low:
+    - minor_style_issues
+    - optimization_suggestions
+    - naming_conventions
+
+# Custom messages for common issues in this library
+messages:
+  web_scraping:
+    rate_limiting: "Consider implementing exponential backoff for rate limiting"
+    user_agent: "Ensure proper User-Agent headers are set for requests"
+    error_handling: "Network operations should handle HTTP errors gracefully"
+    
+  api_design:
+    consistency: "Maintain consistent parameter naming across API methods"
+    validation: "Add input validation for external parameters"
+    immutability: "API data structures should be immutable to prevent accidental modification"
+
+# Review automation
+automation:
+  # Auto-fix simple issues
+  auto_fix:
+    - import_sorting
+    - formatting
+    - simple_style_issues
+    
+  # Require manual review for
+  manual_review:
+    - security_changes
+    - api_breaking_changes
+    - major_refactoring
