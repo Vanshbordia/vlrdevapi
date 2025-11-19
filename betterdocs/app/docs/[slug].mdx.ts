@@ -11,7 +11,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const content = fs.readFileSync(filePath, 'utf8');
     res.setHeader('Content-Type', 'text/plain');
     res.status(200).send(content);
-  } catch (err) {
+  } catch (_err) {
     res.status(404).send('File not found');
   }
 }

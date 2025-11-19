@@ -45,8 +45,8 @@ def _parse_search_results(
     events = []
     series_results = []
     
-    results_div = soup.select_one("div.wf-card[style*='margin-top']")
-    if not results_div:
+    results_divs = soup.select("div.wf-card[style*='margin-top']")
+    if not results_divs:
         return SearchResults(
             query=query,
             total_results=0,
@@ -56,96 +56,97 @@ def _parse_search_results(
             series=[],
         )
     
-    for item in results_div.select("a.wf-module-item.search-item"):
-        href = item.get("href", "")
-        if not href:
-            continue
-        
-        full_url = absolute_url(href) or ""
-        
-        title_el = item.select_one(".search-item-title")
-        title = normalize_whitespace(extract_text(title_el)) if title_el else None
-        
-        desc_el = item.select_one(".search-item-desc")
-        desc_text = normalize_whitespace(extract_text(desc_el)) if desc_el else ""
-        
-        img_el = item.select_one("img")
-        img_url = absolute_url(img_el.get("src")) if img_el and img_el.get("src") else None
-        
-        if "/player/" in href:
-            player_id = extract_id_from_url(href, "player")
-            if player_id:
-                real_name = None
-                if desc_el:
-                    italic_span = desc_el.select_one("span[style*='italic']")
-                    if italic_span:
-                        real_name = normalize_whitespace(extract_text(italic_span))
-                
-                players.append(SearchPlayerResult(
-                    player_id=player_id,
-                    url=full_url,
-                    ign=title,
-                    real_name=real_name,
-                    image_url=img_url,
-                ))
-        
-        elif "/team/" in href:
-            team_id = extract_id_from_url(href, "team")
-            if team_id:
-                is_inactive = "inactive" in desc_text.lower() or "inactive" in title.lower() if title else False
-                
-                clean_title = title
-                if clean_title and "inactive" in clean_title.lower():
-                    clean_title = _INACTIVE_RE.sub('', clean_title).strip()
-                
-                teams.append(SearchTeamResult(
-                    team_id=team_id,
-                    url=full_url,
-                    name=clean_title,
-                    logo_url=img_url,
-                    is_inactive=is_inactive,
-                ))
-        
-        elif "/event/" in href:
-            event_id = extract_id_from_url(href, "event")
-            if event_id:
-                date_range = None
-                prize = None
-                
-                if desc_text:
-                    parts = desc_text.split("event")
-                    if len(parts) > 1:
-                        details = parts[1].strip()
-                        detail_parts = [p.strip() for p in details.split("–") if p.strip()]
-                        
-                        if detail_parts:
-                            date_part = detail_parts[0].strip()
-                            if date_part and not date_part.startswith("$"):
-                                date_range = date_part
+    for results_div in results_divs:
+        for item in results_div.select("a.wf-module-item.search-item"):
+            href = item.get("href", "")
+            if not href:
+                continue
+            
+            full_url = absolute_url(href) or ""
+            
+            title_el = item.select_one(".search-item-title")
+            title = normalize_whitespace(extract_text(title_el)) if title_el else None
+            
+            desc_el = item.select_one(".search-item-desc")
+            desc_text = normalize_whitespace(extract_text(desc_el)) if desc_el else ""
+            
+            img_el = item.select_one("img")
+            img_url = absolute_url(img_el.get("src")) if img_el and img_el.get("src") else None
+            
+            if "/player/" in href:
+                player_id = extract_id_from_url(href, "player")
+                if player_id:
+                    real_name = None
+                    if desc_el:
+                        italic_span = desc_el.select_one("span[style*='italic']")
+                        if italic_span:
+                            real_name = normalize_whitespace(extract_text(italic_span))
+                    
+                    players.append(SearchPlayerResult(
+                        player_id=player_id,
+                        url=full_url,
+                        ign=title,
+                        real_name=real_name,
+                        image_url=img_url,
+                    ))
+            
+            elif "/team/" in href:
+                team_id = extract_id_from_url(href, "team")
+                if team_id:
+                    is_inactive = "inactive" in desc_text.lower() or "inactive" in title.lower() if title else False
+                    
+                    clean_title = title
+                    if clean_title and "inactive" in clean_title.lower():
+                        clean_title = _INACTIVE_RE.sub('', clean_title).strip()
+                    
+                    teams.append(SearchTeamResult(
+                        team_id=team_id,
+                        url=full_url,
+                        name=clean_title,
+                        logo_url=img_url,
+                        is_inactive=is_inactive,
+                    ))
+            
+            elif "/event/" in href:
+                event_id = extract_id_from_url(href, "event")
+                if event_id:
+                    date_range = None
+                    prize = None
+                    
+                    if desc_text:
+                        parts = desc_text.split("event")
+                        if len(parts) > 1:
+                            details = parts[1].strip()
+                            detail_parts = [p.strip() for p in details.split("–") if p.strip()]
                             
-                            for part in detail_parts:
-                                if "$" in part:
-                                    prize = part.strip()
-                                    break
-                
-                events.append(SearchEventResult(
-                    event_id=event_id,
-                    url=full_url,
-                    name=title,
-                    date_range=date_range,
-                    prize=prize,
-                    image_url=img_url,
-                ))
-        
-        elif "/series/" in href:
-            series_id = extract_id_from_url(href, "series")
-            if series_id:
-                series_results.append(SearchSeriesResult(
-                    series_id=series_id,
-                    url=full_url,
-                    name=title,
-                    image_url=img_url,
-                ))
+                            if detail_parts:
+                                date_part = detail_parts[0].strip()
+                                if date_part and not date_part.startswith("$"):
+                                    date_range = date_part
+                                
+                                for part in detail_parts:
+                                    if "$" in part:
+                                        prize = part.strip()
+                                        break
+                    
+                    events.append(SearchEventResult(
+                        event_id=event_id,
+                        url=full_url,
+                        name=title,
+                        date_range=date_range,
+                        prize=prize,
+                        image_url=img_url,
+                    ))
+            
+            elif "/series/" in href:
+                series_id = extract_id_from_url(href, "series")
+                if series_id:
+                    series_results.append(SearchSeriesResult(
+                        series_id=series_id,
+                        url=full_url,
+                        name=title,
+                        image_url=img_url,
+                    ))
     
     total = len(players) + len(teams) + len(events) + len(series_results)
     

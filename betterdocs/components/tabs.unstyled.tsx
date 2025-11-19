@@ -78,7 +78,7 @@ export function Tabs({
   const [value, setValue] =
     _value === undefined
       ? // eslint-disable-next-line react-hooks/rules-of-hooks -- not supposed to change controlled/uncontrolled
-        useState(defaultValue)
+      useState(defaultValue)
       : [_value, _onValueChange ?? (() => undefined)];
 
   const onChange = useEffectEvent((v: string) => setValue(v));
@@ -95,7 +95,7 @@ export function Tabs({
     return () => {
       removeChangeListener(groupId, onChange);
     };
-  }, [groupId, persist]);
+  }, [groupId, persist, onChange]);
 
   useLayoutEffect(() => {
     const hash = window.location.hash.slice(1);
@@ -108,7 +108,7 @@ export function Tabs({
         break;
       }
     }
-  }, [valueToIdMap]);
+  }, [valueToIdMap, onChange]);
 
   return (
     <Primitive.Tabs
