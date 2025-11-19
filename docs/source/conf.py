@@ -11,7 +11,7 @@ author = 'Vansh'
 try:
     release = _metadata.version("vlrdevapi")
 except _metadata.PackageNotFoundError:
-    release = "1.2.0"
+    release = "1.3.0"
 
 extensions = [
     'sphinx.ext.autodoc',
