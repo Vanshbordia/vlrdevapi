@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export function InstallationCommand({ command, label }: { command: string; label: string }) {
+export function InstallationCommand({ command, label: _label }: { command: string; label: string }) {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {

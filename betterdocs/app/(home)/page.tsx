@@ -109,12 +109,12 @@ export default function HomePage() {
                 <code className="text-gray-300">
                   <span className="text-[#ff7b72]">import</span> vlrdevapi <span className="text-[#ff7b72]">as</span> vlr{'\n\n'}
                   <span className="text-[#8b949e]"># Search for anything</span>{'\n'}
-                  results = vlr.search.search(<span className="text-[#a5d6ff]">"nrg"</span>){'\n'}
-                  <span className="text-[#d2a8ff]">print</span>(f<span className="text-[#a5d6ff]">"Found &#123;results.total_results&#125; results"</span>){'\n\n'}
+                  results = vlr.search.search(<span className="text-[#a5d6ff]">&quot;nrg&quot;</span>){'\n'}
+                  <span className="text-[#d2a8ff]">print</span>(f<span className="text-[#a5d6ff]">&quot;Found &#123;results.total_results&#125; results&quot;</span>){'\n\n'}
                   <span className="text-[#8b949e]"># Get upcoming matches</span>{'\n'}
                   matches = vlr.matches.upcoming(limit=<span className="text-[#79c0ff]">5</span>){'\n'}
                   <span className="text-[#ff7b72]">for</span> match <span className="text-[#ff7b72]">in</span> matches:{'\n'}
-                  {'    '}<span className="text-[#d2a8ff]">print</span>(f<span className="text-[#a5d6ff]">"&#123;match.team1.name&#125; vs &#123;match.team2.name&#125;"</span>)
+                  {'    '}<span className="text-[#d2a8ff]">print</span>(f<span className="text-[#a5d6ff]">&quot;&#123;match.team1.name&#125; vs &#123;match.team2.name&#125;&quot;</span>)
                 </code>
               </pre>
             </div>
@@ -262,8 +262,4 @@ function SparklesIcon({ className }: { className?: string }) {
   );
 }
 
-function LayersIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" /><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" /><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" /></svg>
-  );
-}
+
