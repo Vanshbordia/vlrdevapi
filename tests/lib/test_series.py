@@ -173,6 +173,72 @@ class TestSeriesIntegration:
                 assert team.name is not None
 
 
+class TestSeriesPerformance:
+    """Test series performance functionality."""
+    
+    def test_performance_returns_list(self, mock_fetch_html):
+        """Test that performance() returns a list."""
+        perf = vlr.series.performance(series_id=530935)
+        assert isinstance(perf, list)
+    
+    def test_performance_structure(self, mock_fetch_html):
+        """Test performance structure."""
+        perf = vlr.series.performance(series_id=530935)
+        if perf:
+            game = perf[0]
+            assert hasattr(game, 'game_id')
+            assert hasattr(game, 'map_name')
+            assert hasattr(game, 'kill_matrix')
+            assert hasattr(game, 'fkfd_matrix')
+            assert hasattr(game, 'op_matrix')
+            assert hasattr(game, 'player_performances')
+    
+    def test_kill_matrix_structure(self, mock_fetch_html):
+        """Test kill matrix entry structure."""
+        perf = vlr.series.performance(series_id=530935)
+        for game in perf:
+            if game.kill_matrix:
+                entry = game.kill_matrix[0]
+                assert hasattr(entry, 'killer_name')
+                assert hasattr(entry, 'victim_name')
+                assert hasattr(entry, 'kills')
+                assert hasattr(entry, 'deaths')
+                assert hasattr(entry, 'differential')
+                break
+    
+    def test_player_performance_structure(self, mock_fetch_html):
+        """Test player performance structure."""
+        perf = vlr.series.performance(series_id=530935)
+        for game in perf:
+            if game.player_performances:
+                player = game.player_performances[0]
+                assert hasattr(player, 'name')
+                assert hasattr(player, 'team_short')
+                assert hasattr(player, 'agent')
+                assert hasattr(player, 'multi_2k')
+                assert hasattr(player, 'multi_3k')
+                assert hasattr(player, 'multi_4k')
+                assert hasattr(player, 'multi_5k')
+                assert hasattr(player, 'clutch_1v1')
+                assert hasattr(player, 'clutch_1v2')
+                assert hasattr(player, 'clutch_1v3')
+                assert hasattr(player, 'clutch_1v4')
+                assert hasattr(player, 'clutch_1v5')
+                assert hasattr(player, 'econ')
+                assert hasattr(player, 'plants')
+                assert hasattr(player, 'defuses')
+                break
+    
+    def test_performance_matrices(self, mock_fetch_html):
+        """Test that different matrix types are extracted."""
+        perf = vlr.series.performance(series_id=530935)
+        for game in perf:
+            # Should have at least one matrix type
+            assert isinstance(game.kill_matrix, list)
+            assert isinstance(game.fkfd_matrix, list)
+            assert isinstance(game.op_matrix, list)
+
+
 class TestSeriesEdgeCases:
     """Test edge cases and error handling."""
     
@@ -185,3 +251,8 @@ class TestSeriesEdgeCases:
         """Test handling of empty maps list."""
         maps = vlr.series.matches(series_id=999999999)
         assert isinstance(maps, list)
+    
+    def test_empty_performance(self, mock_fetch_html):
+        """Test handling of empty performance list."""
+        perf = vlr.series.performance(series_id=999999999)
+        assert isinstance(perf, list)

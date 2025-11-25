@@ -106,3 +106,78 @@ class MapPlayers:
     players: list["PlayerStats"] = field(default_factory=list)
     teams: tuple["MapTeamScore", "MapTeamScore"] | None = None
     rounds: list["RoundResult"] | None = None
+
+
+@dataclass(frozen=True)
+class KillMatrixEntry:
+    """Single entry in a kill matrix showing kills between two players."""
+
+    killer_name: str
+    victim_name: str
+    killer_team_short: str | None = None
+    killer_team_id: int | None = None
+    victim_team_short: str | None = None
+    victim_team_id: int | None = None
+    kills: int | None = None
+    deaths: int | None = None
+    differential: int | None = None
+
+
+@dataclass(frozen=True)
+class MultiKillDetail:
+    """Detailed information about a multi-kill event."""
+
+    round_number: int
+    players_killed: list[str]
+
+
+@dataclass(frozen=True)
+class ClutchDetail:
+    """Detailed information about a clutch event."""
+
+    round_number: int
+    players_killed: list[str]
+
+
+@dataclass(frozen=True)
+class PlayerPerformance:
+    """Player performance statistics including multi-kills, clutches, and economy."""
+
+    name: str
+    team_short: str | None = None
+    team_id: int | None = None
+    agent: str | None = None
+    multi_2k: int | None = None
+    multi_3k: int | None = None
+    multi_4k: int | None = None
+    multi_5k: int | None = None
+    clutch_1v1: int | None = None
+    clutch_1v2: int | None = None
+    clutch_1v3: int | None = None
+    clutch_1v4: int | None = None
+    clutch_1v5: int | None = None
+    econ: int | None = None
+    plants: int | None = None
+    defuses: int | None = None
+    # Detailed information for multi-kills and clutches
+    multi_2k_details: list[MultiKillDetail] | None = None
+    multi_3k_details: list[MultiKillDetail] | None = None
+    multi_4k_details: list[MultiKillDetail] | None = None
+    multi_5k_details: list[MultiKillDetail] | None = None
+    clutch_1v1_details: list[ClutchDetail] | None = None
+    clutch_1v2_details: list[ClutchDetail] | None = None
+    clutch_1v3_details: list[ClutchDetail] | None = None
+    clutch_1v4_details: list[ClutchDetail] | None = None
+    clutch_1v5_details: list[ClutchDetail] | None = None
+
+
+@dataclass(frozen=True)
+class MapPerformance:
+    """Performance statistics for a single map/game."""
+
+    game_id: int | str | None = None
+    map_name: str | None = None
+    kill_matrix: list["KillMatrixEntry"] = field(default_factory=list)
+    fkfd_matrix: list["KillMatrixEntry"] = field(default_factory=list)
+    op_matrix: list["KillMatrixEntry"] = field(default_factory=list)
+    player_performances: list["PlayerPerformance"] = field(default_factory=list)
