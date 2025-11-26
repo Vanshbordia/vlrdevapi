@@ -18,13 +18,21 @@ VLR Dev API is a typed Python client for Valorant esports data scraped from VLR.
 
 ## Quick Start
 
-```python title="Quick Start"
+```python title="Quick Start" tab="Code"
 import vlrdevapi as vlr
 
 # Upcoming matches
 matches = vlr.matches.upcoming(limit=5)
 for m in matches:
     print(m.event, '-', m.team1.name, 'vs', m.team2.name)
+```
+
+```python tab="Output"
+Game Changers 2025: Championship Seoul - Main EventUpper Semifinals - Shopify Rebellion Gold vs Karmine Corp GC
+Game Changers 2025: Championship Seoul - Main EventLower Round 3 - TBD vs MIBR GC
+Game Changers 2025: Championship Seoul - Main EventLower Round 3 - TBD vs KR BLAZE
+Game Changers 2025: Championship Seoul - Main EventUpper Final - TBD vs TBD
+Game Changers 2025: Championship Seoul - Main EventLower Round 4 - TBD vs TBD
 ```
 
 ## Get Started
@@ -93,7 +101,7 @@ for m in matches:
 
 ## Example: End-to-end
 
-```python title="Lookup a team and upcoming matches"
+```python title="Lookup a team and upcoming matches" tab="Code"
 import vlrdevapi as vlr
 
 team = vlr.teams.info(team_id=1034)
@@ -107,6 +115,13 @@ if team:
     print("\nNext matches:")
     for match in upcoming:
         print(f"  {match.tournament_name}: {match.team1.name} vs {match.team2.name}")
+```
+
+```python tab="Output"
+NRG (NRG) - United States
+Roster: 8 players
+
+Next matches:
 ```
 
 ## GitHub

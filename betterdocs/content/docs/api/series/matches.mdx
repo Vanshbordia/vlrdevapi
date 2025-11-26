@@ -158,7 +158,7 @@ Returns a list of map statistics with player performance data.
 
 ### Get Map Statistics
 
-```python title="Get map statistics"
+```python title="Get map statistics" tab="Code"
 import vlrdevapi as vlr
 
 # Get all maps for a series
@@ -175,9 +175,35 @@ for map_data in maps:
         print(f"Winner: {team1.name if team1.is_winner else team2.name}")
 ```
 
+```python tab="Output"
+
+Map: All
+Players: 10
+
+Map: Lotus
+Players: 10
+Score: 13-10
+Winner: Velocity Gaming
+
+Map: Ascent
+Players: 10
+Score: 7-13
+Winner: S8UL Esports
+
+Map: Haven
+Players: 10
+Score: 13-6
+Winner: Velocity Gaming
+
+Map: Pearl
+Players: 10
+Score: 13-11
+Winner: Velocity Gaming
+```
+
 ### Analyze Player Performance
 
-```python title="Analyze player performance"
+```python title="Analyze player performance" tab="Code"
 import vlrdevapi as vlr
 
 # Get map stats
@@ -203,9 +229,35 @@ if maps:
             print(f"  Agent: {', '.join(player.agents)}")
 ```
 
+```python tab="Output"
+=== All ===
+
+Top performers:
+damaraa: 256 ACS
+  K/D/A: 78/67/25
+  Rating: 1.1
+  Agent: Neon, Jett
+miz: 229 ACS
+  K/D/A: 65/71/17
+  Rating: 0.9
+  Agent: Neon, Yoru, Jett
+Lightningfast: 216 ACS
+  K/D/A: 74/53/30
+  Rating: 1.28
+  Agent: Omen, Astra
+hellff: 201 ACS
+  K/D/A: 60/62/25
+  Rating: 0.96
+  Agent: Deadlock, Breach, Kayo
+Techno: 199 ACS
+  K/D/A: 62/61/38
+  Rating: 1.04
+  Agent: Omen, Astra
+```
+
 ### View Round-by-Round Results
 
-```python title="View round-by-round results"
+```python title="View round-by-round results" tab="Code"
 import vlrdevapi as vlr
 
 # Get map stats with rounds
@@ -219,6 +271,103 @@ for map_data in maps:
             method = round_result.method or "N/A"
             score = f"{round_result.score[0]}-{round_result.score[1]}" if round_result.score else "N/A"
             print(f"Round {round_result.number}: {winner} wins ({method}) - Score: {score}")
+```
+
+```python tab="Output"
+
+=== Lotus - Round History ===
+Round 1: VLT wins (SpikeDefused) - Score: 1-0
+Round 2: VLT wins (Elimination) - Score: 2-0
+Round 3: S8UL wins (Elimination) - Score: 2-1
+Round 4: S8UL wins (SpikeExplosion) - Score: 2-2
+Round 5: S8UL wins (Elimination) - Score: 2-3
+Round 6: VLT wins (Elimination) - Score: 3-3
+Round 7: VLT wins (Elimination) - Score: 4-3
+Round 8: S8UL wins (SpikeExplosion) - Score: 4-4
+Round 9: S8UL wins (Elimination) - Score: 4-5
+Round 10: S8UL wins (SpikeExplosion) - Score: 4-6
+Round 11: VLT wins (SpikeDefused) - Score: 5-6
+Round 12: S8UL wins (Elimination) - Score: 5-7
+Round 13: VLT wins (Elimination) - Score: 6-7
+Round 14: VLT wins (Elimination) - Score: 7-7
+Round 15: VLT wins (SpikeExplosion) - Score: 8-7
+Round 16: VLT wins (Elimination) - Score: 9-7
+Round 17: VLT wins (Elimination) - Score: 10-7
+Round 18: VLT wins (Elimination) - Score: 11-7
+Round 19: S8UL wins (Elimination) - Score: 11-8
+Round 20: VLT wins (Elimination) - Score: 12-8
+Round 21: S8UL wins (Elimination) - Score: 12-9
+Round 22: S8UL wins (Elimination) - Score: 12-10
+Round 23: VLT wins (Elimination) - Score: 13-10
+
+=== Ascent - Round History ===
+Round 1: S8UL wins (Elimination) - Score: 0-1
+Round 2: S8UL wins (Elimination) - Score: 0-2
+Round 3: S8UL wins (Elimination) - Score: 0-3
+Round 4: S8UL wins (Elimination) - Score: 0-4
+Round 5: S8UL wins (Elimination) - Score: 0-5
+Round 6: VLT wins (TimeRunOut) - Score: 1-5
+Round 7: S8UL wins (SpikeExplosion) - Score: 1-6
+Round 8: S8UL wins (Elimination) - Score: 1-7
+Round 9: VLT wins (Elimination) - Score: 2-7
+Round 10: VLT wins (TimeRunOut) - Score: 3-7
+Round 11: S8UL wins (Elimination) - Score: 3-8
+Round 12: VLT wins (Elimination) - Score: 4-8
+Round 13: VLT wins (Elimination) - Score: 5-8
+Round 14: VLT wins (Elimination) - Score: 6-8
+Round 15: S8UL wins (Elimination) - Score: 6-9
+Round 16: S8UL wins (Elimination) - Score: 6-10
+Round 17: S8UL wins (Elimination) - Score: 6-11
+Round 18: VLT wins (Elimination) - Score: 7-11
+Round 19: S8UL wins (Elimination) - Score: 7-12
+Round 20: S8UL wins (Elimination) - Score: 7-13
+
+=== Haven - Round History ===
+Round 1: VLT wins (Elimination) - Score: 1-0
+Round 2: VLT wins (SpikeDefused) - Score: 2-0
+Round 3: S8UL wins (Elimination) - Score: 2-1
+Round 4: VLT wins (Elimination) - Score: 3-1
+Round 5: VLT wins (Elimination) - Score: 4-1
+Round 6: S8UL wins (Elimination) - Score: 4-2
+Round 7: S8UL wins (Elimination) - Score: 4-3
+Round 8: S8UL wins (Elimination) - Score: 4-4
+Round 9: S8UL wins (Elimination) - Score: 4-5
+Round 10: S8UL wins (Elimination) - Score: 4-6
+Round 11: VLT wins (Elimination) - Score: 5-6
+Round 12: VLT wins (SpikeDefused) - Score: 6-6
+Round 13: VLT wins (Elimination) - Score: 7-6
+Round 14: VLT wins (Elimination) - Score: 8-6
+Round 15: VLT wins (Elimination) - Score: 9-6
+Round 16: VLT wins (SpikeExplosion) - Score: 10-6
+Round 17: VLT wins (SpikeExplosion) - Score: 11-6
+Round 18: VLT wins (Elimination) - Score: 12-6
+Round 19: VLT wins (Elimination) - Score: 13-6
+
+=== Pearl - Round History ===
+Round 1: VLT wins (Elimination) - Score: 1-0
+Round 2: VLT wins (Elimination) - Score: 2-0
+Round 3: S8UL wins (Elimination) - Score: 2-1
+Round 4: S8UL wins (Elimination) - Score: 2-2
+Round 5: VLT wins (Elimination) - Score: 3-2
+Round 6: VLT wins (Elimination) - Score: 4-2
+Round 7: S8UL wins (Elimination) - Score: 4-3
+Round 8: S8UL wins (Elimination) - Score: 4-4
+Round 9: S8UL wins (SpikeExplosion) - Score: 4-5
+Round 10: S8UL wins (Elimination) - Score: 4-6
+Round 11: VLT wins (Elimination) - Score: 5-6
+Round 12: VLT wins (Elimination) - Score: 6-6
+Round 13: S8UL wins (Elimination) - Score: 6-7
+Round 14: S8UL wins (SpikeDefused) - Score: 6-8
+Round 15: VLT wins (Elimination) - Score: 7-8
+Round 16: S8UL wins (Elimination) - Score: 7-9
+Round 17: VLT wins (Elimination) - Score: 8-9
+Round 18: VLT wins (Elimination) - Score: 9-9
+Round 19: S8UL wins (SpikeDefused) - Score: 9-10
+Round 20: VLT wins (SpikeExplosion) - Score: 10-10
+Round 21: VLT wins (Elimination) - Score: 11-10
+Round 22: VLT wins (SpikeExplosion) - Score: 12-10
+Round 23: S8UL wins (Elimination) - Score: 12-11
+Round 24: VLT wins (Elimination) - Score: 13-11
 ```
 
 

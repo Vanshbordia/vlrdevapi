@@ -30,7 +30,7 @@ uv add vlrdevapi
 
 ## Import and Verify
 
-```python title="Quick Verification"
+```python title="Quick Verification" tab="Code"
 import vlrdevapi as vlr
 
 # Check if VLR.gg is reachable
@@ -38,6 +38,10 @@ if vlr.status.check_status():
     print("Ready to use vlrdevapi!")
 else:
     print("VLR.gg is currently unreachable")
+```
+
+```python tab="Output"
+Ready to use vlrdevapi!
 ```
 
 </Step>
@@ -49,7 +53,7 @@ else:
 <Tabs items={['Matches', 'Search', 'Events']}>
 <Tab value="Matches">
 
-```python title="Get Upcoming Matches"
+```python title="Get Upcoming Matches" tab="Code"
 import vlrdevapi as vlr
 
 # Get next 5 upcoming matches
@@ -61,10 +65,28 @@ for m in matches:
     print(f"  Time: {m.time}")
 ```
 
+```python tab="Output"
+Game Changers 2025: Championship Seoul - Main EventUpper Semifinals
+  Shopify Rebellion Gold vs Karmine Corp GC
+  Time: 3:00 AM
+Game Changers 2025: Championship Seoul - Main EventLower Round 3
+  TBD vs MIBR GC
+  Time: 12:00 AM
+Game Changers 2025: Championship Seoul - Main EventLower Round 3
+  TBD vs KR BLAZE
+  Time: 3:00 AM
+Game Changers 2025: Championship Seoul - Main EventUpper Final
+  TBD vs TBD
+  Time: 12:00 AM
+Game Changers 2025: Championship Seoul - Main EventLower Round 4
+  TBD vs TBD
+  Time: 3:00 AM
+```
+
 </Tab>
 <Tab value="Search">
 
-```python title="Search for Teams and Players"
+```python title="Search for Teams and Players" tab="Code"
 import vlrdevapi as vlr
 
 # Search across all categories
@@ -76,10 +98,17 @@ print(f"  Teams: {len(results.teams)}")
 print(f"  Events: {len(results.events)}")
 ```
 
+```python tab="Output"
+Found 7 results:
+  Players: 0
+  Teams: 1
+  Events: 6
+```
+
 </Tab>
 <Tab value="Events">
 
-```python title="List Ongoing Events"
+```python title="List Ongoing Events" tab="Code"
 import vlrdevapi as vlr
 from vlrdevapi.events import EventTier, EventStatus
 
@@ -94,6 +123,10 @@ for e in events:
     print(f"{e.name} - {e.prize or 'TBD'}")
 ```
 
+```python tab="Output"
+Events found: 0
+```
+
 </Tab>
 </Tabs>
 
@@ -105,7 +138,7 @@ for e in events:
 
 By default, vlrdevapi limits requests to **10 per second**. Adjust if needed:
 
-```python title="Configure Rate Limiting"
+```python title="Configure Rate Limiting" tab="Code"
 import vlrdevapi as vlr
 
 # Check current RPS (0.0 means disabled)
@@ -119,6 +152,13 @@ vlr.configure_rate_limit(enabled=False)
 
 # Restore default (10 req/s, enabled)
 vlr.reset_rate_limit()
+```
+
+```python tab="Output"
+10.0
+5.0
+0.0
+10.0
 ```
 
 <Callout type="info" title="Recommended Settings">
