@@ -123,6 +123,12 @@ def info(match_id: int, timeout: float | None = None) -> Info | None:
         if t2_id:
             t2_short, t2_country, t2_country_code = team_meta_map.get(t2_id, (None, None, None))
     
+    # Use team name as short name fallback for teams without a short tag (e.g., MIBR)
+    if not t1_short and t1:
+        t1_short = t1
+    if not t2_short and t2:
+        t2_short = t2
+    
     s1 = header.select_one(".match-header-vs-score-winner")
     s2 = header.select_one(".match-header-vs-score-loser")
     raw_score: tuple[int | None, int | None] = (None, None)

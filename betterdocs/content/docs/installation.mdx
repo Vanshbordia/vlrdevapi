@@ -18,7 +18,7 @@ uv add vlrdevapi
 
 ## Verify
 
-```python
+```python tab="Code"
 import vlrdevapi as vlr
 print(vlr.__version__)
 
@@ -31,11 +31,16 @@ except Exception:
     pass
 ```
 
+```python tab="Output"
+1.4.0
+True
+```
+
 If the status helper (when available) returns `False`, VLR.gg may be down or blocked.
 
 ## Optional: Configure Rate Limiting
 
-```python
+```python tab="Code"
 import vlrdevapi as vlr
 
 # Check current RPS (0.0 means disabled)
@@ -46,6 +51,12 @@ vlr.configure_rate_limit(requests_per_second=5.0, enabled=True)
 
 # Restore defaults (10 req/s, enabled)
 vlr.reset_rate_limit()
+```
+
+```python tab="Output"
+10.0
+5.0
+10.0
 ```
 
 See: [Rate Limiting](/docs/rate-limiting)

@@ -4,7 +4,6 @@ description: Series header, picks/bans, per-map stats and player performance
 ---
 
 import { Cards, Card } from 'fumadocs-ui/components/card';
-import { Info, BarChart3 } from 'lucide-react';
 
 The `vlrdevapi.series` module surfaces series/match details and rich per-map statistics.
 
@@ -15,20 +14,23 @@ The `vlrdevapi.series` module surfaces series/match details and rich per-map sta
     href="/docs/api/series/info"
     title="series.info()"
     description="Get series header with teams, score, picks/bans"
-    icon={<Info className="h-5 w-5" />}
   />
   <Card
     href="/docs/api/series/matches"
     title="series.matches()"
-    description="Fetch per-map statistics and player performance"
-    icon={<BarChart3 className="h-5 w-5" />}
+    description="Get per-map statistics and player performance"
+  />
+  <Card
+    href="/docs/api/series/performance"
+    title="series.performance()"
+    description="Detailed performance stats, kill matrices, multi-kills & clutches"
   />
 </Cards>
 
 
 ## Quick Example
 
-```python title="Get series details and map stats"
+```python title="Get series details, map stats and performance data" tab="Code"
 import vlrdevapi as vlr
 
 # Get series header
@@ -49,6 +51,20 @@ for map_data in maps:
     print(f"\nMap: {map_data.map_name}")
     for player in map_data.players[:5]:
         print(f"  {player.name}: {player.acs} ACS, {player.k}/{player.d}/{player.a}")
+
+# Get detailed performance statistics
+perf = vlr.series.performance(series_id=511536)
+all_maps = next((game for game in perf if game.game_id == "All"), None)
+if all_maps:
+    print(f"\nPerformance Summary:")
+    for player in all_maps.player_performances:
+        print(f"  {player.name}: {player.multi_2k} 2Ks, {player.clutch_1v1} 1v1s, {player.econ} ECON")
+```
+
+```python tab="Output"
+# Series header with teams and score
+# Map statistics for each map in the series
+# Performance summary with multi-kills and clutches
 ```
 
 ## Source

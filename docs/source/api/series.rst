@@ -28,6 +28,12 @@ matches
 .. autofunction:: vlrdevapi.series.matches
    :noindex:
 
+performance
+~~~~~~~~~~~
+
+.. autofunction:: vlrdevapi.series.performance
+   :noindex:
+
 Data Models
 -----------
 
@@ -77,6 +83,27 @@ MapPlayers
 ~~~~~~~~~~
 
 .. autoclass:: vlrdevapi.series.MapPlayers
+   :members:
+   :undoc-members:
+
+MultiKillDetail
+~~~~~~~~~~~~~~~
+
+.. autoclass:: vlrdevapi.series.MultiKillDetail
+   :members:
+   :undoc-members:
+
+ClutchDetail
+~~~~~~~~~~~~
+
+.. autoclass:: vlrdevapi.series.ClutchDetail
+   :members:
+   :undoc-members:
+
+PlayerPerformance
+~~~~~~~~~~~~~~~~~
+
+.. autoclass:: vlrdevapi.series.PlayerPerformance
    :members:
    :undoc-members:
 
@@ -171,7 +198,7 @@ Top Performers
    import vlrdevapi as vlr
 
    maps = vlr.series.matches(series_id=530935)
-   
+
    for map_data in maps:
        # Sort by ACS
        sorted_players = sorted(
@@ -179,9 +206,37 @@ Top Performers
            key=lambda p: p.acs or 0,
            reverse=True
        )
-       
+
        print(f"\n{map_data.map_name} - Top 3 Performers:")
        for player in sorted_players[:3]:
            print(f"  {player.name}: {player.acs} ACS, {player.k}/{player.d}/{player.a}")
+
+Match Performance Statistics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   import vlrdevapi as vlr
+
+   # Get performance statistics for a series
+   perf = vlr.series.performance(series_id=542210)
+
+   for game in perf:
+       print(f"\nMap: {game.map_name}")
+       for player in game.player_performances:
+           print(f"  {player.name} ({player.team_short})")
+           print(f"    2Ks: {player.multi_2k}, 3Ks: {player.multi_3k}, 4Ks: {player.multi_4k}, 5Ks: {player.multi_5k}")
+           print(f"    1v1: {player.clutch_1v1}, 1v2: {player.clutch_1v2}, 1v3: {player.clutch_1v3}")
+           print(f"    ECON: {player.econ}, Plants: {player.plants}, Defuses: {player.defuses}")
+
+           # Detailed performance information
+           if player.multi_2k_details:
+               print(f"    2K Details: {len(player.multi_2k_details)} events")
+               for detail in player.multi_2k_details:
+                   print(f"      Round {detail.round_number}: {', '.join(detail.players_killed)}")
+           if player.clutch_1v2_details:
+               print(f"    1v2 Details: {len(player.clutch_1v2_details)} events")
+               for detail in player.clutch_1v2_details:
+                   print(f"      Round {detail.round_number}: {', '.join(detail.players_killed)}")
 
 See more examples: :doc:`../examples`
