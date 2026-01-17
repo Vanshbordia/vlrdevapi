@@ -6,6 +6,7 @@ This module provides access to:
 - events.Matches: Get event matches
 - events.MatchSummary: Get event matches summary
 - events.Standings: Get event standings
+- events.Teams: Get event teams
 """
 
 from .models import (
@@ -22,6 +23,7 @@ from .models import (
     StandingEntry,
     Standings,
     EventStage,
+    Team,
 )
 from .list_events import list_events
 from .info import info
@@ -29,6 +31,7 @@ from .matches import matches
 from .match_summary import match_summary
 from .standings import standings
 from .stages import stages
+from .teams import teams
 
 __all__ = [
     # Enums
@@ -47,6 +50,7 @@ __all__ = [
     "StandingEntry",
     "Standings",
     "EventStage",
+    "Team",
     # Functions
     "list_events",
     "info",
@@ -54,4 +58,5 @@ __all__ = [
     "match_summary",
     "standings",
     "stages",
+    "teams",
 ]

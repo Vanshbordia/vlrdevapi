@@ -16,16 +16,22 @@ Access VCT Champions, VCT Masters, regional leagues, Game Changers tournaments, 
 Functions
 ---------
 
+info
+~~~~
+
+.. autofunction:: vlrdevapi.events.info
+   :noindex:
+
 list_events
 ~~~~~~~~~~~
 
 .. autofunction:: vlrdevapi.events.list_events
    :noindex:
 
-info
-~~~~
+match_summary
+~~~~~~~~~~~~~
 
-.. autofunction:: vlrdevapi.events.info
+.. autofunction:: vlrdevapi.events.match_summary
    :noindex:
 
 matches
@@ -40,16 +46,16 @@ stages
 .. autofunction:: vlrdevapi.events.stages
    :noindex:
 
-match_summary
-~~~~~~~~~~~~~
-
-.. autofunction:: vlrdevapi.events.match_summary
-   :noindex:
-
 standings
 ~~~~~~~~~
 
 .. autofunction:: vlrdevapi.events.standings
+   :noindex:
+
+teams
+~~~~~
+
+.. autofunction:: vlrdevapi.events.teams
    :noindex:
 
 Enums
@@ -72,10 +78,10 @@ EventStatus
 Data Models
 -----------
 
-ListEvent
-~~~~~~~~~
+EventStage
+~~~~~~~~~~
 
-.. autoclass:: vlrdevapi.events.ListEvent
+.. autoclass:: vlrdevapi.events.EventStage
    :members:
    :undoc-members:
 
@@ -86,10 +92,10 @@ Info
    :members:
    :undoc-members:
 
-MatchTeam
+ListEvent
 ~~~~~~~~~
 
-.. autoclass:: vlrdevapi.events.MatchTeam
+.. autoclass:: vlrdevapi.events.ListEvent
    :members:
    :undoc-members:
 
@@ -100,17 +106,24 @@ Match
    :members:
    :undoc-members:
 
-StageMatches
-~~~~~~~~~~~~
-
-.. autoclass:: vlrdevapi.events.StageMatches
-   :members:
-   :undoc-members:
-
 MatchSummary
 ~~~~~~~~~~~~
 
 .. autoclass:: vlrdevapi.events.MatchSummary
+   :members:
+   :undoc-members:
+
+MatchTeam
+~~~~~~~~~
+
+.. autoclass:: vlrdevapi.events.MatchTeam
+   :members:
+   :undoc-members:
+
+StageMatches
+~~~~~~~~~~~~
+
+.. autoclass:: vlrdevapi.events.StageMatches
    :members:
    :undoc-members:
 
@@ -128,10 +141,10 @@ Standings
    :members:
    :undoc-members:
 
-EventStage
-~~~~~~~~~~
+Team
+~~~~
 
-.. autoclass:: vlrdevapi.events.EventStage
+.. autoclass:: vlrdevapi.events.Team
    :members:
    :undoc-members:
 
@@ -147,10 +160,10 @@ List Events
 
    # List all VCT events
    events = vlr.events.list_events(tier="vct")
-   
+
    # Filter by status
    ongoing = vlr.events.list_events(tier="vct", status="ongoing")
-   
+
    # Filter by region
    na_events = vlr.events.list_events(tier="vct", region="na")
 
@@ -176,7 +189,7 @@ Get Event Matches
 
    # Get all matches for an event
    matches = vlr.events.matches(event_id=2498)
-   
+
    for match in matches:
        print(f"{match.teams[0].name} vs {match.teams[1].name}")
        print(f"Status: {match.status}")
@@ -190,10 +203,25 @@ Get Event Standings
 
    # Get event standings/prize distribution
    standings = vlr.events.standings(event_id=2498)
-   
+
    for entry in standings.entries:
        print(f"{entry.place}. {entry.team_name}")
        if entry.prize:
            print(f"   Prize: {entry.prize}")
+
+Get Event Teams
+~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   import vlrdevapi as vlr
+
+   # Get teams participating in an event
+   teams = vlr.events.teams(event_id=2682)
+
+   for team in teams:
+       print(f"{team.name} (ID: {team.id})")
+       if team.type:
+           print(f"  Type: {team.type}")
 
 See more examples: :doc:`../examples`

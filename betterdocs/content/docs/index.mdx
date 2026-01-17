@@ -68,7 +68,7 @@ for m in matches:
   <Card
     href="/docs/api/events"
     title="Events"
-    description="Info, matches, standings, summaries"
+    description="Info, matches, standings, teams, summaries"
     icon={<Trophy className="h-5 w-5" />}
   />
   <Card
@@ -103,7 +103,7 @@ if team:
 
     print(f"{team.name} ({team.tag}) - {team.country}")
     print(f"Roster: {len(roster)} players")
-    
+
     print("\nNext matches:")
     for match in upcoming:
         print(f"  {match.tournament_name}: {match.team1.name} vs {match.team2.name}")

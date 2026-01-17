@@ -124,6 +124,15 @@ class MatchSummary:
 
 
 @dataclass(frozen=True)
+class Team:
+    """Team information for an event."""
+
+    id: int
+    name: str
+    type: str | None = None
+
+
+@dataclass(frozen=True)
 class StandingEntry:
     """Single standing entry."""
 

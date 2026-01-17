@@ -4,9 +4,9 @@ description: List events, get event info, matches and standings
 ---
 
 import { Cards, Card } from 'fumadocs-ui/components/card';
-import { CalendarSearch, Info, ListChecks, Trophy, PieChart } from 'lucide-react';
+import { CalendarSearch, Info, ListChecks, Trophy, PieChart, Users } from 'lucide-react';
 
- 
+
 
 The `vlrdevapi.events` module provides event listings and details.
 
@@ -42,6 +42,12 @@ The `vlrdevapi.events` module provides event listings and details.
     title="events.standings()"
     description="Fetch standings and prize distribution data"
     icon={<Trophy className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/events/teams"
+    title="events.teams()"
+    description="Get teams participating in an event with their types"
+    icon={<Users className="h-5 w-5" />}
   />
   <Card
     href="/docs/api/events/match-summary"

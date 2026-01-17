@@ -1,0 +1,128 @@
+---
+title: events.teams()
+description: Get teams participating in an event with their types
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Users, Info, CalendarSearch } from 'lucide-react';
+
+## Signature
+
+```python
+import vlrdevapi as vlr
+
+result = vlr.events.teams(
+    event_id: int,
+    timeout: float = 5.0
+) -> list[Team]
+```
+
+## Parameters
+
+<TypeTable
+  type={{
+    event_id: {
+      type: 'int',
+      description: 'Unique event identifier',
+      required: true,
+    },
+    timeout: {
+      type: 'float',
+      description: 'Request timeout in seconds',
+      default: '5.0',
+    },
+  }}
+/>
+
+## Return Value
+
+**Type:** `list[Team]`
+
+Returns a list of teams participating in the event. Each `Team` object contains:
+
+<TypeTable
+  type={{
+    id: {
+      type: 'int',
+      description: 'Team ID',
+      required: true,
+    },
+    name: {
+      type: 'str',
+      description: 'Team name',
+      required: true,
+    },
+    type: {
+      type: 'str | None',
+      description: 'Team type or category (e.g., "Partner Team", "Ascension 2023", etc.)',
+    },
+  }}
+/>
+
+## Examples
+
+### Get Event Teams
+
+```python title="Get teams for an event"
+import vlrdevapi as vlr
+
+# Get teams for an event
+teams = vlr.events.teams(event_id=2682)
+
+print(f"Found {len(teams)} teams:")
+
+for team in teams:
+    print(f"ID: {team.id}")
+    print(f"Name: {team.name}")
+    print(f"Type: {team.type or 'N/A'}")
+    print("---")
+```
+
+### Find Specific Teams
+
+```python title="Find specific teams like 100 Thieves and G2 Esports"
+import vlrdevapi as vlr
+
+teams = vlr.events.teams(event_id=2682)
+
+# Find 100 Thieves (ID: 120)
+team_100_thieves = next((t for t in teams if t.id == 120), None)
+if team_100_thieves:
+    print(f"100 Thieves: {team_100_thieves.type}")  # Should show "Partner Team"
+
+# Find G2 Esports (ID: 11058)
+g2_esports = next((t for t in teams if t.id == 11058), None)
+if g2_esports:
+    print(f"G2 Esports: {g2_esports.type}")  # Should show "Ascension 2023"
+```
+
+## Error Handling
+
+- **Network failures**: Returns `[]`
+- **Invalid event ID**: Returns `[]`
+- **No teams found**: Returns `[]`
+
+## Related
+
+<Cards className="mt-2">
+  <Card
+    href="/docs/api/events/list-events"
+    title="events.list_events()"
+    description="Browse and filter events"
+    icon={<CalendarSearch className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/events/info"
+    title="events.info()"
+    description="Get event header information"
+    icon={<Info className="h-5 w-5" />}
+  />
+  <Card
+    href="/docs/api/events/standings"
+    title="events.standings()"
+    description="Get event standings and prize distribution"
+    icon={<Users className="h-5 w-5" />}
+  />
+</Cards>
