@@ -19,15 +19,15 @@ _config = get_config()
 def standings(event_id: int, stage: str | None = None, timeout: float | None = None) -> Standings | None:
     """
     Get event standings.
-    
+
     Args:
         event_id: Event ID
         stage: Stage filter (optional)
         timeout: Request timeout in seconds
-    
+
     Returns:
         Standings or None if not found
-    
+
     Example:
         >>> import vlrdevapi as vlr
         >>> standings = vlr.events.standings(event_id=123)
@@ -40,9 +40,9 @@ def standings(event_id: int, stage: str | None = None, timeout: float | None = N
         html = fetch_html(url, effective_timeout)
     except NetworkError:
         return None
-    
+
     soup = BeautifulSoup(html, "lxml")
-    
+
     # Build base URL for the selected stage (if any)
     standings_url: str
     if stage:
@@ -81,14 +81,14 @@ def standings(event_id: int, stage: str | None = None, timeout: float | None = N
             canonical = f"{_config.vlr_base}/event/{event_id}"
         base = canonical.rstrip("/")
         standings_url = f"{base}/prize-distribution"
-    
+
     try:
         html = fetch_html(standings_url, effective_timeout)
     except NetworkError:
         return None
-    
+
     soup = BeautifulSoup(html, "lxml")
-    
+
     # Find the label element by scanning text instead of using a callable in 'string='
     labels = soup.find_all("div", class_="wf-label mod-large")
     label = None
@@ -99,19 +99,21 @@ def standings(event_id: int, stage: str | None = None, timeout: float | None = N
             break
     if not label:
         return None
-    
+
     card = label.find_next("div", class_="wf-card")
     if not card:
         return None
-    
-    table = card.select_one("table.wf-table")
-    if not table:
+
+    ptable = card.select_one(".wf-ptable")
+    if not ptable:
         return None
-    
+
     entries: list[StandingEntry] = []
-    tbody = table.select_one("tbody")
-    if tbody:
-        for row in tbody.select("tr"):
+
+    # Find all rows excluding the header row
+    rows = ptable.select(".row")
+    if rows:
+        for row in rows[1:]:  # Skip header row
             row_classes_raw = row.get("class")
             row_classes: list[str] = []
             if isinstance(row_classes_raw, list):
@@ -121,44 +123,55 @@ def standings(event_id: int, stage: str | None = None, timeout: float | None = N
             row_classes_list = row_classes
             if "standing-toggle" in row_classes_list:
                 continue
-            
-            cells = row.find_all("td")
+
+            cells = row.select(".cell")
             if len(cells) < 3:
                 continue
-            
+
             # Parse place
             place = extract_text(cells[0])
-            
+
             # Parse prize
             prize_text = extract_text(cells[1]) if len(cells) > 1 else None
-            
+
             # Parse team
             team_id = None
             team_name = None
             country = None
-            
-            anchor = cells[2].select_one("a.standing-item-team")
+
+            anchor = cells[2].select_one("a")
             if anchor:
                 href = anchor.get("href", "")
                 href_str = href if isinstance(href, str) else ""
                 team_id = extract_id_from_url(href_str.strip("/"), "team")
-                
-                name_el = anchor.select_one(".standing-item-team-name")
-                country_el = name_el.select_one(".ge-text-light") if name_el else None
+
+                name_el = anchor.select_one(".text-of")
+                country_el = anchor.select_one(".ge-text-light")
                 if country_el:
                     text = extract_text(country_el)
                     country = map_country_code(text) or text or None
-                    _ = country_el.extract()
-                
+                    # Don't extract the country element as we need the team name without it
+
                 if name_el:
-                    team_name = extract_text(name_el) or None
+                    # Extract country text from the name element if present
+                    country_el_in_name = name_el.select_one(".ge-text-light")
+                    if country_el_in_name:
+                        text = extract_text(country_el_in_name)
+                        country = map_country_code(text) or text or None
+                        # Temporarily remove country element to get just the team name
+                        temp_div = BeautifulSoup(str(name_el), "lxml")
+                        country_temp = temp_div.find(class_="ge-text-light")
+                        if country_temp:
+                            country_temp.decompose()
+                        team_name = extract_text(temp_div) or None
+                    else:
+                        team_name = extract_text(name_el) or None
                 else:
                     team_name = extract_text(anchor) or None
-            
-            # Parse note
-            note_td = cells[-1] if len(cells) > 3 else None
-            note = extract_text(note_td) if note_td else None
-            
+
+            # Note is not typically present in this new structure, so we'll leave it as None
+            note = None
+
             entries.append(StandingEntry(
                 place=place,
                 prize=prize_text,
@@ -167,9 +180,9 @@ def standings(event_id: int, stage: str | None = None, timeout: float | None = N
                 team_country=country,
                 note=note,
             ))
-    
+
     stage_path = base.split("/event/", 1)[-1]
-    
+
     return Standings(
         event_id=event_id,
         stage_path=stage_path,

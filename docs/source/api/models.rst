@@ -24,12 +24,12 @@ Accessing Model Data
 
    # Get a model instance
    profile = vlr.players.profile(player_id=4164)
-   
+
    # Access fields directly
    print(profile.handle)
    print(profile.real_name)
    print(profile.country)
-   
+
    # Models are immutable
    # profile.handle = "new_name"  # This will raise an error
 
@@ -43,11 +43,11 @@ Converting to Dictionary
    import vlrdevapi as vlr
 
    profile = vlr.players.profile(player_id=4164)
-   
+
    # Convert to dict
    data = asdict(profile)
    print(data)
-   
+
    # Convert to JSON
    # Note: use default=str to serialize datetime/date objects
    json_str = json.dumps(data, default=str)
@@ -62,7 +62,7 @@ Many fields are optional and may be None:
    import vlrdevapi as vlr
 
    match = vlr.matches.upcoming()[0]
-   
+
    # Check if optional field exists
    if match.date:
        print(f"Date: {match.date.isoformat()}")
@@ -82,7 +82,7 @@ Some fields contain lists or nested objects:
    match = vlr.matches.upcoming()[0]
    print(f"{match.team1.name} vs {match.team2.name}")
    print(f"Countries: {match.team1.country} vs {match.team2.country}")
-   
+
    # List of variable length
    profile = vlr.players.profile(player_id=4164)
    for team in profile.current_teams:
@@ -101,6 +101,7 @@ See :doc:`events` for detailed documentation of:
 - MatchSummary
 - StandingEntry
 - Standings
+- Team
 
 Matches Models
 --------------
@@ -192,10 +193,10 @@ Use type hints when working with models:
 
    import vlrdevapi as vlr
    from vlrdevapi.players import Profile
-   
+
    def print_player_info(profile: Profile) -> None:
        print(f"{profile.handle} from {profile.country}")
-   
+
    profile = vlr.players.profile(player_id=4164)
    print_player_info(profile)
 
@@ -209,11 +210,11 @@ Always check optional fields before use:
    import vlrdevapi as vlr
 
    match = vlr.matches.upcoming()[0]
-   
+
    # Safe access
    if match.date:
        print(f"Date: {match.date.isoformat()}")
-   
+
    # Or use default value
    date_str = match.date.isoformat() if match.date else "TBD"
 
@@ -227,7 +228,7 @@ Iterate over lists safely:
    import vlrdevapi as vlr
 
    profile = vlr.players.profile(player_id=4164)
-   
+
    # Check if list has items
    if profile.current_teams:
        for team in profile.current_teams:
