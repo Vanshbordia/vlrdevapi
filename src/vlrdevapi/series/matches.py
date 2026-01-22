@@ -72,19 +72,62 @@ def matches(series_id: int, limit: int | None = None, timeout: float | None = No
             return None
         return _WHITESPACE_RE.sub(" ", value).strip().lower()
     
+    # Extract team IDs from the page header for direct lookup
+    page_team_ids: list[int | None] = [None, None]
+    match_header = soup.select_one(".wf-card.match-header")
+    if match_header:
+        t1_link = match_header.select_one(".match-header-link.mod-1")
+        t2_link = match_header.select_one(".match-header-link.mod-2")
+        if t1_link:
+            href_val = t1_link.get("href")
+            href = href_val if isinstance(href_val, str) else None
+            page_team_ids[0] = extract_id_from_url(href, "team")
+        if t2_link:
+            href_val = t2_link.get("href")
+            href = href_val if isinstance(href_val, str) else None
+            page_team_ids[1] = extract_id_from_url(href, "team")
+    
     # Fetch team metadata to map names/shorts to IDs
     series_details = info(series_id, timeout=timeout)
     team_meta_lookup: dict[str, dict[str, str | int | None]] = {}
     team_short_to_id: dict[str, int | None] = {}
+    team_id_to_meta: dict[int, dict[str, str | int | None]] = {}
+    
     if series_details:
         for team_info in series_details.teams:
             team_meta_rec: dict[str, str | int | None] = {"id": team_info.id, "name": team_info.name, "short": team_info.short}
-            for key in filter(None, [team_info.name, team_info.short]):
-                canon = canonical(key)
-                if canon is not None:
-                    team_meta_lookup[canon] = team_meta_rec
+            
+            # Store by team ID for direct lookup
+            if team_info.id:
+                team_id_to_meta[team_info.id] = team_meta_rec
+            
+            # Build list of all possible name variations
+            name_variations: list[str] = []
+            
+            # Add the full name
+            if team_info.name:
+                name_variations.append(team_info.name)
+                
+                # Extract name from parentheses if present (e.g., "Guangzhou Huadu Bilibili Gaming(Bilibili Gaming)" -> "Bilibili Gaming")
+                if "(" in team_info.name and ")" in team_info.name:
+                    start = team_info.name.rfind("(")
+                    end = team_info.name.rfind(")")
+                    if start < end:
+                        paren_name = team_info.name[start + 1:end].strip()
+                        if paren_name:
+                            name_variations.append(paren_name)
+            
+            # Add the short name
             if team_info.short:
+                name_variations.append(team_info.short)
                 team_short_to_id[team_info.short.upper()] = team_info.id
+            
+            # Index all variations
+            for variation in name_variations:
+                canon = canonical(variation)
+                if canon:
+                    team_meta_lookup[canon] = team_meta_rec
+
     
     # Determine order from nav
     ordered_ids: list[str] = []
@@ -199,9 +242,16 @@ def matches(series_id: int, limit: int | None = None, timeout: float | None = No
                     t1_meta = team_meta_lookup.get(c1) if c1 else None
                     t2_meta = team_meta_lookup.get(c2) if c2 else None
                     
-                    t1_id_val = t1_meta.get("id") if t1_meta else None
+                    # If name lookup failed, try using page team IDs
+                    if not t1_meta and page_team_ids[0]:
+                        t1_meta = team_id_to_meta.get(page_team_ids[0])
+                    if not t2_meta and page_team_ids[1]:
+                        t2_meta = team_id_to_meta.get(page_team_ids[1])
+                    
+                    # Extract ID and short from metadata, with page team IDs as fallback
+                    t1_id_val = t1_meta.get("id") if t1_meta else page_team_ids[0]
                     t1_short_val = t1_meta.get("short") if t1_meta else None
-                    t2_id_val = t2_meta.get("id") if t2_meta else None
+                    t2_id_val = t2_meta.get("id") if t2_meta else page_team_ids[1]
                     t2_short_val = t2_meta.get("short") if t2_meta else None
                     
                     teams_tuple = (
@@ -224,6 +274,7 @@ def matches(series_id: int, limit: int | None = None, timeout: float | None = No
                             is_winner=t2_is_winner,
                         ),
                     )
+
         
         # Parse rounds
         rounds_list: list[RoundResult] = []

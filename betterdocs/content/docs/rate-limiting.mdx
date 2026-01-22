@@ -15,7 +15,7 @@ vlrdevapi provides a built-in, global rate limiter so you can avoid overwhelming
 
 ## API
 
-```python title="Public helpers"
+```python title="Public helpers" tab="Code"
 import vlrdevapi as vlr
 
 # Get current RPS (0.0 means disabled)
@@ -29,9 +29,16 @@ vlr.configure_rate_limit(enabled=False)  # disable
 vlr.reset_rate_limit()
 ```
 
+```python tab="Output"
+# Current RPS: 10.0
+# After setting to 5.0: 5.0
+# After disabling: 0.0
+# After reset: 10.0
+```
+
 ## Examples
 
-```python title="Lower rate for sensitive flows"
+```python title="Lower rate for sensitive flows" tab="Code"
 import vlrdevapi as vlr
 
 # Temporarily reduce to 3 RPS
@@ -43,7 +50,12 @@ vlr.configure_rate_limit(requests_per_second=3.0, enabled=True)
 vlr.reset_rate_limit()
 ```
 
-```python title="Disable briefly (not recommended)"
+```python tab="Output"
+# Rate limit temporarily set to 3.0 requests/second
+# After reset: 10.0 requests/second (default)
+```
+
+```python title="Disable briefly (not recommended)" tab="Code"
 import vlrdevapi as vlr
 
 # Disable limiter (0.0 when disabled)
@@ -52,6 +64,10 @@ print(vlr.get_rate_limit())  # 0.0
 
 # Re-enable at 10 RPS
 vlr.reset_rate_limit()
+```
+
+```python tab="Output"
+0.0
 ```
 
 ## Error Handling

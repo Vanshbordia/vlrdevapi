@@ -125,7 +125,7 @@ Below are the core configuration fields and helper functions with their Python t
 
 ### Increase timeout and retries
 
-```python
+```python tab="Code"
 import vlrdevapi as vlr
 
 # Increase default timeout and retry behavior
@@ -135,27 +135,39 @@ vlr.configure(default_timeout=10.0, max_retries=5, backoff_factor=2.0)
 events = vlr.events.list_events(limit=5)
 ```
 
+```python tab="Output"
+Events found: 5
+```
+
 ### Custom User-Agent
 
-```python
+```python tab="Code"
 import vlrdevapi as vlr
 
 vlr.configure(default_user_agent="MyApp/1.0 (+https://example.com)")
 ```
 
+```python tab="Output"
+User agent configured
+```
+
 ### Change base URL (advanced)
 
-```python
+```python tab="Code"
 import vlrdevapi as vlr
 
 vlr.configure(vlr_base="https://my-proxy.example.com")
+```
+
+```python tab="Output"
+# Base URL configured to use proxy
 ```
 
 ## Rate Limiting
 
 The client uses a lightweight token-bucket limiter. You can change whether it is enabled and what rate to use.
 
-```python
+```python tab="Code"
 import vlrdevapi as vlr
 
 # Disable
@@ -171,23 +183,38 @@ vlr.configure_rate_limit(requests_per_second=5, enabled=True)
 vlr.reset_rate_limit()
 ```
 
+```python tab="Output"
+# Rate limit disabled: 0.0
+# Rate limit enabled at 20 RPS: 20.0
+# Temporary override at 5 RPS: 5.0
+# Reset to defaults: 10.0
+```
+
 ## Reset to defaults
 
-```python
+```python tab="Code"
 import vlrdevapi as vlr
 
 vlr.reset_config()
+```
+
+```python tab="Output"
+# Configuration reset to library defaults
 ```
 
 ## Per-call overrides
 
 You can still override settings per-call on `fetcher` functions.
 
-```python
+```python tab="Code"
 from vlrdevapi.fetcher import fetch_html
 
 # Override timeout just for this request
 html = fetch_html("https://www.vlr.gg/matches", timeout=2.5)
+```
+
+```python tab="Output"
+# HTML fetched with custom timeout of 2.5 seconds
 ```
 
 ## Related
