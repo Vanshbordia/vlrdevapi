@@ -97,10 +97,14 @@ Player Profile
 
    # Get player profile
    profile = vlr.players.profile(player_id=4164)
-   
+
    print(f"{profile.handle} ({profile.real_name})")
    print(f"Country: {profile.country}")
-   
+
+   # Display aliases if available
+   if profile.aliases:
+       print(f"Aliases: {', '.join(profile.aliases)}")
+
    # Current teams
    for team in profile.current_teams:
        print(f"Team: {team.name} - {team.role}")

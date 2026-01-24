@@ -113,6 +113,21 @@ def profile(player_id: int, timeout: float | None = None) -> Profile | None:
                     left_date=None,
                 ))
     
+    # Parse aliases
+    aliases: list[str] | None = None
+    if header:
+        # Look for spans that contain the text "aliases:"
+        for span in header.find_all('span'):
+            span_text = extract_text(span)
+            if span_text and 'aliases:' in span_text.lower():
+                if ":" in span_text:
+                    aliases_part = span_text.split(":")[1].strip()
+                    # Split by commas and clean up each alias
+                    aliases = [alias.strip().strip('"\'') for alias in aliases_part.split(",")]
+                    # Remove empty strings if any
+                    aliases = [alias for alias in aliases if alias]
+                    break
+
     # Parse past teams
     past_teams: list[Team] = []
     label = None
@@ -130,10 +145,10 @@ def profile(player_id: int, timeout: float | None = None) -> Profile | None:
                 team_id = extract_id_from_url(href, "team") if href else None
                 name_el = anchor.select_one("div[style][style*='font-weight']") or anchor
                 team_name = extract_text(name_el).strip() if name_el else None
-                
+
                 role_el = anchor.select_one("span.wf-tag")
                 role = extract_text(role_el).strip().title() if role_el else "Player"
-                
+
                 joined_date = None
                 left_date = None
                 for meta in anchor.select(".ge-text-light"):
@@ -146,7 +161,7 @@ def profile(player_id: int, timeout: float | None = None) -> Profile | None:
                             if len(parts) > 1 and "present" not in parts[1].lower():
                                 left_date = _parse_month_year(parts[1])
                         break
-                
+
                 past_teams.append(Team(
                     id=team_id,
                     name=team_name,
@@ -161,6 +176,7 @@ def profile(player_id: int, timeout: float | None = None) -> Profile | None:
         real_name=real_name,
         country=country,
         avatar_url=avatar_url,
+        aliases=aliases,
         socials=socials,
         current_teams=current_teams,
         past_teams=past_teams,

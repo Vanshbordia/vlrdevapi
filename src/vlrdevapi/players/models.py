@@ -34,6 +34,7 @@ class Profile:
     real_name: str | None = None
     country: str | None = None
     avatar_url: str | None = None
+    aliases: list[str] | None = None
     socials: list[SocialLink] = field(default_factory=list)
     current_teams: list[Team] = field(default_factory=list)
     past_teams: list[Team] = field(default_factory=list)
