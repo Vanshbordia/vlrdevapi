@@ -27,7 +27,7 @@ Example usage:
     ...     print(f"{member.ign} - {member.role}")
 """
 
-__version__ = "1.5.0"
+__version__ = "1.6.0"
 
 # Configure stdout/stderr error handling without changing the environment's encoding.
 # This avoids UnicodeEncodeError on legacy consoles while preventing decoding mismatches

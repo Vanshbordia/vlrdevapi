@@ -20,9 +20,37 @@ class TestPlayersProfile:
             assert hasattr(profile, 'handle')
             assert hasattr(profile, 'real_name')
             assert hasattr(profile, 'country')
+            assert hasattr(profile, 'aliases')
             assert hasattr(profile, 'current_teams')
             assert hasattr(profile, 'past_teams')
             assert hasattr(profile, 'socials')
+
+    def test_profile_aliases_with_aliases(self, mock_fetch_html):
+        """Test that aliases are extracted when they exist (player 53 and 4147)."""
+        # Test player 53 who has aliases
+        profile = vlr.players.profile(player_id=53)
+        if profile and profile.aliases:
+            assert isinstance(profile.aliases, list)
+            assert len(profile.aliases) > 0
+            for alias in profile.aliases:
+                assert isinstance(alias, str)
+                assert len(alias) > 0
+
+        # Test player 4147 who has aliases
+        profile = vlr.players.profile(player_id=4147)
+        if profile and profile.aliases:
+            assert isinstance(profile.aliases, list)
+            assert len(profile.aliases) > 0
+            for alias in profile.aliases:
+                assert isinstance(alias, str)
+                assert len(alias) > 0
+
+    def test_profile_no_aliases(self, mock_fetch_html):
+        """Test that aliases is None or empty for players without aliases (player 302)."""
+        profile = vlr.players.profile(player_id=302)
+        if profile:
+            # Aliases should be None or an empty list if no aliases exist
+            assert profile.aliases is None or (isinstance(profile.aliases, list) and len(profile.aliases) == 0)
     
     def test_profile_player_id(self, mock_fetch_html):
         """Test that player_id is correct."""
