@@ -5,6 +5,7 @@ description: List events with filters for tier, region, and status
 
 import { TypeTable } from 'fumadocs-ui/components/type-table';
 import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
 import { Cards, Card } from 'fumadocs-ui/components/card';
 import { Info, ListChecks, Trophy } from 'lucide-react';
 
@@ -167,6 +168,14 @@ for event in events:
 - **No results**: Returns an empty list `[]`
 
 The function never raises exceptions, making it safe to use without try-catch blocks.
+
+## Date Parsing
+
+<Callout type="info">
+  The `list_events()` function uses the `info()` function internally to obtain accurate dates with correct years. This fixes an issue where past events were incorrectly assigned the current year when only partial date information was available in the event listing.
+</Callout>
+
+The `start_date` and `end_date` fields are parsed from the event's date text and include the correct year, making them reliable for filtering and sorting events by date.
 
  
 

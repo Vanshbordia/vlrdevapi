@@ -17,6 +17,82 @@ from ..utils import extract_text, parse_int, extract_id_from_url
 _config = get_config()
 
 
+def _match_team_to_meta(
+    game_name: str,
+    info_teams: list,
+    name_lookup: dict[str, dict],
+    short_lookup: dict[str, dict],
+    position: int,
+    player_table_shorts: set[str] | None = None,
+) -> tuple[int | None, str | None]:
+    """
+    Match game header team name to team metadata using multiple strategies.
+    
+    Args:
+        game_name: Team name from game header
+        info_teams: List of TeamInfo from series.info()
+        name_lookup: Lookup dict by canonical name
+        short_lookup: Lookup dict by short name (uppercase)
+        position: Position in game header (0 or 1)
+        player_table_shorts: Set of team short names extracted from player table
+    
+    Returns:
+        Tuple of (team_id, short_name)
+    """
+    if not game_name:
+        return None, None
+    
+    def canonical(value: str | None) -> str | None:
+        if not value:
+            return None
+        return _WHITESPACE_RE.sub(" ", value).strip().lower()
+    
+    # Strategy 1: Exact canonical name match
+    canon = canonical(game_name)
+    if canon and canon in name_lookup:
+        meta = name_lookup[canon]
+        return meta.get("id"), meta.get("short")
+    
+    # Strategy 2: Short name match (game header might show short)
+    game_upper = game_name.upper()
+    if game_upper in short_lookup:
+        meta = short_lookup[game_upper]
+        return meta.get("id"), meta.get("short")
+    
+    # Strategy 3: Fuzzy match - check if names/shorts contain each other
+    name_clean = game_name.lower().replace(" ", "").replace("-", "").replace("_", "")
+    
+    # 3a: Check against short names
+    for short_key, meta in short_lookup.items():
+        short_clean = short_key.lower().replace(" ", "").replace("-", "")
+        if short_clean and len(short_clean) >= 2:
+            if short_clean in name_clean or name_clean in short_clean:
+                return meta.get("id"), meta.get("short")
+    
+    # 3b: Check against info team names (handles sponsor prefixes)
+    for team_info in info_teams:
+        if team_info.name:
+            info_name_clean = team_info.name.lower().replace(" ", "").replace("-", "").replace("_", "")
+            if info_name_clean and len(info_name_clean) >= 2:
+                if name_clean in info_name_clean or info_name_clean in name_clean:
+                    return team_info.id, team_info.short
+    
+    # Strategy 3.5: Player table short name match
+    if player_table_shorts:
+        for short in player_table_shorts:
+            if short in short_lookup:
+                meta = short_lookup[short]
+                return meta.get("id"), meta.get("short")
+    
+    # Strategy 4: Position-based fallback
+    # Teams should be in the same order in both info() and game header
+    if position < len(info_teams):
+        team_info = info_teams[position]
+        return team_info.id, team_info.short
+    
+    return None, None
+
+
 def matches(series_id: int, limit: int | None = None, timeout: float | None = None) -> list[MapPlayers]:
     """
     Get detailed match statistics for a series.
@@ -76,6 +152,8 @@ def matches(series_id: int, limit: int | None = None, timeout: float | None = No
     series_details = info(series_id, timeout=timeout)
     team_meta_lookup: dict[str, dict[str, str | int | None]] = {}
     team_short_to_id: dict[str, int | None] = {}
+    team_short_to_meta: dict[str, dict[str, str | int | None]] = {}
+    info_teams_list: list = list(series_details.teams) if series_details else []
     if series_details:
         for team_info in series_details.teams:
             team_meta_rec: dict[str, str | int | None] = {"id": team_info.id, "name": team_info.name, "short": team_info.short}
@@ -85,6 +163,7 @@ def matches(series_id: int, limit: int | None = None, timeout: float | None = No
                     team_meta_lookup[canon] = team_meta_rec
             if team_info.short:
                 team_short_to_id[team_info.short.upper()] = team_info.id
+                team_short_to_meta[team_info.short.upper()] = team_meta_rec
     
     # Determine order from nav
     ordered_ids: list[str] = []
@@ -194,15 +273,21 @@ def matches(series_id: int, limit: int | None = None, timeout: float | None = No
                 t2_t_rounds = parse_int(extract_text(t2_t)) if t2_t else None
                 
                 if t1_name and t2_name:
-                    c1 = canonical(t1_name)
-                    c2 = canonical(t2_name)
-                    t1_meta = team_meta_lookup.get(c1) if c1 else None
-                    t2_meta = team_meta_lookup.get(c2) if c2 else None
+                    # Extract team short names from player tables for additional matching
+                    player_table_shorts: set[str] = set()
+                    for table in game.select("table.wf-table-inset"):
+                        for short_el in table.select(".mod-player .ge-text-light"):
+                            short = extract_text(short_el)
+                            if short:
+                                player_table_shorts.add(short.upper())
                     
-                    t1_id_val = t1_meta.get("id") if t1_meta else None
-                    t1_short_val = t1_meta.get("short") if t1_meta else None
-                    t2_id_val = t2_meta.get("id") if t2_meta else None
-                    t2_short_val = t2_meta.get("short") if t2_meta else None
+                    # Use multi-strategy matching for team metadata
+                    t1_id_val, t1_short_val = _match_team_to_meta(
+                        t1_name, info_teams_list, team_meta_lookup, team_short_to_meta, 0, player_table_shorts
+                    )
+                    t2_id_val, t2_short_val = _match_team_to_meta(
+                        t2_name, info_teams_list, team_meta_lookup, team_short_to_meta, 1, player_table_shorts
+                    )
                     
                     teams_tuple = (
                         MapTeamScore(

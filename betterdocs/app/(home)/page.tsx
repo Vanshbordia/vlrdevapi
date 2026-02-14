@@ -12,7 +12,7 @@ export default function HomePage() {
         <div className="mb-8 flex flex-wrap items-center justify-center gap-3">
           <div className="inline-flex items-center border border-border bg-background/50 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur-sm">
             <span className="mr-2 inline-block h-1.5 w-1.5 bg-green-500"></span>
-            v1.6.0
+            v1.6.1
           </div>
           <div className="inline-flex items-center border border-border bg-background/50 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur-sm">
             <span className="mr-2">🐍</span>

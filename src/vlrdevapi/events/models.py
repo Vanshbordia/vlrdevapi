@@ -67,6 +67,8 @@ class Info:
     name: str
     subtitle: str | None = None
     date_text: str | None = None
+    start_date: datetime.date | None = None
+    end_date: datetime.date | None = None
     prize: str | None = None
     location: str | None = None
     regions: list[str] = field(default_factory=list)

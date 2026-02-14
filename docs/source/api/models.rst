@@ -69,6 +69,20 @@ Many fields are optional and may be None:
    else:
        print("Date not available")
 
+Date fields on event info are also optional:
+
+.. code-block:: python
+
+   import vlrdevapi as vlr
+
+   # Get event info with parsed dates
+   event = vlr.events.info(event_id=2283)
+   
+   if event.start_date and event.end_date:
+       duration = (event.end_date - event.start_date).days
+       print(f"Event duration: {duration} days")
+       print(f"From {event.start_date} to {event.end_date}")
+
 Lists and Nested Objects
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

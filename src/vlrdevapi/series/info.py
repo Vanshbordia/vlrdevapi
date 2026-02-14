@@ -102,8 +102,27 @@ def info(match_id: int, timeout: float | None = None) -> Info | None:
     # Teams and scores
     t1_link = header.select_one(".match-header-link.mod-1")
     t2_link = header.select_one(".match-header-link.mod-2")
-    t1 = extract_text(header.select_one(".match-header-link.mod-1 .wf-title-med"))
-    t2 = extract_text(header.select_one(".match-header-link.mod-2 .wf-title-med"))
+    
+    # Extract team names - get only direct text content, not nested divs
+    # The .wf-title-med may contain nested divs like "(Team Name)" that we want to exclude
+    t1_title_el = header.select_one(".match-header-link.mod-1 .wf-title-med")
+    t2_title_el = header.select_one(".match-header-link.mod-2 .wf-title-med")
+    
+    def extract_direct_text(element) -> str:
+        """Extract only direct text content from element, excluding nested elements."""
+        if not element:
+            return ""
+        # Get only direct text nodes (not text from nested elements)
+        direct_text = "".join(
+            str(child) for child in element.children 
+            if isinstance(child, str)
+        ).strip()
+        # Fallback to full text if no direct text found
+        return direct_text if direct_text else extract_text(element)
+    
+    t1 = extract_direct_text(t1_title_el)
+    t2 = extract_direct_text(t2_title_el)
+    
     t1_href = t1_link.get("href") if t1_link else None
     t2_href = t2_link.get("href") if t2_link else None
     t1_href = t1_href if isinstance(t1_href, str) else None

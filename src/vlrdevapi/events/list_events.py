@@ -8,6 +8,7 @@ from dateutil import parser as dateutil_parser
 from bs4 import BeautifulSoup
 
 from .models import EventTier, EventStatus, TierName, StatusFilter, ListEvent, _TIER_TO_ID
+from .info import info as get_event_info
 from ..config import get_config
 from ..countries import map_country_code
 from ..fetcher import fetch_html
@@ -194,44 +195,56 @@ def list_events(
             code = extract_country_code(card.select_one(".event-item-desc-item.mod-location"))
             region_name = map_country_code(code) if code else None
         
-        # Parse dates
+        # Parse dates - use a three-tier fallback system for accuracy
         start_text, end_text = split_date_range(date_text) if date_text else (None, None)
         start_date: datetime.date | None = None
         end_date: datetime.date | None = None
         
-        # Try to parse start date
-        if start_text:
-            try:
-                parsed = dateutil_parser.parse(start_text, fuzzy=False)
-                start_date = parsed.date()
-            except (ValueError, TypeError, dateutil_parser.ParserError):
-                # If fuzzy=False fails, try with common formats
-                start_date = parse_date(start_text, [
-                    "%b %d, %Y", "%B %d, %Y",  # Aug 28, 2025 or August 28, 2025
-                    "%d %b, %Y", "%d %B, %Y",  # 28 Aug, 2025 or 28 August, 2025
-                    "%m/%d/%Y", "%d/%m/%Y",    # 08/28/2025 or 28/08/2025
-                    "%d/%b/%Y", "%d/%B/%Y",    # 28/Aug/2025 or 28/August/2025
-                    "%b %d", "%B %d",          # Aug 28 or August 28 (no year)
-                    "%d %b", "%d %B",          # 28 Aug or 28 August (no year)
-                ])
+        # PRIMARY: Get accurate dates from event info page (includes proper year)
+        # This is the most reliable source as the listing page may omit years
+        event_info = get_event_info(ev_id, effective_timeout)
+        if event_info:
+            if event_info.start_date:
+                start_date = event_info.start_date
+            if event_info.end_date:
+                end_date = event_info.end_date
         
-        # Try to parse end date
-        if end_text:
-            try:
-                parsed = dateutil_parser.parse(end_text, fuzzy=False)
-                end_date = parsed.date()
-            except (ValueError, TypeError, dateutil_parser.ParserError):
-                # If fuzzy=False fails, try with common formats
-                end_date = parse_date(end_text, [
-                    "%b %d, %Y", "%B %d, %Y",  # Aug 28, 2025 or August 28, 2025
-                    "%d %b, %Y", "%d %B, %Y",  # 28 Aug, 2025 or 28 August, 2025
-                    "%m/%d/%Y", "%d/%m/%Y",    # 08/28/2025 or 28/08/2025
-                    "%d/%b/%Y", "%d/%B/%Y",    # 28/Aug/2025 or 28/August/2025
-                    "%b %d", "%B %d",          # Aug 28 or August 28 (no year)
-                    "%d %b", "%d %B",          # 28 Aug or 28 August (no year)
-                ])
+        # SECONDARY: Parse dates from listing page if info() didn't return dates
+        # This handles cases where info() fails or returns None for dates
+        if start_date is None or end_date is None:
+            # Try to parse start date
+            if start_date is None and start_text:
+                try:
+                    parsed = dateutil_parser.parse(start_text, fuzzy=False)
+                    start_date = parsed.date()
+                except (ValueError, TypeError, dateutil_parser.ParserError):
+                    # If fuzzy=False fails, try with common formats
+                    start_date = parse_date(start_text, [
+                        "%b %d, %Y", "%B %d, %Y",  # Aug 28, 2025 or August 28, 2025
+                        "%d %b, %Y", "%d %B, %Y",  # 28 Aug, 2025 or 28 August, 2025
+                        "%m/%d/%Y", "%d/%m/%Y",    # 08/28/2025 or 28/08/2025
+                        "%d/%b/%Y", "%d/%B/%Y",    # 28/Aug/2025 or 28/August/2025
+                        "%b %d", "%B %d",          # Aug 28 or August 28 (no year)
+                        "%d %b", "%d %B",          # 28 Aug or 28 August (no year)
+                    ])
+            
+            # Try to parse end date
+            if end_date is None and end_text:
+                try:
+                    parsed = dateutil_parser.parse(end_text, fuzzy=False)
+                    end_date = parsed.date()
+                except (ValueError, TypeError, dateutil_parser.ParserError):
+                    # If fuzzy=False fails, try with common formats
+                    end_date = parse_date(end_text, [
+                        "%b %d, %Y", "%B %d, %Y",  # Aug 28, 2025 or August 28, 2025
+                        "%d %b, %Y", "%d %B, %Y",  # 28 Aug, 2025 or 28 August, 2025
+                        "%m/%d/%Y", "%d/%m/%Y",    # 08/28/2025 or 28/08/2025
+                        "%d/%b/%Y", "%d/%B/%Y",    # 28/Aug/2025 or 28/August/2025
+                        "%b %d", "%B %d",          # Aug 28 or August 28 (no year)
+                        "%d %b", "%d %B",          # 28 Aug or 28 August (no year)
+                    ])
         
-        # Fallback: If dates are TBD or couldn't be parsed, fetch from matches page
+        # TERTIARY: If dates are still TBD or couldn't be parsed, fetch from matches page
         if (start_date is None or end_date is None) and (
             date_text is None 
             or date_text.lower() in ["tbd", "to be determined", "to be announced", "tba"]
