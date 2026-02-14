@@ -62,6 +62,14 @@ Returns event header information or `None` if the event is not found.
       type: 'str | None',
       description: 'Human-readable date range (e.g., "May 20 - Jun 15, 2024")',
     },
+    start_date: {
+      type: 'date | None',
+      description: 'Parsed start date of the event',
+    },
+    end_date: {
+      type: 'date | None',
+      description: 'Parsed end date of the event',
+    },
     prize: {
       type: 'str | None',
       description: 'Prize pool with currency formatting (e.g., "$1,000,000 USD")',
@@ -86,7 +94,7 @@ Returns event header information or `None` if the event is not found.
 import vlrdevapi as vlr
 
 # Get event details
-event = vlr.events.info(event_id=2498)
+event = vlr.events.info(event_id=2283)
 
 if event:
     print(f"Event: {event.name}")
@@ -96,6 +104,12 @@ if event:
     print(f"Prize Pool: {event.prize or 'Not announced'}")
     print(f"Location: {event.location or 'Online'}")
     print(f"Dates: {event.date_text or 'TBD'}")
+    
+    # Access parsed dates
+    if event.start_date:
+        print(f"Start Date: {event.start_date}")  # datetime.date object
+    if event.end_date:
+        print(f"End Date: {event.end_date}")  # datetime.date object
     
     if event.regions:
         print(f"Regions: {', '.join(event.regions)}")

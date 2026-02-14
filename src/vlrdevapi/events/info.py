@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import datetime
+import re
+
 from bs4 import BeautifulSoup
 
 from .models import Info
@@ -12,6 +15,52 @@ from ..exceptions import NetworkError
 from ..utils import extract_text, normalize_whitespace
 
 _config = get_config()
+
+# Month abbreviation to month number mapping
+_MONTH_MAP = {
+    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+    "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+}
+
+
+def _parse_date_range(date_text: str | None) -> tuple[datetime.date | None, datetime.date | None]:
+    """Parse a date range string into start and end dates.
+
+    Parses format like "Dec 17 - 22, 2025" into (2025-12-17, 2025-12-22).
+
+    Args:
+        date_text: The date range string to parse.
+
+    Returns:
+        A tuple of (start_date, end_date), or (None, None) if parsing fails.
+    """
+    if not date_text:
+        return None, None
+
+    # Pattern: "Month Day - EndDay, Year" (e.g., "Dec 17 - 22, 2025")
+    pattern = r"^([A-Za-z]{3})\s+(\d{1,2})\s*-\s*(\d{1,2}),\s*(\d{4})$"
+    match = re.match(pattern, date_text.strip())
+
+    if not match:
+        return None, None
+
+    month_abbr, start_day_str, end_day_str, year_str = match.groups()
+
+    month_num = _MONTH_MAP.get(month_abbr.lower())
+    if month_num is None:
+        return None, None
+
+    try:
+        year = int(year_str)
+        start_day = int(start_day_str)
+        end_day = int(end_day_str)
+
+        start_date = datetime.date(year, month_num, start_day)
+        end_date = datetime.date(year, month_num, end_day)
+
+        return start_date, end_date
+    except (ValueError, TypeError):
+        return None, None
 
 
 def _normalize_regions(tags: list[str]) -> list[str]:
@@ -145,12 +194,17 @@ def info(event_id: int, timeout: float | None = None) -> Info | None:
     if prize_text:
         prize_text = normalize_whitespace(prize_text)
     location_text = extract_desc_value("Location")
-    
+
+    # Parse date range
+    start_date, end_date = _parse_date_range(date_text)
+
     return Info(
         id=event_id,
         name=extract_text(name_el),
         subtitle=extract_text(subtitle_el) or None,
         date_text=date_text,
+        start_date=start_date,
+        end_date=end_date,
         prize=prize_text,
         location=location_text,
         regions=_normalize_regions(regions),

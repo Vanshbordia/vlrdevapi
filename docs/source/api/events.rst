@@ -175,10 +175,16 @@ Get Event Details
    import vlrdevapi as vlr
 
    # Get event information
-   info = vlr.events.info(event_id=2498)
+   info = vlr.events.info(event_id=2283)
    print(f"{info.name}")
    print(f"Prize: {info.prize}")
    print(f"Location: {info.location}")
+   
+   # Access parsed dates
+   if info.start_date:
+       print(f"Start Date: {info.start_date}")
+   if info.end_date:
+       print(f"End Date: {info.end_date}")
 
 Get Event Matches
 ~~~~~~~~~~~~~~~~~
