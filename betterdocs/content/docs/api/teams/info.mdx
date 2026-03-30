@@ -58,7 +58,15 @@ Returns team information or `None` if not found.
     },
     logo_url: {
       type: 'str | None',
-      description: 'Team logo URL',
+      description: 'Team logo URL (defaults to light mode logo for backward compatibility)',
+    },
+    logo_url_light: {
+      type: 'str | None',
+      description: 'Team logo URL for light backgrounds',
+    },
+    logo_url_dark: {
+      type: 'str | None',
+      description: 'Team logo URL for dark backgrounds',
     },
     country: {
       type: 'str | None',

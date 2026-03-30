@@ -52,6 +52,8 @@ class TeamInfo:
     name: str | None = None
     tag: str | None = None
     logo_url: str | None = None
+    logo_url_light: str | None = None
+    logo_url_dark: str | None = None
     country: str | None = None
     is_active: bool = True
     socials: list[SocialLink] = field(default_factory=list)
