@@ -162,6 +162,25 @@ Get Team Information
        for social in team_info.socials:
            print(f"{social.label}: {social.url}")
 
+Get Team Logos
+~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   import vlrdevapi as vlr
+
+   # Get team information
+   team_info = vlr.teams.info(team_id=799)
+   if team_info:
+       print(f"{team_info.name} ({team_info.tag})")
+       
+       # Access logo URLs for different modes
+       print(f"Logo (light mode): {team_info.logo_url_light}")
+       print(f"Logo (dark mode): {team_info.logo_url_dark}")
+       
+       # logo_url is kept for backward compatibility (same as logo_url_light)
+       print(f"Logo (default): {team_info.logo_url}")
+
 Get Team Roster
 ~~~~~~~~~~~~~~~
 

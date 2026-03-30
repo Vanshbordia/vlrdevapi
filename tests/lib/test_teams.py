@@ -47,6 +47,8 @@ class TestTeamsInfo:
             assert hasattr(team, 'name')
             assert hasattr(team, 'tag')
             assert hasattr(team, 'logo_url')
+            assert hasattr(team, 'logo_url_light')
+            assert hasattr(team, 'logo_url_dark')
             assert hasattr(team, 'country')
             assert hasattr(team, 'is_active')
             assert hasattr(team, 'socials')
@@ -58,6 +60,54 @@ class TestTeamsInfo:
         team = vlr.teams.info(team_id=1034)
         if team:
             assert team.team_id == 1034
+
+
+class TestTeamsDarkLightLogos:
+    """Test team logo extraction for dark and light modes (team 120)."""
+
+    def test_team_120_returns_data(self, mock_fetch_html):
+        """Test that info() returns data for team 120."""
+        team = vlr.teams.info(team_id=120)
+        assert team is not None
+
+    def test_team_120_has_both_logos(self, mock_fetch_html):
+        """Test that both dark and light mode logos are extracted."""
+        team = vlr.teams.info(team_id=120)
+        assert team is not None
+        
+        # Check light mode logo exists
+        assert team.logo_url_light is not None
+        assert isinstance(team.logo_url_light, str)
+        assert _host_matches(team.logo_url_light, ["owcdn.net"])
+        assert team.logo_url_light.startswith("https://")
+        
+        # Check dark mode logo exists
+        assert team.logo_url_dark is not None
+        assert isinstance(team.logo_url_dark, str)
+        assert _host_matches(team.logo_url_dark, ["owcdn.net"])
+        assert team.logo_url_dark.startswith("https://")
+        
+        # Light and dark mode logos should be different
+        assert team.logo_url_light != team.logo_url_dark
+
+    def test_team_120_logo_urls_correct(self, mock_fetch_html):
+        """Test that the correct logo URLs are extracted for each mode."""
+        team = vlr.teams.info(team_id=120)
+        assert team is not None
+        
+        # Light mode logo should contain the light mode image ID
+        assert "603c00d5c5a08" in team.logo_url_light
+        
+        # Dark mode logo should contain the dark mode image ID
+        assert "603c00dbb7d39" in team.logo_url_dark
+
+    def test_team_120_default_logo_is_light(self, mock_fetch_html):
+        """Test that the default logo_url matches light mode logo."""
+        team = vlr.teams.info(team_id=120)
+        assert team is not None
+        
+        # Default logo_url should be the same as logo_url_light for backward compatibility
+        assert team.logo_url == team.logo_url_light
 
 
 class TestTeamsActiveTeam:

@@ -26,10 +26,10 @@ def load_html(html_sources_dir: Path) -> Callable[[str], str]:
 def mock_fetch_html(monkeypatch, load_html):
     """Mock fetch_html to return local HTML files."""
     from vlrdevapi import fetcher
-    
+
     # Store original function
     original_fetch = fetcher.fetch_html
-    
+
     # Create mapping of URLs to HTML files
     url_to_file = {
         # Matches
@@ -52,7 +52,7 @@ def mock_fetch_html(monkeypatch, load_html):
         "https://www.vlr.gg/player/17397?timespan=60d": "player_profile_60d.html",
         "https://www.vlr.gg/player/17397?timespan=90d": "player_profile_90d.html",
 
-        # Teams
+        # Teams (light mode by default)
         "https://www.vlr.gg/team/1034": "team_nrg_core.html",
         "https://www.vlr.gg/team/8326": "team_m3c_inc.html",
         "https://www.vlr.gg/team/682": "team_gambit_current.html",
@@ -61,7 +61,8 @@ def mock_fetch_html(monkeypatch, load_html):
         "https://www.vlr.gg/team/matches/799/?group=completed": "team_799_completed_matches.html",
         "https://www.vlr.gg/team/matches/799/?group=completed&page=2": "team_799_completed_matches_paginate_2.html",
         "https://www.vlr.gg/team/transactions/1034": "team_nrg_1034_transactions.html",
-        
+        "https://www.vlr.gg/team/120": "team_120_light.html",
+
         # Series/Match pages for team ID extraction (NRG vs FNATIC)
         "https://www.vlr.gg/530935": "series_page.html",
 
@@ -73,21 +74,31 @@ def mock_fetch_html(monkeypatch, load_html):
         "https://www.vlr.gg/search/?q=nrg&type=series": "search_nrg_all.html",
 
     }
-    
-    def mock_fetch(url: str, timeout: float = 5.0) -> str:
-        """Mock fetch that returns local HTML."""
+
+    def mock_fetch(url: str, timeout: float = 5.0, cookies: dict[str, str] | None = None) -> str:
+        """Mock fetch that returns local HTML based on cookies."""
+        # Check for dark mode cookie
+        is_dark_mode = cookies is not None and cookies.get("dm") == "1"
+        
+        # Special handling for team 120 with dark/light mode
+        if url.startswith("https://www.vlr.gg/team/120"):
+            if is_dark_mode:
+                return load_html("team_120_dark.html")
+            else:
+                return load_html("team_120_light.html")
+
         # Try exact match first
         if url in url_to_file:
             return load_html(url_to_file[url])
-        
+
         # Try to find a match by checking if URL starts with a known pattern
         for pattern, filename in url_to_file.items():
             if url.startswith(pattern.split("?")[0]):
                 return load_html(filename)
-        
+
         # If no match, try to use original (will fail in offline tests)
         return original_fetch(url, timeout)
-    
+
     monkeypatch.setattr(fetcher, "fetch_html", mock_fetch)
     return mock_fetch
 

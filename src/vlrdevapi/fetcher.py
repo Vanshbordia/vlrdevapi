@@ -179,7 +179,7 @@ def _compute_timeout(timeout: float) -> httpx.Timeout:
 def _get_sync_client(use_http1: bool = False) -> httpx.Client:
     """Get or create a shared synchronous HTTP client with connection pooling."""
     global _sync_client, _sync_client_http1
-    
+
     if use_http1:
         if _sync_client_http1 is None:
             with _sync_client_lock:
@@ -263,6 +263,7 @@ def fetch_html_with_retry(
     max_retries: int | None = None,
     backoff_factor: float | None = None,
     user_agent: str | None = None,
+    cookies: dict[str, str] | None = None,
 ) -> str:
     """
     Fetch HTML with retry logic, connection pooling, rate limiting, and exponential backoff.
@@ -273,6 +274,7 @@ def fetch_html_with_retry(
         max_retries: Maximum number of retries.
         backoff_factor: Backoff multiplier for delays.
         user_agent: User-Agent header.
+        cookies: Optional dictionary of cookies.
 
     Returns:
         HTML content as string.
@@ -285,7 +287,7 @@ def fetch_html_with_retry(
     rate_limiter = _get_rate_limiter()
     if rate_limiter:
         rate_limiter.acquire()
-    
+
     # Resolve dynamic defaults
     effective_timeout = timeout if timeout is not None else _config.default_timeout
     effective_retries = int(max_retries if max_retries is not None else _config.max_retries)
@@ -298,11 +300,22 @@ def fetch_html_with_retry(
     http2_failed = False
 
     for attempt in range(effective_retries + 1):
-        # Use HTTP/1.1 if HTTP/2 previously failed
-        client = _get_sync_client(use_http1=http2_failed)
-        
         try:
-            response = client.get(url, headers=headers, timeout=request_timeout)
+            # If cookies are provided, create a temporary client with cookies
+            # This avoids the deprecation warning and doesn't pollute the global client
+            if cookies:
+                with httpx.Client(
+                    http2=not http2_failed,
+                    headers=headers,
+                    timeout=request_timeout,
+                    follow_redirects=True,
+                    cookies=cookies,
+                ) as temp_client:
+                    response = temp_client.get(url)
+            else:
+                # Use HTTP/1.1 if HTTP/2 previously failed
+                client = _get_sync_client(use_http1=http2_failed)
+                response = client.get(url, headers=headers, timeout=request_timeout)
         except httpx.TimeoutException as exc:
             last_exception = exc
         except httpx.HTTPError as exc:
@@ -350,6 +363,7 @@ async def fetch_html_with_retry_async(
     max_retries: int | None = None,
     backoff_factor: float | None = None,
     user_agent: str | None = None,
+    cookies: dict[str, str] | None = None,
 ) -> str:
     """Async counterpart to `fetch_html_with_retry` using shared async client."""
 
@@ -370,11 +384,22 @@ async def fetch_html_with_retry_async(
     http2_failed = False
 
     for attempt in range(effective_retries + 1):
-        # Use HTTP/1.1 if HTTP/2 previously failed
-        client = await _get_async_client(use_http1=http2_failed)
-        
         try:
-            response = await client.get(url, headers=headers, timeout=request_timeout)
+            # If cookies are provided, create a temporary client with cookies
+            # This avoids the deprecation warning and doesn't pollute the global client
+            if cookies:
+                async with httpx.AsyncClient(
+                    http2=not http2_failed,
+                    headers=headers,
+                    timeout=request_timeout,
+                    follow_redirects=True,
+                    cookies=cookies,
+                ) as temp_client:
+                    response = await temp_client.get(url)
+            else:
+                # Use HTTP/1.1 if HTTP/2 previously failed
+                client = await _get_async_client(use_http1=http2_failed)
+                response = await client.get(url, headers=headers, timeout=request_timeout)
         except httpx.TimeoutException as exc:
             last_exception = exc
         except httpx.HTTPError as exc:
@@ -419,7 +444,7 @@ async def fetch_html_with_retry_async(
 _HTML_CACHE: dict[str, str] = {}
 
 
-def fetch_html(url: str, timeout: float | None = None, use_cache: bool = True) -> str:
+def fetch_html(url: str, timeout: float | None = None, use_cache: bool = True, cookies: dict[str, str] | None = None) -> str:
     """
     Public interface for fetching HTML with caching and retries.
 
@@ -427,17 +452,21 @@ def fetch_html(url: str, timeout: float | None = None, use_cache: bool = True) -
         url: URL to fetch.
         timeout: Timeout in seconds.
         use_cache: Whether to use in-memory cache.
+        cookies: Optional dictionary of cookies.
 
     Returns:
         HTML string.
     """
-    if use_cache:
+    # Don't cache when cookies are used (dynamic content)
+    effective_use_cache = use_cache and cookies is None
+    
+    if effective_use_cache:
         with _cache_lock:
             cached = _HTML_CACHE.get(url)
         if cached is not None:
             return cached
-    html = fetch_html_with_retry(url, timeout=timeout)
-    if use_cache:
+    html = fetch_html_with_retry(url, timeout=timeout, cookies=cookies)
+    if effective_use_cache:
         with _cache_lock:
             _HTML_CACHE[url] = html
     return html
@@ -447,16 +476,20 @@ async def fetch_html_async(
     url: str,
     timeout: float | None = None,
     use_cache: bool = True,
+    cookies: dict[str, str] | None = None,
 ) -> str:
     """Async convenience helper mirroring `fetch_html`."""
 
-    if use_cache:
+    # Don't cache when cookies are used (dynamic content)
+    effective_use_cache = use_cache and cookies is None
+    
+    if effective_use_cache:
         with _cache_lock:
             cached = _HTML_CACHE.get(url)
         if cached is not None:
             return cached
-    html = await fetch_html_with_retry_async(url, timeout=timeout)
-    if use_cache:
+    html = await fetch_html_with_retry_async(url, timeout=timeout, cookies=cookies)
+    if effective_use_cache:
         with _cache_lock:
             _HTML_CACHE[url] = html
     return html
