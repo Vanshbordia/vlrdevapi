@@ -6,7 +6,7 @@ from selectolax.parser import HTMLParser
 from zoneinfo import ZoneInfo
 
 from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
-from vlrdevapi.commons.datetime import VLR_TIMEZONE, parse_vlr_datetime
+from vlrdevapi.commons.datetime import parse_vlr_datetime
 from vlrdevapi._player.matches.parser import parse_player_matches, _split_stage_bracket
 
 
@@ -35,13 +35,17 @@ class TestParseVlrDatetime:
         assert result.tzinfo == timezone.utc
         assert result == datetime(2026, 3, 15, 2, 30, tzinfo=timezone.utc)
 
-    def test_default_uses_vlr_timezone(self):
+    def test_default_uses_utc_when_no_source_tz(self):
         result = parse_vlr_datetime("2026/03/14", "10:30 pm")
         assert result is not None
         assert result.tzinfo == timezone.utc
-        expected = datetime(2026, 3, 14, 22, 30, tzinfo=VLR_TIMEZONE).astimezone(
-            timezone.utc
-        )
+        assert result == datetime(2026, 3, 14, 22, 30, tzinfo=timezone.utc)
+
+    def test_uses_detected_vlr_timezone(self):
+        ist = ZoneInfo("Asia/Kolkata")
+        result = parse_vlr_datetime("2026/03/14", "10:30 pm", source_tz=ist)
+        assert result is not None
+        expected = datetime(2026, 3, 14, 22, 30, tzinfo=ist).astimezone(timezone.utc)
         assert result == expected
 
     def test_no_time(self):

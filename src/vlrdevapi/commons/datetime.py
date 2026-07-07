@@ -5,9 +5,9 @@ from zoneinfo import ZoneInfo
 
 UTC = UTC
 
-# Default timezone — derived from the local machine so it matches the
-# timezone VLR.gg server-renders based on the viewer's IP-based detection.
-VLR_TIMEZONE: ZoneInfo | tzinfo = datetime.now().astimezone().tzinfo  # type: ignore[assignment]
+# Fallback when no ``source_tz`` is provided. Prefer passing an explicit
+# timezone from :class:`~vlrdevapi._client.VLRClient` (auto-detected from VLR).
+VLR_TIMEZONE: ZoneInfo | tzinfo = UTC
 
 
 def date_to_utc_datetime(d: date) -> datetime:

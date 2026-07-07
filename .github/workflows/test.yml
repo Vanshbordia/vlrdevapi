@@ -12,6 +12,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      # VLR.gg renders dates in the viewer's timezone. Fixtures and test
+      # expectations were captured in IST — keep CI consistent with that.
+      TZ: Asia/Kolkata
     strategy:
       matrix:
         python-version: ['3.11', '3.12', '3.13', '3.14']
@@ -30,4 +34,4 @@ jobs:
         run: uv run python scripts/download_fixtures.py 2>&1
 
       - name: Run tests
-        run: uv run pytest --live 2>&1
+        run: uv run pytest 2>&1

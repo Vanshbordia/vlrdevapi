@@ -147,6 +147,15 @@ for _eid, _eslug in EVENTS_WITH_MATCHES:
         ),
     ]
 
+# ── Reference match for timezone detection ─────────────────────
+ROUTES += [
+    (
+        "/670471/paper-rex-vs-leviat-n-valorant-masters-london-2026-gf",
+        "matches/reference_match_timezone.html",
+        {},
+    ),
+]
+
 # ── Game / Series detail ───────────────────────────────────────
 SERIES_ID_GAME = 542272
 SERIES_SLUG = "nrg-vs-fnatic-valorant-champions-2025-gf"
@@ -212,13 +221,16 @@ TEAMS = [
     (2, "sentinels"),
     (17676, "humble-5"),  # Team without current roster for testing
     (1034, "nrg"),  # Added NRG for testing
+    (8326, None),  # M3 Champions — no slug in URL
+    (682, None),  # Gambit Esports — no slug in URL
 ]
 
 for TEAM_ID, TEAM_SLUG in TEAMS:
+    team_path = f"/team/{TEAM_ID}/{TEAM_SLUG}" if TEAM_SLUG else f"/team/{TEAM_ID}/"
     ROUTES += [
-        (f"/team/{TEAM_ID}/{TEAM_SLUG}", f"team/{TEAM_ID}/overview_light.html", {}),
+        (team_path, f"team/{TEAM_ID}/overview_light.html", {}),
         (
-            f"/team/{TEAM_ID}/{TEAM_SLUG}",
+            team_path,
             f"team/{TEAM_ID}/overview_dark.html",
             {"settings": "%7B%22dark_mode%22%3A1%7D"},
         ),
