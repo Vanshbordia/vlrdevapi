@@ -1,3 +1,4 @@
+import inspect
 from pathlib import Path
 
 import pytest
@@ -7,10 +8,22 @@ import vlrdevapi
 from vlrdevapi import VLRClient
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "test_html"
+_LIVE = False
 
 
 def load_fixture(*path_parts: str) -> str:
-    return (FIXTURES_DIR / Path(*path_parts)).read_text(encoding="utf-8")
+    if _LIVE:
+        frame = inspect.currentframe()
+        if frame and frame.f_back and frame.f_back.f_code.co_name == "<module>":
+            pytest.skip("in --live mode", allow_module_level=True)
+        return ""
+    path = FIXTURES_DIR / Path(*path_parts)
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Fixture file not found: {path}. "
+            "Run with --live to use real HTTP requests instead."
+        )
+    return path.read_text(encoding="utf-8")
 
 
 def pytest_addoption(parser):
@@ -20,6 +33,11 @@ def pytest_addoption(parser):
         default=False,
         help="Make real HTTP requests to vlr.gg instead of using local fixtures",
     )
+
+
+def pytest_configure(config):
+    global _LIVE
+    _LIVE = config.getoption("--live")
 
 
 class _NoopResponse:
