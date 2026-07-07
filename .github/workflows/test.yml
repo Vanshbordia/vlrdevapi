@@ -4,18 +4,20 @@ on:
   pull_request:
     paths:
       - 'src/**'
+      - 'tests/**'
+      - 'scripts/download_fixtures.py'
+      - '.github/workflows/test.yml'
   push:
     branches: [main]
     paths:
       - 'src/**'
+      - 'tests/**'
+      - 'scripts/download_fixtures.py'
+      - '.github/workflows/test.yml'
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      # VLR.gg renders dates in the viewer's timezone. Fixtures and test
-      # expectations were captured in IST — keep CI consistent with that.
-      TZ: Asia/Kolkata
     strategy:
       matrix:
         python-version: ['3.11', '3.12', '3.13', '3.14']

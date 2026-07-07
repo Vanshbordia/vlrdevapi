@@ -122,7 +122,9 @@ def _detect_from_offset(
         except ValueError:
             continue
     if local_date is None:
-        local_date = canonical.astimezone(VLR_STORED_TZ).date()
+        local_date = canonical.date()
+    else:
+        local_date = local_date.replace(year=canonical.year)
 
     candidates: list[ZoneInfo] = []
     seen: set[str] = set()

@@ -6,7 +6,8 @@ import pytest
 from selectolax.parser import HTMLParser
 
 from vlrdevapi.commons.timezone import (
-    VLR_STORED_TZ,
+    _TIME_WITH_TZ_RE,
+    _zone_from_abbrev,
     detect_vlr_timezone,
     parse_vlr_stored_datetime,
 )
@@ -36,9 +37,42 @@ class TestParseVlrStoredDatetime:
 
 
 class TestDetectVlrTimezone:
-    def test_detects_ist_from_reference_match(self, reference_html):
+    def test_detects_timezone_consistent_with_reference_fixture(self, reference_html):
         zone = detect_vlr_timezone(reference_html)
-        assert str(zone) == "Asia/Kolkata"
+        time_el = reference_html.css_first(
+            ".moment-tz-convert[data-moment-format='h:mm A z']",
+        )
+        date_el = reference_html.css_first(
+            ".moment-tz-convert[data-moment-format='dddd, MMMM D']",
+        )
+        ts_el = reference_html.css_first(".moment-tz-convert[data-utc-ts]")
+        assert time_el is not None
+        assert ts_el is not None
+        assert date_el is not None
+
+        displayed_time = time_el.text(strip=True)
+        stored = parse_vlr_stored_datetime(ts_el.attributes.get("data-utc-ts", ""))
+        assert stored is not None
+
+        abbrev_match = _TIME_WITH_TZ_RE.match(displayed_time)
+        if abbrev_match:
+            expected = _zone_from_abbrev(abbrev_match.group("tz"))
+            assert expected is not None
+            assert zone == expected
+
+        time_match = _TIME_WITH_TZ_RE.match(displayed_time)
+        assert time_match is not None
+        local_time = datetime.strptime(
+            time_match.group("time").upper(),
+            "%I:%M %p",
+        ).time()
+        partial_date = datetime.strptime(
+            date_el.text(strip=True),
+            "%A, %B %d",
+        )
+        local_date = partial_date.replace(year=stored.year).date()
+        localized = datetime.combine(local_date, local_time, tzinfo=zone)
+        assert localized.astimezone(UTC) == stored
 
     def test_detects_ist_from_inline_html(self):
         html = HTMLParser(
@@ -54,18 +88,16 @@ class TestDetectVlrTimezone:
         zone = detect_vlr_timezone(html)
         assert zone == ZoneInfo("Asia/Kolkata")
 
-    def test_offset_fallback_for_unknown_abbrev(self):
+    def test_detects_eastern_from_inline_html(self):
         html = HTMLParser(
             """
             <div class="match-header-date">
               <div class="moment-tz-convert" data-utc-ts="2026-06-21 10:20:00"
                    data-moment-format="dddd, MMMM D">Sunday, June 21</div>
               <div class="moment-tz-convert" data-utc-ts="2026-06-21 10:20:00"
-                   data-moment-format="h:mm A z">7:50 PM IST</div>
+                   data-moment-format="h:mm A z">10:20 AM ET</div>
             </div>
             """
         )
         zone = detect_vlr_timezone(html)
-        stored = parse_vlr_stored_datetime("2026-06-21 10:20:00")
-        local = datetime(2026, 6, 21, 19, 50, tzinfo=zone)
-        assert local.astimezone(UTC) == stored
+        assert zone == ZoneInfo("America/New_York")

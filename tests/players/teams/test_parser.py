@@ -1,6 +1,13 @@
 from datetime import datetime, timezone
 
+from selectolax.parser import HTMLParser
+
 from tests.conftest import load_fixture
+from tests.helpers.fixtures import player_team_dates, player_team_entries
+
+
+def _player_html(player_dir: str) -> HTMLParser:
+    return HTMLParser(load_fixture("player", player_dir, "overview.html"))
 
 
 class TestSyncEthan:
@@ -37,16 +44,22 @@ class TestSyncEthan:
         assert eg.inactive_date is None
 
     def test_past_team_nrg_with_inactive(self, client, mock_vlr):
-        mock_vlr.get("/player/11225").respond(200, text=load_fixture("player", "11225_ethan", "overview.html"))
+        html = load_fixture("player", "11225_ethan", "overview.html")
+        mock_vlr.get("/player/11225").respond(200, text=html)
+        parsed_html = HTMLParser(html)
+        expected = next(
+            entry for entry in player_team_entries(parsed_html, "NRG")
+            if entry.get("inactive_date") is not None
+        )
         result = client.player.teams.past_teams(11225)
         nrg_past = next(
-            (t for t in result if t.name == "NRG" and t.left_date == datetime(2022, 11, 1, tzinfo=timezone.utc)),
+            (t for t in result if t.name == "NRG" and t.left_date == expected["left_date"]),
             None,
         )
         assert nrg_past is not None
         assert nrg_past.team_id == 1034
-        assert nrg_past.joined_date == datetime(2022, 4, 1, tzinfo=timezone.utc)
-        assert nrg_past.inactive_date == datetime(2022, 9, 1, tzinfo=timezone.utc)
+        assert nrg_past.joined_date == expected["joined_date"]
+        assert nrg_past.inactive_date == expected["inactive_date"]
 
     def test_past_team_100_thieves(self, client, mock_vlr):
         mock_vlr.get("/player/11225").respond(200, text=load_fixture("player", "11225_ethan", "overview.html"))
@@ -98,14 +111,16 @@ class TestSyncInspire:
         assert team.left_date == datetime(2022, 2, 1, tzinfo=timezone.utc)
 
     def test_past_team_faze(self, client, mock_vlr):
-        mock_vlr.get("/player/53").respond(200, text=load_fixture("player", "53_inspire", "overview.html"))
+        html = load_fixture("player", "53_inspire", "overview.html")
+        mock_vlr.get("/player/53").respond(200, text=html)
+        expected = player_team_dates(HTMLParser(html), "FaZe Clan")
         result = client.player.teams.past_teams(53)
         team = next((t for t in result if t.name == "FaZe Clan"), None)
         assert team is not None
         assert team.team_id == 337
         assert team.slug == "faze-clan"
-        assert team.joined_date == datetime(2021, 7, 1, tzinfo=timezone.utc)
-        assert team.left_date == datetime(2021, 11, 1, tzinfo=timezone.utc)
+        assert team.joined_date == expected["joined_date"]
+        assert team.left_date == expected["left_date"]
 
     def test_past_team_rice_no_joined(self, client, mock_vlr):
         mock_vlr.get("/player/53").respond(200, text=load_fixture("player", "53_inspire", "overview.html"))

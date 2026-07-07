@@ -4,6 +4,7 @@ import pytest
 from selectolax.parser import HTMLParser, Node
 
 from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
+from tests.helpers.fixtures import transaction_date_from_row
 from vlrdevapi._team.transactions.parser import (
     parse_team_transactions,
     _parse_transaction_row,
@@ -36,7 +37,7 @@ class TestParseTransactionRow:
 
         txn = _parse_transaction_row(rows[0])
         assert txn is not None
-        assert txn.date == datetime(2026, 4, 25, tzinfo=timezone.utc)
+        assert txn.date == transaction_date_from_row(rows[0])
         assert txn.action == TransactionAction.Join
         assert txn.player.id == 612
         assert txn.player.ign == "mitch"
@@ -51,7 +52,7 @@ class TestParseTransactionRow:
 
         txn = _parse_transaction_row(rows[2])
         assert txn is not None
-        assert txn.date == datetime(2025, 11, 13, tzinfo=timezone.utc)
+        assert txn.date == transaction_date_from_row(rows[2])
         assert txn.action == TransactionAction.Join
         assert txn.player.id == 11494
         assert txn.player.ign == "keiko"
@@ -113,13 +114,14 @@ class TestParseTransactionRow:
 class TestParseTeamTransactions:
     def test_parse_nrg_transactions(self):
         html = _load_html(1034, "transactions.html")
+        rows = _get_table_rows(html)
         result = parse_team_transactions(html, 1034)
 
         assert result.team_id == 1034
         assert len(result.transactions) == 85
 
         first = result.transactions[0]
-        assert first.date == datetime(2026, 4, 25, tzinfo=timezone.utc)
+        assert first.date == transaction_date_from_row(rows[0])
         assert first.action == TransactionAction.Join
         assert first.player.id == 612
         assert first.player.ign == "mitch"
