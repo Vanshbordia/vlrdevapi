@@ -1,0 +1,272 @@
+---
+title: Series Economy
+description: Fetch economy data per round for a game - team bank, spend, buy type, and round winner.
+---
+
+`series.economy(series_id, game_id)` returns economy data for each round of a specific game within a series.
+
+## Signature
+
+```python
+series.economy(
+    series_id: int,
+    game_id: int,
+) -> EconomyData
+```
+
+With curried access:
+
+```python
+vlrdevapi.series(series_id).economy(game_id: int) -> EconomyData
+```
+
+## Parameters
+
+<TypeTable type={{
+  "series_id": {
+    description: "Unique series identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+  "game_id": {
+    description: "Game number within the series (int, 1-based).",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+}} />
+
+## Returns - `EconomyData`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Unique series identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: "Unique game identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team1": {
+    description: "Team 1 name (defense in first half).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1_id": {
+    description: "Team 1 ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2": {
+    description: "Team 2 name (attack in first half).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2_id": {
+    description: "Team 2 ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "rounds": {
+    description: "List of economy data for each round.",
+    type: "list[RoundEconomyData]",
+    typeDescription: "list[RoundEconomyData] - see nested fields below",
+    default: "[]",
+  },
+}} />
+
+### `RoundEconomyData` Fields
+
+<TypeTable type={{
+  "round_number": {
+    description: "Round number in the game (1-indexed).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "bank_team1": {
+    description: "Team 1's bank amount (total team credits).",
+    type: "float",
+    typeDescription: "float",
+    default: "0.0",
+  },
+  "bank_team2": {
+    description: "Team 2's bank amount (total team credits).",
+    type: "float",
+    typeDescription: "float",
+    default: "0.0",
+  },
+  "spent_team1": {
+    description: "Total credits spent by team 1 in this round.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "spent_team2": {
+    description: "Total credits spent by team 2 in this round.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "winner": {
+    description: "Winning team information for this round.",
+    type: "RoundWinner",
+    typeDescription: "RoundWinner",
+  },
+  "buy_type_team1": {
+    description: "Buy type classification for team 1 (Eco, Semi-eco, Semi-buy, Full-buy).",
+    type: "BuyType",
+    typeDescription: "BuyType enum",
+  },
+  "buy_type_team2": {
+    description: "Buy type classification for team 2.",
+    type: "BuyType",
+    typeDescription: "BuyType enum",
+  },
+  "is_pistol_round": {
+    description: "Whether this is a pistol round (rounds 1 and 13).",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+### `RoundWinner` Fields
+
+<TypeTable type={{
+  "name": {
+    description: "Winning team name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "id": {
+    description: "Winning team ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+}} />
+
+### `BuyType` Values
+
+| Value | Description | Total Team Spend |
+|-------|-------------|-----------------|
+| `BuyType.ECO` | Eco buy | 0 - 5,000 |
+| `BuyType.SEMI_ECO` | Semi-eco | 5,000 - 10,000 |
+| `BuyType.SEMI_BUY` | Semi-buy | 10,000 - 20,000 |
+| `BuyType.FULL_BUY` | Full-buy | 20,000+ |
+
+## Examples
+
+### Basic economy dump
+
+Print the economy state for every round - how much each team had in the bank, what they spent, and what buy type they went with.
+
+```python
+import vlrdevapi
+
+econ = vlrdevapi.series.economy(series_id=670471, game_id=1)
+print(f"{econ.team1} vs {econ.team2}")
+print()
+
+for rd in econ.rounds[:5]:
+    buy1 = f"{rd.buy_type_team1:>9}"
+    buy2 = f"{rd.buy_type_team2:>9}"
+    tag = " (PISTOL)" if rd.is_pistol_round else ""
+    print(f"R{rd.round_number:>2}: {econ.team1:>15} bank={rd.bank_team1:>6} spent={rd.spent_team1:>5} [{buy1}]")
+    print(f"     {econ.team2:>15} bank={rd.bank_team2:>6} spent={rd.spent_team2:>5} [{buy2}]")
+    print(f"     -> Winner: {rd.winner.name}{tag}")
+```
+
+### Buy type analysis
+
+Analyse how buy types correlate with round wins. This shows which team won full-buy rounds, eco rounds, etc.
+
+```python
+import vlrdevapi
+from collections import Counter
+
+econ = vlrdevapi.series.economy(series_id=670471, game_id=1)
+
+for team_name in [econ.team1, econ.team2]:
+    team_buys = Counter()
+    team_wins = Counter()
+    for rd in econ.rounds:
+        buy = rd.buy_type_team1 if team_name == econ.team1 else rd.buy_type_team2
+        team_buys[buy] += 1
+        if rd.winner.name == team_name:
+            team_wins[buy] += 1
+    print(f"\n--- {team_name} ---")
+    for buy_type, total in team_buys.items():
+        wins = team_wins.get(buy_type, 0)
+        pct = wins / total * 100 if total else 0
+        print(f"  {buy_type}: {wins}/{total} wins ({pct:.0f}%)")
+```
+
+### Force buy and eco round detection
+
+Identify eco rounds, force buys (semi-buy with low bank), and full-buy rounds. These are often key turning points in a match.
+
+```python
+import vlrdevapi
+from vlrdevapi._series.economy import BuyType
+
+econ = vlrdevapi.series.economy(series_id=670471, game_id=1)
+
+found = 0
+for rd in econ.rounds:
+    if rd.buy_type_team1 == BuyType.ECO.value and rd.buy_type_team2 == BuyType.ECO.value:
+        print(f"R{rd.round_number}: Double eco")
+        found += 1
+    elif rd.buy_type_team1 == BuyType.FULL_BUY.value and rd.buy_type_team2 != BuyType.FULL_BUY.value:
+        print(f"R{rd.round_number}: {econ.team1} full-buy vs {econ.team2} {rd.buy_type_team2}")
+        found += 1
+if not found:
+    print("No force/eco round patterns found in this game")
+```
+
+### Pistol round analysis
+
+Pistol rounds (rounds 1 and 13) are critical. Check who won them and what the economy looked like.
+
+```python
+import vlrdevapi
+
+econ = vlrdevapi.series.economy(series_id=670471, game_id=1)
+
+pistols = [rd for rd in econ.rounds if rd.is_pistol_round]
+for rd in pistols:
+    print(f"Pistol R{rd.round_number}: {rd.winner.name} won")
+    print(f"  {econ.team1}: bank={rd.bank_team1} spent={rd.spent_team1}")
+    print(f"  {econ.team2}: bank={rd.bank_team2} spent={rd.spent_team2}")
+```
+
+### Curried access
+
+Analyse full-buy round outcomes using the curried access pattern.
+
+```python
+import vlrdevapi
+from vlrdevapi._series.economy import BuyType
+
+series = vlrdevapi.series(670471)
+econ = series.economy(game_id=1)
+
+full_buy_wins = {"team1": 0, "team2": 0}
+for rd in econ.rounds:
+    if rd.buy_type_team1 == BuyType.FULL_BUY and rd.winner.name == econ.team1:
+        full_buy_wins["team1"] += 1
+    if rd.buy_type_team2 == BuyType.FULL_BUY and rd.winner.name == econ.team2:
+        full_buy_wins["team2"] += 1
+print(f"Full-buy wins: {econ.team1} {full_buy_wins['team1']} - {full_buy_wins['team2']} {econ.team2}")
+```

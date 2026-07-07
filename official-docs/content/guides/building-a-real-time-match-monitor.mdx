@@ -1,0 +1,132 @@
+---
+title: Building a Real-Time Match Monitor
+description: A step-by-step guide to building a CLI tool that monitors live Valorant matches, tracks scores, and alerts on key events using VLRdevAPI.
+date: 2026-07-04
+author: RiftWatch
+---
+
+This guide walks through building a real-time match monitor that polls for live matches, displays scores, and tracks team performance.
+
+## Step 1: Fetch Live Matches
+
+```python
+import vlrdevapi
+import time
+
+def get_live_matches():
+    live = vlrdevapi.matches.live()
+    if not live.matches:
+        return []
+    return live.matches
+
+# Demonstration
+matches = get_live_matches()
+print(f"Live matches: {len(matches)}")
+```
+
+## Step 2: Display Match Status
+
+```python
+def show_matches(matches):
+    for m in matches:
+        t1 = m.team1.name if m.team1 else "TBD"
+        t2 = m.team2.name if m.team2 else "TBD"
+        s1 = m.team1.score if m.team1 else "-"
+        s2 = m.team2.score if m.team2 else "-"
+        print(f"{t1} {s1} - {s2} {t2} | {m.event}")
+```
+
+## Step 3: Polling Loop
+
+```python
+def monitor(interval=30):
+    seen = set()
+    while True:
+        matches = get_live_matches()
+        for m in matches:
+            if m.id not in seen:
+                seen.add(m.id)
+                t1 = m.team1.name if m.team1 else "TBD"
+                t2 = m.team2.name if m.team2 else "TBD"
+                print(f"[LIVE] {t1} vs {t2} just started!")
+        time.sleep(interval)
+
+if __name__ == "__main__":
+    monitor()
+```
+
+Run it:
+
+```bash
+python monitor.py
+```
+
+## Step 4: Get Detailed Team Info
+
+When a new match appears, fetch team details automatically:
+
+```python
+def show_team_details(match):
+    t1 = match.team1
+    t2 = match.team2
+    if t1:
+        team1 = vlrdevapi.team(t1.id)
+        print(f"{team1.info().name} roster:")
+        for p in team1.roster().players:
+            print(f"  {p.ign} - {', '.join(p.roles)}")
+    if t2:
+        team2 = vlrdevapi.team(t2.id)
+        print(f"{team2.info().name} roster:")
+        for p in team2.roster().players:
+            print(f"  {p.ign} - {', '.join(p.roles)}")
+```
+
+## Step 5: Track Completed Matches
+
+After a match ends, fetch the result:
+
+```python
+def get_recent_results():
+    results = vlrdevapi.matches.completed(page=1)
+    for m in results.matches[:5]:
+        t1 = m.team1
+        t2 = m.team2
+        if t1 and t2:
+            winner = t1 if t1.is_winner else t2
+            print(f"{t1.name} {t1.score} - {t2.score} {t2.name}")
+            print(f"  Winner: {winner.name}")
+```
+
+## Full Script
+
+```python
+import vlrdevapi
+import time
+
+live = vlrdevapi.matches.live()
+print(f"Currently live: {len(live.matches)} matches")
+
+def monitor(interval=30):
+    seen = set()
+    while True:
+        live = vlrdevapi.matches.live()
+        for m in live.matches:
+            if m.id not in seen:
+                seen.add(m.id)
+                t1 = m.team1.name if m.team1 else "TBD"
+                t2 = m.team2.name if m.team2 else "TBD"
+                print(f"[LIVE] {t1} vs {t2}")
+        time.sleep(interval)
+
+if __name__ == "__main__":
+    monitor()
+```
+
+## Extending Further
+
+- Add Discord webhook notifications
+- Track map-wise statistics via `series.players()`
+- Log match data to a database for historical analysis
+- Build a web dashboard with live match tiles
+
+Check the [API Reference](/docs) for full endpoint details.

@@ -1,0 +1,107 @@
+---
+title: Series VODs
+description: Fetch VOD/video links for a match - YouTube and Twitch URLs per game.
+---
+
+`series.vods(series_id)` returns VOD (Video on Demand) links for a match on vlr.gg.
+
+## Signature
+
+```python
+series.vods(series_id: int) -> SeriesVods
+```
+
+With curried access:
+
+```python
+vlrdevapi.series(series_id).vods() -> SeriesVods
+```
+
+## Parameters
+
+<TypeTable type={{
+  "series_id": {
+    description: "Unique series identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+}} />
+
+## Returns - `SeriesVods`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Unique series identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "vods": {
+    description: "List of VOD entries for this match.",
+    type: "list[SeriesVod]",
+    typeDescription: "list[SeriesVod] - see nested fields below",
+    default: "[]",
+  },
+}} />
+
+### `SeriesVod` Fields
+
+<TypeTable type={{
+  "url": {
+    description: "Full URL to the VOD (YouTube or Twitch).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "label": {
+    description: 'Display label (e.g. "Full Match", "Map 1", "Map 2").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Examples
+
+### List all VODs
+
+Fetch all available VOD links for a match. Each entry has a label indicating which part of the match it covers and a URL pointing to the video platform.
+
+```python
+import vlrdevapi
+
+vods = vlrdevapi.series.vods(series_id=670471)
+for vod in vods.vods:
+    print(f"{vod.label}: {vod.url}")
+```
+
+### Categorize VODs by label
+
+Use the label field to organize VODs into different categories - full match replays versus individual map VODs.
+
+```python
+import vlrdevapi
+
+vods = vlrdevapi.series.vods(series_id=670471)
+for vod in vods.vods:
+    if "Full" in vod.label:
+        print(f"Full match: {vod.url}")
+    else:
+        print(f"Individual VOD ({vod.label}): {vod.url}")
+```
+
+### Curried access
+
+Use the curried pattern to access VOD data without passing the series ID repeatedly.
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+vods = series.vods()
+print(f"Found {len(vods.vods)} VODs")
+
+for vod in vods.vods:
+    print(f"[{vod.label}] {vod.url}")
+```

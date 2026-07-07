@@ -1,0 +1,356 @@
+---
+title: Series Performance
+description: Fetch performance data including kill matrices (all kills, first kills, OP kills) and advanced stats (multi-kills, clutches, eco rating, plants, defuses).
+---
+
+`series.performance(series_id, game_id)` returns detailed performance data for a game, including kill matrices and advanced statistics.
+
+## Signature
+
+```python
+series.performance(
+    series_id: int,
+    game_id: int | str = "all",
+) -> PerformanceData
+```
+
+With curried access:
+
+```python
+vlrdevapi.series(series_id).performance(game_id: int | str = "all") -> PerformanceData
+```
+
+## Parameters
+
+<TypeTable type={{
+  "series_id": {
+    description: "Unique series identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+  "game_id": {
+    description: 'Game number within the series, or "all" for aggregate data across all maps.',
+    type: "int | str",
+    typeDescription: 'int (1-based game number) or "all" for combined data',
+    default: '"all"',
+    required: false,
+  },
+}} />
+
+## Returns - `PerformanceData`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Unique series identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: 'Game/map identifier ("all" for combined, or numeric ID).',
+    type: "str",
+    typeDescription: "str",
+    default: '"all"',
+  },
+  "all_kills_matrix": {
+    description: "All kills kill matrix showing who killed whom.",
+    type: "KillMatrix",
+    typeDescription: "KillMatrix - see nested fields below",
+  },
+  "first_kills_matrix": {
+    description: "First kills kill matrix (only opening duel kills).",
+    type: "KillMatrix",
+    typeDescription: "KillMatrix",
+  },
+  "op_kills_matrix": {
+    description: "Operator kills kill matrix.",
+    type: "KillMatrix",
+    typeDescription: "KillMatrix",
+  },
+  "adv_stats": {
+    description: "Advanced stats for each player (multi-kills, clutches, etc.).",
+    type: "list[AdvStatsEntry]",
+    typeDescription: "list[AdvStatsEntry] - see nested fields below",
+    default: "[]",
+  },
+}} />
+
+### `KillMatrix` Fields
+
+<TypeTable type={{
+  "entries": {
+    description: "List of kill entries (who killed whom, with kill/death totals and differential).",
+    type: "list[KillEntry]",
+    typeDescription: "list[KillEntry] - see below",
+    default: "[]",
+  },
+}} />
+
+`KillMatrix` also provides helper methods: `lookup(killer, victim)`, `by_killer(name)`, `by_victim(name)`, `by_team(team)`, `killers()`, `victims()`.
+
+### `KillEntry` Fields
+
+<TypeTable type={{
+  "killer": {
+    description: "Killer player name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "killer_id": {
+    description: "Killer player ID on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "killer_team": {
+    description: "Killer team abbreviation.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "victim": {
+    description: "Victim player name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "victim_id": {
+    description: "Victim player ID on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "victim_team": {
+    description: "Victim team abbreviation.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "kills": {
+    description: "Total kills by the killer (overall, not just this matchup).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "deaths": {
+    description: "Total deaths of the killer (overall, not just this matchup).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "diff": {
+    description: "Kill/death differential for the killer.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+### `AdvStatsEntry` Fields
+
+<TypeTable type={{
+  "player_id": {
+    description: "Unique player identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Player in-game name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team_short": {
+    description: "Team abbreviation/tag.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "Agent played in this game.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "two_k": {
+    description: "Number of rounds with exactly 2 kills.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "three_k": {
+    description: "Number of rounds with exactly 3 kills.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "four_k": {
+    description: "Number of rounds with exactly 4 kills.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "five_k": {
+    description: "Number of rounds with exactly 5 kills.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v1": {
+    description: "Number of 1v1 clutches won.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v2": {
+    description: "Number of 1v2 clutches won.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v3": {
+    description: "Number of 1v3 clutches won.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v4": {
+    description: "Number of 1v4 clutches won.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v5": {
+    description: "Number of 1v5 clutches won.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "econ": {
+    description: "Econ rating.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "pl": {
+    description: "Number of spike plants.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "de": {
+    description: "Number of spike defuses.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+Each multi-kill and clutch field also has a corresponding `_rounds` list (e.g., `two_k_rounds`, `one_v1_rounds`) containing `AdvStatsNotableRound` objects with `round_number` and `victims` data.
+
+## Examples
+
+### Kill matrix
+
+The kill matrix shows every kill in the game. Use the `KillMatrix` helper methods to find specific matchups.
+
+```python
+import vlrdevapi
+
+perf = vlrdevapi.series.performance(series_id=670471, game_id=1)
+
+if perf.all_kills_matrix.entries:
+    for entry in perf.all_kills_matrix.entries[:5]:
+        print(f"{entry.killer} ({entry.killer_team}) killed {entry.victim} ({entry.victim_team})")
+
+    # Find the most common killer-victim pair
+    killer = perf.all_kills_matrix.killers()[0] if perf.all_kills_matrix.killers() else None
+    if killer:
+        victims = perf.all_kills_matrix.by_killer(killer)
+        for v in victims[:3]:
+            print(f"{killer} killed {v.victim} x {v.kills} times")
+else:
+    print("(no kill matrix data for this game)")
+```
+
+### First kills and OP kills
+
+Access the filtered kill matrices for first kills (opening duel winners) and Operator kills.
+
+```python
+import vlrdevapi
+
+perf = vlrdevapi.series.performance(series_id=670471, game_id=1)
+
+print("First kills:")
+if perf.first_kills_matrix.entries:
+    for entry in perf.first_kills_matrix.entries:
+        print(f"  {entry.killer} -> {entry.victim}")
+else:
+    print("  (no opening duel data)")
+
+print("Operator kills:")
+if perf.op_kills_matrix.entries:
+    for entry in perf.op_kills_matrix.entries:
+        print(f"  {entry.killer} -> {entry.victim}")
+else:
+    print("  (no OP kill data)")
+```
+
+### Advanced stats
+
+Advanced stats show multi-kill rounds, clutch wins, eco rating, plants, and defuses per player.
+
+```python
+import vlrdevapi
+
+perf = vlrdevapi.series.performance(series_id=670471, game_id=1)
+
+if not perf.adv_stats:
+    print("(no advanced stats available)")
+for player in perf.adv_stats:
+    print(f"{player.name} ({player.team_short}) - {player.agent}")
+    print(f"  2K: {player.two_k} | 3K: {player.three_k} | 4K: {player.four_k} | 5K: {player.five_k}")
+    print(f"  1v1: {player.one_v1} | 1v2: {player.one_v2} | 1v3: {player.one_v3}")
+    print(f"  Econ: {player.econ} | Plants: {player.pl} | Defuses: {player.de}")
+```
+
+### Notable round details
+
+Each multi-kill and clutch stat has a corresponding `_rounds` list with round numbers and victim details, giving you the exact context of each highlight play.
+
+```python
+import vlrdevapi
+
+perf = vlrdevapi.series.performance(series_id=670471, game_id=1)
+
+if not perf.adv_stats:
+    print("(no player data for notable rounds)")
+for player in perf.adv_stats:
+    for round_info in player.four_k_rounds:
+        victims = ", ".join(v.name for v in round_info.victims)
+        print(f"{player.name} got a 4K in round {round_info.round_number} ({victims})")
+    for round_info in player.one_v3_rounds:
+        victims = ", ".join(v.name for v in round_info.victims)
+        print(f"{player.name} won a 1v3 in round {round_info.round_number} ({victims})")
+```
+
+### Curried access
+
+Use the curried pattern to find the player with the most multi-kill rounds.
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+perf = series.performance(game_id=1)
+
+if perf.adv_stats:
+    top = max(perf.adv_stats, key=lambda p: p.three_k or 0)
+    print(f"Most 3K rounds: {top.name} ({top.three_k})")
+else:
+    print("(no advanced stats to evaluate)")
+```

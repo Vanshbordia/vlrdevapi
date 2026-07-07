@@ -1,0 +1,136 @@
+---
+title: Event Stages
+description: Fetch stage breakdown for an event - Group Stage, Playoffs, and their date ranges.
+---
+
+`event.stages(event_id)` returns the stage breakdown for an event (e.g. "Group Stage", "Playoffs") with start/end dates inferred from the event page subnav.
+
+## Signature
+
+```python
+event.stages(event_id: int) -> EventStages
+```
+
+## Parameters
+
+<TypeTable type={{
+  "event_id": {
+    description: "Unique event identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+}} />
+
+## Returns - `EventStages`
+
+`EventStages` wraps a list of `EventStage` objects and supports `__len__`, `__iter__`, and `__getitem__`.
+
+<TypeTable type={{
+  "stages": {
+    description: "List of stages in the event.",
+    type: "list[EventStage]",
+    typeDescription: "list[EventStage] - see nested fields below",
+  },
+}} />
+
+### Container Protocol
+
+| Method | Behaviour |
+|--------|-----------|
+| `len(result)` | Returns the number of stages |
+| `for stage in result` | Iterates over stages |
+| `result[i]` | Indexes into the stages list |
+
+### `EventStage` Fields
+
+<TypeTable type={{
+  "name": {
+    description: 'Stage display name (e.g. "Group Stage", "Playoffs").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "id": {
+    description: "Stage identifier used as the series_id URL parameter.",
+    type: "str",
+    typeDescription: 'str (e.g. "all", "5556", "5557")',
+    default: '""',
+  },
+  "start_date": {
+    description: "Stage start date inferred from the event page subnav date range.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "end_date": {
+    description: "Stage end date inferred from the event page subnav date range.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+}} />
+
+## Behaviour
+
+- Stages are parsed from the event's matches page, not the main event page.
+- If the matches page has stages, an additional fetch to the main event page is made to extract date ranges from the sub-navigation.
+- The `id` field can be passed as the `stage_id` parameter to `event(id).matches()` to filter matches by stage.
+
+## Examples
+
+### List all stages
+
+Fetch all stages for an event and print their display names along with their internal stage IDs. The `id` field is the value used in the `series_id` URL parameter when filtering matches.
+
+```python
+import vlrdevapi
+
+stages = vlrdevapi.event(2765).stages()
+print(f"Found {len(stages)} stages")
+
+for stage in stages:
+    print(f"  {stage.name} (ID: {stage.id})")
+```
+
+### Stages with dates
+
+Each stage may have inferred start and end dates extracted from the event page's sub-navigation date ranges. These dates are `datetime.date` objects when available, or `None` if they could not be determined.
+
+```python
+import vlrdevapi
+
+stages = vlrdevapi.event(2765).stages()
+for stage in stages:
+    start = stage.start_date or "TBD"
+    end = stage.end_date or "TBD"
+    print(f"{stage.name}: {start} to {end}")
+```
+
+### Access by index
+
+The `EventStages` object supports direct indexing and slicing, making it easy to access specific stages without iteration.
+
+```python
+import vlrdevapi
+
+stages = vlrdevapi.event(2765).stages()
+first_stage = stages[0]
+print(f"First stage: {first_stage.name}")
+
+last_stage = stages[-1]
+print(f"Last stage: {last_stage.name}")
+```
+
+### Use stage ID to filter matches
+
+The `id` field from each stage can be passed directly to the `matches()` method as the `stage_id` parameter. This allows you to fetch matches for a specific stage of the event.
+
+```python
+import vlrdevapi
+
+stages = vlrdevapi.event(2765).stages()
+for stage in stages:
+    stage_matches = vlrdevapi.event(2765).matches(stage_id=stage.id)
+    print(f"{stage.name}: {len(stage_matches.matches)} matches")
+```

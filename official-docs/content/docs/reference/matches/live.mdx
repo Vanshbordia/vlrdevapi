@@ -1,0 +1,143 @@
+---
+title: Live Matches
+description: Get currently live matches from vlr.gg with team details and status.
+---
+
+`matches.live()` returns all matches currently in progress on vlr.gg.
+
+## Signature
+
+```python
+matches.live() -> LiveMatchesPage
+```
+
+## Returns - `LiveMatchesPage`
+
+<TypeTable type={{
+  "matches": {
+    description: "List of live match entries.",
+    type: "list[LiveMatchEntry]",
+    typeDescription: "list[LiveMatchEntry] - see nested fields below",
+    default: "[]",
+  },
+}} />
+
+### `LiveMatchEntry` Fields
+
+<TypeTable type={{
+  "match_id": {
+    description: "Unique match identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "Relative URL to the match page.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "Event/tournament name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: 'Stage within the event (e.g. "Playoffs", "Swiss Stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1": {
+    description: "First team information.",
+    type: "TeamInLiveMatch | None",
+    typeDescription: "TeamInLiveMatch | None - see nested fields below",
+    default: "None",
+  },
+  "team2": {
+    description: "Second team information.",
+    type: "TeamInLiveMatch | None",
+    typeDescription: "TeamInLiveMatch | None",
+    default: "None",
+  },
+  "status": {
+    description: 'Match status (e.g. "live").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "datetime": {
+    description: "Match datetime in UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+### `TeamInLiveMatch` Fields
+
+<TypeTable type={{
+  "id": {
+    description: "Unique team identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: 'Full team name (e.g. "NRG", "FNATIC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: 'Short team tag (e.g. "NRG", "FNC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_name": {
+    description: 'Full country name (e.g. "United States").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Examples
+
+### Get all live matches
+
+Retrieve all currently live matches with team and event details.
+
+```python
+import vlrdevapi
+
+results = vlrdevapi.matches.live()
+if not results.matches:
+    print("No live matches right now")
+else:
+    for match in results.matches:
+        t1 = match.team1.name if match.team1 else "TBD"
+        t2 = match.team2.name if match.team2 else "TBD"
+        print(f"LIVE: {t1} vs {t2} ({match.event} - {match.stage})")
+```
+
+### Check for live matches by event
+
+Filter live matches to find those from a specific tournament or event.
+
+```python
+import vlrdevapi
+
+results = vlrdevapi.matches.live()
+found = False
+for match in results.matches:
+    if "champions" in match.event.lower():
+        t1 = match.team1.tag if match.team1 else "?"
+        t2 = match.team2.tag if match.team2 else "?"
+        print(f"{t1} vs {t2} is live!")
+        found = True
+if not found:
+    print("(no Champions matches live right now)")
+```

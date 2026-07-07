@@ -1,0 +1,112 @@
+---
+title: Getting Started
+description: An introduction to VLRdevAPI, its architecture, and usage patterns.
+icon: Rocket
+---
+
+
+VLRdevAPI is a Python library for fetching Valorant esports data from [VLR.gg](https://www.vlr.gg/). It handles HTTP requests, HTML parsing, and data normalization so you can work with typed Python objects instead of raw markup.
+
+## Architecture Overview
+
+The library offers two ways to access data:
+
+- **Module-level access** - a lazy-initialized default client provides quick one-liners
+- **Explicit `VLRClient`** - gives you full control over configuration, timeouts, and resource lifetime
+
+Both approaches expose the same five namespaces:
+
+| Namespace | Description |
+|-----------|-------------|
+| `matches` | Upcoming, live, and completed match listings |
+| `team` | Team info, rosters, stats, matches, placements |
+| `player` | Player profiles, agents, teams, match history |
+| `event` | Event info, stages, standings, teams, matches |
+| `series` | Series info, VODs, player stats, economy data |
+
+## Prerequisites
+
+- **Python 3.11 or higher** - Check your version with `python --version`
+
+## Installation
+
+```bash
+uv add vlrdevapi
+```
+
+Or with pip:
+
+```bash
+pip install vlrdevapi
+```
+
+## Usage Patterns
+
+<Steps>
+  <Step>
+
+  ### Module-level access
+
+  The simplest way to get started. The library creates a default client on first use.
+
+```python
+import vlrdevapi
+
+matches = vlrdevapi.matches.upcoming()
+for match in matches.matches[:5]:
+    t1 = match.team1.name if match.team1 else "TBD"
+    t2 = match.team2.name if match.team2 else "TBD"
+    print(f"{t1} vs {t2}")
+```
+  </Step>
+
+  <Step>
+
+  ### Explicit client with context manager
+
+  Use this when you need custom configuration or want to control the client lifecycle.
+
+  ```python
+  from vlrdevapi import VLRClient
+
+with VLRClient() as client:
+    page = client.matches.upcoming()
+    for match in page.matches[:5]:
+        t1 = match.team1.name if match.team1 else "TBD"
+        t2 = match.team2.name if match.team2 else "TBD"
+        print(f"{t1} vs {t2}")
+  ```
+  </Step>
+
+  <Step>
+
+  ### Curried access
+
+  Pass an ID once, then chain method calls.
+
+  ```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+info = team.info()
+roster = team.roster()
+print(f"{info.name} has {len(roster.players)} players")
+  ```
+  </Step>
+</Steps>
+
+## Namespace Reference
+
+Each namespace has dedicated methods for different data types:
+
+- **`matches.upcoming()`** / **`matches.live()`** / **`matches.completed()`** - match listings
+- **`team(id)`** - team-specific data (roster, stats, matches, placements)
+- **`player(id)`** - player-specific data (profile, agents, teams, matches)
+- **`event(id)`** - event-specific data (info, stages, standings, teams)
+- **`series(id)`** - series-specific data (info, VODs, player stats, economy)
+
+## Next Steps
+
+- Follow the [Quick Start](/docs/quickstart) for a complete, runnable example
+- Explore the full API reference
+- Check the [Contributing guide](/docs/guides/contributing) to get involved

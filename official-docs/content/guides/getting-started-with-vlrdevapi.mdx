@@ -1,0 +1,128 @@
+---
+title: Getting Started with VLRdevAPI
+description: Install the SDK, make your first API calls, and learn the core patterns — module access, client usage, and error handling.
+date: 2026-07-05
+author: RiftWatch
+---
+
+This guide walks through everything you need to start using VLRdevAPI with real code examples.
+
+## Installation
+
+```bash
+pip install vlrdevapi
+# or with uv (recommended)
+uv add vlrdevapi
+```
+
+Requires Python 3.11+.
+
+## Quick Example
+
+```python
+import vlrdevapi
+
+matches = vlrdevapi.matches.upcoming()
+
+for m in matches.matches[:5]:
+    t1 = m.team1.name if m.team1 else "TBD"
+    t2 = m.team2.name if m.team2 else "TBD"
+    print(f"{t1} vs {t2}")
+```
+
+That's it. The library creates a default client automatically.
+
+## Module-Level Access
+
+Every namespace is accessible directly from the module:
+
+```python
+import vlrdevapi
+
+# Matches
+upcoming = vlrdevapi.matches.upcoming()
+print(f"{len(upcoming.matches)} upcoming matches")
+
+# Teams
+team = vlrdevapi.team(2593)
+print(team.info().name)
+print(f"  Roster: {team.roster().players[0].ign}")
+
+# Players
+player = vlrdevapi.player(8480)
+print(f"Player: {player.info().name}")
+
+# Events
+stages = vlrdevapi.event(2765).stages()
+print(f"Event stages: {len(stages)}")
+
+# Series
+info = vlrdevapi.series(670471).info()
+print(f"Series: {info.team1.name} vs {info.team2.name}")
+```
+
+## Using VLRClient
+
+For more control, create an explicit client:
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=30, max_retries=5) as client:
+    data = client.matches.upcoming(page=1)
+    print(f"Found {len(data.matches)} matches")
+    team = client.team.info(team_id=2593)
+    print(f"Team: {team.name}")
+```
+
+The client supports context manager for proper resource cleanup.
+
+## Using Context Manager
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=30, requests_per_second=8) as client:
+    live = client.matches.live()
+    if live.matches:
+        for m in live.matches:
+            t1 = m.team1.name if m.team1 else "TBD"
+            t2 = m.team2.name if m.team2 else "TBD"
+            print(f"LIVE: {t1} vs {t2}")
+    else:
+        print("(no live matches currently)")
+```
+
+## Error Handling
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import NotFoundError, RateLimitError
+
+try:
+    team = vlrdevapi.team(2593).info()
+    print(f"Team: {team.name}")
+except NotFoundError:
+    print("Team not found")
+except RateLimitError:
+    print("Rate limited — waiting...")
+```
+
+## Pagination
+
+List endpoints return paginated results:
+
+```python
+page = vlrdevapi.matches.upcoming(page=1)
+print(f"Found {len(page.matches)} matches on this page")
+print(f"More pages: {page.has_next_page}")
+for m in page.matches[:3]:
+    t1 = m.team1.name if m.team1 else "TBD"
+    t2 = m.team2.name if m.team2 else "TBD"
+    print(f"{t1} vs {t2}")
+```
+
+## Next Steps
+
+- [Building a Match Monitor](/guides) — real-time match tracking project
+- [API Reference](/docs) — full endpoint documentation

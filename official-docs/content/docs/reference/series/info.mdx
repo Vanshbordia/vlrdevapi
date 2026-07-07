@@ -1,0 +1,326 @@
+---
+title: Series Info
+description: Fetch match overview data - teams, scores, event details, map veto, and per-game breakdown.
+---
+
+`series.info(series_id)` returns the overview information for a match on vlr.gg, including team details, scores, event context, map veto history, and per-game statistics.
+
+## Signature
+
+```python
+series.info(series_id: int) -> SeriesInfo
+```
+
+With curried access:
+
+```python
+vlrdevapi.series(series_id).info() -> SeriesInfo
+```
+
+## Parameters
+
+<TypeTable type={{
+  "series_id": {
+    description: "Unique series identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+}} />
+
+## Returns - `SeriesInfo`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Unique series identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "status": {
+    description: 'Match status: "completed", "live", or "upcoming".',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1": {
+    description: "First team information.",
+    type: "SeriesTeam",
+    typeDescription: "SeriesTeam - see nested fields below",
+  },
+  "team2": {
+    description: "Second team information.",
+    type: "SeriesTeam",
+    typeDescription: "SeriesTeam - see nested fields below",
+  },
+  "score1": {
+    description: "First team's series score (number of map wins).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "score2": {
+    description: "Second team's series score (number of map wins).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "best_of": {
+    description: "Match format (e.g. 1 for single map, 3 for bo3, 5 for bo5).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "event_id": {
+    description: "Unique event identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "event_name": {
+    description: 'Event name (e.g. "Valorant Champions 2025").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: 'Stage within the event (e.g. "Playoffs").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "bracket": {
+    description: 'Bracket or round (e.g. "Grand Final", "Upper Round 1").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "datetime": {
+    description: "Combined UTC datetime of the match.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+  "patch": {
+    description: 'Patch version (e.g. "11.05").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "veto": {
+    description: "Map veto/pick/ban entries.",
+    type: "list[MapVeto]",
+    typeDescription: "list[MapVeto] - see nested fields below",
+    default: "[]",
+  },
+  "games": {
+    description: "Games/maps in the series with per-map scores.",
+    type: "list[SeriesGame]",
+    typeDescription: "list[SeriesGame] - see nested fields below",
+    default: "[]",
+  },
+}} />
+
+### `SeriesTeam` Fields
+
+<TypeTable type={{
+  "id": {
+    description: "Unique team identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: 'Full team name (e.g. "NRG", "FNATIC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: 'Short team tag (e.g. "NRG", "FNC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "logo_url": {
+    description: "URL to the team logo image.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `MapVeto` Fields
+
+<TypeTable type={{
+  "map_name": {
+    description: 'Map name (e.g. "Corrode", "Lotus").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "veto_type": {
+    description: 'Type of veto: "ban", "pick", or "decider".',
+    type: "str",
+    typeDescription: '"ban" | "pick" | "decider"',
+    default: '""',
+  },
+  "team": {
+    description: "Team that made the ban or pick. Empty string for decider.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `SeriesGame` Fields
+
+<TypeTable type={{
+  "game_id": {
+    description: "Unique game identifier on vlr.gg (data-game-id attribute).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "order": {
+    description: "Map order in the series (1-indexed).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "map_name": {
+    description: 'Map name (e.g. "Split", "Breeze").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "picked_by": {
+    description: 'Team tag that picked this map. Empty for decider or unpicked maps.',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "played": {
+    description: "Whether the map was actually played (may be false for unplayed games).",
+    type: "bool",
+    typeDescription: "bool",
+    default: "True",
+  },
+  "team1_score": {
+    description: "First team's score on this map.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_score": {
+    description: "Second team's score on this map.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team1_defense_rounds": {
+    description: "First team's rounds won on defense (CT side).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team1_attack_rounds": {
+    description: "First team's rounds won on attack (T side).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_attack_rounds": {
+    description: "Second team's rounds won on attack (T side).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_defense_rounds": {
+    description: "Second team's rounds won on defense (CT side).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team1_overtime_rounds": {
+    description: "First team's rounds won in overtime.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_overtime_rounds": {
+    description: "Second team's rounds won in overtime.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "duration_seconds": {
+    description: "Match duration in seconds.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+## Examples
+
+### Basic series info
+
+Fetch the core match details - both teams, their scores, and the event context. The `best_of` field indicates whether the match is a single map (1), best-of-3 (3), or best-of-5 (5).
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.series.info(series_id=670471)
+print(f"{info.team1.name} vs {info.team2.name}")
+print(f"Score: {info.score1} - {info.score2}")
+print(f"Format: bo{info.best_of}")
+print(f"Status: {info.status}")
+```
+
+### Event and bracket context
+
+The series info includes the event it belongs to, the stage within the event, and the specific bracket or round. The `datetime` field provides the scheduled start time in UTC.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.series.info(series_id=670471)
+print(f"Event: {info.event_name}")
+print(f"Stage: {info.stage}")
+print(f"Bracket: {info.bracket}")
+print(f"Patch: {info.patch}")
+print(f"UTC: {info.datetime}")
+```
+
+### Map veto and games
+
+The `veto` list shows the map ban/pick/decider sequence. The `games` list provides per-map details including scores, side-specific round wins, overtime rounds, and match duration.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.series.info(series_id=670471)
+
+for v in info.veto:
+    print(f"  {v.team} {v.veto_type}s {v.map_name}")
+
+for game in info.games:
+    dur = f"{game.duration_seconds // 60}:{game.duration_seconds % 60:02d}" if game.duration_seconds else "N/A"
+    played = "" if game.played else " (unplayed)"
+    print(f"Map {game.order}: {game.map_name} ({game.team1_score} - {game.team2_score}) [{dur}]{played}")
+```
+
+### Curried access
+
+Use the curried pattern to avoid passing `series_id` repeatedly. This is especially useful when accessing multiple data points for the same match.
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+info = series.info()
+print(f"{info.team1.name} ({info.team1.tag}) vs {info.team2.name} ({info.team2.tag})")
+print(f"Event: {info.event_name}")
+print(f"Total maps: {len(info.games)}")
+```

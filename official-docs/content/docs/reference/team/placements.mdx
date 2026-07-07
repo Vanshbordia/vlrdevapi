@@ -1,0 +1,176 @@
+---
+title: Team Placements
+description: Fetch event placement history for a team - placements, prize money, and total winnings across all events.
+---
+
+`team.placements(team_id)` returns the event placement history for a team on vlr.gg.
+
+## Signature
+
+```python
+team.placements(team_id: int) -> TeamPlacements
+```
+
+## Parameters
+
+<TypeTable type={{
+  "team_id": {
+    description: "Unique team identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+}} />
+
+## Returns - `TeamPlacements`
+
+<TypeTable type={{
+  "team_id": {
+    description: "Team ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "total_winnings": {
+    description: "Total prize money as numeric value.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "total_winnings_currency": {
+    description: "Currency symbol (e.g. '$', '€').",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "placements": {
+    description: "List of event placements.",
+    type: "list[TeamEventPlacement]",
+    typeDescription: "list[TeamEventPlacement] - see nested fields below",
+    default: "[]",
+  },
+}} />
+
+### `TeamEventPlacement` Fields
+
+<TypeTable type={{
+  "event_id": {
+    description: "Event ID on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "event_name": {
+    description: "Event name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "year": {
+    description: "Year of the event.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "placements": {
+    description: "List of placements (can have multiple, e.g. Group Stage + Playoffs).",
+    type: "list[EventPlacement]",
+    typeDescription: "list[EventPlacement] - see nested fields below",
+    default: "[]",
+  },
+  "prize": {
+    description: "Prize money as numeric value.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "prize_currency": {
+    description: "Currency symbol (e.g. '$', '€').",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+### `EventPlacement` Fields
+
+<TypeTable type={{
+  "stage": {
+    description: 'Stage within event (e.g. "Playoffs", "Group Stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "placement": {
+    description: 'Placement (e.g. "1st", "2nd", "3rd", "5th-8th").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Examples
+
+### All placements
+
+Print all event placements and total winnings.
+
+```python
+import vlrdevapi
+
+placements = vlrdevapi.team.placements(team_id=2593)
+total = f"{placements.total_winnings_currency}{placements.total_winnings:,}" if placements.total_winnings and placements.total_winnings_currency else "N/A"
+print(f"Total winnings: {total}")
+print()
+for event in placements.placements:
+    for p in event.placements:
+        print(f"{event.year} {event.event_name}: {p.placement} in {p.stage}")
+```
+
+### Best placement per event
+
+Print the best placement achieved in each event.
+
+```python
+import vlrdevapi
+
+placements = vlrdevapi.team.placements(team_id=2593)
+for event in placements.placements:
+    best = event.placements[0] if event.placements else None
+    placement = best.placement if best else "N/A"
+    print(f"{event.event_name}: {placement}")
+```
+
+### Total earnings
+
+Print total earnings broken down by year.
+
+```python
+import vlrdevapi
+
+placements = vlrdevapi.team.placements(team_id=2593)
+total = f"{placements.total_winnings_currency}{placements.total_winnings:,}" if placements.total_winnings and placements.total_winnings_currency else "N/A"
+print(f"Total: {total}")
+
+by_year = {}
+for event in placements.placements:
+    by_year[event.year] = by_year.get(event.year, 0) + (event.prize or 0)
+currency = placements.total_winnings_currency or "$"
+for year in sorted(by_year):
+    print(f"  {year}: {currency}{by_year[year]:,}")
+```
+
+### Curried access
+
+Access placements using the curried `team()` shorthand.
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+placements = team.placements()
+wins = [e for e in placements.placements for p in (e.placements or []) if "1st" in p.placement]
+print(f"Tournament wins: {len(wins)}")
+for e in wins:
+    print(f"  {e.event_name} ({e.year})")
+```

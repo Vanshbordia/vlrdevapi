@@ -1,0 +1,89 @@
+---
+title: VLRdevAPI vs. Traditional Web Scraping
+description: A comparison of using VLRdevAPI versus scraping VLR.gg directly — covering reliability, speed, maintenance, and developer experience.
+date: 2026-07-03
+author: RiftWatch
+---
+
+If you're building a Valorant esports project, you have two paths: use VLRdevAPI or scrape VLR.gg directly. Here's a breakdown of what each approach means in practice.
+
+## Developer Experience
+
+**VLRdevAPI:**
+
+```python
+import vlrdevapi
+
+# One line — no parsing, no selectors
+matches = vlrdevapi.matches.upcoming()
+for m in matches.matches[:5]:
+    t1 = m.team1.name if m.team1 else "TBD"
+    t2 = m.team2.name if m.team2 else "TBD"
+    print(f"{t1} vs {t2} ({m.event})")
+```
+
+**Web scraping:**
+
+```python
+# doc-check: skip
+import requests
+from bs4 import BeautifulSoup
+
+resp = requests.get("https://www.vlr.gg/matches")
+soup = BeautifulSoup(resp.text, "html.parser")
+# Fragile selectors that break on site updates
+cards = soup.select(".wf-module-item.match-item")
+for card in cards:
+    t1 = card.select_one(".match-item-vs-team-name")
+    # ... manual parsing for every field
+```
+
+## Reliability
+
+| Factor | VLRdevAPI | Manual Scraping |
+|--------|-----------|-----------------|
+| Site structure changes | Handled by library | Breaks your code |
+| Rate limiting | Built-in | Must implement yourself |
+| Data normalization | Automatic | Manual for every field |
+| Error handling | Typed exceptions | Try/except soup |
+| Async support | Native | DIY |
+
+## Performance
+
+VLRdevAPI normalizes data server-side and returns structured JSON. A typical request completes in 200-400ms:
+
+```python
+import time
+import vlrdevapi
+
+start = time.time()
+team = vlrdevapi.team(4568).info()
+print(f"Fetched in {time.time() - start:.2f}s")
+```
+
+Scraping requires downloading the full HTML page (often 500KB+) and parsing it client-side, adding 2-5x latency.
+
+## Maintenance
+
+VLR.gg updates its markup periodically. When selectors break, scraping code needs immediate fixes. VLRdevAPI abstracts these changes — you upgrade the library version and everything continues working.
+
+```bash
+pip install --upgrade vlrdevapi
+```
+
+## When to Use What
+
+**Use VLRdevAPI when:**
+- You want clean, structured data with minimal code
+- You need reliable uptime for production apps
+- You're building a bot, dashboard, or analysis tool
+- You want async support without complexity
+
+**Scraping might make sense when:**
+- You need data not covered by the library
+- You're doing a one-off analysis
+- You want full control over the HTTP layer
+
+## Summary
+
+VLRdevAPI saves you from writing and maintaining parsing code, handling rate limits, and debugging selector breakage. For most projects, the library is the faster path to production.

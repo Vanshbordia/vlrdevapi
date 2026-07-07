@@ -1,0 +1,205 @@
+---
+title: Event Standings
+description: Fetch standings for an event, grouped by stage with parallel fetches and optional stage filtering.
+---
+
+`event.standings(event_id)` returns the standings for an event, grouped by stage. Multi-stage events are fetched in parallel (up to 5 concurrent requests) for optimal performance.
+
+## Signature
+
+```python
+event.standings(
+    event_id: int,
+    stage: str | None = None,
+) -> EventStandings
+```
+
+## Parameters
+
+<TypeTable type={{
+  "event_id": {
+    description: "Unique event identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+  "stage": {
+    description: 'Optional stage name or path to filter by (e.g. "playoffs", "group-stage").',
+    type: "str | None",
+    typeDescription: "str - stage path/name, or None for all stages",
+    default: "None",
+    required: false,
+  },
+}} />
+
+## Returns - `EventStandings`
+
+`EventStandings` wraps a list of `EventStageStandings` and supports `__len__`, `__iter__`, `__getitem__`.
+
+<TypeTable type={{
+  "stages": {
+    description: "List of stages containing standings entries.",
+    type: "list[EventStageStandings]",
+    typeDescription: "list[EventStageStandings]",
+  },
+}} />
+
+### `EventStageStandings` Fields
+
+<TypeTable type={{
+  "stage_path": {
+    description: "Stage URL path segment.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage_name": {
+    description: "Stage display name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "standings": {
+    description: "List of standing entries for this stage.",
+    type: "list[StandingEntry]",
+    typeDescription: "list[StandingEntry]",
+    default: "[]",
+  },
+}} />
+
+### `StandingEntry` Fields
+
+<TypeTable type={{
+  "place": {
+    description: 'Placement string (e.g. "1st", "2nd", "3rd-4th").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "prize_money": {
+    description: "Prize money as a numeric value (e.g. 125000). None if no prize.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "prize_currency": {
+    description: 'Currency symbol (e.g. "$", "€"). None if no prize.',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "team": {
+    description: "Team information for this standing entry.",
+    type: "TeamStanding",
+    typeDescription: "TeamStanding - see nested fields below",
+  },
+  "points": {
+    description: "Circuit points (e.g. 4). None if not present.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "note": {
+    description: 'Additional note (e.g. "Masters Santiago"). None if not present.',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+### `TeamStanding` Fields
+
+<TypeTable type={{
+  "id": {
+    description: "Team ID from vlr.gg. None for TBD.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "name": {
+    description: 'Team name (e.g. "FURIA").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: 'Team country (e.g. "Brazil").',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "logo_url": {
+    description: "URL to the team logo image.",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+## Behaviour
+
+- Stages are parsed from the event page sub-navigation.
+- When `stage` is provided, only matching stages are fetched.
+- If no subnav is detected, all standings are returned under a single `"All Stages"` entry.
+- Parallel fetching uses up to 5 concurrent workers.
+
+## Examples
+
+### All standings grouped by stage
+
+Fetch standings for the entire event organized by stage. Each stage contains a list of `StandingEntry` objects ordered by placement, with `place` strings like "1st", "2nd", "3rd-4th", etc.
+
+```python
+import vlrdevapi
+
+standings = vlrdevapi.event(2765).standings()
+for stage_standing in standings:
+    print(f"--- {stage_standing.stage_name} ---")
+    for entry in stage_standing.standings:
+        print(f"  {entry.place}: {entry.team.name}")
+```
+
+### Standings with prize money
+
+Each standing entry includes prize information via `prize_money` (numeric value) and `prize_currency` (symbol). Format them together to display prize amounts. The `prize_money` value is an integer that can be formatted with commas using Python's format specifier.
+
+```python
+import vlrdevapi
+
+standings = vlrdevapi.event(2765).standings()
+for stage_standing in standings:
+    print(f"--- {stage_standing.stage_name} ---")
+    for entry in stage_standing.standings:
+        prize = f"{entry.prize_currency}{entry.prize_money:,}" if entry.prize_money and entry.prize_currency else "(no prize)"
+        print(f"  {entry.place}: {entry.team.name} - {prize}")
+```
+
+### Filter standings by stage
+
+Pass the `stage` parameter to retrieve standings for a specific stage only. This is useful for building focused views, such as showing only the group stage standings on a group stage page.
+
+```python
+import vlrdevapi
+
+standings = vlrdevapi.event(2765).standings(stage="swiss-stage")
+top_entry = standings[0].standings[0]
+print(f"1st: {top_entry.team.name} ({top_entry.team.country})")
+print(f"Points: {top_entry.points}")
+print(f"Note: {top_entry.note}")
+```
+
+### Access team details from standings
+
+Each `StandingEntry` contains a `TeamStanding` object with detailed team information. You can access the team's name, country of origin, and logo URL directly from the standing entries without making additional API calls.
+
+```python
+import vlrdevapi
+
+standings = vlrdevapi.event(2765).standings()
+for stage_standing in standings:
+    for entry in stage_standing.standings:
+        team = entry.team
+        print(f"{entry.place}: {team.name}")
+        print(f"  Country: {team.country}")
+        print(f"  Logo: {team.logo_url}")
+```

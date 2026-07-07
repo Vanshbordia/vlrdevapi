@@ -1,0 +1,156 @@
+---
+title: Event Teams
+description: Fetch teams for an event, grouped by stage with parallel fetches for multi-stage events.
+---
+
+`event.teams(event_id)` returns the teams participating in an event, grouped by stage. When the event has multiple stages, team data is fetched in parallel (up to 5 concurrent requests) for optimal performance.
+
+## Signature
+
+```python
+event.teams(
+    event_id: int,
+    stage: str | None = None,
+) -> EventTeams
+```
+
+## Parameters
+
+<TypeTable type={{
+  "event_id": {
+    description: "Unique event identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+  "stage": {
+    description: 'Optional stage name or path to filter by (e.g. "playoffs", "group-stage").',
+    type: "str | None",
+    typeDescription: "str - stage path/name, or None for all stages",
+    default: "None",
+    required: false,
+  },
+}} />
+
+## Returns - `EventTeams`
+
+`EventTeams` wraps a list of `EventStageTeams` and supports `__len__`, `__iter__`, `__getitem__`.
+
+<TypeTable type={{
+  "stages": {
+    description: "List of stages containing their respective teams.",
+    type: "list[EventStageTeams]",
+    typeDescription: "list[EventStageTeams]",
+  },
+}} />
+
+### `EventStageTeams` Fields
+
+<TypeTable type={{
+  "stage_path": {
+    description: 'Stage URL path segment (e.g. "group-stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage_name": {
+    description: 'Stage display name (e.g. "Group Stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "teams": {
+    description: "List of teams in this stage.",
+    type: "list[Team]",
+    typeDescription: "list[Team]",
+    default: "[]",
+  },
+}} />
+
+### `Team` Fields
+
+<TypeTable type={{
+  "name": {
+    description: 'Team name (e.g. "NRG", "FNATIC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "id": {
+    description: "Team identifier from vlr.gg (e.g. 1034).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "note": {
+    description: 'Optional note (e.g. "Partner Team").',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+## Behaviour
+
+- Stages are parsed from the event page sub-navigation.
+- When `stage` is provided, only matching stages are fetched.
+- If no subnav is detected (single-stage or simple events), all teams are returned under a single `"All Teams"` stage.
+- Parallel fetching uses up to 5 concurrent workers.
+
+## Examples
+
+### All teams grouped by stage
+
+Fetch all teams across every stage. The result is organized as a list of `EventStageTeams`, each containing a `stage_name` and a list of `Team` objects. This structure makes it easy to understand which teams are competing in which stage.
+
+```python
+import vlrdevapi
+
+teams = vlrdevapi.event(2765).teams()
+for stage_teams in teams:
+    print(f"--- {stage_teams.stage_name} ---")
+    for team in stage_teams.teams:
+        print(f"  {team.name} (ID: {team.id})")
+```
+
+### Teams with notes
+
+Some teams have additional annotations attached to them, such as "Partner Team" or "Invited". Use the `note` field to surface this extra context when displaying team information.
+
+```python
+import vlrdevapi
+
+teams = vlrdevapi.event(2765).teams()
+for stage_teams in teams:
+    print(f"--- {stage_teams.stage_name} ---")
+    for team in stage_teams.teams:
+        note = f" - {team.note}" if team.note else ""
+        print(f"  {team.name}{note}")
+```
+
+### Filter teams by stage
+
+Pass the `stage` parameter to restrict results to a specific stage. The parameter accepts stage path names such as `"playoffs"` or `"group-stage"`. This is useful when you only need teams from a particular phase of the tournament.
+
+```python
+import vlrdevapi
+
+playoff_teams = vlrdevapi.event(2765).teams(stage="playoffs")
+for stage_teams in playoff_teams:
+    print(f"Stage: {stage_teams.stage_name}")
+    for team in stage_teams.teams:
+        print(f"  {team.name}")
+```
+
+### Count teams per stage
+
+Use `len()` on each stage's team list to quickly determine the number of participating teams per stage. This can help identify which stages have the most competitors.
+
+```python
+import vlrdevapi
+
+teams = vlrdevapi.event(2765).teams()
+for stage_teams in teams:
+    count = len(stage_teams.teams)
+    print(f"{stage_teams.stage_name}: {count} teams")
+```

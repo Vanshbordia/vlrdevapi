@@ -1,0 +1,140 @@
+---
+title: Quick Start
+description: A hands-on tutorial covering matches, teams, players, and events.
+icon: Zap
+---
+
+
+This tutorial walks through real data from multiple VLRdevAPI namespaces. Save the following script as `demo.py` and run it.
+
+```python
+import vlrdevapi
+
+# Fetch upcoming matches
+page = vlrdevapi.matches.upcoming()
+print(f"Found {len(page.matches)} upcoming matches\n")
+
+# Print the first 3 matches with event name
+for match in page.matches[:3]:
+    t1 = match.team1.name if match.team1 else "TBD"
+    t2 = match.team2.name if match.team2 else "TBD"
+    print(f"{t1:20s} vs {t2:20s} | {match.event}")
+
+# Get team info for the first match's team1
+match = page.matches[0]
+t1 = match.team1
+if t1:
+    info = vlrdevapi.team(t1.id).info()
+    roster = vlrdevapi.team(t1.id).roster()
+    print(f"\nTeam: {info.name} ({info.tag})")
+    print(f"Country: {info.country}")
+    for player in roster.players:
+        print(f"  Player: {player.ign}")
+```
+
+Example output (will vary based on live data):
+
+```
+Found 6 upcoming matches
+
+FNATIC               vs BBL Esports          | VCT 2026: EMEA Kickoff
+Gentle Mates         vs FNATIC               | VCT 2026: EMEA Kickoff
+Paper Rex            vs Leviatán             | Valorant Masters London 2026
+
+Team: FNATIC (FNC)
+Country: United Kingdom
+  Player: Boaster
+  Player: Derke
+  Player: Alfajer
+  Player: Leo
+  Player: Chronicle
+```
+
+## Step by Step
+
+<Steps>
+  <Step>
+
+  ### Fetch upcoming matches
+
+  `vlrdevapi.matches.upcoming()` returns an `UpcomingMatchesPage` containing a list of `UpcomingMatchEntry` objects. Each entry has `team1`, `team2`, `event`, `stage`, `datetime`, and other fields.
+
+  ```python
+  page = vlrdevapi.matches.upcoming()
+  for match in page.matches[:3]:
+      t1 = match.team1.name if match.team1 else "TBD"
+      t2 = match.team2.name if match.team2 else "TBD"
+      print(t1, "vs", t2, match.event)
+  ```
+  </Step>
+
+  <Step>
+
+  ### Navigate related data
+
+  Each team in a match has an `.id` field. Pass it to the `team` namespace to fetch rosters, stats, and placement history.
+
+  ```python
+  info = vlrdevapi.team(team_id).info()
+  roster = vlrdevapi.team(team_id).roster()
+  ```
+  </Step>
+
+  <Step>
+
+  ### Explore other namespaces
+
+  The same pattern works for players and events.
+
+  ```python
+  # Player profile and agent usage
+  profile = vlrdevapi.player(438).profile()
+  print(f"{profile.name} - {', '.join(a.agent for a in profile.top_agents[:3])}")
+
+  # Event info and standings
+  event = vlrdevapi.event(2765).info()
+  print(f"{event.name} - {event.start_date} to {event.end_date}")
+  ```
+  </Step>
+
+  <Step>
+
+  ### Pagination and live matches
+
+  `matches.upcoming()` and `matches.completed()` accept a `page` parameter. Live matches have no pagination.
+
+  ```python
+  page_2 = vlrdevapi.matches.upcoming(page=2)
+  live = vlrdevapi.matches.live()
+  ```
+  </Step>
+</Steps>
+
+## Error Handling
+
+The library raises typed exceptions for common failure modes:
+
+| Exception | When |
+|-----------|------|
+| `NotFoundError` | Page does not exist (HTTP 404) |
+| `RequestError` | HTTP request failed |
+| `RateLimitError` | Exceeded requests per second |
+| `ParsingError` | Page structure is unrecognised |
+| `ValidationError` | Invalid arguments passed to a method |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import NotFoundError
+
+try:
+    result = vlrdevapi.matches.upcoming(page=1)
+    print(f"Page 1 has {len(result.matches)} matches")
+except NotFoundError:
+    print("Page does not exist")
+```
+
+## What's Next?
+
+- Check the [Getting Started](/docs/getting-started) guide for an architecture overview
+- Browse the full API reference
+- Set up a [Development environment](/docs/guides/development) to contribute

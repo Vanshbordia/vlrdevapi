@@ -1,0 +1,180 @@
+---
+title: Team Info
+description: Fetch team information - name, tag, country, logos, social media links, and predecessor/successor teams.
+---
+
+`team.info(team_id)` returns detailed information for a team on vlr.gg.
+
+## Signature
+
+```python
+team.info(team_id: int) -> TeamInfo
+```
+
+## Parameters
+
+<TypeTable type={{
+  "team_id": {
+    description: "Unique team identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+}} />
+
+## Returns - `TeamInfo`
+
+<TypeTable type={{
+  "id": {
+    description: "Unique team identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Full team name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: "Short team tag.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "light_logo_url": {
+    description: "URL to the team light logo image.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "dark_logo_url": {
+    description: "URL to the team dark logo image.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "Team country name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "is_active": {
+    description: "Whether the team is active.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "True",
+  },
+  "socials": {
+    description: "List of team social media profiles.",
+    type: "list[TeamSocial] | None",
+    typeDescription: "list[TeamSocial] | None",
+    default: "None",
+  },
+  "previous_teams": {
+    description: "List of previous team names/IDs (predecessors).",
+    type: "list[TeamSuccessor] | None",
+    typeDescription: "list[TeamSuccessor] | None",
+    default: "None",
+  },
+  "current_teams": {
+    description: "List of current team names/IDs (successors after rebrand).",
+    type: "list[TeamSuccessor] | None",
+    typeDescription: "list[TeamSuccessor] | None",
+    default: "None",
+  },
+}} />
+
+### `TeamSocial` Fields
+
+<TypeTable type={{
+  "name": {
+    description: 'Platform name (e.g. "Twitch", "YouTube").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "url": {
+    description: "Full URL to the social media profile.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `TeamSuccessor` Fields
+
+<TypeTable type={{
+  "id": {
+    description: "Team ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Team name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Examples
+
+### Basic team lookup
+
+Fetch the team's name, tag, country, and logo URLs.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.team.info(team_id=2593)
+print(f"{info.name} ({info.tag})")
+print(f"Country: {info.country}")
+print(f"Active: {info.is_active}")
+print(f"Light logo: {info.light_logo_url}")
+print(f"Dark logo: {info.dark_logo_url}")
+```
+
+### Social media links
+
+Print all social media profiles linked to the team.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.team.info(team_id=2593)
+if info.socials:
+    for s in info.socials:
+        print(f"{s.name}: {s.url}")
+else:
+    print("No social links listed")
+```
+
+### Team lineage
+
+Some teams have predecessors (previous org) or successors (rebranded to). The `previous_teams` and `current_teams` fields capture this lineage.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.team.info(team_id=682)
+prev = ', '.join(t.name for t in info.previous_teams) if info.previous_teams else "(none)"
+curr = ', '.join(t.name for t in info.current_teams) if info.current_teams else "(none)"
+print(f"Previously known as: {prev}")
+print(f"Now known as: {curr}")
+```
+
+### Curried access
+
+Access team info using the curried `team()` shorthand.
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+info = team.info()
+print(f"{info.name} ({info.tag}) - {info.country}")
+```

@@ -1,0 +1,268 @@
+---
+title: Event Info
+description: Fetch detailed metadata for a specific event - name, series, dates, prize information, location, and regions.
+---
+
+`event.info(event_id)` returns comprehensive metadata for a single event on vlr.gg.
+
+## Signature
+
+```python
+event.info(event_id: int) -> EventInfo
+```
+
+## Parameters
+
+<TypeTable type={{
+  "event_id": {
+    description: "Unique event identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+}} />
+
+## Returns - `EventInfo`
+
+<TypeTable type={{
+  "id": {
+    description: "Event identifier.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Event full display name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "subtitle": {
+    description: "Event subtitle or tagline.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "image_url": {
+    description: "URL to the event thumbnail image.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "series": {
+    description: "Parent series breadcrumb (e.g. Valorant Champions Tour 2026).",
+    type: "EventSeriesLink | None",
+    typeDescription: "EventSeriesLink | None - see nested fields below",
+    default: "None",
+  },
+  "stage": {
+    description: "Stage tag within the series (e.g. Stage 1).",
+    type: "EventStageTag | None",
+    typeDescription: "EventStageTag | None - see nested fields below",
+    default: "None",
+  },
+  "regions": {
+    description: "Region tags associated with the event (multiple = International).",
+    type: "list[EventRegion]",
+    typeDescription: "list[EventRegion] - see nested fields below",
+    default: "[]",
+  },
+  "start_date": {
+    description: "Event start date.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "end_date": {
+    description: "Event end date.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "prize": {
+    description: "Prize pool details including amount and currency.",
+    type: "EventPrize | None",
+    typeDescription: "EventPrize | None - see nested fields below",
+    default: "None",
+  },
+  "location": {
+    description: "Physical event location (country and venue).",
+    type: "EventLocation | None",
+    typeDescription: "EventLocation | None - see nested fields below",
+    default: "None",
+  },
+  "region_location": {
+    description: "Region-level location (country, e.g. for online events).",
+    type: "EventLocation | None",
+    typeDescription: "EventLocation | None - see nested fields below",
+    default: "None",
+  },
+}} />
+
+### `EventSeriesLink` Fields
+
+<TypeTable type={{
+  "name": {
+    description: "Display name of the series.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "href": {
+    description: "Relative URL to the series page.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `EventStageTag` Fields
+
+<TypeTable type={{
+  "name": {
+    description: "Stage name (e.g. Stage 1).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "href": {
+    description: "Relative URL to the stage page.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `EventRegion` Fields
+
+<TypeTable type={{
+  "name": {
+    description: "Region name (e.g. Americas, EMEA).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "href": {
+    description: "Relative URL to the region page.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `EventPrize` Fields
+
+<TypeTable type={{
+  "amount": {
+    description: "Numeric prize amount (e.g. 1000000).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "currency_symbol": {
+    description: "Currency symbol (e.g. $, €).",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "currency_code": {
+    description: "Currency code (e.g. USD, EUR).",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "converted_amount": {
+    description: "Converted amount in USD when original currency differs.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "is_tbd": {
+    description: "Whether the prize pool is TBD.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "raw_text": {
+    description: 'Raw prize text (e.g. "$1,000,000 USD").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `EventLocation` Fields
+
+<TypeTable type={{
+  "country": {
+    description: "Country name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "venue": {
+    description: "Venue name (empty for region-level locations).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Examples
+
+### Basic event info
+
+Fetch the core identifying information for an event - its name, subtitle, series, and thumbnail.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.event(2765).info()
+print(f"Name: {info.name}")
+print(f"Subtitle: {info.subtitle}")
+print(f"Series: {info.series.name} ({info.series.href})")
+```
+
+### Dates and prize pool
+
+Retrieve scheduling details and financial information. The `start_date` and `end_date` fields contain `datetime.date` objects. Prize details are available via the `prize` sub-object with structured amount and currency fields.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.event(2765).info()
+print(f"Start: {info.start_date}")
+print(f"End: {info.end_date}")
+print(f"Prize: {info.prize.raw_text}")
+if info.prize.amount:
+    print(f"Amount: {info.prize.currency_symbol}{info.prize.amount:,}")
+```
+
+### Location and regions
+
+Access the event's physical location and associated regions. Events can have multiple regions (e.g. an International event) and may have separate region-level and venue-level locations.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.event(2765).info()
+if info.location:
+    print(f"Location: {info.location.country}")
+    print(f"Venue: {info.location.venue}")
+if info.region_location:
+    print(f"Region: {info.region_location.country}")
+for region in info.regions:
+    print(f"Tag: {region.name}")
+```
+
+### Series and stage context
+
+The `series` and `stage` fields link the event to its broader competitive circuit. Use the `href` values to construct relative URLs for navigation.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.event(2765).info()
+print(f"Series: {info.series.name} ({info.series.href})")
+print(f"Stage: {info.stage.name} ({info.stage.href})")
+```

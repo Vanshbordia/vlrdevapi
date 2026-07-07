@@ -1,67 +1,89 @@
-"""Custom exceptions for vlrdevapi."""
+"""Custom exceptions for the vlrdevapi library."""
 
-from typing import Any, Optional
+__all__ = [
+    "ClientError",
+    "DataNotFoundError",
+    "HTTPError",
+    "NotFoundError",
+    "ParseStructureError",
+    "ParsingError",
+    "RateLimitError",
+    "RequestError",
+    "RequestTimeoutError",
+    "ServerError",
+    "TimeoutError",
+    "ValidationError",
+    "VlrdevapiError",
+    "VlrdevapiException",
+]
 
 
 class VlrdevapiError(Exception):
-    """Base exception for vlrdevapi errors.
+    """Base exception for all vlrdevapi errors."""
 
-    Args:
-        message: Error message
-        url: URL that caused the error (optional)
-        status_code: HTTP status code if applicable (optional)
-        context: Additional context information (optional)
-    """
 
-    def __init__(
-        self,
-        message: str,
-        url: Optional[str] = None,
-        status_code: Optional[int] = None,
-        context: Optional[dict[str, Any]] = None,
-    ) -> None:
+VlrdevapiException = VlrdevapiError
+
+
+class RequestError(VlrdevapiError):
+    """Raised when an HTTP request fails (network error, timeout, etc.)."""
+
+
+class RequestTimeoutError(RequestError):
+    """Raised when an HTTP request times out."""
+
+
+TimeoutError = RequestTimeoutError
+
+
+class HTTPError(VlrdevapiError):
+    """Raised when an HTTP response has an error status code."""
+
+    def __init__(self, message: str, status_code: int) -> None:
         super().__init__(message)
-        self.message = message
-        self.url = url
         self.status_code = status_code
-        self.context = context or {}
-
-    def __str__(self) -> str:
-        parts = [self.message]
-        if self.url:
-            parts.append(f"URL: {self.url}")
-        if self.status_code is not None:
-            parts.append(f"Status: {self.status_code}")
-        if self.context:
-            context_str = ", ".join(f"{k}={v}" for k, v in self.context.items())
-            parts.append(f"Context: {context_str}")
-        return " | ".join(parts)
 
     def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__name__}("
-            f"message={self.message!r}, "
-            f"url={self.url!r}, "
-            f"status_code={self.status_code!r}, "
-            f"context={self.context!r})"
-        )
+        return f"{type(self).__name__}({self.args[0]!r}, status_code={self.status_code})"
 
 
-class NetworkError(VlrdevapiError):
-    """Raised when network requests fail."""
-    pass
+class NotFoundError(HTTPError):
+    """Raised when a requested resource (event, player, etc.) is not found (404)."""
+
+    def __init__(self, message: str = "Resource not found on vlr.gg") -> None:
+        super().__init__(message, 404)
 
 
-class ScrapingError(VlrdevapiError):
-    """Raised when HTML parsing or scraping fails."""
-    pass
+class RateLimitError(HTTPError):
+    """Raised when vlr.gg rate limits the client (429)."""
+
+    def __init__(self, message: str = "Too many requests to vlr.gg") -> None:
+        super().__init__(message, 429)
 
 
-class DataNotFoundError(VlrdevapiError):
-    """Raised when expected data is not found on the page."""
-    pass
+class ClientError(HTTPError):
+    """Raised for 4xx HTTP errors other than 404 and 429."""
 
 
-class RateLimitError(VlrdevapiError):
-    """Raised when rate limited by the server."""
-    pass
+class ServerError(HTTPError):
+    """Raised for 5xx HTTP errors."""
+
+
+class ParsingError(VlrdevapiError):
+    """Raised when vlrdevapi fails to parse the HTML response."""
+
+
+class DataNotFoundError(ParsingError):
+    """Raised when the requested data is semantically absent from the page (e.g., roster not found)."""
+
+
+class ParseStructureError(ParsingError):
+    """Raised when the page structure is unexpected and cannot be parsed."""
+
+
+class ValidationError(VlrdevapiError, ValueError):
+    """Raised when input validation fails (invalid IDs, parameters, etc.).
+
+    Also inherits from ValueError for backward compatibility with
+    code that catches ``ValueError`` on invalid inputs.
+    """

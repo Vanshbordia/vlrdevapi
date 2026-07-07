@@ -1,0 +1,74 @@
+---
+title: Announcing VLRdevAPI v2.0
+description: A new major release with async support, typed exceptions, and expanded coverage across matches, teams, players, events, and series.
+date: 2026-07-05
+author: RiftWatch
+---
+
+We're excited to announce VLRdevAPI v2.0 — the biggest update to the library since its initial release. This version introduces a redesigned client, full async support, and comprehensive coverage across five namespaces.
+
+## What's New
+
+### Async-First Design
+
+Every API method now supports both sync and async usage:
+
+```python
+import vlrdevapi
+
+matches = vlrdevapi.matches.upcoming()
+print(f"Sync: {len(matches.matches)} upcoming matches")
+```
+
+### Five Namespaces
+
+VLRdevAPI v2.0 organizes all data into five clean namespaces:
+
+| Namespace | Coverage |
+|-----------|----------|
+| `matches` | Upcoming, live, and completed matches |
+| `team`    | Team info, rosters, stats, placements |
+| `player`  | Profiles, agents, teams, match history |
+| `event`   | Events, stages, standings, teams, matches |
+| `series`  | Series info, VODs, player stats, economy |
+
+### Typed Exception Hierarchy
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import NotFoundError, RateLimitError
+
+try:
+    team = vlrdevapi.team(2593).info()
+    print(f"Team: {team.name}")
+except NotFoundError:
+    print("Team not found")
+except RateLimitError:
+    print("Slow down!")
+```
+
+### Curried Access Pattern
+
+Bind an ID once and chain method calls:
+
+```python
+team = vlrdevapi.team(2593)
+print(team.info().name)
+roster = team.roster()
+print(f"{len(roster.players)} players on roster")
+stats = team.stats(last_days=90)
+print(f"{len(stats.maps)} maps in stats")
+```
+
+## Upgrading from v1.x
+
+If you're upgrading from v1.x, the main changes are:
+
+- `VLRClient` replaces the old client class and now uses `async with`
+- Module-level access is still available for quick scripts
+- Exception types have been moved to `vlrdevapi.exceptions`
+- New namespaces: `series` and `event` require no additional setup
+
+## What's Next
+
+We're working on rate limit tuning, additional query parameters, and community-requested endpoints. Check the [changelog](/changelog) for detailed release notes and the [docs](/docs) for full API reference.

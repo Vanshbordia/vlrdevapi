@@ -1,0 +1,168 @@
+---
+title: Team Completed Matches
+description: Fetch completed match history for a team with scores, opponent info, win/loss status, and event context.
+---
+
+`team.completed_matches(team_id)` returns the completed match history for a team on vlr.gg.
+
+## Signature
+
+```python
+team.completed_matches(team_id: int) -> TeamCompletedMatches
+```
+
+## Parameters
+
+<TypeTable type={{
+  "team_id": {
+    description: "Unique team identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+}} />
+
+## Returns - `TeamCompletedMatches`
+
+<TypeTable type={{
+  "team_id": {
+    description: "Team ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "matches": {
+    description: "Completed matches.",
+    type: "list[TeamCompletedMatchEntry]",
+    typeDescription: "list[TeamCompletedMatchEntry] - see nested fields below",
+    default: "[]",
+  },
+}} />
+
+### `TeamCompletedMatchEntry` Fields
+
+<TypeTable type={{
+  "match_id": {
+    description: "Match ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "Relative URL to the match page.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "Event name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: "Stage within event.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "opponent": {
+    description: "Opponent team.",
+    type: "OpponentInCompletedMatch | None",
+    typeDescription: "OpponentInCompletedMatch | None - see nested fields below",
+    default: "None",
+  },
+  "team_score": {
+    description: "This team's score.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "opponent_score": {
+    description: "Opponent's score.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "is_win": {
+    description: "Whether this team won.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "datetime": {
+    description: "Match datetime in UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+### `OpponentInCompletedMatch` Fields
+
+<TypeTable type={{
+  "id": {
+    description: "Opponent team ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Opponent team name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: "Opponent team tag.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Examples
+
+### Recent results
+
+Print the team's most recent completed matches with scores.
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.team.completed_matches(team_id=624)
+print(f"Completed matches for team {history.team_id}:")
+for m in history.matches[:10]:
+    result = "WON" if m.is_win else "lost"
+    opp = m.opponent.name if m.opponent else "TBD"
+    print(f"  {m.team_score} - {m.opponent_score} vs {opp} ({result}) - {m.event}")
+```
+
+### Win/loss record
+
+Calculate and display the team's overall win/loss record.
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.team.completed_matches(team_id=624)
+wins = sum(1 for m in history.matches if m.is_win)
+losses = sum(1 for m in history.matches if not m.is_win)
+total = wins + losses
+pct = wins / total * 100 if total else 0
+print(f"{wins}W - {losses}L ({pct:.0f}% win rate) over {total} matches")
+```
+
+### Curried access
+
+Access completed matches using the curried `team()` shorthand.
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(624)
+history = team.completed_matches()
+for m in history.matches[:5]:
+    tag = m.opponent.tag if m.opponent else "TBD"
+    print(f"{'W' if m.is_win else 'L'} {m.team_score}-{m.opponent_score} vs {tag}")
+```

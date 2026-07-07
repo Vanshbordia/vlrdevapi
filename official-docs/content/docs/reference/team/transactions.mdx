@@ -1,0 +1,162 @@
+---
+title: Team Transactions
+description: Fetch roster transaction history - player joins, leaves, and inactive status changes with dates and context.
+---
+
+`team.transactions(team_id)` returns the roster transaction history for a team on vlr.gg.
+
+## Signature
+
+```python
+team.transactions(team_id: int) -> TeamTransactions
+```
+
+## Parameters
+
+<TypeTable type={{
+  "team_id": {
+    description: "Unique team identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+}} />
+
+## Returns - `TeamTransactions`
+
+<TypeTable type={{
+  "team_id": {
+    description: "Team ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "transactions": {
+    description: "List of transactions.",
+    type: "list[TeamTransaction]",
+    typeDescription: "list[TeamTransaction] - see nested fields below",
+    default: "[]",
+  },
+}} />
+
+### `TeamTransaction` Fields
+
+<TypeTable type={{
+  "date": {
+    description: "Transaction date.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "action": {
+    description: "Transaction action type.",
+    type: "TransactionAction",
+    typeDescription: '"Join" | "Leave" | "Inactive"',
+  },
+  "player": {
+    description: "Player involved.",
+    type: "TransactionPlayer",
+    typeDescription: "TransactionPlayer - see nested fields below",
+  },
+  "position": {
+    description: 'Position/role (e.g. "Player", "Assistant coach").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "source_url": {
+    description: "Source URL for transaction.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `TransactionPlayer` Fields
+
+<TypeTable type={{
+  "id": {
+    description: "Player ID on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "ign": {
+    description: "In-game name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "real_name": {
+    description: "Real name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "Country name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Examples
+
+### Recent transactions
+
+Print the most recent roster transactions.
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.team.transactions(team_id=2593)
+print(f"Transaction history for team {history.team_id}:")
+for t in history.transactions[:10]:
+    print(f"  {t.date}: {t.player.ign} {t.action.value} ({t.position})")
+```
+
+### Joins vs leaves
+
+Count joins, leaves, and inactive transactions.
+
+```python
+import vlrdevapi
+from collections import Counter
+
+history = vlrdevapi.team.transactions(team_id=2593)
+counts = Counter(t.action.value for t in history.transactions)
+print(f"Joins: {counts.get('Join', 0)}")
+print(f"Leaves: {counts.get('Leave', 0)}")
+print(f"Inactive: {counts.get('Inactive', 0)}")
+```
+
+### Current roster from transactions
+
+By looking at the most recent transactions, you can infer the current roster composition.
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.team.transactions(team_id=2593)
+current = set()
+for t in history.transactions:
+    if t.action.value == "Join":
+        current.add(t.player.ign)
+    elif t.action.value == "Leave":
+        current.discard(t.player.ign)
+print(f"Current roster inferred from transactions: {sorted(current)}")
+```
+
+### Curried access
+
+Access transactions using the curried `team()` shorthand.
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+history = team.transactions()
+for t in history.transactions[:5]:
+    print(f"{t.date}: {t.player.ign} -> {t.action.value}")
+```

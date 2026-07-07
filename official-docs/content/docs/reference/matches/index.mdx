@@ -1,0 +1,70 @@
+---
+title: Matches API Overview
+description: Browse and filter matches on vlr.gg - upcoming, live, and completed match listings with team details, scores, and pagination.
+icon: Swords
+---
+
+The Matches API provides access to match listings on vlr.gg, split into three categories: upcoming, live, and completed matches. It is accessed via `vlrdevapi.matches` through a default client or an explicit `VLRClient` instance.
+
+<Callout type="info">
+All sub-namespaces are lazily initialized and share the same HTTP client configuration. Unlike curried namespaces (event, series), the top-level matches namespace is **not** callable and has no curried access pattern.
+</Callout>
+
+## Access Patterns
+
+### Module-level (default client)
+
+```python
+import vlrdevapi
+
+# Upcoming matches
+upcoming = vlrdevapi.matches.upcoming(page=1)
+print(f"Upcoming: {len(upcoming.matches)} matches")
+
+# Completed matches
+completed = vlrdevapi.matches.completed(page=1)
+print(f"Completed: {len(completed.matches)} matches on page 1")
+```
+
+### Explicit client
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=15, requests_per_second=8) as client:
+    upcoming = client.matches.upcoming(page=1)
+    print(f"Upcoming via explicit client: {len(upcoming.matches)} matches")
+```
+
+## Sub-namespace Reference
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| [`matches.upcoming(page, max_page, return_all)`](./upcoming) | `UpcomingMatchesPage` | Browse upcoming matches with pagination |
+| [`matches.live()`](./live) | `LiveMatchesPage` | Get currently live matches |
+| [`matches.completed(page, max_page, return_all)`](./completed) | `CompletedMatchesPage` | Browse completed matches with pagination |
+
+## Common Error Handling
+
+All matches methods raise typed exceptions from `vlrdevapi.exceptions`:
+
+| Exception | Raised When |
+|-----------|-------------|
+| `ValidationError` | Invalid arguments (bad `page`, negative `max_page`, etc.) |
+| `NotFoundError` | Page doesn't exist (HTTP 404) |
+| `RequestError` | Network failure or HTTP error |
+| `RateLimitError` | Too many requests (HTTP 429) |
+| `ParsingError` | Page structure is unrecognised |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import ValidationError, RequestError
+
+try:
+    results = vlrdevapi.matches.upcoming(page=1)
+    print(f"Fetched {len(results.matches)} upcoming matches")
+except ValidationError as e:
+    print(f"Invalid input: {e}")
+except RequestError as e:
+    print(f"Request failed: {e}")
+```

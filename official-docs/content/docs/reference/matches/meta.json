@@ -1,0 +1,5 @@
+{
+  "title": "Matches",
+  "pages": ["upcoming", "live", "completed"],
+  "pagesIndex": "index"
+}

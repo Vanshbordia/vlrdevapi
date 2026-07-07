@@ -1,0 +1,49 @@
+---
+title: Installation
+description: Install VLRdevAPI via uv, pip, or from source.
+icon: Download
+---
+
+
+## Requirements
+
+- Python 3.11 or newer
+- [uv](https://docs.astral.sh/uv/) (recommended) or pip
+
+## Install from PyPI
+
+Install with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv add vlrdevapi
+```
+
+Or with pip:
+
+```bash
+pip install vlrdevapi
+```
+
+## Install from Source
+
+Clone the repository and install with uv:
+
+```bash
+git clone https://github.com/vanshbordia/vlrdevapi.git
+cd vlrdevapi
+uv sync
+```
+
+Or with pip in editable mode:
+
+```bash
+git clone https://github.com/vanshbordia/vlrdevapi.git
+cd vlrdevapi
+pip install -e .
+```
+
+## Verify Installation
+
+```bash
+python -c "import vlrdevapi; m = vlrdevapi.matches.upcoming(); print(f'VLRdevAPI {len(m.matches)} upcoming matches loaded')"
+```
