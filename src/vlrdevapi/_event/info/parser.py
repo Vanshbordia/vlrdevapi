@@ -2,6 +2,8 @@
 import re
 from datetime import date, datetime
 
+from vlrdevapi.commons.datetime import date_to_utc_datetime
+
 from selectolax.parser import HTMLParser, Node
 
 from vlrdevapi._event.info.models import (
@@ -150,7 +152,7 @@ def _parse_desc_items(header: Node, event: EventInfo) -> None:
             event.region_location = _parse_location(value_el, value_text)
 
 
-def _parse_date_range(text: str) -> tuple[date | None, date | None]:
+def _parse_date_range(text: str) -> tuple[datetime | None, datetime | None]:
     """Parse a date range string (e.g. 'Jan 22 - Feb 15, 2026').
 
     Args:
@@ -177,16 +179,22 @@ def _parse_date_range(text: str) -> tuple[date | None, date | None]:
         end_date = _parse_single_date(right)
         if end_date is not None:
             start_date = _parse_partial_date(left, end_date)
-            return start_date, end_date
+            return (
+                date_to_utc_datetime(start_date) if start_date else None,
+                date_to_utc_datetime(end_date),
+            )
 
         end_date = _parse_day_year_with_month(right, left)
         if end_date is not None:
             start_date = _parse_partial_date(left, end_date)
-            return start_date, end_date
+            return (
+                date_to_utc_datetime(start_date) if start_date else None,
+                date_to_utc_datetime(end_date),
+            )
 
         return None, None
     d = _parse_single_date(text)
-    return d, d
+    return (date_to_utc_datetime(d), date_to_utc_datetime(d)) if d else (None, None)
 
 
 def _parse_day_year_with_month(day_year_text: str, month_source: str) -> date | None:

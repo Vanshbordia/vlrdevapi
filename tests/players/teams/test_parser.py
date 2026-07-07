@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime, timezone
 
 from tests.conftest import load_fixture
 
@@ -11,7 +11,7 @@ class TestSyncEthan:
         assert result.team_id == 1034
         assert result.name == "NRG"
         assert result.slug == "nrg"
-        assert result.joined_date == date(2023, 12, 1)
+        assert result.joined_date == datetime(2023, 12, 1, tzinfo=timezone.utc)
         assert result.left_date is None
         assert result.inactive_date is None
 
@@ -32,21 +32,21 @@ class TestSyncEthan:
         assert eg is not None
         assert eg.team_id == 5248
         assert eg.slug == "evil-geniuses"
-        assert eg.joined_date == date(2022, 11, 1)
-        assert eg.left_date == date(2023, 12, 1)
+        assert eg.joined_date == datetime(2022, 11, 1, tzinfo=timezone.utc)
+        assert eg.left_date == datetime(2023, 12, 1, tzinfo=timezone.utc)
         assert eg.inactive_date is None
 
     def test_past_team_nrg_with_inactive(self, client, mock_vlr):
         mock_vlr.get("/player/11225").respond(200, text=load_fixture("player", "11225_ethan", "overview.html"))
         result = client.player.teams.past_teams(11225)
         nrg_past = next(
-            (t for t in result if t.name == "NRG" and t.left_date == date(2022, 11, 1)),
+            (t for t in result if t.name == "NRG" and t.left_date == datetime(2022, 11, 1, tzinfo=timezone.utc)),
             None,
         )
         assert nrg_past is not None
         assert nrg_past.team_id == 1034
-        assert nrg_past.joined_date == date(2022, 4, 1)
-        assert nrg_past.inactive_date == date(2022, 9, 1)
+        assert nrg_past.joined_date == datetime(2022, 4, 1, tzinfo=timezone.utc)
+        assert nrg_past.inactive_date == datetime(2022, 9, 1, tzinfo=timezone.utc)
 
     def test_past_team_100_thieves(self, client, mock_vlr):
         mock_vlr.get("/player/11225").respond(200, text=load_fixture("player", "11225_ethan", "overview.html"))
@@ -55,8 +55,8 @@ class TestSyncEthan:
         assert tt is not None
         assert tt.team_id == 120
         assert tt.slug == "100-thieves"
-        assert tt.joined_date == date(2021, 3, 1)
-        assert tt.left_date == date(2022, 4, 1)
+        assert tt.joined_date == datetime(2021, 3, 1, tzinfo=timezone.utc)
+        assert tt.left_date == datetime(2022, 4, 1, tzinfo=timezone.utc)
 
     def test_teams(self, client, mock_vlr):
         mock_vlr.get("/player/11225").respond(200, text=load_fixture("player", "11225_ethan", "overview.html"))
@@ -85,7 +85,7 @@ class TestSyncInspire:
         assert team is not None
         assert team.team_id == 16806
         assert team.slug == "rankers"
-        assert team.left_date == date(2025, 3, 1)
+        assert team.left_date == datetime(2025, 3, 1, tzinfo=timezone.utc)
 
     def test_past_team_100_thieves(self, client, mock_vlr):
         mock_vlr.get("/player/53").respond(200, text=load_fixture("player", "53_inspire", "overview.html"))
@@ -94,8 +94,8 @@ class TestSyncInspire:
         assert team is not None
         assert team.team_id == 120
         assert team.slug == "100-thieves"
-        assert team.joined_date == date(2022, 1, 1)
-        assert team.left_date == date(2022, 2, 1)
+        assert team.joined_date == datetime(2022, 1, 1, tzinfo=timezone.utc)
+        assert team.left_date == datetime(2022, 2, 1, tzinfo=timezone.utc)
 
     def test_past_team_faze(self, client, mock_vlr):
         mock_vlr.get("/player/53").respond(200, text=load_fixture("player", "53_inspire", "overview.html"))
@@ -104,8 +104,8 @@ class TestSyncInspire:
         assert team is not None
         assert team.team_id == 337
         assert team.slug == "faze-clan"
-        assert team.joined_date == date(2021, 7, 1)
-        assert team.left_date == date(2021, 11, 1)
+        assert team.joined_date == datetime(2021, 7, 1, tzinfo=timezone.utc)
+        assert team.left_date == datetime(2021, 11, 1, tzinfo=timezone.utc)
 
     def test_past_team_rice_no_joined(self, client, mock_vlr):
         mock_vlr.get("/player/53").respond(200, text=load_fixture("player", "53_inspire", "overview.html"))
@@ -115,7 +115,7 @@ class TestSyncInspire:
         assert team.team_id == 4000
         assert team.slug == "rice-and-meatballs"
         assert team.joined_date is None
-        assert team.left_date == date(2021, 4, 1)
+        assert team.left_date == datetime(2021, 4, 1, tzinfo=timezone.utc)
 
     def test_past_team_nsic(self, client, mock_vlr):
         mock_vlr.get("/player/53").respond(200, text=load_fixture("player", "53_inspire", "overview.html"))
@@ -125,7 +125,7 @@ class TestSyncInspire:
         assert team.team_id == 2403
         assert team.slug == "nsic"
         assert team.joined_date is None
-        assert team.left_date == date(2021, 2, 1)
+        assert team.left_date == datetime(2021, 2, 1, tzinfo=timezone.utc)
 
     def test_past_team_prospects(self, client, mock_vlr):
         mock_vlr.get("/player/53").respond(200, text=load_fixture("player", "53_inspire", "overview.html"))
@@ -134,8 +134,8 @@ class TestSyncInspire:
         assert team is not None
         assert team.team_id == 15
         assert team.slug == "prospects"
-        assert team.joined_date == date(2020, 6, 1)
-        assert team.left_date == date(2020, 7, 1)
+        assert team.joined_date == datetime(2020, 6, 1, tzinfo=timezone.utc)
+        assert team.left_date == datetime(2020, 7, 1, tzinfo=timezone.utc)
 
     def test_teams(self, client, mock_vlr):
         mock_vlr.get("/player/53").respond(200, text=load_fixture("player", "53_inspire", "overview.html"))

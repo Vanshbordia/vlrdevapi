@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 import pytest
 from selectolax.parser import HTMLParser
 

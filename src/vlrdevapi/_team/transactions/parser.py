@@ -8,7 +8,7 @@ from vlrdevapi._team.transactions.models import (
     TransactionPlayer,
 )
 from vlrdevapi.commons.countries import get_country_name
-from vlrdevapi.commons.datetime import parse_vlr_date
+from vlrdevapi.commons.datetime import date_to_utc_datetime, parse_vlr_date
 
 
 def parse_team_transactions(html: HTMLParser, team_id: int) -> TeamTransactions:
@@ -34,7 +34,8 @@ def _parse_transaction_row(row: Node) -> TeamTransaction | None:
 
     date_td = tds[0]
     date_text = date_td.text(strip=True)
-    transaction_date = parse_vlr_date(date_text)
+    parsed = parse_vlr_date(date_text)
+    transaction_date = date_to_utc_datetime(parsed) if parsed else None
 
     action_td = tds[1]
     action_text = action_td.text(strip=True).capitalize()

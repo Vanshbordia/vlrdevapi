@@ -8,6 +8,19 @@ UTC = UTC
 VLR_TIMEZONE: ZoneInfo | tzinfo = ZoneInfo("America/New_York")
 
 
+def date_to_utc_datetime(d: date) -> datetime:
+    """Convert a naive date to a UTC-aware datetime at midnight.
+
+    Args:
+        d: The naive date to convert.
+
+    Returns:
+        datetime: A UTC-aware datetime with hour/minute/second at 00:00:00.
+
+    """
+    return datetime(d.year, d.month, d.day, tzinfo=UTC)
+
+
 def parse_vlr_date(text: str) -> date | None:
     """Parse a date string in vlr.gg format.
 

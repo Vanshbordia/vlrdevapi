@@ -1,5 +1,5 @@
 
-from datetime import date
+from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,17 +13,17 @@ class PlayerTeam(BaseModel):
     name: str = Field(description="Team name (e.g. 'NRG')")
     slug: str = Field(description="URL slug (e.g. 'nrg')")
     logo_url: str = Field(default="", description="URL to team logo image")
-    joined_date: date | None = Field(
+    joined_date: datetime | None = Field(
         default=None,
-        description="Date player joined the team (1st of month)",
+        description="Date player joined the team in UTC (1st of month)",
     )
-    left_date: date | None = Field(
+    left_date: datetime | None = Field(
         default=None,
-        description="Date player left the team (1st of month)",
+        description="Date player left the team in UTC (1st of month)",
     )
-    inactive_date: date | None = Field(
+    inactive_date: datetime | None = Field(
         default=None,
-        description="Date player became inactive on the team (1st of month)",
+        description="Date player became inactive in UTC (1st of month)",
     )
 
 

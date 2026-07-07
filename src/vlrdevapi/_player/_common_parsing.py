@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import re
-from datetime import date
+from datetime import date, datetime, timezone
+
+from vlrdevapi.commons.datetime import date_to_utc_datetime
 from typing import TYPE_CHECKING
 
 from selectolax.parser import Node
@@ -35,13 +37,13 @@ _MONTH_YEAR_RE = re.compile(
 _DASHES = "\u2013\u2014\u2212-"
 
 
-def _parse_month_year(text: str) -> date | None:
+def _parse_month_year(text: str) -> datetime | None:
     m = _MONTH_YEAR_RE.search(text)
     if not m:
         return None
     month = _MONTH_MAP[m.group(1).lower()]
     year = int(m.group(2))
-    return date(year, month, 1)
+    return datetime(year, month, 1, tzinfo=timezone.utc)
 
 
 def _parse_team_dates(text: str) -> tuple[date | None, date | None]:

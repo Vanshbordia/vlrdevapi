@@ -1,5 +1,5 @@
 
-from datetime import date as date_
+from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -32,7 +32,7 @@ class TeamTransaction(BaseModel):
         json_schema_extra={"description": "A team transaction entry."},
     )
 
-    date: date_ | None = Field(default=None, description="Transaction date")
+    date: datetime | None = Field(default=None, description="Transaction date in UTC")
     action: TransactionAction = Field(description="Transaction action type")
     player: TransactionPlayer = Field(description="Player involved")
     position: str = Field(

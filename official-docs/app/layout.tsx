@@ -1,3 +1,4 @@
+import { Analytics } from '@/components/analytics';
 import { Provider } from '@/components/provider';
 import type { Metadata } from 'next';
 import './global.css';
@@ -69,6 +70,7 @@ const jsonLdWebSite = {
 export default function Layout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="en" className={geist.variable} suppressHydrationWarning>
+      <Analytics />
       <body className="flex flex-col min-h-screen">
         <script
           type="application/ld+json"

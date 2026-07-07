@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime, timezone
 
 import pytest
 from selectolax.parser import HTMLParser, Node
@@ -36,7 +36,7 @@ class TestParseTransactionRow:
 
         txn = _parse_transaction_row(rows[0])
         assert txn is not None
-        assert txn.date == date(2026, 4, 25)
+        assert txn.date == datetime(2026, 4, 25, tzinfo=timezone.utc)
         assert txn.action == TransactionAction.Join
         assert txn.player.id == 612
         assert txn.player.ign == "mitch"
@@ -51,7 +51,7 @@ class TestParseTransactionRow:
 
         txn = _parse_transaction_row(rows[2])
         assert txn is not None
-        assert txn.date == date(2025, 11, 13)
+        assert txn.date == datetime(2025, 11, 13, tzinfo=timezone.utc)
         assert txn.action == TransactionAction.Join
         assert txn.player.id == 11494
         assert txn.player.ign == "keiko"
@@ -119,7 +119,7 @@ class TestParseTeamTransactions:
         assert len(result.transactions) == 85
 
         first = result.transactions[0]
-        assert first.date == date(2026, 4, 25)
+        assert first.date == datetime(2026, 4, 25, tzinfo=timezone.utc)
         assert first.action == TransactionAction.Join
         assert first.player.id == 612
         assert first.player.ign == "mitch"

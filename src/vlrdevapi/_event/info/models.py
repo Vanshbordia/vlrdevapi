@@ -1,5 +1,5 @@
 
-from datetime import date
+from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -120,10 +120,10 @@ class EventInfo(BaseModel):
         default_factory=list,
         description="Region tags; multiple means International",
     )
-    start_date: date | None = Field(default=None, description="Event start date")
-    end_date: date | None = Field(
+    start_date: datetime | None = Field(default=None, description="Event start date (UTC)")
+    end_date: datetime | None = Field(
         default=None,
-        description="Event end date (same as start_date for single-day events)",
+        description="Event end date in UTC (same as start_date for single-day events)",
     )
     prize: EventPrize | None = Field(
         default=None,

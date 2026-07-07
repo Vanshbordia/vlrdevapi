@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime, timezone
 
 from tests.conftest import load_fixture
 import vlrdevapi
@@ -13,7 +13,7 @@ class TestSyncModuleLevel:
         assert result.team_id == 1034
         assert result.name == "NRG"
         assert result.slug == "nrg"
-        assert result.joined_date == date(2023, 12, 1)
+        assert result.joined_date == datetime(2023, 12, 1, tzinfo=timezone.utc)
 
     def test_ethan_past_teams(self, mock_vlr):
         mock_vlr.get("/player/11225").respond(200, text=load_fixture("player", "11225_ethan", "overview.html"))
