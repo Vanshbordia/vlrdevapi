@@ -11,6 +11,7 @@ from vlrdevapi._matches.namespace import MatchesNamespace
 from vlrdevapi._player.namespace import PlayerNamespace
 from vlrdevapi._series.namespace import SeriesNamespace
 from vlrdevapi._team.namespace import TeamNamespace
+from vlrdevapi.commons.datetime import set_vlr_timezone
 from vlrdevapi.fetcher import (
     BASE_URL,
     DEFAULT_HEADERS,
@@ -62,8 +63,11 @@ class VLRClient:
         base_delay: float = 1.0,
         backoff: BackoffStrategy = BackoffStrategy.EXPONENTIAL,
         requests_per_second: float = DEFAULT_RATE_LIMIT,
+        source_tz: str | None = None,
         **httpx_kwargs: Any,
     ) -> None:
+        if source_tz:
+            set_vlr_timezone(source_tz)
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.retry_config = RetryConfig(

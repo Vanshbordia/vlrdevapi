@@ -8,6 +8,29 @@ UTC = UTC
 VLR_TIMEZONE: ZoneInfo | tzinfo = ZoneInfo("America/New_York")
 
 
+def set_vlr_timezone(tz: str | ZoneInfo | tzinfo) -> None:
+    """Override the VLR timezone used when parsing date-time strings.
+
+    VLR.gg renders times server-side in the viewer's local timezone.
+    Call this with your local ``ZoneInfo`` before making requests so
+    that the library converts correctly to UTC.
+
+    Args:
+        tz: A timezone name (e.g. ``"Asia/Kolkata"``), a
+            ``ZoneInfo``, or a ``datetime.tzinfo`` instance.
+
+    Example:
+        >>> from zoneinfo import ZoneInfo
+        >>> set_vlr_timezone("Asia/Kolkata")
+        >>> set_vlr_timezone(ZoneInfo("UTC"))
+    """
+    global VLR_TIMEZONE
+    if isinstance(tz, str):
+        VLR_TIMEZONE = ZoneInfo(tz)
+    else:
+        VLR_TIMEZONE = tz
+
+
 def date_to_utc_datetime(d: date) -> datetime:
     """Convert a naive date to a UTC-aware datetime at midnight.
 
