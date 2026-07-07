@@ -1,0 +1,28 @@
+name: Docs Check
+
+on:
+  pull_request:
+    paths:
+      - 'official-docs/**'
+      - 'docs-py/**'
+  push:
+    branches: [main]
+    paths:
+      - 'official-docs/**'
+      - 'docs-py/**'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v8
+        with:
+          python-version: '3.12'
+
+      - name: Install package
+        run: uv sync --group dev
+
+      - name: Run MDX examples check
+        run: uv run scripts/check_mdx_examples.py
