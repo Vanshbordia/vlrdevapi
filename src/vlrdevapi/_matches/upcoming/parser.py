@@ -1,7 +1,8 @@
 """Parse upcoming matches from vlr.gg HTML pages."""
 
 import logging
-from datetime import date
+from datetime import date, tzinfo
+from zoneinfo import ZoneInfo
 
 import httpx
 from selectolax.parser import HTMLParser, Node
@@ -32,6 +33,7 @@ def parse_upcoming_matches(
     timeout: int,
     retry_config: RetryConfig,
     team_cache: LRUCache[int, dict[str, str]],
+    source_tz: ZoneInfo | tzinfo | None = None,
 ) -> UpcomingMatchesPage:
     """Parse the vlr.gg matches page and extract upcoming match entries.
 
@@ -69,7 +71,7 @@ def parse_upcoming_matches(
         elif "wf-card" in classes and "mod-header" not in classes and current_date is not None:
             card_matches = parse_match_card_sync(
                 element, current_date, series_info_ns, client, timeout, retry_config,
-                team_cache, _parse_match_item,
+                team_cache, _parse_match_item, source_tz=source_tz,
             )
             matches.extend(card_matches)
 
@@ -81,6 +83,7 @@ def parse_upcoming_matches(
 def _parse_match_item(
     item: Node,
     match_date: date,
+    source_tz: ZoneInfo | tzinfo | None = None,
 ) -> UpcomingMatchEntry | None:
     """Parse a single upcoming match item from a match-card anchor.
 
@@ -105,7 +108,7 @@ def _parse_match_item(
             if match.team1 is None and match.team2 is None:
                 return None
 
-        parse_common_match_item_fields(item, match_date, match)
+        parse_common_match_item_fields(item, match_date, match, source_tz=source_tz)
 
         eta_el = item.css_first("div.match-item-eta div.ml")
         if eta_el:

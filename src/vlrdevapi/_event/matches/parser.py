@@ -1,5 +1,6 @@
 
-from datetime import date
+from datetime import date, tzinfo
+from zoneinfo import ZoneInfo
 
 from selectolax.parser import HTMLParser, Node
 
@@ -20,6 +21,7 @@ import contextlib
 def parse_event_matches(
     html: HTMLParser,
     event_id: int,
+    source_tz: ZoneInfo | tzinfo | None = None,
 ) -> EventMatches:
     """Parse event matches from the matches page HTML.
 
@@ -44,7 +46,7 @@ def parse_event_matches(
             continue
 
         for match_link in card.css("a.match-item"):
-            match = _parse_match_item(match_link, event_id, current_date)
+            match = _parse_match_item(match_link, event_id, current_date, source_tz=source_tz)
             if match:
                 matches.append(match)
 
@@ -73,6 +75,7 @@ def _find_next_wf_card(node: Node) -> Node | None:
 
 def _parse_match_item(
     match_link: Node, event_id: int, match_date: date | None,
+    source_tz: ZoneInfo | tzinfo | None = None,
 ) -> EventMatch | None:
     """Parse a single match-item anchor into an EventMatch.
 
@@ -110,6 +113,7 @@ def _parse_match_item(
         datetime_utc = parse_vlr_datetime(
             match_date.strftime("%Y-%m-%d"),
             match_time.strftime("%I:%M %p"),
+            source_tz=source_tz,
         )
 
     return EventMatch(

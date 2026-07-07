@@ -16,10 +16,10 @@ _FIXTURES = FIXTURES_DIR / "player"
 def _load_html(player_dir: str, filename: str) -> HTMLParser:
     if _LIVE:
         player_id = player_dir.split("_")[0]
-        url = f"/player/matches/{player_id}/"
-        if "_page" in filename:
-            page = filename.split("_page")[-1].replace(".html", "")
-            url += f"?page={page}"
+        page = filename.replace("matches", "").replace(".html", "").strip("_")
+        url = f"/player/{player_id}"
+        if page:
+            url += f"/?page={page}"
         return HTMLParser(live_fetch(url))
     path = _FIXTURES / player_dir / filename
     if path.exists():
@@ -35,14 +35,17 @@ class TestParseVlrDatetime:
         assert result.tzinfo == timezone.utc
         assert result == datetime(2026, 3, 15, 2, 30, tzinfo=timezone.utc)
 
-    def test_default_uses_vlr_timezone(self):
+    def test_default_uses_utc_when_no_source_tz(self):
         result = parse_vlr_datetime("2026/03/14", "10:30 pm")
         assert result is not None
         assert result.tzinfo == timezone.utc
-        et = ZoneInfo("America/New_York")
-        expected = datetime(2026, 3, 14, 22, 30, tzinfo=et).astimezone(
-            timezone.utc
-        )
+        assert result == datetime(2026, 3, 14, 22, 30, tzinfo=timezone.utc)
+
+    def test_uses_detected_vlr_timezone(self):
+        ist = ZoneInfo("Asia/Kolkata")
+        result = parse_vlr_datetime("2026/03/14", "10:30 pm", source_tz=ist)
+        assert result is not None
+        expected = datetime(2026, 3, 14, 22, 30, tzinfo=ist).astimezone(timezone.utc)
         assert result == expected
 
     def test_no_time(self):

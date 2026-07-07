@@ -1,5 +1,8 @@
 """Upcoming matches namespace."""
 
+from datetime import tzinfo
+from zoneinfo import ZoneInfo
+
 import httpx
 
 from vlrdevapi._base import SyncNamespace
@@ -21,7 +24,7 @@ from vlrdevapi.validators import sanitize_and_validate
 class UpcomingMatchesNamespace:
     """Access upcoming matches from vlr.gg."""
 
-    __slots__ = ("_series_info", "_sync", "_team_cache")
+    __slots__ = ("_series_info", "_source_tz", "_sync", "_team_cache")
 
     def __init__(
         self,
@@ -30,7 +33,9 @@ class UpcomingMatchesNamespace:
         retry_config: RetryConfig = DEFAULT_RETRY_CONFIG,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ):
+        self._source_tz = source_tz
         self._sync = SyncNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
         self._series_info = SeriesInfoNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
         self._team_cache: LRUCache[int, dict[str, str]] = LRUCache[int, dict[str, str]](maxsize=256)
@@ -69,11 +74,12 @@ class UpcomingMatchesNamespace:
                 build_url=lambda p: MATCHES if p == 1 else f"{MATCHES}?page={p}",
                 parse_fn=parse_upcoming_matches,
                 max_page=max_page if max_page > 0 else page,
-                parse_extra=(self._series_info, self._sync._client, self._sync._timeout, self._sync._retry_config, self._team_cache),
+                parse_extra=(self._series_info, self._sync._client, self._sync._timeout, self._sync._retry_config, self._team_cache, self._source_tz),
             )
         url = MATCHES if page == 1 else f"{MATCHES}?page={page}"
         html = self._sync._fetch(url)
         return parse_upcoming_matches(
             html, self._series_info, self._sync._client, self._sync._timeout, self._sync._retry_config, self._team_cache,
+            source_tz=self._source_tz,
         )
 

@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 from datetime import date, datetime, timezone
 
-from vlrdevapi.commons.datetime import date_to_utc_datetime
 from typing import TYPE_CHECKING
 
 from selectolax.parser import Node

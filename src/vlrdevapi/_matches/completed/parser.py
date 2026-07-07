@@ -1,7 +1,8 @@
 """Parse completed matches from vlr.gg HTML pages."""
 
 import logging
-from datetime import date
+from datetime import date, tzinfo
+from zoneinfo import ZoneInfo
 
 import httpx
 from selectolax.parser import HTMLParser, Node
@@ -32,6 +33,7 @@ def parse_completed_matches(
     timeout: int,
     retry_config: RetryConfig,
     team_cache: LRUCache[int, dict[str, str]],
+    source_tz: ZoneInfo | tzinfo | None = None,
 ) -> CompletedMatchesPage:
     """Parse the vlr.gg results page and extract completed match entries.
 
@@ -69,7 +71,7 @@ def parse_completed_matches(
         elif "wf-card" in classes and "mod-header" not in classes and current_date is not None:
             card_matches = parse_match_card_sync(
                 element, current_date, series_info_ns, client, timeout, retry_config,
-                team_cache, _parse_match_item,
+                team_cache, _parse_match_item, source_tz=source_tz,
             )
             matches.extend(card_matches)
 
@@ -81,6 +83,7 @@ def parse_completed_matches(
 def _parse_match_item(
     item: Node,
     match_date: date,
+    source_tz: ZoneInfo | tzinfo | None = None,
 ) -> CompletedMatchEntry | None:
     """Parse a single completed match item from a match-card anchor.
 
@@ -105,7 +108,7 @@ def _parse_match_item(
             if match.team1 is None and match.team2 is None:
                 return None
 
-        parse_common_match_item_fields(item, match_date, match)
+        parse_common_match_item_fields(item, match_date, match, source_tz=source_tz)
     except (AttributeError, IndexError, KeyError, TypeError, ValueError):
         logger.debug("Failed to parse completed match item", exc_info=True)
         return None

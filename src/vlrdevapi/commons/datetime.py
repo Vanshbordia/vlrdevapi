@@ -5,7 +5,9 @@ from zoneinfo import ZoneInfo
 
 UTC = UTC
 
-VLR_TIMEZONE: ZoneInfo | tzinfo = ZoneInfo("America/New_York")
+# Fallback when no ``source_tz`` is provided. Prefer passing an explicit
+# timezone from :class:`~vlrdevapi._client.VLRClient` (auto-detected from VLR).
+VLR_TIMEZONE: ZoneInfo | tzinfo = UTC
 
 
 def date_to_utc_datetime(d: date) -> datetime:

@@ -1,5 +1,8 @@
 """Top-level namespace exposing upcoming, live, and completed match sub-namespaces."""
 
+from datetime import tzinfo
+from zoneinfo import ZoneInfo
+
 import httpx
 
 from vlrdevapi._matches.completed.namespace import CompletedMatchesNamespace
@@ -32,10 +35,12 @@ class MatchesNamespace:
         retry_config: RetryConfig = DEFAULT_RETRY_CONFIG,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ):
-        self._upcoming = UpcomingMatchesNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._live = LiveMatchesNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._completed = CompletedMatchesNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
+        self._source_tz = source_tz
+        self._upcoming = UpcomingMatchesNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._live = LiveMatchesNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._completed = CompletedMatchesNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
 
     @property
     def upcoming(self) -> UpcomingMatchesNamespace:

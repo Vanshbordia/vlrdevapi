@@ -257,7 +257,7 @@ def _parse_single_date(text: str) -> date | None:
         except ValueError:
             continue
 
-    match = re.match(r"^(\w+)\s+(\d{1,2})$,?\s*(\d{4})$", text)
+    match = re.match(r"^(\w+)\s+(\d{1,2}),?\s*(\d{4})$", text)
     if match:
         try:
             return datetime.strptime(

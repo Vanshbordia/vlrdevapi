@@ -16,8 +16,13 @@ _FIXTURES = (
 def _load_html(filename: str) -> HTMLParser:
     if _LIVE:
         series_id = _FIXTURES.name.split("_")[0]
-        game_id = filename.split("_")[1]
-        return HTMLParser(live_fetch(f"/{series_id}/?game={game_id}&tab=performance"))
+        game_id = ""
+        if "game_" in filename:
+            game_id = filename.split("_")[1]
+        url = f"/{series_id}/?tab=performance"
+        if game_id:
+            url += f"&game={game_id}"
+        return HTMLParser(live_fetch(url))
     path = _FIXTURES / filename
     if path.exists():
         return HTMLParser(path.read_text(encoding="utf-8"))

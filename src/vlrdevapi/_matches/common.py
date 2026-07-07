@@ -2,8 +2,9 @@
 
 import logging
 from collections.abc import Callable
-from datetime import date, datetime
+from datetime import date, datetime, tzinfo
 from typing import Any, Protocol
+from zoneinfo import ZoneInfo
 
 import httpx
 from selectolax.parser import HTMLParser, Node
@@ -84,6 +85,7 @@ def parse_match_card_sync(
     retry_config: RetryConfig,
     team_cache: LRUCache[int, dict[str, str]],
     parse_item: Callable,
+    source_tz: ZoneInfo | tzinfo | None = None,
 ) -> list:
     """Iterate match items inside a ``.wf-card`` and return parsed entries.
 
@@ -107,7 +109,7 @@ def parse_match_card_sync(
     """
     matches = []
     for match_item in card.css("a.match-item"):
-        match = parse_item(match_item, match_date)
+        match = parse_item(match_item, match_date, source_tz=source_tz)
         if match and match.match_id > 0 and (match.team1 is not None or match.team2 is not None):
             enrich_team_data_sync(match, series_info_ns, client, timeout, retry_config, team_cache)
             matches.append(match)
@@ -123,6 +125,7 @@ def parse_common_match_item_fields(
     item: Node,
     match_date: date,
     match: Any,
+    source_tz: ZoneInfo | tzinfo | None = None,
 ) -> bool:
     """Populate common fields shared across match entry types.
 
@@ -164,7 +167,7 @@ def parse_common_match_item_fields(
             match.event = event_text.replace(match.stage, "").strip()
 
     if time_text:
-        match.datetime = parse_vlr_datetime(match_date.strftime("%Y/%m/%d"), time_text)
+        match.datetime = parse_vlr_datetime(match_date.strftime("%Y/%m/%d"), time_text, source_tz=source_tz)
 
     return True
 

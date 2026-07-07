@@ -1,9 +1,10 @@
 import re
-from datetime import UTC, datetime
+from datetime import datetime
 
 from selectolax.parser import HTMLParser, Node
 
 from vlrdevapi._series.info.models import MapVeto, SeriesGame, SeriesInfo, SeriesTeam
+from vlrdevapi.commons.timezone import parse_vlr_stored_datetime
 import contextlib
 
 
@@ -115,11 +116,7 @@ def parse_series_info(html: HTMLParser) -> SeriesInfo:
         if ts_el:
             ts_str = ts_el.attributes.get("data-utc-ts", "") or ""
             if ts_str:
-                try:
-                    naive = datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S")
-                    info.datetime = naive.replace(tzinfo=UTC)
-                except ValueError:
-                    pass
+                info.datetime = parse_vlr_stored_datetime(ts_str)
 
         for italic_div in date_container.css("div[style*='font-style: italic']"):
             patch_text = italic_div.text(strip=True)

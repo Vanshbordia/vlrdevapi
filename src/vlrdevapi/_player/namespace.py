@@ -1,6 +1,8 @@
 """Top-level player namespace with curried access pattern."""
 
+from datetime import tzinfo
 from typing import Literal
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -181,12 +183,14 @@ class PlayerNamespace:
         retry_config: RetryConfig = DEFAULT_RETRY_CONFIG,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ):
-        self._info = PlayerInfoNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._teams = PlayerTeamsNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._agents = AgentsNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._matches = MatchesNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._profile = ProfileNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
+        self._source_tz = source_tz
+        self._info = PlayerInfoNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._teams = PlayerTeamsNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._agents = AgentsNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._matches = MatchesNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._profile = ProfileNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
 
     @property
     def info(self) -> PlayerInfoNamespace:

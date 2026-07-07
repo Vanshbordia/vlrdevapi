@@ -4,14 +4,14 @@ from unittest.mock import patch
 import pytest
 from selectolax.parser import HTMLParser
 
-from tests.conftest import _LIVE, load_fixture
+from tests.conftest import _LIVE, live_fetch, load_fixture
 from tests.conftest import mock_vlr  # noqa: F401
 import vlrdevapi
 
 
 def _stats_fixture(team_id: int) -> HTMLParser:
     if _LIVE:
-        pytest.skip("in --live mode")
+        return HTMLParser(live_fetch(f"/team/stats/{team_id}/"))
     return HTMLParser(load_fixture("team", str(team_id), "stats.html"))
 
 

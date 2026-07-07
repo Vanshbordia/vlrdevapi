@@ -4,6 +4,8 @@ import pytest
 from selectolax.parser import HTMLParser
 
 from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
+from tests.helpers.expected_from_html import event_dates_label
+from tests.helpers.fixtures import event_dates_text
 from vlrdevapi._event.info.parser import parse_event_info
 
 
@@ -20,8 +22,8 @@ class TestParseEventInfoVCTEMEA:
     """VCT 2026: EMEA Stage 1 — full breadcrumb, TBD prize, location with venue."""
 
     def setup_method(self):
-        html = _load_event_html(2863, "vct-2026-emea-stage-1")
-        self.result = parse_event_info(html, 2863)
+        self.html = _load_event_html(2863, "vct-2026-emea-stage-1")
+        self.result = parse_event_info(self.html, 2863)
 
     def test_id(self):
         assert self.result.id == 2863
@@ -53,13 +55,14 @@ class TestParseEventInfoVCTEMEA:
         assert self.result.regions[0].href == "/vct/?region=27"
 
     def test_dates(self):
-        assert self.result.start_date is not None
-        assert self.result.end_date is not None
+        raw = event_dates_text(self.html)
+        expected_start, expected_end = event_dates_label(raw)
+        assert expected_start is not None
+        assert expected_end is not None
+        assert self.result.start_date == expected_start
+        assert self.result.end_date == expected_end
         assert self.result.start_date.year == 2026
         assert self.result.start_date.month == 4
-        assert self.result.start_date.day == 1
-        assert self.result.end_date.month == 5
-        assert self.result.end_date.day == 18
 
     def test_prize_tbd(self):
         assert self.result.prize is not None
@@ -81,10 +84,10 @@ class TestParseEventInfoGAMEON:
     """GAMEON Productivity and Technology Tournament 2026 — converted currency prize, no breadcrumb."""
 
     def setup_method(self):
-        html = _load_event_html(
+        self.html = _load_event_html(
             2949, "gameon-productivity-and-technology-tournament-2026"
         )
-        self.result = parse_event_info(html, 2949)
+        self.result = parse_event_info(self.html, 2949)
 
     def test_id(self):
         assert self.result.id == 2949
@@ -108,12 +111,14 @@ class TestParseEventInfoGAMEON:
         assert self.result.regions == []
 
     def test_dates_short_format(self):
-        assert self.result.start_date is not None
-        assert self.result.end_date is not None
+        raw = event_dates_text(self.html)
+        expected_start, expected_end = event_dates_label(raw)
+        assert expected_start is not None
+        assert expected_end is not None
+        assert self.result.start_date == expected_start
+        assert self.result.end_date == expected_end
         assert self.result.start_date.year == 2026
         assert self.result.start_date.month == 4
-        assert self.result.start_date.day == 17
-        assert self.result.end_date.day == 19
 
     def test_prize_with_conversion(self):
         assert self.result.prize is not None

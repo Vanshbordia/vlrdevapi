@@ -1,6 +1,7 @@
 """Team stats namespace."""
 
-from datetime import date, timedelta
+from datetime import date, timedelta, tzinfo
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -54,7 +55,7 @@ def _build_stats_url(
 class TeamStatsNamespace:
     """Access team map statistics from vlr.gg."""
 
-    __slots__ = ("_series_info", "_sync")
+    __slots__ = ("_series_info", "_sync", "_source_tz")
 
     def __init__(
         self,
@@ -63,7 +64,9 @@ class TeamStatsNamespace:
         retry_config: RetryConfig = DEFAULT_RETRY_CONFIG,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ):
+        self._source_tz = source_tz
         self._sync = SyncNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
         self._series_info = SeriesInfoNamespace(client, timeout, retry_config, rate_limiter)
 

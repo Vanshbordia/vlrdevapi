@@ -23,12 +23,12 @@ _FIXTURES_2760 = (
 def _load_html(base: Path, filename: str) -> HTMLParser:
     if _LIVE:
         event_id = base.name.split("_")[0]
-        url = f"/event/matches/{event_id}/?series_id=all"
-        if "completed" in filename.lower():
-            url += "&group=completed"
-        elif "upcoming" in filename.lower():
-            url += "&group=upcoming"
-        return HTMLParser(live_fetch(url))
+        group = ""
+        if "completed" in filename:
+            group = "?group=completed"
+        elif "upcoming" in filename:
+            group = "?group=upcoming"
+        return HTMLParser(live_fetch(f"/event/matches/{event_id}/{group}"))
     return HTMLParser((base / filename).read_text(encoding="utf-8"))
 
 
@@ -51,29 +51,35 @@ class TestParseEventMatchesCompleted:
 
     def test_first_match_details(self):
         m = self.result.matches[0]
-        assert m.match_id == 660386
-        assert m.stage == "Playoffs"
-        assert m.phase == "Grand Final"
+        assert m.match_id > 0
+        if not _LIVE:
+            assert m.match_id == 660386
+            assert m.stage == "Playoffs"
+            assert m.phase == "Grand Final"
 
     def test_completed_teams_have_scores(self):
         m = self.result.matches[0]
         assert len(m.teams) == 2
-        assert m.teams[0].name == "Team Vitality"
-        assert m.teams[0].score == 2
-        assert m.teams[1].name == "Team Heretics"
-        assert m.teams[1].score == 3
+        if not _LIVE:
+            assert m.teams[0].name == "Team Vitality"
+            assert m.teams[0].score == 2
+            assert m.teams[1].name == "Team Heretics"
+            assert m.teams[1].score == 3
 
     def test_winner_detected(self):
         m = self.result.matches[0]
-        assert m.teams[0].winner is False
-        assert m.teams[1].winner is True
+        assert any(t.winner for t in m.teams)
+        if not _LIVE:
+            assert m.teams[0].winner is False
+            assert m.teams[1].winner is True
 
     def test_dates_parsed(self):
         first_date = self.result.matches[0].match_date
         assert first_date is not None
-        assert first_date.year == 2026
-        assert first_date.month == 5
-        assert first_date.day == 17
+        if not _LIVE:
+            assert first_date.year == 2026
+            assert first_date.month == 5
+            assert first_date.day == 17
 
     def test_time_parsed(self):
         first_time = self.result.matches[0].match_time
@@ -86,11 +92,13 @@ class TestParseEventMatchesCompleted:
 
     def test_second_match_different_date(self):
         m = self.result.matches[1]
-        assert m.match_id == 660392
+        assert m.match_id > 0
         assert m.match_date is not None
-        assert m.match_date.day == 16
-        assert m.teams[0].name == "FUT Esports"
-        assert m.teams[1].name == "Team Heretics"
+        if not _LIVE:
+            assert m.match_id == 660392
+            assert m.match_date.day == 16
+            assert m.teams[0].name == "FUT Esports"
+            assert m.teams[1].name == "Team Heretics"
 
 
 class TestParseEventMatchesUpcoming:
@@ -101,7 +109,8 @@ class TestParseEventMatchesUpcoming:
         )
 
     def test_no_upcoming_matches_concluded(self):
-        assert len(self.result.matches) == 0
+        if not _LIVE:
+            assert len(self.result.matches) == 0
 
 
 class TestParseEventMatchesAll:
@@ -141,21 +150,25 @@ class TestParseEventMatchesCompleted2760:
 
     def test_first_match(self):
         m = self.result.matches[0]
-        assert m.match_id == 625788
-        assert m.stage == "Swiss Stage"
-        assert m.phase == "Round 1"
-        assert m.teams[0].name == "Gentle Mates"
-        assert m.teams[0].score == 2
-        assert m.teams[0].winner is True
-        assert m.teams[1].name == "EDward Gaming"
-        assert m.teams[1].score == 0
-        assert m.teams[1].winner is False
+        assert m.match_id > 0
+        if not _LIVE:
+            assert m.match_id == 625788
+            assert m.stage == "Swiss Stage"
+            assert m.phase == "Round 1"
+            assert m.teams[0].name == "Gentle Mates"
+            assert m.teams[0].score == 2
+            assert m.teams[0].winner is True
+            assert m.teams[1].name == "EDward Gaming"
+            assert m.teams[1].score == 0
+            assert m.teams[1].winner is False
 
     def test_date_parsed(self):
         from datetime import date
 
         m = self.result.matches[0]
-        assert m.match_date == date(2026, 2, 28)
+        assert m.match_date is not None
+        if not _LIVE:
+            assert m.match_date == date(2026, 2, 28)
 
 
 class TestParseEventMatchesEmptyUpcoming:
@@ -164,7 +177,8 @@ class TestParseEventMatchesEmptyUpcoming:
             _load_html(_FIXTURES_2760, "matches_upcoming.html"), 2760
         )
         assert result.event_id == 2760
-        assert result.matches == []
+        if not _LIVE:
+            assert result.matches == []
 
 
 class TestParseEmptyHtml:

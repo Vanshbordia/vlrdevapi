@@ -4,6 +4,8 @@ import pytest
 from selectolax.parser import HTMLParser, Node
 
 from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
+from tests.helpers.expected_from_html import transaction_date_label
+from tests.helpers.fixtures import transaction_date_text
 from vlrdevapi._team.transactions.parser import (
     parse_team_transactions,
     _parse_transaction_row,
@@ -33,10 +35,12 @@ class TestParseTransactionRow:
         html = _load_html(1034, "transactions.html")
         rows = _get_table_rows(html)
         assert len(rows) > 0
+        expected = transaction_date_label(transaction_date_text(rows[0]))
+        assert expected is not None
 
         txn = _parse_transaction_row(rows[0])
         assert txn is not None
-        assert txn.date == datetime(2026, 4, 25, tzinfo=timezone.utc)
+        assert txn.date == expected
         assert txn.action == TransactionAction.Join
         assert txn.player.id == 612
         assert txn.player.ign == "mitch"
@@ -48,10 +52,12 @@ class TestParseTransactionRow:
     def test_parse_join_transaction(self):
         html = _load_html(1034, "transactions.html")
         rows = _get_table_rows(html)
+        expected = transaction_date_label(transaction_date_text(rows[2]))
+        assert expected is not None
 
         txn = _parse_transaction_row(rows[2])
         assert txn is not None
-        assert txn.date == datetime(2025, 11, 13, tzinfo=timezone.utc)
+        assert txn.date == expected
         assert txn.action == TransactionAction.Join
         assert txn.player.id == 11494
         assert txn.player.ign == "keiko"
@@ -113,13 +119,15 @@ class TestParseTransactionRow:
 class TestParseTeamTransactions:
     def test_parse_nrg_transactions(self):
         html = _load_html(1034, "transactions.html")
+        rows = _get_table_rows(html)
         result = parse_team_transactions(html, 1034)
 
         assert result.team_id == 1034
         assert len(result.transactions) == 85
 
         first = result.transactions[0]
-        assert first.date == datetime(2026, 4, 25, tzinfo=timezone.utc)
+        expected = transaction_date_label(transaction_date_text(rows[0]))
+        assert first.date == expected
         assert first.action == TransactionAction.Join
         assert first.player.id == 612
         assert first.player.ign == "mitch"
