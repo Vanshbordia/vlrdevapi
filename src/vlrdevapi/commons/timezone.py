@@ -7,7 +7,7 @@ import os
 import re
 import sys
 from collections.abc import Callable
-from datetime import UTC, datetime, tzinfo
+from datetime import UTC, datetime, timezone, tzinfo
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -20,45 +20,6 @@ VLR_STORED_TZ = ZoneInfo("America/New_York")
 
 # Stable completed match used to detect the viewer timezone VLR.gg renders for.
 REFERENCE_MATCH_PATH = "/670471/paper-rex-vs-leviat-n-valorant-masters-london-2026-gf"
-
-# Common timezone abbreviations shown by VLR.gg's moment.js formatting.
-_TZ_ABBREV_MAP: dict[str, str] = {
-    "IST": "Asia/Kolkata",
-    "PKT": "Asia/Karachi",
-    "BST": "Europe/London",
-    "GMT": "Etc/GMT",
-    "UTC": "UTC",
-    "ET": "America/New_York",
-    "EST": "America/New_York",
-    "EDT": "America/New_York",
-    "CT": "America/Chicago",
-    "CDT": "America/Chicago",
-    "MT": "America/Denver",
-    "MST": "America/Denver",
-    "MDT": "America/Denver",
-    "PT": "America/Los_Angeles",
-    "PST": "America/Los_Angeles",
-    "PDT": "America/Los_Angeles",
-    "AEST": "Australia/Sydney",
-    "AEDT": "Australia/Sydney",
-    "JST": "Asia/Tokyo",
-    "KST": "Asia/Seoul",
-    "CST": "America/Chicago",
-    "CHST": "Asia/Shanghai",
-    "HKT": "Asia/Hong_Kong",
-    "SGT": "Asia/Singapore",
-    "CET": "Europe/Paris",
-    "CEST": "Europe/Paris",
-    "EET": "Europe/Helsinki",
-    "EEST": "Europe/Helsinki",
-    "WIB": "Asia/Jakarta",
-    "WITA": "Asia/Makassar",
-    "WIT": "Asia/Jayapura",
-    "ICT": "Asia/Bangkok",
-    "PHT": "Asia/Manila",
-    "MSK": "Europe/Moscow",
-    "GST": "Asia/Dubai",
-}
 
 _TIME_WITH_TZ_RE = re.compile(
     r"^(?P<time>\d{1,2}:\d{2}\s*(?:AM|PM))\s+(?P<tz>[A-Z]{2,5})$",
@@ -262,20 +223,12 @@ def _system_iana_timezone() -> ZoneInfo:
     return ZoneInfo("UTC")
 
 
-def _zone_from_abbrev(abbrev: str) -> ZoneInfo | None:
-    key = abbrev.upper()
-    zone_name = _TZ_ABBREV_MAP.get(key)
-    if zone_name is None:
-        return None
-    return ZoneInfo(zone_name)
-
-
 def _detect_from_offset(
     stored_ts: str,
     displayed_time: str,
     displayed_date: str,
-) -> ZoneInfo | None:
-    """Infer viewer timezone by matching displayed local time to stored timestamp."""
+) -> timezone | None:
+    """Infer viewer timezone by computing the offset between stored UTC and displayed local time."""
     canonical = parse_vlr_stored_datetime(stored_ts)
     if canonical is None:
         return None
@@ -302,21 +255,10 @@ def _detect_from_offset(
     else:
         local_date = local_date.replace(year=canonical.year)
 
-    candidates: list[ZoneInfo] = []
-    seen: set[str] = set()
-    for zone_name in _TZ_ABBREV_MAP.values():
-        if zone_name in seen:
-            continue
-        seen.add(zone_name)
-        candidates.append(ZoneInfo(zone_name))
-
-    for zone in candidates:
-        local_naive = datetime.combine(local_date, local_time)
-        localized = local_naive.replace(tzinfo=zone)
-        if localized.astimezone(UTC) == canonical:
-            return zone
-
-    return None
+    local_naive = datetime.combine(local_date, local_time)
+    local_as_utc = local_naive.replace(tzinfo=UTC)
+    offset = local_as_utc - canonical
+    return timezone(offset)
 
 
 def detect_vlr_timezone(html: HTMLParser) -> ZoneInfo | tzinfo:
@@ -351,12 +293,6 @@ def detect_vlr_timezone(html: HTMLParser) -> ZoneInfo | tzinfo:
         return _system_iana_timezone()
 
     displayed_time = time_el.text(strip=True)
-    match = _TIME_WITH_TZ_RE.match(displayed_time)
-    if match:
-        zone = _zone_from_abbrev(match.group("tz"))
-        if zone is not None:
-            return zone
-
     if ts_el is not None and date_el is not None:
         stored_ts = ts_el.attributes.get("data-utc-ts", "") or ""
         zone = _detect_from_offset(stored_ts, displayed_time, date_el.text(strip=True))

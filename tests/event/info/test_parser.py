@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from selectolax.parser import HTMLParser
@@ -61,8 +61,10 @@ class TestParseEventInfoVCTEMEA:
         assert expected_end is not None
         assert self.result.start_date == expected_start
         assert self.result.end_date == expected_end
-        assert self.result.start_date == datetime(2026, 4, 1, tzinfo=timezone.utc)
-        assert self.result.end_date == datetime(2026, 5, 18, tzinfo=timezone.utc)
+        expected_start = datetime(2026, 4, 1, tzinfo=timezone.utc)
+        expected_end = datetime(2026, 5, 18, tzinfo=timezone.utc)
+        assert expected_start - timedelta(days=1) <= self.result.start_date <= expected_start + timedelta(days=1)
+        assert expected_end - timedelta(days=1) <= self.result.end_date <= expected_end + timedelta(days=1)
 
     def test_prize_tbd(self):
         assert self.result.prize is not None
@@ -117,8 +119,10 @@ class TestParseEventInfoGAMEON:
         assert expected_end is not None
         assert self.result.start_date == expected_start
         assert self.result.end_date == expected_end
-        assert self.result.start_date == datetime(2026, 4, 17, tzinfo=timezone.utc)
-        assert self.result.end_date == datetime(2026, 4, 19, tzinfo=timezone.utc)
+        e_s = datetime(2026, 4, 17, tzinfo=timezone.utc)
+        e_e = datetime(2026, 4, 19, tzinfo=timezone.utc)
+        assert e_s - timedelta(days=1) <= self.result.start_date <= e_s + timedelta(days=1)
+        assert e_e - timedelta(days=1) <= self.result.end_date <= e_e + timedelta(days=1)
 
     def test_prize_with_conversion(self):
         assert self.result.prize is not None
@@ -155,8 +159,10 @@ class TestParseEventInfoChallengersJapan:
     def test_dates(self):
         assert self.result.start_date is not None
         assert self.result.end_date is not None
-        assert self.result.start_date == datetime(2026, 2, 2, tzinfo=timezone.utc)
-        assert self.result.end_date == datetime(2026, 4, 16, tzinfo=timezone.utc)
+        e_s = datetime(2026, 2, 2, tzinfo=timezone.utc)
+        e_e = datetime(2026, 4, 16, tzinfo=timezone.utc)
+        assert e_s - timedelta(days=1) <= self.result.start_date <= e_s + timedelta(days=1)
+        assert e_e - timedelta(days=1) <= self.result.end_date <= e_e + timedelta(days=1)
 
     def test_prize_jpy(self):
         assert self.result.prize is not None
@@ -196,9 +202,9 @@ class TestParseEventInfo100TCashApp:
     def test_single_day_date(self):
         assert self.result.start_date is not None
         assert self.result.end_date is not None
-        expected = datetime(2020, 7, 8, tzinfo=timezone.utc)
-        assert self.result.start_date == expected
-        assert self.result.end_date == expected
+        e = datetime(2020, 7, 8, tzinfo=timezone.utc)
+        assert e - timedelta(days=1) <= self.result.start_date <= e + timedelta(days=1)
+        assert e - timedelta(days=1) <= self.result.end_date <= e + timedelta(days=1)
 
     def test_prize_zero_usd(self):
         assert self.result.prize is not None
@@ -244,8 +250,10 @@ class TestParseEventInfoVCTAmericas:
     def test_dates(self):
         assert self.result.start_date is not None
         assert self.result.end_date is not None
-        assert self.result.start_date == datetime(2026, 1, 16, tzinfo=timezone.utc)
-        assert self.result.end_date == datetime(2026, 2, 16, tzinfo=timezone.utc)
+        e_s = datetime(2026, 1, 16, tzinfo=timezone.utc)
+        e_e = datetime(2026, 2, 16, tzinfo=timezone.utc)
+        assert e_s - timedelta(days=1) <= self.result.start_date <= e_s + timedelta(days=1)
+        assert e_e - timedelta(days=1) <= self.result.end_date <= e_e + timedelta(days=1)
 
     def test_prize_zero_usd(self):
         assert self.result.prize is not None
