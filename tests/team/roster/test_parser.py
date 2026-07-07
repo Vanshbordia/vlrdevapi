@@ -1,11 +1,13 @@
 import pytest
 from selectolax.parser import HTMLParser
 
-from tests.conftest import FIXTURES_DIR
+from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from vlrdevapi._team.roster.parser import parse_team_roster
 
 
 def _load_html(team_id: int) -> HTMLParser:
+    if _LIVE:
+        return HTMLParser(live_fetch(f"/team/{team_id}"))
     path = (
         FIXTURES_DIR
         / "team"

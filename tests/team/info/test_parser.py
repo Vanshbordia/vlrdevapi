@@ -1,11 +1,14 @@
 import pytest
 from selectolax.parser import HTMLParser
 
-from tests.conftest import FIXTURES_DIR
+from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from vlrdevapi._team.info.parser import parse_team_info
 
 
 def _load_html(team_id: int, mode: str) -> HTMLParser:
+    if _LIVE:
+        headers = {"Cookie": 'settings={"dark_mode":1}'} if mode == "dark" else None
+        return HTMLParser(live_fetch(f"/team/{team_id}", headers=headers))
     path = (
         FIXTURES_DIR
         / "team"

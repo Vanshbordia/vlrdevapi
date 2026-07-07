@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from selectolax.parser import HTMLParser
 
-from tests.conftest import FIXTURES_DIR
+from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from vlrdevapi._event.matches.parser import parse_event_matches
 from vlrdevapi._event.matches.models import MatchStatus
 
@@ -21,6 +21,14 @@ _FIXTURES_2760 = (
 
 
 def _load_html(base: Path, filename: str) -> HTMLParser:
+    if _LIVE:
+        event_id = base.name.split("_")[0]
+        url = f"/event/matches/{event_id}/?series_id=all"
+        if "completed" in filename.lower():
+            url += "&group=completed"
+        elif "upcoming" in filename.lower():
+            url += "&group=upcoming"
+        return HTMLParser(live_fetch(url))
     return HTMLParser((base / filename).read_text(encoding="utf-8"))
 
 

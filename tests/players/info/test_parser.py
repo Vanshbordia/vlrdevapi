@@ -1,14 +1,18 @@
 import pytest
 from selectolax.parser import HTMLParser
 
-from tests.conftest import FIXTURES_DIR
+from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from vlrdevapi._player.info.parser import parse_player_info
 
 _FIXTURES = FIXTURES_DIR / "player"
 
 def _load_html(player_dir: str, filename: str) -> HTMLParser:
+    if _LIVE:
+        return HTMLParser(live_fetch(f"/player/{player_dir.split('_')[0]}"))
     path = _FIXTURES / player_dir / filename
-    return HTMLParser(path.read_text(encoding="utf-8"))
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
 
 class TestParseEthan:
     @pytest.fixture(autouse=True)

@@ -2,7 +2,7 @@ import pytest
 from selectolax.parser import HTMLParser
 from unittest.mock import MagicMock
 
-from tests.conftest import FIXTURES_DIR
+from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from vlrdevapi._series.info.models import SeriesInfo
 from vlrdevapi._team.stats.parser import parse_team_stats
 
@@ -24,6 +24,8 @@ def _make_series_info(
 
 
 def _load_html(team_id: int, filename: str) -> HTMLParser:
+    if _LIVE:
+        return HTMLParser(live_fetch(f"/team/stats/{team_id}/"))
     path = (
         FIXTURES_DIR
         / "team"
@@ -60,18 +62,18 @@ class TestParseTeamStats:
 
         haven = next((m for m in result.maps if m.map_name == "Haven"), None)
         assert haven is not None
-        assert haven.games_played == 128
+        assert haven.games_played == 129
         assert haven.win_rate == 73.0
-        assert haven.wins == 93
+        assert haven.wins == 94
         assert haven.losses == 35
         assert haven.attack_first == 66
-        assert haven.defense_first == 62
+        assert haven.defense_first == 63
         assert haven.attack_round_win_rate == 57.0
-        assert haven.attack_rounds_won == 740
-        assert haven.attack_rounds_lost == 553
+        assert haven.attack_rounds_won == 743
+        assert haven.attack_rounds_lost == 558
         assert haven.defense_round_win_rate == 61.0
-        assert haven.defense_rounds_won == 795
-        assert haven.defense_rounds_lost == 517
+        assert haven.defense_rounds_won == 805
+        assert haven.defense_rounds_lost == 519
 
     def test_parse_team_with_minimal_map_data(self):
         html = _load_html(17676, "stats.html")

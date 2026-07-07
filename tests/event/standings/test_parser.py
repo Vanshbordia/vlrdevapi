@@ -1,10 +1,12 @@
 import pytest
 from selectolax.parser import HTMLParser
 
-from tests.conftest import FIXTURES_DIR
+from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from vlrdevapi._event.standings.parser import parse_subnav, parse_standings
 
 def _load_event_html(event_id: int, slug: str) -> HTMLParser:
+    if _LIVE:
+        return HTMLParser(live_fetch(f"/event/{event_id}"))
     path = FIXTURES_DIR / "event" / f"{event_id}_{slug}" / "overview.html"
     if path.exists():
         return HTMLParser(path.read_text(encoding="utf-8"))

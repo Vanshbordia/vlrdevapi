@@ -2,7 +2,7 @@ import pytest
 
 from selectolax.parser import HTMLParser
 
-from tests.conftest import FIXTURES_DIR
+from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from vlrdevapi._series.players.parser import parse_players_stats
 
 
@@ -14,8 +14,14 @@ _FIXTURES = (
 
 
 def _load_html(filename: str) -> HTMLParser:
+    if _LIVE:
+        series_id = _FIXTURES.name.split("_")[0]
+        game_id = filename.split("_")[1] if filename.startswith("game_") else "all"
+        return HTMLParser(live_fetch(f"/{series_id}/?game={game_id}&tab=overview"))
     path = _FIXTURES / filename
-    return HTMLParser(path.read_text(encoding="utf-8"))
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
 
 
 

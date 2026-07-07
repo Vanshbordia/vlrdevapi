@@ -1,6 +1,7 @@
 import inspect
 from pathlib import Path
 
+import httpx
 import pytest
 import respx
 
@@ -8,7 +9,15 @@ import vlrdevapi
 from vlrdevapi import VLRClient
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "test_html"
+LIVE_BASE = "https://www.vlr.gg"
 _LIVE = False
+
+
+def live_fetch(url: str, headers: dict | None = None) -> str:
+    """Fetch HTML from VLR.gg during --live mode."""
+    resp = httpx.get(f"{LIVE_BASE}{url}", headers=headers or {}, follow_redirects=True, timeout=30)
+    resp.raise_for_status()
+    return resp.text
 
 
 def load_fixture(*path_parts: str) -> str:

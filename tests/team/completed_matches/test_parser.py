@@ -1,7 +1,7 @@
 import pytest
 from selectolax.parser import HTMLParser
 
-from tests.conftest import FIXTURES_DIR
+from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from vlrdevapi._team.completed_matches.parser import _parse_match_item
 from vlrdevapi._team.completed_matches.models import TeamCompletedMatches
 
@@ -9,6 +9,8 @@ _FIXTURES = FIXTURES_DIR / "team"
 
 
 def _load_html(team_id: int, filename: str) -> HTMLParser:
+    if _LIVE:
+        return HTMLParser(live_fetch(f"/team/{team_id}"))
     path = _FIXTURES / str(team_id) / filename
     if path.exists():
         return HTMLParser(path.read_text(encoding="utf-8"))

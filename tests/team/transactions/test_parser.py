@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 from selectolax.parser import HTMLParser, Node
 
-from tests.conftest import FIXTURES_DIR
+from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from vlrdevapi._team.transactions.parser import (
     parse_team_transactions,
     _parse_transaction_row,
@@ -14,6 +14,8 @@ _FIXTURES = FIXTURES_DIR / "team"
 
 
 def _load_html(team_id: int, filename: str) -> HTMLParser:
+    if _LIVE:
+        return HTMLParser(live_fetch(f"/team/transactions/{team_id}/"))
     path = _FIXTURES / str(team_id) / filename
     if path.exists():
         return HTMLParser(path.read_text(encoding="utf-8"))

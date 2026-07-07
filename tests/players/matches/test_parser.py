@@ -5,7 +5,7 @@ import pytest
 from selectolax.parser import HTMLParser
 from zoneinfo import ZoneInfo
 
-from tests.conftest import FIXTURES_DIR
+from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from vlrdevapi.commons.datetime import parse_vlr_datetime
 from vlrdevapi._player.matches.parser import parse_player_matches, _split_stage_bracket
 
@@ -14,8 +14,17 @@ _FIXTURES = FIXTURES_DIR / "player"
 
 
 def _load_html(player_dir: str, filename: str) -> HTMLParser:
+    if _LIVE:
+        player_id = player_dir.split("_")[0]
+        url = f"/player/matches/{player_id}/"
+        if "_page" in filename:
+            page = filename.split("_page")[-1].replace(".html", "")
+            url += f"?page={page}"
+        return HTMLParser(live_fetch(url))
     path = _FIXTURES / player_dir / filename
-    return HTMLParser(path.read_text(encoding="utf-8"))
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
 
 
 class TestParseVlrDatetime:
