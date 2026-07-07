@@ -7,6 +7,7 @@ from selectolax.parser import HTMLParser
 
 from vlrdevapi.commons.timezone import (
     _TIME_WITH_TZ_RE,
+    _system_iana_timezone,
     _zone_from_abbrev,
     detect_vlr_timezone,
     parse_vlr_stored_datetime,
@@ -37,6 +38,15 @@ class TestParseVlrStoredDatetime:
 
 
 class TestDetectVlrTimezone:
+    def test_fallback_returns_named_iana_timezone(self):
+        zone = detect_vlr_timezone(HTMLParser("<html></html>"))
+        assert isinstance(zone, ZoneInfo)
+
+    def test_system_iana_timezone_returns_named_zone(self):
+        zone = _system_iana_timezone()
+        assert isinstance(zone, ZoneInfo)
+        assert zone.key
+
     def test_detects_timezone_consistent_with_reference_fixture(self, reference_html):
         zone = detect_vlr_timezone(reference_html)
         time_el = reference_html.css_first(

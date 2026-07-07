@@ -61,8 +61,8 @@ class TestParseEventInfoVCTEMEA:
         assert expected_end is not None
         assert self.result.start_date == expected_start
         assert self.result.end_date == expected_end
-        assert self.result.start_date.year == 2026
-        assert self.result.start_date.month == 4
+        assert self.result.start_date == datetime(2026, 4, 1, tzinfo=timezone.utc)
+        assert self.result.end_date == datetime(2026, 5, 18, tzinfo=timezone.utc)
 
     def test_prize_tbd(self):
         assert self.result.prize is not None
@@ -117,8 +117,8 @@ class TestParseEventInfoGAMEON:
         assert expected_end is not None
         assert self.result.start_date == expected_start
         assert self.result.end_date == expected_end
-        assert self.result.start_date.year == 2026
-        assert self.result.start_date.month == 4
+        assert self.result.start_date == datetime(2026, 4, 17, tzinfo=timezone.utc)
+        assert self.result.end_date == datetime(2026, 4, 19, tzinfo=timezone.utc)
 
     def test_prize_with_conversion(self):
         assert self.result.prize is not None
@@ -155,9 +155,8 @@ class TestParseEventInfoChallengersJapan:
     def test_dates(self):
         assert self.result.start_date is not None
         assert self.result.end_date is not None
-        assert self.result.start_date.year == 2026
-        assert self.result.start_date.month == 2
-        assert self.result.end_date.month == 4
+        assert self.result.start_date == datetime(2026, 2, 2, tzinfo=timezone.utc)
+        assert self.result.end_date == datetime(2026, 4, 16, tzinfo=timezone.utc)
 
     def test_prize_jpy(self):
         assert self.result.prize is not None
@@ -197,10 +196,9 @@ class TestParseEventInfo100TCashApp:
     def test_single_day_date(self):
         assert self.result.start_date is not None
         assert self.result.end_date is not None
-        assert self.result.start_date == self.result.end_date
-        assert self.result.start_date.year == 2020
-        assert self.result.start_date.month == 7
-        assert self.result.start_date.day == 8
+        expected = datetime(2020, 7, 8, tzinfo=timezone.utc)
+        assert self.result.start_date == expected
+        assert self.result.end_date == expected
 
     def test_prize_zero_usd(self):
         assert self.result.prize is not None
@@ -246,9 +244,8 @@ class TestParseEventInfoVCTAmericas:
     def test_dates(self):
         assert self.result.start_date is not None
         assert self.result.end_date is not None
-        assert self.result.start_date.year == 2026
-        assert self.result.start_date.month == 1
-        assert self.result.end_date.month == 2
+        assert self.result.start_date == datetime(2026, 1, 16, tzinfo=timezone.utc)
+        assert self.result.end_date == datetime(2026, 2, 16, tzinfo=timezone.utc)
 
     def test_prize_zero_usd(self):
         assert self.result.prize is not None

@@ -6,7 +6,8 @@ from zoneinfo import ZoneInfo
 UTC = UTC
 
 # Fallback when no ``source_tz`` is provided. Prefer passing an explicit
-# timezone from :class:`~vlrdevapi._client.VLRClient` (auto-detected from VLR).
+# timezone from :class:`~vlrdevapi._client.VLRClient` (``source_tz`` or
+# ``auto_detect_tz=True``).
 VLR_TIMEZONE: ZoneInfo | tzinfo = UTC
 
 

@@ -1,5 +1,6 @@
 """Synchronous HTTP client for vlr.gg."""
 
+import logging
 from datetime import tzinfo
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -14,6 +15,7 @@ from vlrdevapi._matches.namespace import MatchesNamespace
 from vlrdevapi._player.namespace import PlayerNamespace
 from vlrdevapi._series.namespace import SeriesNamespace
 from vlrdevapi._team.namespace import TeamNamespace
+from vlrdevapi.exceptions import HTTPError, NotFoundError, RateLimitError, RequestError
 from vlrdevapi.fetcher import (
     BASE_URL,
     DEFAULT_HEADERS,
@@ -22,7 +24,10 @@ from vlrdevapi.fetcher import (
     BackoffStrategy,
     RateLimiter,
     RetryConfig,
+    fetch_sync,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class VLRClient:
@@ -53,10 +58,12 @@ class VLRClient:
         requests_per_second: Rate limit in requests per second. ``0`` means
             unlimited. Defaults to ``3``.
         source_tz: Timezone VLR.gg uses to render datetimes for this client.
-            When ``None`` and ``auto_detect_tz`` is enabled, detected
-            automatically from a reference match page.
-        auto_detect_tz: Whether to fetch a reference match on init to detect
-            the viewer timezone when ``source_tz`` is not provided.
+            When ``None``, datetimes fall back to UTC unless
+            ``auto_detect_tz`` is enabled.
+        auto_detect_tz: When ``True`` and ``source_tz`` is not provided, fetch
+            a reference match on init to detect the viewer timezone. Defaults
+            to ``False`` (opt-in) to avoid a hidden network call in
+            ``__init__``.
         **httpx_kwargs: Additional keyword arguments passed to ``httpx.Client``.
 
     """
@@ -71,7 +78,7 @@ class VLRClient:
         backoff: BackoffStrategy = BackoffStrategy.EXPONENTIAL,
         requests_per_second: float = DEFAULT_RATE_LIMIT,
         source_tz: str | ZoneInfo | tzinfo | None = None,
-        auto_detect_tz: bool = True,
+        auto_detect_tz: bool = False,
         **httpx_kwargs: Any,
     ) -> None:
         self.base_url = base_url.rstrip("/")
@@ -108,12 +115,16 @@ class VLRClient:
     def _detect_timezone(self) -> ZoneInfo | tzinfo | None:
         """Detect the viewer timezone VLR.gg renders for this client session."""
         try:
-            from selectolax.parser import HTMLParser
-
-            response = self._client.get(REFERENCE_MATCH_PATH, timeout=self.timeout)
-            response.raise_for_status()
-            return detect_vlr_timezone(HTMLParser(response.text))
-        except Exception:
+            html = fetch_sync(
+                self._client,
+                REFERENCE_MATCH_PATH,
+                self.timeout,
+                retry_config=self.retry_config,
+                rate_limiter=self._rate_limiter,
+            )
+            return detect_vlr_timezone(html)
+        except (HTTPError, NotFoundError, RateLimitError, RequestError) as exc:
+            logger.warning("Failed to auto-detect VLR timezone: %s", exc)
             return None
 
     def close(self) -> None:
