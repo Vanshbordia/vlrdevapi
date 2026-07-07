@@ -6,7 +6,7 @@ build:
     python: latest
   jobs:
     install:
-      - pip install zensical
+      - pip install zensical mkdocstrings mkdocstrings-python
     build:
       html:
         - cd docs-py && zensical build

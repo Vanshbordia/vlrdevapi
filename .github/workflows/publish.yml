@@ -26,7 +26,7 @@ jobs:
         run: uv sync --group dev
 
       - name: Run tests
-        run: uv run pytest tests/ --live -v
+        run: uv run pytest --live
 
   release-build:
     name: Build release distributions
