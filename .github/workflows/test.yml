@@ -26,5 +26,8 @@ jobs:
       - name: Install dependencies
         run: uv sync --group dev
 
+      - name: Download fixtures
+        run: uv run python scripts/download_fixtures.py 2>&1
+
       - name: Run tests
         run: uv run pytest --live 2>&1
