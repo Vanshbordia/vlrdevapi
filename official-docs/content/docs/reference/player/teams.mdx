@@ -1,0 +1,136 @@
+---
+title: Player Teams
+description: Fetch current and past teams for a player, with join/leave/inactive dates.
+---
+
+`player.teams(player_id)` returns the current and past teams for a player on vlr.gg.
+
+## Signature
+
+```python
+player.teams(player_id: int) -> PlayerTeams
+```
+
+## Parameters
+
+<TypeTable type={{
+  "player_id": {
+    description: "Unique player identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+}} />
+
+## Returns - `PlayerTeams`
+
+<TypeTable type={{
+  "current_teams": {
+    description: "Teams the player is currently on.",
+    type: "list[PlayerTeam]",
+    typeDescription: "list[PlayerTeam] - see nested fields below",
+    default: "[]",
+  },
+  "past_teams": {
+    description: "Teams the player was on previously.",
+    type: "list[PlayerTeam]",
+    typeDescription: "list[PlayerTeam]",
+    default: "[]",
+  },
+}} />
+
+### `PlayerTeam` Fields
+
+<TypeTable type={{
+  "team_id": {
+    description: "Team ID on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Team name (e.g. 'NRG').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "slug": {
+    description: "URL slug (e.g. 'nrg').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "logo_url": {
+    description: "URL to team logo image.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "joined_date": {
+    description: "Date player joined the team (1st of month).",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "left_date": {
+    description: "Date player left the team (1st of month).",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "inactive_date": {
+    description: "Date player became inactive on the team (1st of month).",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+}} />
+
+## Examples
+
+### Current and past teams
+
+Retrieve the player's current and former teams with membership dates.
+
+```python
+import vlrdevapi
+
+teams = vlrdevapi.player.teams(player_id=438)
+
+print("Current teams:")
+for t in teams.current_teams:
+    print(f"  {t.name} (since {t.joined_date})")
+
+print("Past teams:")
+for t in teams.past_teams:
+    end = t.left_date or t.inactive_date or "present"
+    print(f"  {t.name} ({t.joined_date} - {end})")
+```
+
+### Team timeline
+
+Build a chronological timeline of every team the player has been on.
+
+```python
+import vlrdevapi
+from datetime import date
+
+teams = vlrdevapi.player.teams(player_id=438)
+all_teams = teams.current_teams + teams.past_teams
+for t in sorted(all_teams, key=lambda x: x.joined_date or date.min):
+    print(f"{t.joined_date}: Joined {t.name}")
+    if t.left_date:
+        print(f"{t.left_date}: Left {t.name}")
+```
+
+### Curried access
+
+Use the curried player object to access teams without passing the player ID each time.
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(438)
+teams = player.teams()
+print(f"Currently on: {[t.name for t in teams.current_teams]}")
+```

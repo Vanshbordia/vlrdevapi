@@ -1,132 +1,95 @@
-"""
-VLR Dev API - Python client for Valorant esports data from VLR.gg
+"""vlrdevapi — A Python library to scrape data from vlr.gg.
 
-Clean, intuitive API with better naming conventions and full type safety.
+Provides a synchronous, typed interface for accessing match listings,
+event data, tournament info, team/player profiles, and statistics
+from vlr.gg.
 
-Example usage:
-    >>> import vlrdevapi as vlr
-    >>> 
-    >>> # Get upcoming matches
-    >>> matches = vlr.matches.upcoming(limit=10)
-    >>> for match in matches:
-    ...     print(f"{match.team1.name} vs {match.team2.name}")
-    >>> 
-    >>> # Get player profile
-    >>> profile = vlr.players.profile(player_id=123)
-    >>> print(f"{profile.handle} from {profile.country}")
-    >>> 
-    >>> # Get series info
-    >>> info = vlr.series.info(match_id=456)
-    >>> print(f"{info.teams[0].name} vs {info.teams[1].name}")
-    >>> 
-    >>> # Get team info and roster
-    >>> team = vlr.teams.info(team_id=1034)
-    >>> print(f"{team.name} ({team.tag}) - {team.country}")
-    >>> roster = vlr.teams.roster(team_id=1034)
-    >>> for member in roster:
-    ...     print(f"{member.ign} - {member.role}")
+Examples:
+    Module-level access (using a default client):
+
+    >>> import vlrdevapi
+    >>> info = vlrdevapi.team.info(team_id=4568)
+    >>> info.name
+    'Sentinels'
+
+    Explicit client with context manager:
+
+    >>> with vlrdevapi.VLRClient() as client:
+    ...     result = client.series.vods(123)
+
+    Curried access (pre-bound ID):
+
+    >>> matches = vlrdevapi.team(4568).completed_matches()
+    >>> matches.matches[0].score
+    '2-1'
+
 """
 
-__version__ = "1.6.2"
+import atexit as _atexit
+from typing import TYPE_CHECKING
 
-# Configure stdout/stderr error handling without changing the environment's encoding.
-# This avoids UnicodeEncodeError on legacy consoles while preventing decoding mismatches
-# in subprocess readers (e.g., Sphinx doctest capturing with cp1252 on Windows).
-import sys
-import io
+from vlrdevapi._client import VLRClient
+import contextlib
 
-def _soft_configure_stream(stream: object) -> None:
-    try:
-        # Prefer Python 3.7+ API to keep existing encoding and only relax errors
-        if hasattr(stream, 'reconfigure'):
-            stream.reconfigure(errors='replace')  # type: ignore[attr-defined]
-            return
-    except Exception:
-        pass
-    # Fallback: wrap using the same encoding if available
-    try:
-        encoding = getattr(stream, 'encoding', None) or 'utf-8'
-        buffer = getattr(stream, 'buffer', None)
-        if buffer is not None:
-            wrapped = io.TextIOWrapper(buffer, encoding=encoding, errors='replace', line_buffering=True)
-            # Assign back only if it looks like a real text stream
-            if stream is sys.stdout:
-                sys.stdout = wrapped  # type: ignore[assignment]
-            elif stream is sys.stderr:
-                sys.stderr = wrapped  # type: ignore[assignment]
-    except Exception:
-        # Best-effort: ignore if the environment is unusual (e.g., IDE-managed streams)
-        pass
+if TYPE_CHECKING:
+    from vlrdevapi._event.namespace import EventNamespace
+    from vlrdevapi._matches.namespace import MatchesNamespace
+    from vlrdevapi._player.namespace import PlayerNamespace
+    from vlrdevapi._series.namespace import SeriesNamespace
+    from vlrdevapi._team.namespace import TeamNamespace
 
-if sys.stdout is not None:
-    _soft_configure_stream(sys.stdout)
-if sys.stderr is not None:
-    _soft_configure_stream(sys.stderr)
+    event: EventNamespace
+    series: SeriesNamespace
+    player: PlayerNamespace
+    team: TeamNamespace
+    matches: MatchesNamespace
+    client: type[VLRClient]
 
-# Import modules for clean API access
-from . import matches
-from . import events
-from . import players
-from . import series
-from . import status
-from . import teams
-from . import search
+__version__ = "2.0.0"
 
-# Import enums and helper models for autocomplete
-from .events import EventTier, EventStatus, EventStage
+_default_client: "VLRClient | None" = None
 
-# Import exceptions for error handling
-from .exceptions import (
-    VlrdevapiError,
-    NetworkError,
-    ScrapingError,
-    DataNotFoundError,
-    RateLimitError,
-)
 
-# Import status function for convenience
-from .status import check_status
+def _get_default_client() -> "VLRClient":
+    global _default_client  # noqa: PLW0603
+    if _default_client is None:
+        _default_client = VLRClient()
+    return _default_client
 
-# Import rate limit configuration and helpers
-from .fetcher import configure_rate_limit, get_rate_limit, reset_rate_limit
 
-# Import configuration functions
-from .config import configure, reset_config
+def _cleanup_default_client() -> None:
+    global _default_client  # noqa: PLW0603
+    if _default_client is not None:
+        with contextlib.suppress(OSError):
+            _default_client.close()
+        _default_client = None
+
+
+_atexit.register(_cleanup_default_client)
+
+_BOUND_NAMES = frozenset({"event", "series", "player", "team", "matches"})
+
+
+def __getattr__(name: str) -> object:
+    if name in _BOUND_NAMES:
+        return getattr(_get_default_client(), name)
+    if name == "client":
+        return VLRClient
+    msg = f"module {__name__!r} has no attribute {name!r}"
+    raise AttributeError(msg)
+
+
+def __dir__() -> list[str]:
+    return sorted(__all__)
+
 
 __all__ = [
-    # Modules - these are the main API entry points
+    "VLRClient",
+    "__version__",
+    "client",
+    "event",
     "matches",
-    "events",
-    "players",
+    "player",
     "series",
-    "status",
-    "teams",
-    "search",
-    
-    # Enums for autocomplete
-    "EventTier",
-    "EventStatus",
-    "EventStage",
-    
-    # Exceptions for error handling
-    "VlrdevapiError",
-    "NetworkError",
-    "ScrapingError",
-    "DataNotFoundError",
-    "RateLimitError",
-    
-    # Convenience functions
-    "check_status",
-    "configure_rate_limit",
-    "get_rate_limit",
-    "reset_rate_limit",
-    "configure",
-    "reset_config",
+    "team",
 ]
-
-# Note: Models are NOT exported at the top level to prevent confusion.
-# Access them through their modules:
-#   - vlr.matches.upcoming() returns Match objects
-#   - vlr.players.profile() returns Profile objects
-#   - vlr.events.info() returns Info objects
-#   - etc.

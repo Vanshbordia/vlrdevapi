@@ -1,0 +1,5 @@
+{
+  "title": "Events",
+  "pages": ["list", "info", "stages", "teams", "matches", "standings"],
+  "pagesIndex": "index"
+}

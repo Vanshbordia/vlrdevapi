@@ -1,0 +1,77 @@
+---
+title: Series API Overview
+description: The Series namespace provides access to individual match/series data from vlr.gg - match overview, VODs, player stats, round-by-round data, performance metrics, and economy stats.
+icon: Swords
+---
+
+The Series API provides detailed data for individual matches (series) on vlr.gg. It is accessed via `vlrdevapi.series(id)` (curried access) or through an explicit `VLRClient` instance.
+
+<Callout type="info">
+All sub-namespaces are lazily initialized and share the same HTTP client configuration. Unlike the Events namespace, series info is also used internally by the Events matches namespace to enrich team IDs.
+</Callout>
+
+## Access Patterns
+
+### Module-level (default client)
+
+```python
+import vlrdevapi
+
+# Direct access (pass series_id each time)
+info = vlrdevapi.series.info(series_id=670471)
+print(f"{info.team1.name} vs {info.team2.name}")
+
+# Curried access - pass series_id once, chain methods
+series = vlrdevapi.series(670471)
+info = series.info()
+print(f"Score: {info.score1} - {info.score2}")
+print(f"Event: {info.event_name}")
+```
+
+### Explicit client
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=30, requests_per_second=8) as client:
+    s = client.series(670471)
+    info = s.info()
+    print(f"{info.team1.name} vs {info.team2.name}")
+    print(f"Score: {info.score1} - {info.score2}")
+```
+
+## Sub-namespace Reference
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| [`series.info(series_id)`](./info) | `SeriesInfo` | Match overview - teams, scores, event, veto, games |
+| [`series.vods(series_id)`](./vods) | `SeriesVods` | VOD/video links for the match |
+| [`series.players(series_id, game_id)`](./players) | `PlayersStats` | Per-game player statistics |
+| [`series.rounds(series_id, game_id)`](./rounds) | `RoundsData` | Round-by-round data for a game |
+| [`series.performance(series_id, game_id)`](./performance) | `PerformanceData` | Kill matrices and advanced stats |
+| [`series.economy(series_id, game_id)`](./economy) | `EconomyData` | Economy data per round |
+
+## Common Error Handling
+
+All series methods raise typed exceptions from `vlrdevapi.exceptions`:
+
+| Exception | Raised When |
+|-----------|-------------|
+| `ValidationError` | Invalid arguments (bad `series_id`, `game_id`, etc.) |
+| `NotFoundError` | Series page doesn't exist (HTTP 404) |
+| `RequestError` | Network failure or HTTP error |
+| `RateLimitError` | Too many requests (HTTP 429) |
+| `ParsingError` | Page structure is unrecognised |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import NotFoundError, ValidationError
+
+try:
+    info = vlrdevapi.series.info(series_id=670471)
+    print(f"Series: {info.team1.name} vs {info.team2.name}")
+except NotFoundError:
+    print("Series not found")
+except ValidationError as e:
+    print(f"Invalid input: {e}")
+```

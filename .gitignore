@@ -4,29 +4,27 @@ __pycache__/
 build/
 dist/
 wheels/
-*.egg-info/
-.pytest_cache/
+*.egg-info
+
 # Virtual environments
-.venv/
-# Validation cache
-.validation_cache.json
+.venv
+tests/test_html/
+nul
+.pytest_cache/
+.ruff_cache
+.kilo
 
-# Node.js
-node_modules/
-.next/
-.npm/
-.yarn/
-.pnpm-store/
-.vercel/
+# Sphinx build output
+docs-py/_build/
 
-# Node/Yarn/NPM/Pnpm logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+# Zensical build output
+docs-py/site/
 
-# Additional Python (pip/uv)
-venv/
-env/
-pip-wheel-metadata/
-pip-log.txt
+# Debug script
+main.py
+
+# Official docs dependencies
+official-docs/node_modules/
+
+# Zensical cache
+docs-py/.cache/

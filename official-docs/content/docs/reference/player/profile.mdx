@@ -1,0 +1,156 @@
+---
+title: Player Profile
+description: Fetch a consolidated player profile - combines info, current team, top agents, and aliases in one call.
+---
+
+`player.profile(player_id)` returns a consolidated player profile combining info, current team, and top agent statistics.
+
+## Signature
+
+```python
+player.profile(player_id: int) -> PlayerProfile
+```
+
+## Parameters
+
+<TypeTable type={{
+  "player_id": {
+    description: "Unique player identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+}} />
+
+## Returns - `PlayerProfile`
+
+<TypeTable type={{
+  "player_id": {
+    description: "Unique player identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Player in-game name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "real_name": {
+    description: "Player's real name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "img": {
+    description: "URL to the player's profile image.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "x_link": {
+    description: "Player's X (Twitter) profile URL.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "x_handle": {
+    description: "Player's X (Twitter) handle.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "twitch_link": {
+    description: "Player's Twitch profile URL.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "twitch_handle": {
+    description: "Player's Twitch handle.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "Player's country of origin (e.g. 'UNITED STATES').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_code": {
+    description: "Two-letter country code (e.g. 'us').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "aliases": {
+    description: "Player's known aliases / former names.",
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+  "current_team": {
+    description: "Player's current team, if any.",
+    type: "PlayerTeam | None",
+    typeDescription: "PlayerTeam | None",
+    default: "None",
+  },
+  "top_agents": {
+    description: "Most played agents, sorted by usage (most played first).",
+    type: "list[AgentStats]",
+    typeDescription: "list[AgentStats]",
+    default: "[]",
+  },
+  "stats_timespan": {
+    description: "Timespan used for agent stats ('30d' or 'all').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Examples
+
+### Full profile overview
+
+The profile method is a convenience that combines info, current team, and top agents in a single request.
+
+```python
+import vlrdevapi
+
+profile = vlrdevapi.player.profile(player_id=438)
+print(f"{profile.name} ({profile.real_name})")
+print(f"Country: {profile.country}")
+team_name = profile.current_team.name if profile.current_team else "(free agent)"
+print(f"Team: {team_name}")
+print(f"Top agents:")
+for a in profile.top_agents[:3]:
+    print(f"  {a.agent}: {a.rating} rating, {a.kd} KD")
+```
+
+### Social links summary
+
+Extract just the player's social media handles and URLs.
+
+```python
+import vlrdevapi
+
+profile = vlrdevapi.player.profile(player_id=438)
+print(f"X: {profile.x_handle} ({profile.x_link})")
+print(f"Twitch: {profile.twitch_handle} ({profile.twitch_link})")
+```
+
+### Curried access
+
+Use the curried player object to access the profile without passing the player ID each time.
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(438)
+profile = player.profile()
+best_agent = max(profile.top_agents, key=lambda a: a.rating or 0)
+print(f"{profile.name}'s best agent: {best_agent.agent} ({best_agent.rating} rating)")
+```

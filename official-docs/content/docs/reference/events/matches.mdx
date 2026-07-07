@@ -1,0 +1,231 @@
+---
+title: Event Matches
+description: Fetch matches for an event with stage and status filtering, including team ID enrichment.
+---
+
+`event.matches(event_id)` returns matches for an event with flexible filtering by stage and match status. Team IDs are enriched in parallel via series info lookups.
+
+## Signature
+
+```python
+event.matches(
+    event_id: int,
+    stage_id: str | None = None,
+    state: Literal["all", "completed", "live", "upcoming"] = "all",
+) -> EventMatches
+```
+
+## Parameters
+
+<TypeTable type={{
+  "event_id": {
+    description: "Unique event identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+  "stage_id": {
+    description: 'Stage identifier matching the series_id URL parameter (e.g. "5556").',
+    type: "str | None",
+    typeDescription: "str - stage ID from event.stages(), or None for all",
+    default: "None",
+    required: false,
+  },
+  "state": {
+    description: "Filter matches by their current status.",
+    type: 'Literal["all", "completed", "live", "upcoming"]',
+    typeDescription: '"all" - no filter | "completed" - played matches | "live" - in-progress | "upcoming" - scheduled',
+    default: '"all"',
+    required: false,
+  },
+}} />
+
+## Returns - `EventMatches`
+
+<TypeTable type={{
+  "event_id": {
+    description: "Event identifier these matches belong to.",
+    type: "int",
+    typeDescription: "int",
+  },
+  "matches": {
+    description: "List of matches in the event.",
+    type: "list[EventMatch]",
+    typeDescription: "list[EventMatch]",
+    default: "[]",
+  },
+}} />
+
+### `EventMatch` Fields
+
+<TypeTable type={{
+  "event_id": {
+    description: "Event identifier.",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+  "match_id": {
+    description: "Match identifier from vlr.gg URL.",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+  "stage": {
+    description: 'Stage name (e.g. "Group Stage", "Playoffs").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "phase": {
+    description: 'Phase name (e.g. "Week 1", "Upper Round 1").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "status": {
+    description: "Match status - completed, live, or upcoming.",
+    type: "MatchStatus",
+    typeDescription: "MatchStatus enum - see below",
+    required: true,
+  },
+  "match_date": {
+    description: "Match date.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "match_time": {
+    description: "Match time.",
+    type: "time | None",
+    typeDescription: "datetime.time | None",
+    default: "None",
+  },
+  "datetime_utc": {
+    description: "Combined match datetime in UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+  "teams": {
+    description: "Teams in the match (typically 2).",
+    type: "list[MatchTeam]",
+    typeDescription: "list[MatchTeam] - see below",
+    default: "[]",
+  },
+}} />
+
+### `MatchTeam` Fields
+
+<TypeTable type={{
+  "id": {
+    description: "Team ID from vlr.gg. None for TBD.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "name": {
+    description: 'Team name (e.g. "FNATIC", "TBD").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "score": {
+    description: "Team score. None if not available (upcoming matches).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "winner": {
+    description: "Whether this team won the match.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+### `MatchStatus` Enum
+
+<TypeTable type={{
+  "COMPLETED": {
+    description: "Match has been played and finished.",
+    type: "str",
+    typeDescription: 'Value: "completed"',
+  },
+  "LIVE": {
+    description: "Match is currently in progress.",
+    type: "str",
+    typeDescription: 'Value: "live"',
+  },
+  "UPCOMING": {
+    description: "Match is scheduled but not yet started.",
+    type: "str",
+    typeDescription: 'Value: "upcoming"',
+  },
+}} />
+
+## Team ID Enrichment
+
+After parsing, each match's team IDs are enriched by fetching series info in parallel (up to 5 concurrent requests). This ensures team IDs are populated even when they aren't directly available from the event matches page.
+
+- If enrichment fails for a particular match (e.g. the series page doesn't exist), a debug log is emitted and the team IDs remain as-is.
+- Enrichment failures do **not** propagate exceptions to the caller.
+
+## Examples
+
+### All matches
+
+Fetch every match for the event regardless of stage or status. Each `EventMatch` contains two `MatchTeam` entries representing the competing teams, along with stage and phase information.
+
+```python
+import vlrdevapi
+
+matches = vlrdevapi.event(2765).matches()
+for match in matches.matches:
+    t1, t2 = match.teams[0], match.teams[1]
+    print(f"{match.phase}: {t1.name} vs {t2.name}")
+```
+
+### Filter matches by stage
+
+Combine `event.stages()` with `event.matches()` to fetch matches for a specific tournament stage. First retrieve the available stages, then pass the stage's `id` as the `stage_id` parameter. This is useful for building stage-specific match schedules.
+
+```python
+import vlrdevapi
+
+stages = vlrdevapi.event(2765).stages()
+stage_matches = vlrdevapi.event(2765).matches(stage_id=stages[0].id)
+for match in stage_matches.matches:
+    print(f"[{match.stage}] {match.teams[0].name} vs {match.teams[1].name}")
+```
+
+### Filter matches by status
+
+Use the `state` parameter to filter matches by their current status. This is helpful for displaying different sections of a tournament page - upcoming matches, currently live matches, and completed results.
+
+```python
+import vlrdevapi
+
+completed = vlrdevapi.event(2765).matches(state="completed")
+print(f"Completed: {len(completed.matches)} matches")
+
+upcoming = vlrdevapi.event(2765).matches(state="upcoming")
+print(f"Upcoming: {len(upcoming.matches)} matches")
+```
+
+### Match details with scores
+
+For completed matches, each team has a `score` and a `winner` flag. Use these fields to display results. The `match_date` and `datetime_utc` fields provide scheduling information, while `match_id` can be used to link to the detailed series page.
+
+```python
+import vlrdevapi
+
+matches = vlrdevapi.event(2765).matches(state="completed")
+for match in matches.matches[:3]:
+    print(f"Match ID: {match.match_id}")
+    print(f"Date: {match.match_date}")
+    for team in match.teams:
+        winner_tag = " (Winner)" if team.winner else ""
+        print(f"  {team.name} - Score: {team.score}{winner_tag}")
+    print()
+```

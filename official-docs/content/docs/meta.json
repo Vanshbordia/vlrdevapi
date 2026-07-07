@@ -1,0 +1,14 @@
+{
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "getting-started",
+    "installation",
+    "quickstart",
+    "---Tutorials---",
+    "[Guides](/guides)",
+    "[Blog](/blog)",
+    "---API Reference---",
+    "reference"
+  ]
+}

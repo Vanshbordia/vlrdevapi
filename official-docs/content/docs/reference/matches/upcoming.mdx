@@ -1,0 +1,197 @@
+---
+title: Upcoming Matches
+description: Browse upcoming matches on vlr.gg with pagination and multi-page support.
+---
+
+`matches.upcoming()` returns a paginated list of upcoming matches from vlr.gg, with support for fetching multiple pages.
+
+## Signature
+
+```python
+matches.upcoming(
+    page: int = 1,
+    max_page: int = 0,
+    return_all: bool = False,
+) -> UpcomingMatchesPage
+```
+
+## Parameters
+
+<TypeTable type={{
+  "page": {
+    description: "Page number (1-indexed). Ignored when `return_all=True`.",
+    type: "int",
+    typeDescription: "Positive integer",
+    default: "1",
+    required: false,
+  },
+  "max_page": {
+    description: "Maximum pages to fetch when `return_all=True`. 0 means no limit.",
+    type: "int",
+    typeDescription: "Non-negative integer",
+    default: "0",
+    required: false,
+  },
+  "return_all": {
+    description: "If True, fetches all pages and returns combined results.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+    required: false,
+  },
+}} />
+
+## Returns - `UpcomingMatchesPage`
+
+<TypeTable type={{
+  "matches": {
+    description: "List of upcoming match entries.",
+    type: "list[UpcomingMatchEntry]",
+    typeDescription: "list[UpcomingMatchEntry] - see nested fields below",
+    default: "[]",
+  },
+  "has_next_page": {
+    description: "Whether there is a next page of results.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+### `UpcomingMatchEntry` Fields
+
+<TypeTable type={{
+  "match_id": {
+    description: "Unique match identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "Relative URL to the match page.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "Event/tournament name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: 'Stage within the event (e.g. "Playoffs", "Swiss Stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1": {
+    description: "First team information.",
+    type: "TeamInUpcomingMatch | None",
+    typeDescription: "TeamInUpcomingMatch | None - see nested fields below",
+    default: "None",
+  },
+  "team2": {
+    description: "Second team information.",
+    type: "TeamInUpcomingMatch | None",
+    typeDescription: "TeamInUpcomingMatch | None",
+    default: "None",
+  },
+  "status": {
+    description: 'Match status (e.g. "upcoming").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "eta": {
+    description: 'Time until match starts (e.g. "1h 46m").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "datetime": {
+    description: "Match datetime in UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+### `TeamInUpcomingMatch` Fields
+
+<TypeTable type={{
+  "id": {
+    description: "Unique team identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: 'Full team name (e.g. "NRG", "FNATIC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: 'Short team tag (e.g. "NRG", "FNC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_name": {
+    description: 'Full country name (e.g. "United States").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Examples
+
+### Single page of upcoming matches
+
+Fetch the first page of upcoming matches and display basic info.
+
+```python
+import vlrdevapi
+
+results = vlrdevapi.matches.upcoming(page=1)
+print(f"Matches on this page: {len(results.matches)}")
+print(f"More pages available: {results.has_next_page}")
+
+for match in results.matches:
+    t1 = match.team1.name if match.team1 else "TBD"
+    t2 = match.team2.name if match.team2 else "TBD"
+    print(f"{t1} vs {t2} [{match.stage}] - {match.eta}")
+```
+
+### Fetch all upcoming matches
+
+Use `return_all=True` to automatically paginate through all available pages.
+
+```python
+import vlrdevapi
+
+results = vlrdevapi.matches.upcoming(return_all=True)
+print(f"Total upcoming matches: {len(results.matches)}")
+
+for match in results.matches:
+    t1 = match.team1.name if match.team1 else "TBD"
+    t2 = match.team2.name if match.team2 else "TBD"
+    print(f"{t1} vs {t2} | {match.event} | {match.datetime}")
+```
+
+### Filter by event
+
+Upcoming matches include event context, so you can filter programmatically.
+
+```python
+import vlrdevapi
+
+results = vlrdevapi.matches.upcoming(return_all=True)
+vct_matches = [m for m in results.matches if "VCT" in m.event]
+for m in vct_matches:
+    t1 = m.team1.name if m.team1 else "TBD"
+    t2 = m.team2.name if m.team2 else "TBD"
+    print(f"{t1} vs {t2} - {m.stage} ({m.eta})")
+```

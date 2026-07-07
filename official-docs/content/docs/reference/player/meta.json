@@ -1,0 +1,5 @@
+{
+  "title": "Player",
+  "pages": ["info", "teams", "agents", "matches", "profile"],
+  "pagesIndex": "index"
+}

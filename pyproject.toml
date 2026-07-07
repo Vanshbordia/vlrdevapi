@@ -1,73 +1,82 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "vlrdevapi"
-version = "1.6.2"
-description = "The comprehensive Python library for VLR.gg Valorant esports data scraping - tournaments, matches, players, and statistics"
+version = "2.0.0"
+description = "A Python library to scrape data from vlr.gg"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { file = "LICENSE" }
-authors = [{ name = "Vansh" }]
-keywords = [
-    "valorant",
-    "esports",
-    "vlr",
-    "vlr.gg",
-    "scraper",
-    "api",
-    "gaming",
-    "competitive",
-    "tournament",
-    "statistics",
-    "data",
-    "vct",
-    "web-scraping",
-]
+license = {file = "LICENCE"}
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Topic :: Games/Entertainment",
     "Topic :: Internet :: WWW/HTTP",
-    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "beautifulsoup4>=4.12",
-    "httpx[brotli,http2]>=0.27",
-    "lxml>=5.0",
-    "pytest>=8.4.2",
-    "python-dateutil>=2.8.0",
+    "httpx>=0.28.1",
+    "pydantic>=2.12.5",
+    "selectolax>=0.4.7",
 ]
 
 [project.urls]
-Homepage = "https://github.com/vanshbordia/vlrdevapi"
-Documentation = "https://vlrdevapi.readthedocs.io/en/latest/"
-Source = "https://github.com/vanshbordia/vlrdevapi"
-Issues = "https://github.com/vanshbordia/vlrdevapi/issues"
+Homepage = "https://vlrdevapi.pages.dev/"
+Repository = "https://github.com/Vanshbordia/vlrdevapi"
+Documentation = "https://vlrdevapi.pages.dev/docs"
 
 [project.optional-dependencies]
 test = [
-    "pytest>=8.0.0",
+    "pytest>=8.0",
+    "respx>=0.23.1",
+    "pytest-cov>=7.1.0",
 ]
+
+[dependency-groups]
 dev = [
-    "pytest>=8.0.0",
-    "ruff>=0.6.0",
+    "ruff>=0.15.10",
+    "pytest>=8.0",
+    "tzdata>=2026.1",
+    "ty>=0.0.31",
+    "respx>=0.23.1",
+    "pytest-cov>=7.1.0",
+    "zensical>=0.0.46",
+    "mkdocstrings>=0.28.0",
+    "mkdocstrings-python>=1.16.0",
 ]
 
 [tool.pytest.ini_options]
-markers = [
-    "library:Marks tests covering the Python library surface."
+
+[tool.ruff]
+src = ["src"]
+exclude = ["tests", "test_html"]
+lint.ignore = ["PLR2004"]
+
+[tool.ty.src]
+include = ["src"]
+exclude = ["tests", "test_html"]
+
+[tool.ty.environment]
+python = ".venv"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vlrdevapi"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/.vscode",
+    "/tests",
+    "/test_html",
+    "/docs-py",
+    "/official-docs",
+    "/.mypy_cache",
+    "/.pytest_cache",
+    "/.ruff_cache",
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-dir]
-"" = "src"

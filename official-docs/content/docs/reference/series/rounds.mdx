@@ -1,0 +1,194 @@
+---
+title: Series Rounds
+description: Fetch round-by-round data for a specific game within a series - winner, win type, side, and score progression.
+---
+
+`series.rounds(series_id, game_id)` returns round-by-round data for a specific game within a series.
+
+## Signature
+
+```python
+series.rounds(
+    series_id: int,
+    game_id: int,
+) -> RoundsData
+```
+
+With curried access:
+
+```python
+vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
+```
+
+## Parameters
+
+<TypeTable type={{
+  "series_id": {
+    description: "Unique series identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+  "game_id": {
+    description: "Game number within the series (int, 1-based).",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+}} />
+
+## Returns - `RoundsData`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Unique series identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: "Unique game identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team1": {
+    description: "Team 1 name (first team listed).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1_id": {
+    description: "Team 1 ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2": {
+    description: "Team 2 name (second team listed).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2_id": {
+    description: "Team 2 ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "rounds": {
+    description: "List of rounds for this game.",
+    type: "list[RoundData]",
+    typeDescription: "list[RoundData] - see nested fields below",
+    default: "[]",
+  },
+}} />
+
+### `RoundData` Fields
+
+<TypeTable type={{
+  "round_number": {
+    description: "Round number in the game (1-indexed).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "winner_team_name": {
+    description: "Team name that won the round.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "winner_team_id": {
+    description: "Team ID of the winning team.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "win_type": {
+    description: 'Method of round win: "elim", "defuse", "boom", or "time".',
+    type: "str",
+    typeDescription: '"elim" | "defuse" | "boom" | "time"',
+    default: '""',
+  },
+  "side": {
+    description: 'Side the winning team played: "Defense" (CT) or "Attack" (T).',
+    type: "str",
+    typeDescription: '"Defense" | "Attack"',
+    default: '""',
+  },
+  "team1_score": {
+    description: "Team 1's total score after this round.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2_score": {
+    description: "Team 2's total score after this round.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+}} />
+
+## Examples
+
+### Basic round data
+
+Fetch every round in a game, showing the winner, win type, and the side they were playing. This is useful for building score progression charts or understanding how the game swung.
+
+```python
+import vlrdevapi
+
+rounds = vlrdevapi.series.rounds(series_id=670471, game_id=1)
+print(f"{rounds.team1} vs {rounds.team2}")
+print(f"Total rounds: {len(rounds.rounds)}")
+
+for rd in rounds.rounds[:5]:
+    print(f"R{rd.round_number}: {rd.winner_team_name} won ({rd.win_type}) on {rd.side}")
+    print(f"  Score: {rd.team1_score} - {rd.team2_score}")
+```
+
+### Win type breakdown
+
+Analyse how each team won their rounds - by elimination, spike detonation, defuse, or timeout.
+
+```python
+import vlrdevapi
+from collections import Counter
+
+rounds = vlrdevapi.series.rounds(series_id=670471, game_id=1)
+
+team1_wins = [r for r in rounds.rounds if r.winner_team_name == rounds.team1]
+team2_wins = [r for r in rounds.rounds if r.winner_team_name == rounds.team2]
+
+print(f"{rounds.team1}: {Counter(r.win_type for r in team1_wins)}")
+print(f"{rounds.team2}: {Counter(r.win_type for r in team2_wins)}")
+```
+
+### Score progression
+
+Generate a round-by-round score progression for both teams, useful for visualising match momentum.
+
+```python
+import vlrdevapi
+
+rounds = vlrdevapi.series.rounds(series_id=670471, game_id=1)
+print("Round | Score")
+for rd in rounds.rounds:
+    print(f"R{rd.round_number:>2}  | {rd.team1_score} - {rd.team2_score}")
+```
+
+### Curried access
+
+Use the curried pattern to inspect specific rounds such as pistol rounds.
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+rounds = series.rounds(game_id=1)
+pistol_rounds = [r for r in rounds.rounds if r.round_number in (1, 13)]
+for rd in pistol_rounds:
+    print(f"Pistol R{rd.round_number}: won by {rd.winner_team_name}")
+```

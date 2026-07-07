@@ -1,0 +1,206 @@
+---
+title: Completed Matches
+description: Browse completed matches on vlr.gg with scores, winner info, pagination, and multi-page support.
+---
+
+`matches.completed()` returns a paginated list of completed matches from vlr.gg, including scores and winner information.
+
+## Signature
+
+```python
+matches.completed(
+    page: int = 1,
+    max_page: int = 0,
+    return_all: bool = False,
+) -> CompletedMatchesPage
+```
+
+## Parameters
+
+<TypeTable type={{
+  "page": {
+    description: "Page number (1-indexed). Ignored when `return_all=True`.",
+    type: "int",
+    typeDescription: "Positive integer",
+    default: "1",
+    required: false,
+  },
+  "max_page": {
+    description: "Maximum pages to fetch when `return_all=True`. 0 means no limit.",
+    type: "int",
+    typeDescription: "Non-negative integer",
+    default: "0",
+    required: false,
+  },
+  "return_all": {
+    description: "If True, fetches all pages and returns combined results.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+    required: false,
+  },
+}} />
+
+## Returns - `CompletedMatchesPage`
+
+<TypeTable type={{
+  "matches": {
+    description: "List of completed match entries.",
+    type: "list[CompletedMatchEntry]",
+    typeDescription: "list[CompletedMatchEntry] - see nested fields below",
+    default: "[]",
+  },
+  "has_next_page": {
+    description: "Whether there is a next page of results.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+### `CompletedMatchEntry` Fields
+
+<TypeTable type={{
+  "match_id": {
+    description: "Unique match identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "Relative URL to the match page.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "Event/tournament name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: 'Stage within the event (e.g. "Playoffs", "Swiss Stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1": {
+    description: "First team information.",
+    type: "TeamInCompletedMatch | None",
+    typeDescription: "TeamInCompletedMatch | None - see nested fields below",
+    default: "None",
+  },
+  "team2": {
+    description: "Second team information.",
+    type: "TeamInCompletedMatch | None",
+    typeDescription: "TeamInCompletedMatch | None",
+    default: "None",
+  },
+  "status": {
+    description: 'Match status (e.g. "completed").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "datetime": {
+    description: "Match datetime in UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+### `TeamInCompletedMatch` Fields
+
+<TypeTable type={{
+  "id": {
+    description: "Unique team identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: 'Full team name (e.g. "NRG", "FNATIC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: 'Short team tag (e.g. "NRG", "FNC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_name": {
+    description: 'Full country name (e.g. "United States").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "score": {
+    description: "Number of maps won by the team.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "is_winner": {
+    description: "Whether this team won the match.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+## Examples
+
+### Single page of completed matches
+
+Fetch the first page of completed matches and display scores with the winner.
+
+```python
+import vlrdevapi
+
+results = vlrdevapi.matches.completed(page=1)
+print(f"Matches on this page: {len(results.matches)}")
+print(f"More pages available: {results.has_next_page}")
+
+for match in results.matches:
+    t1 = match.team1
+    t2 = match.team2
+    winner = t1.name if t1 and t1.is_winner else (t2.name if t2 else "N/A")
+    print(f"{t1.name if t1 else 'TBD'} {t1.score if t1 else '?'} - {t2.score if t2 else '?'} {t2.name if t2 else 'TBD'} | Winner: {winner}")
+```
+
+### Fetch all completed matches
+
+Use `return_all=True` to paginate through all available pages and collect every completed match.
+
+```python
+import vlrdevapi
+
+results = vlrdevapi.matches.completed(return_all=True)
+print(f"Total completed matches: {len(results.matches)}")
+
+for match in results.matches[:10]:
+    t1 = match.team1
+    t2 = match.team2
+    print(f"{t1.name if t1 else 'TBD'} {t1.score if t1 else '?'} - {t2.score if t2 else '?'} {t2.name if t2 else 'TBD'} ({match.event})")
+```
+
+### Find close matches
+
+Completed matches include scores, so you can identify close series (e.g. 2-1 scorelines).
+
+```python
+import vlrdevapi
+
+results = vlrdevapi.matches.completed(return_all=True)
+close = [m for m in results.matches if m.team1 and m.team2 and abs(m.team1.score - m.team2.score) <= 1]
+print(f"Close matches: {len(close)}")
+
+for m in close[:5]:
+    t1 = m.team1
+    t2 = m.team2
+    print(f"{t1.name if t1 else 'TBD'} {t1.score if t1 else '?'} - {t2.score if t2 else '?'} {t2.name if t2 else 'TBD'} ({m.event})")
+```

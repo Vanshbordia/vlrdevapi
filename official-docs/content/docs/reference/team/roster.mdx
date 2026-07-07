@@ -1,0 +1,160 @@
+---
+title: Team Roster
+description: Fetch the current roster for a team - players and staff with roles, captain status, and photo URLs.
+---
+
+`team.roster(team_id)` returns the current roster for a team on vlr.gg, including players and staff.
+
+## Signature
+
+```python
+team.roster(team_id: int) -> TeamRoster
+```
+
+## Parameters
+
+<TypeTable type={{
+  "team_id": {
+    description: "Unique team identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+}} />
+
+## Returns - `TeamRoster`
+
+<TypeTable type={{
+  "players": {
+    description: "List of players.",
+    type: "list[Player]",
+    typeDescription: "list[Player] - see nested fields below",
+    default: "[]",
+  },
+  "staff": {
+    description: "List of staff members.",
+    type: "list[Player]",
+    typeDescription: "list[Player]",
+    default: "[]",
+  },
+}} />
+
+### `Player` Fields
+
+<TypeTable type={{
+  "id": {
+    description: "Unique player identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "ign": {
+    description: "In-game name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "real_name": {
+    description: "Real name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "Country name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "roles": {
+    description: 'List of roles (e.g. ["Player"], ["Head Coach"]).',
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+  "is_captain": {
+    description: "Whether the player is team captain.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "photo_url": {
+    description: "URL to player photo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "is_active": {
+    description: "Whether the player is active.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "True",
+  },
+  "is_sub": {
+    description: "Whether the player is a substitute.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+## Examples
+
+### List active players
+
+Print all active players on the current roster.
+
+```python
+import vlrdevapi
+
+roster = vlrdevapi.team.roster(team_id=2593)
+print(f"Players ({len(roster.players)}):")
+for p in roster.players:
+    cap = " (c)" if p.is_captain else ""
+    status = ""
+    if not p.is_active:
+        status = " [inactive]"
+    elif p.is_sub:
+        status = " [sub]"
+    print(f"  {p.ign}{cap} - {p.real_name} ({p.country}){status}")
+```
+
+### List staff members
+
+Print all staff members and their roles.
+
+```python
+import vlrdevapi
+
+roster = vlrdevapi.team.roster(team_id=2593)
+print(f"Staff ({len(roster.staff)}):")
+for s in roster.staff:
+    print(f"  {s.ign} - {', '.join(s.roles)}")
+```
+
+### Find substitutes and inactive players
+
+Identify substitute and inactive players on the roster.
+
+```python
+import vlrdevapi
+
+roster = vlrdevapi.team.roster(team_id=2593)
+subs = [p.ign for p in roster.players if p.is_sub]
+inactive = [p.ign for p in roster.players if not p.is_active]
+print(f"Substitutes: {subs}")
+print(f"Inactive: {inactive}")
+```
+
+### Curried access
+
+Access the roster using the curried `team()` shorthand.
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+roster = team.roster()
+for p in roster.players:
+    print(f"{p.ign} ({p.real_name})")
+```

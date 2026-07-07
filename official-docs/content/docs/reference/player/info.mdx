@@ -1,0 +1,134 @@
+---
+title: Player Info
+description: Fetch basic player information - in-game name, real name, country, social media links, and aliases.
+---
+
+`player.info(player_id)` returns basic information for a player on vlr.gg.
+
+## Signature
+
+```python
+player.info(player_id: int) -> PlayerInfo
+```
+
+## Parameters
+
+<TypeTable type={{
+  "player_id": {
+    description: "Unique player identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+}} />
+
+## Returns - `PlayerInfo`
+
+<TypeTable type={{
+  "player_id": {
+    description: "Unique player identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Player in-game name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "real_name": {
+    description: "Player's real name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "img": {
+    description: "URL to the player's profile image.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "x_link": {
+    description: "Player's X (Twitter) profile URL.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "x_handle": {
+    description: "Player's X (Twitter) handle (e.g. '@ethanarnold').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "twitch_link": {
+    description: "Player's Twitch profile URL.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "twitch_handle": {
+    description: "Player's Twitch handle (e.g. 'ethancs').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "Player's country of origin (e.g. 'UNITED STATES').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_code": {
+    description: "Two-letter country code (e.g. 'us').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "aliases": {
+    description: "Player's known aliases / former names.",
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+}} />
+
+## Examples
+
+### Basic player lookup
+
+Fetch a player's name, real name, country, and social media handles.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.player.info(player_id=438)
+print(f"{info.name} ({info.real_name})")
+print(f"Country: {info.country}")
+print(f"X: {info.x_handle}")
+print(f"Twitch: {info.twitch_handle}")
+```
+
+### Check aliases
+
+A player may have played under different names in the past. The `aliases` field lists all known former names.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.player.info(player_id=438)
+aliases = info.aliases if info.aliases else ["(none)"]
+print(f"{info.name} has also been known as: {', '.join(aliases)}")
+```
+
+### Curried access
+
+Use the curried player object to access info without passing the player ID each time.
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(438)
+info = player.info()
+print(f"{info.name} - {info.country_code.upper()}")
+```

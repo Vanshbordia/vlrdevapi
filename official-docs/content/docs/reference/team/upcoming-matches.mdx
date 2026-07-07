@@ -1,0 +1,154 @@
+---
+title: Team Upcoming Matches
+description: Fetch upcoming matches for a team with opponent details, event context, and scheduled datetime.
+---
+
+`team.upcoming_matches(team_id)` returns the upcoming matches for a team on vlr.gg.
+
+## Signature
+
+```python
+team.upcoming_matches(team_id: int) -> TeamUpcomingMatches
+```
+
+## Parameters
+
+<TypeTable type={{
+  "team_id": {
+    description: "Unique team identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+}} />
+
+## Returns - `TeamUpcomingMatches`
+
+<TypeTable type={{
+  "team_id": {
+    description: "Team ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "matches": {
+    description: "Upcoming matches.",
+    type: "list[TeamUpcomingMatchEntry]",
+    typeDescription: "list[TeamUpcomingMatchEntry] - see nested fields below",
+    default: "[]",
+  },
+}} />
+
+### `TeamUpcomingMatchEntry` Fields
+
+<TypeTable type={{
+  "match_id": {
+    description: "Match ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "Relative URL to the match page.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "Event name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: "Stage within event.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "opponent": {
+    description: "Opponent team.",
+    type: "OpponentInUpcomingMatch | None",
+    typeDescription: "OpponentInUpcomingMatch | None - see nested fields below",
+    default: "None",
+  },
+  "datetime": {
+    description: "Match datetime in UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+### `OpponentInUpcomingMatch` Fields
+
+<TypeTable type={{
+  "id": {
+    description: "Opponent team ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Opponent team name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: "Opponent team tag.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Examples
+
+### List upcoming matches
+
+Print all upcoming matches with opponent and event details.
+
+```python
+import vlrdevapi
+
+upcoming = vlrdevapi.team.upcoming_matches(team_id=624)
+if not upcoming.matches:
+    print("No upcoming matches for Paper Rex")
+for m in upcoming.matches:
+    opp = m.opponent.name if m.opponent else "TBD"
+    print(f"vs {opp} ({m.event} - {m.stage}) at {m.datetime}")
+```
+
+### Check for upcoming matches in a specific event
+
+Filter upcoming matches to a specific event.
+
+```python
+import vlrdevapi
+
+upcoming = vlrdevapi.team.upcoming_matches(team_id=624)
+vct = [m for m in upcoming.matches if "vct" in m.event.lower()]
+if vct:
+    for m in vct:
+        opp = m.opponent.name if m.opponent else "TBD"
+        print(f"VCT match vs {opp} on {m.datetime}")
+else:
+    print("No upcoming VCT matches")
+```
+
+### Curried access
+
+Access upcoming matches using the curried `team()` shorthand.
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(624)
+upcoming = team.upcoming_matches()
+if not upcoming.matches:
+    print("No upcoming matches")
+for m in upcoming.matches:
+    opp = m.opponent.tag if m.opponent else "?"
+    print(f"Next: vs {opp} at {m.event}")
+```

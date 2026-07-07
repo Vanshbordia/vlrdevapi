@@ -1,0 +1,314 @@
+---
+title: Team Stats
+description: Fetch map and agent statistics for a team over a configurable date range with optional event/series filters and agent composition detail.
+---
+
+`team.stats(team_id, ...)` returns map-level statistics for a team on vlr.gg with flexible date range filtering and optional agent composition data.
+
+## Signature
+
+```python
+team.stats(
+    team_id: int,
+    date_start: date | None = None,
+    date_end: date | None = None,
+    event_id: int | None = None,
+    series_id: int | None = None,
+    subseries_id: int | None = None,
+    last_days: int | None = None,
+    agent_composition: AgentCompositionLevel = "none",
+) -> TeamStats
+```
+
+## Parameters
+
+<TypeTable type={{
+  "team_id": {
+    description: "Unique team identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+  "date_start": {
+    description: "Start date for stats (inclusive). Defaults to 30 days ago.",
+    type: "date | None",
+    typeDescription: "datetime.date - ISO date (2025-01-01) or None",
+    default: "None",
+    required: false,
+  },
+  "date_end": {
+    description: "End date for stats (inclusive). Defaults to today.",
+    type: "date | None",
+    typeDescription: "datetime.date - ISO date or None",
+    default: "None",
+    required: false,
+  },
+  "event_id": {
+    description: "Filter stats to a specific event.",
+    type: "int | None",
+    typeDescription: "int - event ID on vlr.gg, or None",
+    default: "None",
+    required: false,
+  },
+  "series_id": {
+    description: "Filter stats to a specific series.",
+    type: "int | None",
+    typeDescription: "int - series ID, or None",
+    default: "None",
+    required: false,
+  },
+  "subseries_id": {
+    description: "Filter stats to a specific sub-series.",
+    type: "int | None",
+    typeDescription: "int - subseries ID, or None",
+    default: "None",
+    required: false,
+  },
+  "last_days": {
+    description: "Shorthand to set date range to the last N days.",
+    type: "int | None",
+    typeDescription: "int - number of days, e.g. 90, or None",
+    default: "None",
+    required: false,
+  },
+  "agent_composition": {
+    description: "Agent composition detail level.",
+    type: "AgentCompositionLevel",
+    typeDescription: '"none" - no agent data | "basic" - agent comps without match details | "detailed" - full match details per comp',
+    default: '"none"',
+    required: false,
+  },
+}} />
+
+## Returns - `TeamStats`
+
+<TypeTable type={{
+  "team_id": {
+    description: "Team ID.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "maps": {
+    description: "Map statistics (only maps with games_played > 0).",
+    type: "list[MapStats]",
+    typeDescription: "list[MapStats] - see nested fields below",
+    default: "[]",
+  },
+}} />
+
+### `MapStats` Fields
+
+<TypeTable type={{
+  "map_name": {
+    description: "Map name (e.g. 'Haven', 'Bind').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "games_played": {
+    description: "Number of games played on this map.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "win_rate": {
+    description: "Win rate percentage (e.g. 33.0 for 33%).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "wins": {
+    description: "Number of wins.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "losses": {
+    description: "Number of losses.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "attack_first": {
+    description: "Times starting on attack side.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "defense_first": {
+    description: "Times starting on defense side.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "attack_round_win_rate": {
+    description: "Attack round win rate percentage.",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "attack_rounds_won": {
+    description: "Attack rounds won.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "attack_rounds_lost": {
+    description: "Attack rounds lost.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "defense_round_win_rate": {
+    description: "Defense round win rate percentage.",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "defense_rounds_won": {
+    description: "Defense rounds won.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "defense_rounds_lost": {
+    description: "Defense rounds lost.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "compositions": {
+    description: "Agent compositions for this map (if requested).",
+    type: "list[AgentComposition] | None",
+    typeDescription: "list[AgentComposition] | None",
+    default: "None",
+  },
+}} />
+
+### `AgentComposition` Fields
+
+<TypeTable type={{
+  "agents": {
+    description: "Agent names (normalized, sorted alphabetically).",
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+  "games_played": {
+    description: "Number of games with this composition.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "wins": {
+    description: "Wins with this composition.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "losses": {
+    description: "Losses with this composition.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "win_rate": {
+    description: "Win rate percentage.",
+    type: "float",
+    typeDescription: "float",
+    default: "0.0",
+  },
+  "matches": {
+    description: "Detailed match data (available in 'detailed' mode only).",
+    type: "list[CompositionMatchDetails] | None",
+    typeDescription: "list[CompositionMatchDetails] | None",
+    default: "None",
+  },
+}} />
+
+`AgentComposition` entries are sorted by games_played descending.
+
+## Examples
+
+### Default stats (last 30 days)
+
+Print map statistics for the last 30 days.
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.team.stats(team_id=624)
+print(f"Team {stats.team_id} map stats:")
+for m in stats.maps:
+    wr = f"{m.win_rate:.0f}%" if m.win_rate is not None else "N/A"
+    atk_wr = f"{m.attack_round_win_rate:.0f}%" if m.attack_round_win_rate is not None else "N/A"
+    def_wr = f"{m.defense_round_win_rate:.0f}%" if m.defense_round_win_rate is not None else "N/A"
+    print(f"  {m.map_name}: {m.games_played}g | {wr} WR | ATK {atk_wr} | DEF {def_wr}")
+```
+
+### Stats over the last 90 days
+
+Print map statistics over the last 90 days.
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.team.stats(team_id=624, last_days=90)
+for m in stats.maps:
+    wins = m.wins or 0
+    losses = m.losses or 0
+    wr = f"{m.win_rate:.0f}%" if m.win_rate is not None else "N/A"
+    print(f"{m.map_name}: {wins}W - {losses}L ({wr} WR)")
+```
+
+### Agent composition analysis
+
+Use `agent_composition="basic"` to see which agent comps the team plays on each map.
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.team.stats(team_id=624, last_days=90, agent_composition="basic")
+for m in stats.maps:
+    print(f"\n{m.map_name}:")
+    if m.compositions:
+        for comp in m.compositions[:3]:
+            agents = ", ".join(comp.agents)
+            print(f"  [{agents}] {comp.games_played}g - {comp.wins}W / {comp.losses}L ({comp.win_rate:.0f}%)")
+    else:
+        print("  (no composition data)")
+```
+
+### Filter by event
+
+Filter map statistics to a specific event.
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.team.stats(team_id=624, event_id=2765)
+if stats.maps:
+    for m in stats.maps:
+        wins = m.wins or 0
+        losses = m.losses or 0
+        print(f"{m.map_name}: {wins}W - {losses}L")
+else:
+    print("(no map stats for this event)")
+```
+
+### Curried access
+
+Access stats using the curried `team()` shorthand.
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(624)
+stats = team.stats(last_days=90)
+if stats.maps:
+    best_map = max(stats.maps, key=lambda m: m.win_rate or 0)
+    print(f"Best map: {best_map.map_name} ({best_map.win_rate:.0f}% WR)")
+else:
+    print("(no map stats available)")
+```
