@@ -1,6 +1,7 @@
 """Top-level team namespace with curried access pattern."""
 
-from datetime import date
+from datetime import date, tzinfo
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -257,18 +258,20 @@ class TeamNamespace:
         retry_config: RetryConfig = DEFAULT_RETRY_CONFIG,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ):
-        self._info = TeamInfoNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._roster = TeamRosterNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
+        self._source_tz = source_tz
+        self._info = TeamInfoNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._roster = TeamRosterNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
         self._completed_matches = TeamCompletedMatchesNamespace(
-            client, timeout, retry_config, rate_limiter, extra_headers,
+            client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz,
         )
         self._upcoming_matches = TeamUpcomingMatchesNamespace(
-            client, timeout, retry_config, rate_limiter, extra_headers,
+            client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz,
         )
-        self._transactions = TeamTransactionsNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._stats = TeamStatsNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._placements = TeamPlacementsNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
+        self._transactions = TeamTransactionsNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._stats = TeamStatsNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._placements = TeamPlacementsNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
 
     @property
     def info(self) -> TeamInfoNamespace:

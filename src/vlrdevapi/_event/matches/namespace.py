@@ -1,7 +1,9 @@
 """Event matches namespace."""
 
 import logging
+from datetime import tzinfo
 from typing import Literal
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -47,7 +49,7 @@ def _enrich_match_teams(match: EventMatch, series_info_ns: SeriesInfoNamespace) 
 class EventMatchesNamespace:
     """Access event matches from vlr.gg."""
 
-    __slots__ = ("_series_info", "_sync")
+    __slots__ = ("_series_info", "_source_tz", "_sync")
 
     def __init__(
         self,
@@ -56,7 +58,9 @@ class EventMatchesNamespace:
         retry_config: RetryConfig = DEFAULT_RETRY_CONFIG,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ):
+        self._source_tz = source_tz
         self._sync = SyncNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
         self._series_info = SeriesInfoNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
 
@@ -103,7 +107,7 @@ class EventMatchesNamespace:
         path = f"{event_matches_path(event_id)}/?{query_string}"
 
         html = self._sync._fetch(path)
-        result = parse_event_matches(html, event_id)
+        result = parse_event_matches(html, event_id, source_tz=self._source_tz)
 
         if not result.matches:
             return result

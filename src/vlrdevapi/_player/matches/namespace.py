@@ -1,5 +1,8 @@
 """Player matches namespace."""
 
+from datetime import tzinfo
+from zoneinfo import ZoneInfo
+
 import httpx
 
 from vlrdevapi._base import SyncNamespace
@@ -24,7 +27,9 @@ class MatchesNamespace:
         retry_config: RetryConfig = DEFAULT_RETRY_CONFIG,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ):
+        self._source_tz = source_tz
         self._sync = SyncNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
 
     @sanitize_and_validate
@@ -70,7 +75,7 @@ class MatchesNamespace:
     def _fetch_page(self, player_id: int, page: int) -> MatchHistoryPage:
         path = _build_path(player_id, page)
         html = self._sync._fetch(path)
-        return parse_player_matches(html)
+        return parse_player_matches(html, source_tz=self._source_tz)
 
 
 def _build_path(player_id: int, page: int = 1) -> str:

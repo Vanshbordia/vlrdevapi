@@ -1,6 +1,8 @@
 """Player agents namespace."""
 
+from datetime import tzinfo
 from typing import Literal
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -29,7 +31,9 @@ class AgentsNamespace:
         retry_config: RetryConfig = DEFAULT_RETRY_CONFIG,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ):
+        self._source_tz = source_tz
         self._sync = SyncNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
 
     @sanitize_and_validate

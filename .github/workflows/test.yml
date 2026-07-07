@@ -27,4 +27,4 @@ jobs:
         run: uv sync --group dev
 
       - name: Run tests
-        run: uv run pytest --live
+        run: uv run pytest --live 2>&1

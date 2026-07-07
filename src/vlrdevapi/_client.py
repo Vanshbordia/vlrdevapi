@@ -1,6 +1,8 @@
 """Synchronous HTTP client for vlr.gg."""
 
+from datetime import tzinfo
 from typing import Any
+from zoneinfo import ZoneInfo
 
 __all__ = ["VLRClient"]
 
@@ -11,7 +13,6 @@ from vlrdevapi._matches.namespace import MatchesNamespace
 from vlrdevapi._player.namespace import PlayerNamespace
 from vlrdevapi._series.namespace import SeriesNamespace
 from vlrdevapi._team.namespace import TeamNamespace
-from vlrdevapi.commons.datetime import set_vlr_timezone
 from vlrdevapi.fetcher import (
     BASE_URL,
     DEFAULT_HEADERS,
@@ -63,11 +64,13 @@ class VLRClient:
         base_delay: float = 1.0,
         backoff: BackoffStrategy = BackoffStrategy.EXPONENTIAL,
         requests_per_second: float = DEFAULT_RATE_LIMIT,
-        source_tz: str | None = None,
+        source_tz: str | ZoneInfo | tzinfo | None = None,
         **httpx_kwargs: Any,
     ) -> None:
-        if source_tz:
-            set_vlr_timezone(source_tz)
+        if isinstance(source_tz, str):
+            self._source_tz: ZoneInfo | tzinfo | None = ZoneInfo(source_tz)
+        else:
+            self._source_tz = source_tz
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.retry_config = RetryConfig(
@@ -85,11 +88,11 @@ class VLRClient:
             **httpx_kwargs,
         )
 
-        self.player = PlayerNamespace(self._client, self.timeout, self.retry_config, self._rate_limiter, merged_headers)
-        self.series = SeriesNamespace(self._client, self.timeout, self.retry_config, self._rate_limiter, merged_headers)
-        self.matches = MatchesNamespace(self._client, self.timeout, self.retry_config, self._rate_limiter, merged_headers)
-        self.team = TeamNamespace(self._client, self.timeout, self.retry_config, self._rate_limiter, merged_headers)
-        self.event = EventNamespace(self._client, self.timeout, self.retry_config, self._rate_limiter, merged_headers)
+        self.player = PlayerNamespace(self._client, self.timeout, self.retry_config, self._rate_limiter, merged_headers, self._source_tz)
+        self.series = SeriesNamespace(self._client, self.timeout, self.retry_config, self._rate_limiter, merged_headers, self._source_tz)
+        self.matches = MatchesNamespace(self._client, self.timeout, self.retry_config, self._rate_limiter, merged_headers, self._source_tz)
+        self.team = TeamNamespace(self._client, self.timeout, self.retry_config, self._rate_limiter, merged_headers, self._source_tz)
+        self.event = EventNamespace(self._client, self.timeout, self.retry_config, self._rate_limiter, merged_headers, self._source_tz)
 
     def close(self) -> None:
         """Close the underlying HTTP client and release resources."""

@@ -1,3 +1,6 @@
+from datetime import tzinfo
+from zoneinfo import ZoneInfo
+
 from selectolax.parser import HTMLParser, Node
 
 from vlrdevapi._team.completed_matches.models import (
@@ -11,16 +14,17 @@ from vlrdevapi.fetcher import BASE_URL
 def parse_team_completed_matches(
     html: HTMLParser,
     team_id: int,
+    source_tz: ZoneInfo | tzinfo | None = None,
 ) -> TeamCompletedMatches:
     result = TeamCompletedMatches(team_id=team_id)
     for item in html.css("a.wf-card.fc-flex.m-item"):
-        match = _parse_match_item(item, team_id)
+        match = _parse_match_item(item, team_id, source_tz=source_tz)
         if match and match.match_id > 0:
             result.matches.append(match)
     return result
 
 
-def _parse_match_item(item: Node, team_id: int) -> TeamCompletedMatchEntry | None:
+def _parse_match_item(item: Node, team_id: int, source_tz: ZoneInfo | tzinfo | None = None) -> TeamCompletedMatchEntry | None:
     match = TeamCompletedMatchEntry()
 
     href = item.attributes.get("href") or ""
@@ -75,6 +79,6 @@ def _parse_match_item(item: Node, team_id: int) -> TeamCompletedMatchEntry | Non
                     time_text = txt
                     break
         if date_text:
-            match.datetime = parse_vlr_datetime(date_text, time_text)
+            match.datetime = parse_vlr_datetime(date_text, time_text, source_tz=source_tz)
 
     return match if match.match_id > 0 else None

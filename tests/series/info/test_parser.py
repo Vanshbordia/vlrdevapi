@@ -12,8 +12,7 @@ _FIXTURES = (
 
 def _load_html(filename: str) -> HTMLParser:
     if _LIVE:
-        series_id = _FIXTURES.name.split("_")[0]
-        return HTMLParser(live_fetch(f"/{series_id}"))
+        return HTMLParser(live_fetch(f"/{_FIXTURES.name.split('_')[0]}"))
     path = _FIXTURES / filename
     if path.exists():
         return HTMLParser(path.read_text(encoding="utf-8"))

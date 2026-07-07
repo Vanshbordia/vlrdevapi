@@ -1,6 +1,8 @@
 """Top-level event namespace with curried access pattern."""
 
+from datetime import tzinfo
 from typing import Literal
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -188,13 +190,15 @@ class EventNamespace:
         retry_config: RetryConfig = DEFAULT_RETRY_CONFIG,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ):
-        self._info = EventInfoNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._stages = EventStagesNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._teams = EventTeamsNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._matches = EventMatchesNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._standings = EventStandingsNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._list = EventListNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
+        self._source_tz = source_tz
+        self._info = EventInfoNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._stages = EventStagesNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._teams = EventTeamsNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._matches = EventMatchesNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._standings = EventStandingsNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._list = EventListNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
 
     @property
     def info(self) -> EventInfoNamespace:

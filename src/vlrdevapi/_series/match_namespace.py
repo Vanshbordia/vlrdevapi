@@ -1,5 +1,8 @@
 """Curried namespace for individual series access."""
 
+from datetime import tzinfo
+from zoneinfo import ZoneInfo
+
 from vlrdevapi._series.economy.models import EconomyData
 from vlrdevapi._series.economy.namespace import SeriesEconomyNamespace
 from vlrdevapi._series.info.models import SeriesInfo
@@ -31,7 +34,9 @@ class SeriesMatchNamespace:
         rounds: SeriesRoundsNamespace,
         performance: SeriesPerformanceNamespace,
         economy: SeriesEconomyNamespace,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ):
+        self._source_tz = source_tz
         self._series_id = series_id
         self._info = info
         self._vods = vods

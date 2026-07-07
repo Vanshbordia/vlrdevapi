@@ -1,5 +1,8 @@
 """Top-level series namespace with curried access pattern."""
 
+from datetime import tzinfo
+from zoneinfo import ZoneInfo
+
 import httpx
 
 from vlrdevapi._series.economy.namespace import SeriesEconomyNamespace
@@ -47,13 +50,15 @@ class SeriesNamespace:
         retry_config: RetryConfig = DEFAULT_RETRY_CONFIG,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ):
-        self._info = SeriesInfoNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._vods = SeriesVodsNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._players = SeriesPlayersNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._rounds = SeriesRoundsNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._performance = SeriesPerformanceNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
-        self._economy = SeriesEconomyNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
+        self._source_tz = source_tz
+        self._info = SeriesInfoNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._vods = SeriesVodsNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._players = SeriesPlayersNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._rounds = SeriesRoundsNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._performance = SeriesPerformanceNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._economy = SeriesEconomyNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
 
     @property
     def info(self) -> SeriesInfoNamespace:

@@ -1,4 +1,7 @@
 
+from datetime import tzinfo
+from zoneinfo import ZoneInfo
+
 from selectolax.parser import HTMLParser, Node
 
 from vlrdevapi._player.matches.models import MatchEntry, MatchHistoryPage, TeamInMatch
@@ -38,7 +41,7 @@ def _parse_team(team_el: Node | None) -> TeamInMatch:
     return team
 
 
-def _parse_match_item(a: Node) -> MatchEntry:
+def _parse_match_item(a: Node, source_tz: ZoneInfo | tzinfo | None = None) -> MatchEntry:
     entry = MatchEntry()
 
     href = a.attributes.get("href", "") or ""
@@ -96,7 +99,7 @@ def _parse_match_item(a: Node) -> MatchEntry:
 
         entry.date = parse_vlr_date(date_text)
         entry.time = parse_vlr_time(time_text)
-        entry.datetime = parse_vlr_datetime(date_text, time_text)
+        entry.datetime = parse_vlr_datetime(date_text, time_text, source_tz=source_tz)
 
     return entry
 
@@ -107,9 +110,9 @@ def _has_next_page(html: HTMLParser) -> bool:
     return False
 
 
-def parse_player_matches(html: HTMLParser) -> MatchHistoryPage:
+def parse_player_matches(html: HTMLParser, source_tz: ZoneInfo | tzinfo | None = None) -> MatchHistoryPage:
     page = MatchHistoryPage()
     for a in html.css("a.m-item"):
-        page.matches.append(_parse_match_item(a))
+        page.matches.append(_parse_match_item(a, source_tz=source_tz))
     page.has_next_page = _has_next_page(html)
     return page
