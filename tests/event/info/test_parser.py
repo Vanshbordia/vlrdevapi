@@ -4,7 +4,8 @@ import pytest
 from selectolax.parser import HTMLParser
 
 from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
-from tests.helpers.fixtures import expected_event_dates
+from tests.helpers.expected_from_html import event_dates_label
+from tests.helpers.fixtures import event_dates_text
 from vlrdevapi._event.info.parser import parse_event_info
 
 
@@ -54,11 +55,12 @@ class TestParseEventInfoVCTEMEA:
         assert self.result.regions[0].href == "/vct/?region=27"
 
     def test_dates(self):
-        expected_start, expected_end = expected_event_dates(self.html)
+        raw = event_dates_text(self.html)
+        expected_start, expected_end = event_dates_label(raw)
+        assert expected_start is not None
+        assert expected_end is not None
         assert self.result.start_date == expected_start
         assert self.result.end_date == expected_end
-        assert self.result.start_date is not None
-        assert self.result.end_date is not None
         assert self.result.start_date.year == 2026
         assert self.result.start_date.month == 4
 
@@ -109,11 +111,12 @@ class TestParseEventInfoGAMEON:
         assert self.result.regions == []
 
     def test_dates_short_format(self):
-        expected_start, expected_end = expected_event_dates(self.html)
+        raw = event_dates_text(self.html)
+        expected_start, expected_end = event_dates_label(raw)
+        assert expected_start is not None
+        assert expected_end is not None
         assert self.result.start_date == expected_start
         assert self.result.end_date == expected_end
-        assert self.result.start_date is not None
-        assert self.result.end_date is not None
         assert self.result.start_date.year == 2026
         assert self.result.start_date.month == 4
 
