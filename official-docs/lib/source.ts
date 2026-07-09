@@ -1,4 +1,4 @@
-import { docs } from 'collections/server';
+import { docs, blog, guides } from 'collections/server';
 import { loader } from 'fumadocs-core/source';
 import { docsContentRoute, docsImageRoute, docsRoute } from './shared';
 import { icons } from 'lucide-react';
@@ -16,6 +16,16 @@ export const source = loader({
   baseUrl: docsRoute,
   source: docs.toFumadocsSource(),
   plugins: [],
+});
+
+export const blogSource = loader({
+  baseUrl: '/blog',
+  source: blog.toFumadocsSource(),
+});
+
+export const guidesSource = loader({
+  baseUrl: '/guides',
+  source: guides.toFumadocsSource(),
 });
 
 export function getPageImage(page: (typeof source)['$inferPage']) {

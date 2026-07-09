@@ -5,14 +5,14 @@ export interface TocItem {
 }
 
 export function extractToc(markdown: string): TocItem[] {
-  const headingRegex = /^(#{2,3})\s+(.+)$/gm
+  const headingRegex = /^(#{2,3})\s+(.+?)(?:\s*[\[{]#([\w-]+)[\]}])?$/gm
   const items: TocItem[] = []
   let match: RegExpExecArray | null
 
   while ((match = headingRegex.exec(markdown)) !== null) {
     const level = match[1].length
     const text = match[2].trim()
-    const id = text
+    const id = match[3] ?? text
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '')

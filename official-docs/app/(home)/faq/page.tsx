@@ -19,7 +19,7 @@ const sections: FaqSection[] = [
     items: [
       {
         q: 'What is VLRdevAPI?',
-        a: <>VLRdevAPI is a Python SDK that provides a type-safe interface for fetching Valorant esports data from VLR.gg. It handles scraping, parsing, and data normalization so you can focus on building your application. See the <Link href="/docs" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">documentation</Link> for full details.</>,
+        a: <>VLRdevAPI is a Python SDK that provides a type-safe interface for fetching Valorant esports data from VLR.gg. It handles scraping, parsing, and data normalization so you can focus on building your application. See the <Link href="/docs/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">documentation</Link> for full details.</>,
       },
       {
         q: 'Do I need an API key?',
@@ -31,7 +31,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'How do I install VLRdevAPI?',
-        a: <>Install with pip: <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">pip install vlrdevapi</code>. Or with uv (recommended): <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">uv add vlrdevapi</code>. See the <Link href="/docs/installation" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">installation guide</Link> for more options.</>,
+        a: <>Install with pip: <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">pip install vlrdevapi</code>. Or with uv (recommended): <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">uv add vlrdevapi</code>. See the <Link href="/docs/installation/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">installation guide</Link> for more options.</>,
       },
       {
         q: 'Can I try VLRdevAPI without installing it?',
@@ -48,19 +48,19 @@ const sections: FaqSection[] = [
     items: [
       {
         q: 'Does VLRdevAPI have rate limits?',
-        a: <>Yes. The built-in client respects a default rate limit to avoid overloading VLR.gg. You can configure the rate limit and retry behavior when creating a <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">VLRClient</code> instance. See the <Link href="/docs" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">API reference</Link> for configuration options.</>,
+        a: <>Yes. The built-in client respects a default rate limit to avoid overloading VLR.gg. You can configure the rate limit and retry behavior when creating a <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">VLRClient</code> instance. See the <Link href="/docs/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">API reference</Link> for configuration options.</>,
       },
       {
         q: 'Can I use VLRdevAPI asynchronously?',
-        a: <>Yes. Both module-level access (sync) and async client are supported. Use <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">VLRClient</code> with <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">async with</code> for concurrent data fetching. Check the <Link href="/guides" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">guides</Link> for async examples.</>,
+        a: <>Yes. Both module-level access (sync) and async client are supported. Use <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">VLRClient</code> with <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">async with</code> for concurrent data fetching. Check the <Link href="/guides/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">guides</Link> for async examples.</>,
       },
       {
         q: 'What data can I access?',
-        a: <>VLRdevAPI covers five namespaces: <strong className="text-foreground font-medium">matches</strong> (upcoming, live, completed), <strong className="text-foreground font-medium">teams</strong> (info, roster, stats, placements), <strong className="text-foreground font-medium">players</strong> (profiles, agents, teams, match history), <strong className="text-foreground font-medium">events</strong> (stages, standings, teams, matches), and <strong className="text-foreground font-medium">series</strong> (VODs, player stats, economy data, rounds). Browse the <Link href="/docs" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">full API reference</Link> for details.</>,
+        a: <>VLRdevAPI covers five namespaces: <strong className="text-foreground font-medium">matches</strong> (upcoming, live, completed), <strong className="text-foreground font-medium">teams</strong> (info, roster, stats, placements), <strong className="text-foreground font-medium">players</strong> (profiles, agents, teams, match history), <strong className="text-foreground font-medium">events</strong> (stages, standings, teams, matches), and <strong className="text-foreground font-medium">series</strong> (VODs, player stats, economy data, rounds). Browse the <Link href="/docs/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">full API reference</Link> for details.</>,
       },
       {
         q: 'Is VLRdevAPI production-ready?',
-        a: <>Yes. The library is used in production by RiftWatch and the community. It includes error handling, retry logic, rate limiting, and typed exceptions for reliable operation. See the <Link href="/guides" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">getting started guide</Link> for best practices.</>,
+        a: <>Yes. The library is used in production by RiftWatch and the community. It includes error handling, retry logic, rate limiting, and typed exceptions for reliable operation. See the <Link href="/guides/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">getting started guide</Link> for best practices.</>,
       },
       {
         q: 'How do I handle errors?',
@@ -72,7 +72,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'Can I filter data by date or region?',
-        a: <>Some endpoints support optional parameters like date ranges and region filters. Check the <Link href="/docs" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">API reference</Link> for each endpoint to see available query parameters.</>,
+        a: <>Some endpoints support optional parameters like date ranges and region filters. Check the <Link href="/docs/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">API reference</Link> for each endpoint to see available query parameters.</>,
       },
     ],
   },
@@ -85,7 +85,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'How does VLRdevAPI compare to web scraping?',
-        a: <>VLRdevAPI abstracts away HTML parsing, rate limiting, and data normalization. It is faster, more reliable, and requires less code than scraping VLR.gg directly. Read the <Link href="/blog/vlrdevapi-vs-web-scraping" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">comparison post</Link> for a detailed breakdown.</>,
+        a: <>VLRdevAPI abstracts away HTML parsing, rate limiting, and data normalization. It is faster, more reliable, and requires less code than scraping VLR.gg directly. Read the <Link href="/blog/vlrdevapi-vs-web-scraping/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">comparison post</Link> for a detailed breakdown.</>,
       },
       {
         q: 'Can I use VLRdevAPI in a Jupyter notebook?',
@@ -93,7 +93,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'How do I configure the client?',
-        a: <>Pass options to <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">VLRClient(timeout=30, max_retries=5, rate_limit_per_minute=20)</code> or set environment variables. Check the <Link href="/docs" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">API reference</Link> for all options.</>,
+        a: <>Pass options to <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">VLRClient(timeout=30, max_retries=5, rate_limit_per_minute=20)</code> or set environment variables. Check the <Link href="/docs/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">API reference</Link> for all options.</>,
       },
       {
         q: 'Does VLRdevAPI cache responses?',
@@ -101,7 +101,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'What happens if VLR.gg is down?',
-        a: <>The client raises a <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">RequestError</code> when it cannot reach VLR.gg. Configure retry logic to automatically retry on transient failures. Check the <Link href="/changelog" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">changelog</Link> for any known issues.</>,
+        a: <>The client raises a <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">RequestError</code> when it cannot reach VLR.gg. Configure retry logic to automatically retry on transient failures. Check the <Link href="/changelog/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">changelog</Link> for any known issues.</>,
       },
       {
         q: 'Can I contribute to the library itself?',
@@ -118,11 +118,11 @@ const sections: FaqSection[] = [
       },
       {
         q: 'My API calls return no data',
-        a: <>Check that the parameters you are passing are valid. For example, some endpoints require specific date formats or team IDs. If you are filtering by region or tier, verify that the filter values match the expected format. See the <Link href="/docs" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">API reference</Link> for exact parameter specifications.</>,
+        a: <>Check that the parameters you are passing are valid. For example, some endpoints require specific date formats or team IDs. If you are filtering by region or tier, verify that the filter values match the expected format. See the <Link href="/docs/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">API reference</Link> for exact parameter specifications.</>,
       },
       {
         q: 'VLRdevAPI is running slowly',
-        a: <>Slow responses are usually due to rate limiting or network latency. Increase the rate limit on your VLRClient if you have permission, or reduce the frequency of your requests. The library includes retry logic and caching -- enable caching to avoid redundant calls. See the <Link href="/guides" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">guides</Link> for performance tips.</>,
+        a: <>Slow responses are usually due to rate limiting or network latency. Increase the rate limit on your VLRClient if you have permission, or reduce the frequency of your requests. The library includes retry logic and caching -- enable caching to avoid redundant calls. See the <Link href="/guides/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">guides</Link> for performance tips.</>,
       },
       {
         q: 'I get a RateLimitError. What should I do?',
@@ -147,7 +147,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'Should I use VLRdevAPI or scrape VLR.gg directly?',
-        a: <>For most projects, VLRdevAPI is faster to set up and more reliable than scraping. It handles markup changes, rate limiting, and data normalization automatically. Scraping gives you full control but requires ongoing maintenance. See the <Link href="/blog/vlrdevapi-vs-web-scraping" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">detailed comparison</Link> for a full breakdown.</>,
+        a: <>For most projects, VLRdevAPI is faster to set up and more reliable than scraping. It handles markup changes, rate limiting, and data normalization automatically. Scraping gives you full control but requires ongoing maintenance. See the <Link href="/blog/vlrdevapi-vs-web-scraping/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">detailed comparison</Link> for a full breakdown.</>,
       },
       {
         q: 'Is VLRdevAPI better than BeautifulSoup for this use case?',
@@ -155,7 +155,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'Can I use VLRdevAPI with frameworks like FastAPI or Django?',
-        a: <>Yes. VLRdevAPI works with any Python web framework. Use the async client with FastAPI for non-blocking request handling, or the sync client with Django views. Both patterns are supported and documented in the <Link href="/guides" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">guides</Link>.</>,
+        a: <>Yes. VLRdevAPI works with any Python web framework. Use the async client with FastAPI for non-blocking request handling, or the sync client with Django views. Both patterns are supported and documented in the <Link href="/guides/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">guides</Link>.</>,
       },
     ],
   },
@@ -172,7 +172,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'What is the difference between the docs guides and the standalone guides?',
-        a: <>The <Link href="/docs" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">docs section</Link> covers contributor guides (development setup, contributing) and the API reference. The standalone <Link href="/guides" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">guides</Link> section contains step-by-step tutorials for using the library. The <Link href="/blog" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">blog</Link> has news, updates, and comparisons.</>,
+        a: <>The <Link href="/docs/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">docs section</Link> covers contributor guides (development setup, contributing) and the API reference. The standalone <Link href="/guides/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">guides</Link> section contains step-by-step tutorials for using the library. The <Link href="/blog/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">blog</Link> has news, updates, and comparisons.</>,
       },
       {
         q: 'Where can I report bugs or request features?',
@@ -180,7 +180,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'What is the changelog and where can I find it?',
-        a: <>The <Link href="/changelog" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">changelog</Link> tracks every release, feature, and fix in VLRdevAPI. It covers all versions with detailed section breakdowns.</>,
+        a: <>The <Link href="/changelog/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">changelog</Link> tracks every release, feature, and fix in VLRdevAPI. It covers all versions with detailed section breakdowns.</>,
       },
       {
         q: 'Is there a community or Discord server?',
@@ -188,7 +188,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'How often is VLRdevAPI updated?',
-        a: <>Updates are published as needed when VLR.gg changes its markup or when new features are added. Follow the <Link href="/changelog" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">changelog</Link> and GitHub releases for update notifications.</>,
+        a: <>Updates are published as needed when VLR.gg changes its markup or when new features are added. Follow the <Link href="/changelog/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">changelog</Link> and GitHub releases for update notifications.</>,
       },
       {
         q: 'Can I use VLRdevAPI in a commercial project?',
@@ -203,7 +203,7 @@ const jsonLd = {
   '@type': 'FAQPage',
   name: 'VLRdevAPI FAQ',
   description: 'Frequently asked questions about VLRdevAPI, the Python SDK for Valorant esports data.',
-  url: 'https://vlrdevapi.pages.dev/faq',
+  url: 'https://vlrdevapi.pages.dev/faq/',
   mainEntity: sections.flatMap((section) =>
     section.items.map((item) => ({
       '@type': 'Question',

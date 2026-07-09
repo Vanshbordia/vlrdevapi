@@ -69,7 +69,7 @@ export default function HomePage() {
               </div>
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 <Link
-                  href="/docs"
+                  href="/docs/"
                   className="inline-flex h-11 items-center justify-center bg-foreground px-6 text-sm font-medium tracking-tight text-background transition-all hover:brightness-110 hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Read the Docs

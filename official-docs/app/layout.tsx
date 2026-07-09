@@ -28,6 +28,7 @@ export const metadata: Metadata = {
     title: 'VLRdevAPI - Python SDK for Valorant Esports Data',
     description:
       'Fetch live and historical Valorant esports data from VLR.gg with a clean, type-safe Python interface. Match results, player stats, team rosters, and tournament brackets.',
+    url: 'https://vlrdevapi.pages.dev/',
     siteName: 'VLRdevAPI by RiftWatch',
     type: 'website',
   },
@@ -58,12 +59,36 @@ const jsonLdWebSite = {
   url: 'https://vlrdevapi.pages.dev',
   description:
     'A type-safe Python SDK for Valorant esports data from VLR.gg.',
-  applicationCategory: 'DeveloperApplication',
-  operatingSystem: 'Python 3.11+',
-  author: {
-    '@type': 'Organization',
-    name: 'RiftWatch',
-    url: 'https://riftwatch.org',
+  author: [
+    {
+      '@type': 'Person',
+      name: 'Vansh Bordia',
+    },
+    {
+      '@type': 'Organization',
+      name: 'RiftWatch',
+      url: 'https://riftwatch.org',
+    },
+  ],
+  about: {
+    '@type': 'SoftwareSourceCode',
+    name: 'VLRdevAPI',
+    description:
+      'A type-safe Python SDK for Valorant esports data from VLR.gg.',
+    programmingLanguage: 'Python',
+    runtimePlatform: 'Python 3.11+',
+    codeRepository: 'https://github.com/vanshbordia/vlrdevapi',
+    author: [
+      {
+        '@type': 'Person',
+        name: 'Vansh Bordia',
+      },
+      {
+        '@type': 'Organization',
+        name: 'RiftWatch',
+        url: 'https://riftwatch.org',
+      },
+    ],
   },
 };
 

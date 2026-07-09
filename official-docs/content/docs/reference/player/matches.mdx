@@ -166,9 +166,12 @@ import vlrdevapi
 
 history = vlrdevapi.player.matches(player_id=438, limit=10)
 print(f"Recent matches for player {history.player_id}:")
-for m in history:
-    result = "WON" if m.result == "win" else "lost"
-    print(f"  {m.team1.name} {m.score1} - {m.score2} {m.team2.name} ({result}) - {m.event}")
+if history.matches:
+    for m in history:
+        result = "WON" if m.result == "win" else "lost"
+        print(f"  {m.team1.name} {m.score1} - {m.score2} {m.team2.name} ({result}) - {m.event}")
+else:
+    print("  No match history found.")
 ```
 
 ### Analyse win/loss record
@@ -195,8 +198,11 @@ import vlrdevapi
 
 history = vlrdevapi.player.matches(player_id=438, limit=100)
 vct_matches = [m for m in history if "masters" in m.event.lower()]
-for m in vct_matches[:5]:
-    print(f"{m.stage} {m.bracket}: {m.team1.name} vs {m.team2.name} ({m.score1}-{m.score2})")
+if vct_matches:
+    for m in vct_matches[:5]:
+        print(f"{m.stage} {m.bracket}: {m.team1.name} vs {m.team2.name} ({m.score1}-{m.score2})")
+else:
+    print("No Masters-tier matches found in recent history.")
 ```
 
 ### Curried access
@@ -208,6 +214,9 @@ import vlrdevapi
 
 player = vlrdevapi.player(438)
 history = player.matches(limit=5)
-for m in history:
-    print(f"{m.date}: {'W' if m.result == 'win' else 'L'} {m.team1.tag} {m.score1}-{m.score2} {m.team2.tag}")
+if history.matches:
+    for m in history:
+        print(f"{m.date}: {'W' if m.result == 'win' else 'L'} {m.team1.tag} {m.score1}-{m.score2} {m.team2.tag}")
+else:
+    print("No match history found for this player.")
 ```

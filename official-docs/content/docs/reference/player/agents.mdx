@@ -167,8 +167,11 @@ import vlrdevapi
 
 stats = vlrdevapi.player.agents(player_id=438)
 print(f"Timespan: {stats.timespan}")
-for a in stats.agents:
-    print(f"{a.agent}: {a.rounds}r | {a.rating} rating | {a.acs} ACS | {a.kd} KD")
+if stats.agents:
+    for a in stats.agents:
+        print(f"{a.agent}: {a.rounds}r | {a.rating} rating | {a.acs} ACS | {a.kd} KD")
+else:
+    print("No agent stats available for this player.")
 ```
 
 ### Filter by last 60 days
@@ -179,13 +182,16 @@ Limit agent stats to the last 60 days of play.
 import vlrdevapi
 
 stats = vlrdevapi.player.agents(player_id=438, timespan="60d")
-for a in stats.agents:
-    rnd = a.rounds or 0
-    rat = f"{a.rating:.2f}" if a.rating is not None else "N/A"
-    acs = f"{a.acs:.1f}" if a.acs is not None else "N/A"
-    kd = f"{a.kd:.2f}" if a.kd is not None else "N/A"
-    adr = f"{a.adr:.1f}" if a.adr is not None else "N/A"
-    print(f"{a.agent:>8} | {rnd:>3}r | R={rat} | ACS={acs} | K/D={kd} | ADR={adr}")
+if stats.agents:
+    for a in stats.agents:
+        rnd = a.rounds or 0
+        rat = f"{a.rating:.2f}" if a.rating is not None else "N/A"
+        acs = f"{a.acs:.1f}" if a.acs is not None else "N/A"
+        kd = f"{a.kd:.2f}" if a.kd is not None else "N/A"
+        adr = f"{a.adr:.1f}" if a.adr is not None else "N/A"
+        print(f"{a.agent:>8} | {rnd:>3}r | R={rat} | ACS={acs} | K/D={kd} | ADR={adr}")
+else:
+    print("No agent stats found for the 60d timespan.")
 ```
 
 ### Find most played agent
@@ -196,9 +202,12 @@ Identify the agent the player has played the most rounds on.
 import vlrdevapi
 
 stats = vlrdevapi.player.agents(player_id=438, timespan="all")
-most_played = max(stats.agents, key=lambda a: a.rounds or 0)
-print(f"Most played: {most_played.agent} ({most_played.rounds} rounds)")
-print(f"Rating: {most_played.rating} | KD: {most_played.kd} | ACS: {most_played.acs}")
+if stats.agents:
+    most_played = max(stats.agents, key=lambda a: a.rounds or 0)
+    print(f"Most played: {most_played.agent} ({most_played.rounds} rounds)")
+    print(f"Rating: {most_played.rating} | KD: {most_played.kd} | ACS: {most_played.acs}")
+else:
+    print("No agent stats available for this player.")
 ```
 
 ### Curried access
@@ -210,8 +219,11 @@ import vlrdevapi
 
 player = vlrdevapi.player(438)
 stats = player.agents(timespan="90d")
-for a in stats.agents:
-    rnd = a.rounds or 0
-    rat = f"{a.rating:.2f}" if a.rating is not None else "N/A"
-    print(f"{a.agent}: {rat} rating over {rnd} rounds")
+if stats.agents:
+    for a in stats.agents:
+        rnd = a.rounds or 0
+        rat = f"{a.rating:.2f}" if a.rating is not None else "N/A"
+        print(f"{a.agent}: {rat} rating over {rnd} rounds")
+else:
+    print("No agent stats found for this player.")
 ```

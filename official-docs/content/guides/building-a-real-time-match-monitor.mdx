@@ -5,128 +5,247 @@ date: 2026-07-04
 author: RiftWatch
 ---
 
-This guide walks through building a real-time match monitor that polls for live matches, displays scores, and tracks team performance.
+This guide walks through building a real-time match monitor that polls for live matches, displays scores, and tracks team performance. By the end, you'll have a working CLI tool you can extend for your own use cases.
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- Python 3.11 or later installed
+- The `vlrdevapi` package installed: `pip install vlrdevapi`
+- Basic familiarity with Python and the command line
+
+## Project Setup
+
+### Create a project directory and virtual environment
+
+```bash
+mkdir match-monitor
+cd match-monitor
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install vlrdevapi
+```
+
+### Create the main script
+
+Create a file called `monitor.py` — we'll build it up step by step throughout this guide.
 
 ## Step 1: Fetch Live Matches
 
+The first thing our monitor needs is the ability to fetch currently live matches from VLR.gg.
+
+Use `vlrdevapi.matches.live()` to get all ongoing matches. Each entry has `match_id`, `event`, `stage`, and `team1`/`team2` objects.
+
 ```python
 import vlrdevapi
-import time
 
-def get_live_matches():
-    live = vlrdevapi.matches.live()
-    if not live.matches:
-        return []
-    return live.matches
-
-# Demonstration
-matches = get_live_matches()
-print(f"Live matches: {len(matches)}")
+try:
+    page = vlrdevapi.matches.live()
+    matches = page.matches
+    print(f"Live matches: {len(matches)}")
+    if matches:
+        for m in matches:
+            print(f"  Match #{m.match_id} — {m.event}")
+    else:
+        print("No matches currently live — this is normal.")
+except Exception as e:
+    print(f"Error: {e}")
 ```
 
 ## Step 2: Display Match Status
 
+Raw match objects aren't human-readable. Let's build a formatter and a display function.
+
+### Formatting a single match
+
 ```python
+import vlrdevapi
+
+def format_match(m):
+    """Format a match entry into a readable string."""
+    t1 = m.team1.name if m.team1 else "TBD"
+    t2 = m.team2.name if m.team2 else "TBD"
+    return f"{t1} vs {t2}  |  {m.event}  |  {m.stage}"
+
 def show_matches(matches):
+    """Print a formatted list of matches."""
+    if not matches:
+        print("No live matches at this time.")
+        return
+    print(f"\n{'='*60}")
+    print(f"  LIVE MATCHES ({len(matches)})")
+    print(f"{'='*60}")
     for m in matches:
-        t1 = m.team1.name if m.team1 else "TBD"
-        t2 = m.team2.name if m.team2 else "TBD"
-        s1 = m.team1.score if m.team1 else "-"
-        s2 = m.team2.score if m.team2 else "-"
-        print(f"{t1} {s1} - {s2} {t2} | {m.event}")
+        print(f"  {format_match(m)}")
+    print(f"{'='*60}\n")
+
+page = vlrdevapi.matches.live()
+show_matches(page.matches)
 ```
 
-## Step 3: Polling Loop
+### Match object fields
 
-```python
-def monitor(interval=30):
-    seen = set()
-    while True:
-        matches = get_live_matches()
-        for m in matches:
-            if m.id not in seen:
-                seen.add(m.id)
-                t1 = m.team1.name if m.team1 else "TBD"
-                t2 = m.team2.name if m.team2 else "TBD"
-                print(f"[LIVE] {t1} vs {t2} just started!")
-        time.sleep(interval)
+Each match exposes:
 
-if __name__ == "__main__":
-    monitor()
-```
+- `match_id` — unique match identifier
+- `team1` / `team2` — `TeamInLiveMatch` objects with `.name`, `.tag`, `.id`, `.country_name`
+- `event` — tournament name (e.g. "VCT 2025: Masters Madrid")
+- `stage` — stage within the event (e.g. "Playoffs")
+- `status` — always `"live"`
 
-Run it:
+## Step 3: Build a Polling Snapshot
 
-```bash
-python monitor.py
-```
-
-## Step 4: Get Detailed Team Info
-
-When a new match appears, fetch team details automatically:
-
-```python
-def show_team_details(match):
-    t1 = match.team1
-    t2 = match.team2
-    if t1:
-        team1 = vlrdevapi.team(t1.id)
-        print(f"{team1.info().name} roster:")
-        for p in team1.roster().players:
-            print(f"  {p.ign} - {', '.join(p.roles)}")
-    if t2:
-        team2 = vlrdevapi.team(t2.id)
-        print(f"{team2.info().name} roster:")
-        for p in team2.roster().players:
-            print(f"  {p.ign} - {', '.join(p.roles)}")
-```
-
-## Step 5: Track Completed Matches
-
-After a match ends, fetch the result:
-
-```python
-def get_recent_results():
-    results = vlrdevapi.matches.completed(page=1)
-    for m in results.matches[:5]:
-        t1 = m.team1
-        t2 = m.team2
-        if t1 and t2:
-            winner = t1 if t1.is_winner else t2
-            print(f"{t1.name} {t1.score} - {t2.score} {t2.name}")
-            print(f"  Winner: {winner.name}")
-```
-
-## Full Script
+A real-time monitor polls the API and alerts when new matches appear. The key is tracking `match_id` values in a set.
 
 ```python
 import vlrdevapi
 import time
 
-live = vlrdevapi.matches.live()
-print(f"Currently live: {len(live.matches)} matches")
+def poll(seen=None, interval=30):
+    """Poll for live matches and alert on new ones."""
+    if seen is None:
+        seen = set()
+    print(f"Polling every {interval}s — checking for new matches")
 
-def monitor(interval=30):
-    seen = set()
-    while True:
-        live = vlrdevapi.matches.live()
-        for m in live.matches:
-            if m.id not in seen:
-                seen.add(m.id)
-                t1 = m.team1.name if m.team1 else "TBD"
-                t2 = m.team2.name if m.team2 else "TBD"
-                print(f"[LIVE] {t1} vs {t2}")
+    for _ in range(3):  # run a few cycles for demonstration
+        try:
+            page = vlrdevapi.matches.live()
+            current = page.matches
+        except Exception as e:
+            print(f"  Poll error: {e}")
+            time.sleep(interval)
+            continue
+
+        new_matches = [m for m in current if m.match_id not in seen]
+
+        for m in new_matches:
+            seen.add(m.match_id)
+            t1 = m.team1.name if m.team1 else "TBD"
+            t2 = m.team2.name if m.team2 else "TBD"
+            print(f"  [NEW] {t1} vs {t2} just went live!")
+
+        if not new_matches:
+            print(f"  [{time.strftime('%H:%M:%S')}] No new matches — continuing...")
+
         time.sleep(interval)
 
-if __name__ == "__main__":
-    monitor()
+poll(interval=1)
 ```
 
-## Extending Further
+To run this continuously (not just 3 cycles), replace the `for` loop with `while True`. Interrupt the process with `Ctrl+C` to stop.
 
-- Add Discord webhook notifications
-- Track map-wise statistics via `series.players()`
-- Log match data to a database for historical analysis
-- Build a web dashboard with live match tiles
+## Step 4: Enrich Matches with Team Details
 
-Check the [API Reference](/docs) for full endpoint details.
+When a new match appears, use `vlrdevapi.team(id)` to fetch each team's full info and roster.
+
+```python
+import vlrdevapi
+
+def show_team_details(match):
+    """Fetch and display detailed team rosters."""
+    for team in [match.team1, match.team2]:
+        if not team:
+            continue
+        try:
+            obj = vlrdevapi.team(team.id)
+            info = obj.info()
+            roster = obj.roster()
+            print(f"\n  {info.name} (ID: {team.id})")
+            for p in roster.players:
+                roles = ", ".join(p.roles)
+                print(f"    {p.ign} — {roles}")
+        except Exception as e:
+            print(f"  Could not fetch team {team.id}: {e}")
+
+page = vlrdevapi.matches.live()
+if page.matches:
+    show_team_details(page.matches[0])
+else:
+    print("No live matches to inspect right now.")
+```
+
+## Step 5: Track Completed Matches
+
+Use `vlrdevapi.matches.completed()` to fetch finished matches and see final scores.
+
+```python
+import vlrdevapi
+
+def show_completed():
+    """Fetch and display recently completed match results."""
+    try:
+        results = vlrdevapi.matches.completed(page=1)
+    except Exception as e:
+        print(f"Error: {e}")
+        return
+
+    if not results.matches:
+        print("No completed matches found.")
+        return
+
+    for m in results.matches[:5]:
+        t1, t2 = m.team1, m.team2
+        if t1 and t2:
+            winner = t1 if t1.is_winner else t2
+            print(f"  {t1.name} {t1.score} - {t2.score} {t2.name}")
+            print(f"    Winner: {winner.name}")
+
+show_completed()
+```
+
+Completed matches expose these additional fields on each team:
+
+- `score` — number of maps won
+- `is_winner` — whether the team won the match
+
+## Step 6: Putting It All Together
+
+This final script combines everything into a standalone snapshot tool:
+
+```python
+import vlrdevapi
+
+def format_match(m):
+    t1 = m.team1.name if m.team1 else "TBD"
+    t2 = m.team2.name if m.team2 else "TBD"
+    return f"{t1} vs {t2}  |  {m.event}  |  {m.stage}"
+
+def show_team_details(match):
+    for team in [match.team1, match.team2]:
+        if not team:
+            continue
+        try:
+            obj = vlrdevapi.team(team.id)
+            info = obj.info()
+            roster = obj.roster()
+            print(f"\n  {info.name}")
+            for p in roster.players:
+                roles = ", ".join(p.roles)
+                print(f"    {p.ign} — {roles}")
+        except Exception as e:
+            print(f"  Could not fetch team {team.id}: {e}")
+
+print("=== CURRENT LIVE MATCHES ===\n")
+
+try:
+    page = vlrdevapi.matches.live()
+    if page.matches:
+        for m in page.matches:
+            print(format_match(m))
+        print(f"\n--- Team details for first match ---")
+        show_team_details(page.matches[0])
+    else:
+        print("No live matches right now.")
+except Exception as e:
+    print(f"Error fetching matches: {e}")
+```
+
+Save this as `monitor.py` and run it directly: `python monitor.py`.
+
+## Next Steps
+
+- Check the [API Reference](/docs/) for all available endpoints
+- Learn about [pagination](/docs/quickstart#pagination) for browsing large match lists
+- Explore [error handling patterns](/docs/quickstart#error-handling) for production use
+- Read about the [async client](/docs/quickstart#async-usage) for non-blocking monitoring

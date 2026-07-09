@@ -3,6 +3,7 @@ import { metaSchema, pageSchema } from 'fumadocs-core/source/schema';
 import { transformerTwoslash } from 'fumadocs-twoslash';
 import { rehypeCodeDefaultOptions } from 'fumadocs-core/mdx-plugins';
 import { remarkSteps } from 'fumadocs-core/mdx-plugins';
+import { z } from 'zod';
 import lastModified from 'fumadocs-mdx/plugins/last-modified';
 
 // You can customize Zod schemas for frontmatter and `meta.json` here
@@ -17,6 +18,31 @@ export const docs = defineDocs({
   },
   meta: {
     schema: metaSchema,
+  },
+});
+
+const contentPageSchema = pageSchema.extend({
+  date: z.string(),
+  author: z.string().default('RiftWatch'),
+});
+
+export const blog = defineDocs({
+  dir: 'content/blog',
+  docs: {
+    schema: contentPageSchema,
+    postprocess: {
+      includeProcessedMarkdown: true,
+    },
+  },
+});
+
+export const guides = defineDocs({
+  dir: 'content/guides',
+  docs: {
+    schema: contentPageSchema,
+    postprocess: {
+      includeProcessedMarkdown: true,
+    },
   },
 });
 

@@ -126,8 +126,11 @@ print(f"Country: {profile.country}")
 team_name = profile.current_team.name if profile.current_team else "(free agent)"
 print(f"Team: {team_name}")
 print(f"Top agents:")
-for a in profile.top_agents[:3]:
-    print(f"  {a.agent}: {a.rating} rating, {a.kd} KD")
+if profile.top_agents:
+    for a in profile.top_agents[:3]:
+        print(f"  {a.agent}: {a.rating} rating, {a.kd} KD")
+else:
+    print("  (no agent data)")
 ```
 
 ### Social links summary
@@ -151,6 +154,9 @@ import vlrdevapi
 
 player = vlrdevapi.player(438)
 profile = player.profile()
-best_agent = max(profile.top_agents, key=lambda a: a.rating or 0)
-print(f"{profile.name}'s best agent: {best_agent.agent} ({best_agent.rating} rating)")
+if profile.top_agents:
+    best_agent = max(profile.top_agents, key=lambda a: a.rating or 0)
+    print(f"{profile.name}'s best agent: {best_agent.agent} ({best_agent.rating} rating)")
+else:
+    print(f"{profile.name} has no top agent data available.")
 ```
