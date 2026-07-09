@@ -5,17 +5,17 @@ import { useState } from 'react';
 import { Logo } from '@/components/logo';
 
 const navLinks = [
-  { href: '/docs', label: 'Docs' },
-  { href: '/guides', label: 'Guides' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/faq', label: 'FAQ' },
+  { href: '/docs/', label: 'Docs' },
+  { href: '/guides/', label: 'Guides' },
+  { href: '/blog/', label: 'Blog' },
+  { href: '/faq/', label: 'FAQ' },
 ];
 
 const resourceLinks = [
-  { href: '/docs/getting-started', label: 'Getting Started', desc: 'Install and make your first API call' },
-  { href: '/docs', label: 'API Reference', desc: 'Complete endpoint documentation' },
-  { href: '/changelog', label: 'Changelog', desc: 'Release history and version notes' },
-  { href: '/faq', label: 'FAQ', desc: 'Frequently asked questions' },
+  { href: '/docs/getting-started/', label: 'Getting Started', desc: 'Install and make your first API call' },
+  { href: '/docs/', label: 'API Reference', desc: 'Complete endpoint documentation' },
+  { href: '/changelog/', label: 'Changelog', desc: 'Release history and version notes' },
+  { href: '/faq/', label: 'FAQ', desc: 'Frequently asked questions' },
 ];
 
 export function Header() {
@@ -89,7 +89,7 @@ export function Header() {
             <span>GitHub</span>
           </Link>
           <Link
-            href="/docs"
+            href="/docs/"
             className="inline-flex items-center justify-center h-11 gap-1 font-medium tracking-tight border border-foreground text-foreground hover:bg-muted px-5 text-sm transition-colors duration-300 bg-background"
           >
             Get Started
@@ -178,7 +178,7 @@ export function Header() {
             </nav>
             <div className="mt-5 flex flex-col gap-2">
               <Link
-                href="/docs"
+                href="/docs/"
                 className="inline-flex items-center justify-center h-11 gap-1 font-medium tracking-tight px-5 text-base bg-background text-foreground hover:bg-white/90 transition-colors duration-200"
                 onClick={() => setMenuOpen(false)}
               >

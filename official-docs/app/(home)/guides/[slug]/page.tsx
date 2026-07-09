@@ -26,6 +26,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     openGraph: {
       title: `${guide.title} - VLRdevAPI Guides`,
       description: guide.description,
+      url: `https://vlrdevapi.pages.dev/guides/${guide.slug}/`,
       type: 'article',
       publishedTime: guide.date,
     },
@@ -45,11 +46,17 @@ export default async function GuidePage(props: Props) {
     headline: guide.title,
     description: guide.description,
     datePublished: guide.date,
-    author: {
-      '@type': 'Organization',
-      name: guide.author,
-      url: 'https://riftwatch.org',
-    },
+    author: [
+      {
+        '@type': 'Person',
+        name: 'Vansh Bordia',
+      },
+      {
+        '@type': 'Organization',
+        name: 'RiftWatch',
+        url: 'https://riftwatch.org',
+      },
+    ],
     publisher: {
       '@type': 'Organization',
       name: 'RiftWatch',
@@ -61,10 +68,10 @@ export default async function GuidePage(props: Props) {
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://vlrdevapi.pages.dev/guides/${guide.slug}`,
+      '@id': `https://vlrdevapi.pages.dev/guides/${guide.slug}/`,
     },
     proficiencyLevel: 'Beginner',
-    url: `https://vlrdevapi.pages.dev/guides/${guide.slug}`,
+    url: `https://vlrdevapi.pages.dev/guides/${guide.slug}/`,
   }
 
   const jsonLdBreadcrumb = {
@@ -72,8 +79,8 @@ export default async function GuidePage(props: Props) {
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://vlrdevapi.pages.dev' },
-      { '@type': 'ListItem', position: 2, name: 'Guides', item: 'https://vlrdevapi.pages.dev/guides' },
-      { '@type': 'ListItem', position: 3, name: guide.title, item: `https://vlrdevapi.pages.dev/guides/${guide.slug}` },
+      { '@type': 'ListItem', position: 2, name: 'Guides', item: 'https://vlrdevapi.pages.dev/guides/' },
+      { '@type': 'ListItem', position: 3, name: guide.title, item: `https://vlrdevapi.pages.dev/guides/${guide.slug}/` },
     ],
   }
 
@@ -95,7 +102,7 @@ export default async function GuidePage(props: Props) {
         <div className="border-b border-border">
           <div className="mx-auto max-w-7xl px-6 pt-28 pb-12 md:pt-36 md:pb-16">
             <Link
-              href="/guides"
+              href="/guides/"
               className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>

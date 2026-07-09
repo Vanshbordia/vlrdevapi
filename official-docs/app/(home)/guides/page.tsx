@@ -12,7 +12,7 @@ const jsonLd = {
   '@type': 'CollectionPage',
   name: 'VLRdevAPI Guides',
   description: 'Step-by-step walkthroughs for integrating VLRdevAPI into your Valorant esports projects.',
-  url: 'https://vlrdevapi.pages.dev/guides',
+  url: 'https://vlrdevapi.pages.dev/guides/',
   publisher: {
     '@type': 'Organization',
     name: 'RiftWatch',

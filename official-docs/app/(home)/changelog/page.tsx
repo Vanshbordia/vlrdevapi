@@ -63,7 +63,7 @@ const jsonLdBreadcrumb = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://vlrdevapi.pages.dev' },
-    { '@type': 'ListItem', position: 2, name: 'Changelog', item: 'https://vlrdevapi.pages.dev/changelog' },
+    { '@type': 'ListItem', position: 2, name: 'Changelog', item: 'https://vlrdevapi.pages.dev/changelog/' },
   ],
 }
 
@@ -72,11 +72,24 @@ const jsonLdWebPage = {
   '@type': 'WebPage',
   name: 'Changelog',
   description: 'Release history and version notes for VLRdevAPI.',
-  url: 'https://vlrdevapi.pages.dev/changelog',
+  url: 'https://vlrdevapi.pages.dev/changelog/',
   about: {
-    '@type': 'SoftwareApplication',
+    '@type': 'SoftwareSourceCode',
     name: 'VLRdevAPI',
-    applicationCategory: 'DeveloperApplication',
+    programmingLanguage: 'Python',
+    runtimePlatform: 'Python 3.11+',
+    codeRepository: 'https://github.com/vanshbordia/vlrdevapi',
+    author: [
+      {
+        '@type': 'Person',
+        name: 'Vansh Bordia',
+      },
+      {
+        '@type': 'Organization',
+        name: 'RiftWatch',
+        url: 'https://riftwatch.org',
+      },
+    ],
   },
 }
 

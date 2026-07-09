@@ -24,7 +24,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const MDX = page.data.body;
   const markdownUrl = getPageMarkdownUrl(page).url;
 
-  const pageUrl = `https://vlrdevapi.pages.dev${page.url}`;
+  const pageUrl = `https://vlrdevapi.pages.dev${page.url}${page.url.endsWith('/') ? '' : '/'}`;
 
   const jsonLdArticle = {
     '@context': 'https://schema.org',
@@ -33,11 +33,17 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
     description: page.data.description,
     url: pageUrl,
     dateModified: page.data.lastModified?.toISOString() ?? new Date().toISOString(),
-    author: {
-      '@type': 'Organization',
-      name: 'RiftWatch',
-      url: 'https://riftwatch.org',
-    },
+    author: [
+      {
+        '@type': 'Person',
+        name: 'Vansh Bordia',
+      },
+      {
+        '@type': 'Organization',
+        name: 'RiftWatch',
+        url: 'https://riftwatch.org',
+      },
+    ],
     publisher: {
       '@type': 'Organization',
       name: 'RiftWatch',
@@ -50,12 +56,12 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   };
 
   const breadcrumbItems = [
-    { '@type': 'ListItem', position: 1, name: 'Docs', item: 'https://vlrdevapi.pages.dev/docs' },
+    { '@type': 'ListItem', position: 1, name: 'Docs', item: 'https://vlrdevapi.pages.dev/docs/' },
     ...(params.slug ?? []).map((segment, i) => ({
       '@type': 'ListItem' as const,
       position: i + 2,
       name: segment,
-      item: `https://vlrdevapi.pages.dev/docs/${(params.slug ?? []).slice(0, i + 1).join('/')}`,
+      item: `https://vlrdevapi.pages.dev/docs/${(params.slug ?? []).slice(0, i + 1).join('/')}/`,
     })),
   ];
 
@@ -110,11 +116,14 @@ export async function generateMetadata(props: PageProps<'/docs/[[...slug]]'>): P
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
+  const ogUrl = `https://vlrdevapi.pages.dev${page.url}${page.url.endsWith('/') ? '' : '/'}`;
+
   return {
     title: page.data.title,
     description: page.data.description,
     openGraph: {
+      url: ogUrl,
       images: getPageImage(page).url,
     },
-  };
+  }
 }

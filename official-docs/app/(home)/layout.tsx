@@ -20,13 +20,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground">Docs</h4>
               <ul className="mt-4 flex flex-col gap-3">
-                <li><Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Getting Started</Link></li>
-                <li><Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">API Reference</Link></li>
-                <li><Link href="/guides" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Guides</Link></li>
-                <li><Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
-                <li><Link href="/changelog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Changelog</Link></li>
-                <li><Link href="/faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">FAQ</Link></li>
-                <li><Link href="/docs" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Installation</Link></li>
+                <li><Link href="/docs/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Getting Started</Link></li>
+                <li><Link href="/docs/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">API Reference</Link></li>
+                <li><Link href="/guides/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Guides</Link></li>
+                <li><Link href="/blog/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
+                <li><Link href="/changelog/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Changelog</Link></li>
+                <li><Link href="/faq/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">FAQ</Link></li>
+                <li><Link href="/docs/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Installation</Link></li>
               </ul>
             </div>
             <div>

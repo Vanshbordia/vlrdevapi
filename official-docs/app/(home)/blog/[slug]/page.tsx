@@ -26,6 +26,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     openGraph: {
       title: `${post.title} - VLRdevAPI Blog`,
       description: post.description,
+      url: `https://vlrdevapi.pages.dev/blog/${post.slug}/`,
       type: 'article',
       publishedTime: post.date,
     },
@@ -45,11 +46,17 @@ export default async function BlogPostPage(props: Props) {
     headline: post.title,
     description: post.description,
     datePublished: post.date,
-    author: {
-      '@type': 'Organization',
-      name: post.author,
-      url: 'https://riftwatch.org',
-    },
+    author: [
+      {
+        '@type': 'Person',
+        name: 'Vansh Bordia',
+      },
+      {
+        '@type': 'Organization',
+        name: 'RiftWatch',
+        url: 'https://riftwatch.org',
+      },
+    ],
     publisher: {
       '@type': 'Organization',
       name: 'RiftWatch',
@@ -61,9 +68,9 @@ export default async function BlogPostPage(props: Props) {
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://vlrdevapi.pages.dev/blog/${post.slug}`,
+      '@id': `https://vlrdevapi.pages.dev/blog/${post.slug}/`,
     },
-    url: `https://vlrdevapi.pages.dev/blog/${post.slug}`,
+    url: `https://vlrdevapi.pages.dev/blog/${post.slug}/`,
   }
 
   const jsonLdBreadcrumb = {
@@ -71,8 +78,8 @@ export default async function BlogPostPage(props: Props) {
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://vlrdevapi.pages.dev' },
-      { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://vlrdevapi.pages.dev/blog' },
-      { '@type': 'ListItem', position: 3, name: post.title, item: `https://vlrdevapi.pages.dev/blog/${post.slug}` },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://vlrdevapi.pages.dev/blog/' },
+      { '@type': 'ListItem', position: 3, name: post.title, item: `https://vlrdevapi.pages.dev/blog/${post.slug}/` },
     ],
   }
 
@@ -94,7 +101,7 @@ export default async function BlogPostPage(props: Props) {
         <div className="border-b border-border">
           <div className="mx-auto max-w-7xl px-6 pt-28 pb-12 md:pt-36 md:pb-16">
             <Link
-              href="/blog"
+              href="/blog/"
               className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>

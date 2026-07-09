@@ -12,7 +12,7 @@ const jsonLd = {
   '@type': 'Blog',
   name: 'VLRdevAPI Blog',
   description: 'News, tutorials, and deep dives on building with the VLRdevAPI Python SDK for Valorant esports.',
-  url: 'https://vlrdevapi.pages.dev/blog',
+  url: 'https://vlrdevapi.pages.dev/blog/',
   publisher: {
     '@type': 'Organization',
     name: 'RiftWatch',
