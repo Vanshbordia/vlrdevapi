@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getGuide, getGuides } from '@/lib/content'
-import { MdxContent } from '@/components/mdx-content'
-import { extractToc } from '@/components/toc'
+import { guidesSource } from '@/lib/source'
+import { getMDXComponents } from '@/components/mdx'
 import { TocLayout } from '@/components/toc-layout'
+import { extractToc } from '@/components/toc'
 import { CtaSection } from '@/components/cta'
 
 interface Props {
@@ -12,40 +12,43 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  return getGuides().map((guide) => ({ slug: guide.slug }))
+  return guidesSource.getPages().map((page) => ({ slug: page.slugs[0] }))
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const { slug } = await props.params
-  const guide = getGuide(slug)
-  if (!guide) return {}
+  const page = guidesSource.getPage([slug])
+  if (!page) return {}
 
   return {
-    title: guide.title,
-    description: guide.description,
+    title: page.data.title,
+    description: page.data.description,
     openGraph: {
-      title: `${guide.title} - VLRdevAPI Guides`,
-      description: guide.description,
-      url: `https://vlrdevapi.pages.dev/guides/${guide.slug}/`,
+      title: `${page.data.title} - VLRdevAPI Guides`,
+      description: page.data.description,
+      url: `https://vlrdevapi.pages.dev/guides/${slug}/`,
       type: 'article',
-      publishedTime: guide.date,
+      publishedTime: page.data.date,
     },
   }
 }
 
 export default async function GuidePage(props: Props) {
   const { slug } = await props.params
-  const guide = getGuide(slug)
-  if (!guide) notFound()
+  const page = guidesSource.getPage([slug])
+  if (!page) notFound()
 
-  const tocItems = extractToc(guide.content)
+  const rawContent = await page.data.getText('processed')
+  const tocItems = extractToc(rawContent ?? '')
+
+  const MDX = page.data.body
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'TechArticle',
-    headline: guide.title,
-    description: guide.description,
-    datePublished: guide.date,
+    headline: page.data.title,
+    description: page.data.description,
+    datePublished: page.data.date,
     author: [
       {
         '@type': 'Person',
@@ -68,10 +71,10 @@ export default async function GuidePage(props: Props) {
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://vlrdevapi.pages.dev/guides/${guide.slug}/`,
+      '@id': `https://vlrdevapi.pages.dev/guides/${slug}/`,
     },
     proficiencyLevel: 'Beginner',
-    url: `https://vlrdevapi.pages.dev/guides/${guide.slug}/`,
+    url: `https://vlrdevapi.pages.dev/guides/${slug}/`,
   }
 
   const jsonLdBreadcrumb = {
@@ -80,7 +83,7 @@ export default async function GuidePage(props: Props) {
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://vlrdevapi.pages.dev' },
       { '@type': 'ListItem', position: 2, name: 'Guides', item: 'https://vlrdevapi.pages.dev/guides/' },
-      { '@type': 'ListItem', position: 3, name: guide.title, item: `https://vlrdevapi.pages.dev/guides/${guide.slug}/` },
+      { '@type': 'ListItem', position: 3, name: page.data.title, item: `https://vlrdevapi.pages.dev/guides/${slug}/` },
     ],
   }
 
@@ -108,12 +111,12 @@ export default async function GuidePage(props: Props) {
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
               Back to Guides
             </Link>
-            <time className="mt-6 block text-xs text-muted-foreground">{guide.date}</time>
+            <time className="mt-6 block text-xs text-muted-foreground">{page.data.date}</time>
             <h1 className="font-heading mt-2 text-3xl font-bold leading-[1.08] tracking-tight sm:text-4xl md:text-[2.75rem]">
-              {guide.title}
+              {page.data.title}
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
-              {guide.description}
+              {page.data.description}
             </p>
 
           </div>
@@ -121,7 +124,9 @@ export default async function GuidePage(props: Props) {
 
         <div className="mx-auto max-w-7xl px-6 py-12 md:py-16">
           <TocLayout items={tocItems}>
-            <MdxContent content={guide.content} />
+            <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none prose-code:before:content-none prose-code:after:content-none prose-pre:!p-0 prose-pre:!bg-transparent prose-pre:!border-none prose-a:!font-normal prose-a:!no-underline [&_pre]:!bg-transparent [&_pre]:!p-0">
+              <MDX components={getMDXComponents()} />
+            </div>
             <CtaSection />
           </TocLayout>
         </div>
