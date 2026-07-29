@@ -138,119 +138,137 @@ def _parse_stat_cell(td: Node) -> tuple:
     return overall, attack, defend
 
 
-def _parse_player_row(tr: Node) -> PlayerGameStats:
-    """Parse a player row from the stats table.
-
-    Args:
-        tr: The table row Node containing player data.
-
-    Returns:
-        PlayerGameStats: Parsed player info including name, ID, team,
-        and agents.
-
-    """
+def _parse_player_row(cell: Node) -> PlayerGameStats:
     player = PlayerGameStats()
-    tds = tr.css("td")
 
-    td_player = tds[0] if len(tds) > 0 else None
-    td_agents = tds[1] if len(tds) > 1 else None
+    a = cell.css_first("a")
+    if a:
+        href = a.attributes.get("href", "") or ""
+        parts = href.strip("/").split("/")
+        if len(parts) >= 2:
+            with contextlib.suppress(ValueError):
+                player.player_id = int(parts[1])
 
-    if td_player:
-        a = td_player.css_first("a")
-        if a:
-            href = a.attributes.get("href", "") or ""
-            parts = href.strip("/").split("/")
-            if len(parts) >= 2:
-                with contextlib.suppress(ValueError):
-                    player.player_id = int(parts[1])
-
-        name_el = td_player.css_first(".text-of")
-        if name_el:
-            player.name = name_el.text(strip=True)
+    name_el = cell.css_first(".ovw-player-name")
+    if name_el:
+        player.name = name_el.text(strip=True)
+    else:
+        bold_el = cell.css_first("div[style*='font-weight: 700']")
+        if bold_el:
+            player.name = bold_el.text(strip=True)
         else:
-            bold_el = td_player.css_first("div[style*='font-weight: 700']")
-            if bold_el:
-                player.name = bold_el.text(strip=True)
-            else:
-                for div in td_player.css("div"):
-                    text = div.text(strip=True)
-                    if text and len(text) <= 20 and not div.css("div"):
-                        player.name = text
-                        break
-
-        team_el = td_player.css_first(".ge-text-light")
-        if team_el:
-            player.team_short = team_el.text(strip=True)
-
-        flag_el = td_player.css_first("i.flag")
-        if flag_el:
-            for cls in (flag_el.attributes.get("class") or "").split():
-                if cls.startswith("mod-") and cls != "mod-none":
-                    player.country_code = cls[4:]
-                    player.country = get_country_name(player.country_code)
+            for div in cell.css("div"):
+                text = div.text(strip=True)
+                if text and len(text) <= 20 and not div.css("div"):
+                    player.name = text
                     break
 
-    if td_agents:
-        for img in td_agents.css("img"):
-            alt = img.attributes.get("alt", "") or ""
-            if alt:
-                player.agents.append(alt.title())
+    team_el = cell.css_first(".ovw-player-tag")
+    if team_el:
+        player.team_short = team_el.text(strip=True)
+
+    flag_el = cell.css_first("i.flag")
+    if flag_el:
+        for cls in (flag_el.attributes.get("class") or "").split():
+            if cls.startswith("mod-") and cls != "mod-none":
+                player.country_code = cls[4:]
+                player.country = get_country_name(player.country_code)
+                break
+
+    for img in cell.css(".ovw-agents img"):
+        alt = img.attributes.get("alt", "") or ""
+        if alt:
+            player.agents.append(alt.title())
 
     return player
 
 
+def _parse_kda_cell(cell: Node) -> tuple:
+    kills_o = kills_a = kills_d = None
+    deaths_o = deaths_a = deaths_d = None
+    assists_o = assists_a = assists_d = None
+
+    for stat_span in cell.css("span.ovw-kda-stat"):
+        col = stat_span.attributes.get("data-col", "")
+        both_el = stat_span.css_first("span.mod-both")
+        t_el = stat_span.css_first("span.mod-t")
+        ct_el = stat_span.css_first("span.mod-ct")
+        both = _parse_int(both_el.text(strip=True)) if both_el is not None else None
+        t = _parse_int(t_el.text(strip=True)) if t_el is not None else None
+        ct = _parse_int(ct_el.text(strip=True)) if ct_el is not None else None
+        if col == "kills":
+            kills_o, kills_a, kills_d = both, t, ct
+        elif col == "deaths":
+            deaths_o, deaths_a, deaths_d = both, t, ct
+        elif col == "assists":
+            assists_o, assists_a, assists_d = both, t, ct
+
+    return (kills_o, kills_a, kills_d, deaths_o, deaths_a, deaths_d, assists_o, assists_a, assists_d)
+
+
 def _parse_table(table: Node) -> list[PlayerGameStats]:
-    """Parse an entire player stats table into PlayerGameStats list.
-
-    Args:
-        table: The table Node containing player stat rows.
-
-    Returns:
-        list[PlayerGameStats]: Parsed player stats with side-specific
-        breakdowns.
-
-    """
     players: list[PlayerGameStats] = []
-    rows = table.css("tbody tr")
-    for tr in rows:
-        tds = tr.css("td")
-        if len(tds) < 14:
+    rows = table.css("div.ovw-row")
+    for row in rows:
+        cls = row.attributes.get("class", "") or ""
+        if "mod-head" in cls:
             continue
 
-        player = _parse_player_row(tr)
+        cells = row.css("div.ovw-cell")
+        if len(cells) < 11:
+            continue
 
-        stat_tds = tds[2:14]
+        player = _parse_player_row(cells[0])
 
-        overall_vals = []
-        attack_vals = []
-        defend_vals = []
+        rating_vals = _parse_stat_cell(cells[1])
+        acs_vals = _parse_stat_cell(cells[2])
+        kills_vals, deaths_vals, assists_vals = None, None, None
+        kda_vals = _parse_kda_cell(cells[3])
+        kills_vals = (kda_vals[0], kda_vals[1], kda_vals[2])
+        deaths_vals = (kda_vals[3], kda_vals[4], kda_vals[5])
+        assists_vals = (kda_vals[6], kda_vals[7], kda_vals[8])
+        kd_diff_vals = _parse_stat_cell(cells[4])
+        kast_vals = _parse_stat_cell(cells[5])
+        adr_vals = _parse_stat_cell(cells[6])
+        hs_percent_vals = _parse_stat_cell(cells[7])
+        first_kills_vals = _parse_stat_cell(cells[8])
+        first_deaths_vals = _parse_stat_cell(cells[9])
+        fk_fd_diff_vals = _parse_stat_cell(cells[10])
 
-        for td in stat_tds:
-            o, a, d = _parse_stat_cell(td)
-            overall_vals.append(o)
-            attack_vals.append(a)
-            defend_vals.append(d)
-
-        def _build_side(vals) -> SideStats:
+        def _build_side(
+            rating_t, acs_t, kills_t, deaths_t, assists_t, kd_diff_t, kast_t, adr_t, hs_percent_t, first_kills_t, first_deaths_t, fk_fd_diff_t,
+        ) -> SideStats:
             return SideStats(
-                rating=vals[0],
-                acs=vals[1],
-                kills=vals[2],
-                deaths=vals[3],
-                assists=vals[4],
-                kd_diff=vals[5],
-                kast=vals[6],
-                adr=vals[7],
-                hs_percent=vals[8],
-                first_kills=vals[9],
-                first_deaths=vals[10],
-                fk_fd_diff=vals[11],
+                rating=rating_t,
+                acs=acs_t,
+                kills=kills_t,
+                deaths=deaths_t,
+                assists=assists_t,
+                kd_diff=kd_diff_t,
+                kast=kast_t,
+                adr=adr_t,
+                hs_percent=hs_percent_t,
+                first_kills=first_kills_t,
+                first_deaths=first_deaths_t,
+                fk_fd_diff=fk_fd_diff_t,
             )
 
         player.stats = PlayerStats(
-            overall=_build_side(overall_vals),
-            attack=_build_side(attack_vals),
-            defend=_build_side(defend_vals),
+            overall=_build_side(
+                rating_vals[0], acs_vals[0], kills_vals[0], deaths_vals[0], assists_vals[0],
+                kd_diff_vals[0], kast_vals[0], adr_vals[0], hs_percent_vals[0],
+                first_kills_vals[0], first_deaths_vals[0], fk_fd_diff_vals[0],
+            ),
+            attack=_build_side(
+                rating_vals[1], acs_vals[1], kills_vals[1], deaths_vals[1], assists_vals[1],
+                kd_diff_vals[1], kast_vals[1], adr_vals[1], hs_percent_vals[1],
+                first_kills_vals[1], first_deaths_vals[1], fk_fd_diff_vals[1],
+            ),
+            defend=_build_side(
+                rating_vals[2], acs_vals[2], kills_vals[2], deaths_vals[2], assists_vals[2],
+                kd_diff_vals[2], kast_vals[2], adr_vals[2], hs_percent_vals[2],
+                first_kills_vals[2], first_deaths_vals[2], fk_fd_diff_vals[2],
+            ),
         )
 
         players.append(player)
@@ -319,7 +337,7 @@ def parse_players_stats(html: HTMLParser, game_id: str = "all") -> PlayersStats:
             if not result.map_name:
                 result.map_name = map_div.text(strip=True)
 
-    tables = game_div.css("table.wf-table-inset.mod-overview")
+    tables = game_div.css("div.ovw-table")
     if len(tables) < 2:
         return result
 

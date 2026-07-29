@@ -69,7 +69,7 @@ def _parse_agents(html: HTMLParser, profile: PlayerProfile) -> None:
             card = _next_sibling_card(search_from)
             if card is None:
                 break
-            table = card.css_first("table.wf-table")
+            table = card.css_first("table.st-table.mod-agent-rows")
             if table is None:
                 break
             tbody = table.css_first("tbody")

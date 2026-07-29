@@ -18,8 +18,6 @@ class AgentStats(BaseModel):
     kast: str = Field(default="", description="Kill, Assist, Survive, Trade %")
     kpr: float | None = Field(default=None, description="Kills Per Round")
     apr: float | None = Field(default=None, description="Assists Per Round")
-    fkpr: float | None = Field(default=None, description="First Kills Per Round")
-    fdpr: float | None = Field(default=None, description="First Deaths Per Round")
     kills: int | None = Field(default=None, description="Total kills")
     deaths: int | None = Field(default=None, description="Total deaths")
     assists: int | None = Field(default=None, description="Total assists")

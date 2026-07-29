@@ -8,6 +8,19 @@ export const metadata: Metadata = {
 
 const versions = [
   {
+    version: '2.0.1',
+    date: '29 July 2026',
+    summary: 'Maintenance release removing deprecated agent stat fields removed by vlr.gg and updating CSS selectors for the latest site markup.',
+    sections: [
+      {
+        title: 'Removed',
+        items: [
+          '`fkpr` and `fdpr` fields from `AgentStats` — vlr.gg consolidated the separate "First Kills Per Round" and "First Deaths Per Round" columns into a single "FK:FD" ratio. Use the existing `first_kills` and `first_deaths` total fields instead.',
+        ],
+      },
+    ],
+  },
+  {
     version: '2.0.0',
     date: '7 July 2026',
     summary: 'Initial release of VLRdevAPI. A type-safe Python SDK for Valorant esports data from VLR.gg.',

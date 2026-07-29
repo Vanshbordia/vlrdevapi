@@ -62,18 +62,18 @@ class TestParseTeamStats:
 
         haven = next((m for m in result.maps if m.map_name == "Haven"), None)
         assert haven is not None
-        assert haven.games_played == 129
-        assert haven.win_rate == 73.0
-        assert haven.wins == 94
-        assert haven.losses == 35
-        assert haven.attack_first == 66
-        assert haven.defense_first == 63
+        assert haven.games_played == 132
+        assert haven.win_rate == 72.0
+        assert haven.wins == 95
+        assert haven.losses == 37
+        assert haven.attack_first == 68
+        assert haven.defense_first == 64
         assert haven.attack_round_win_rate == 57.0
-        assert haven.attack_rounds_won == 743
-        assert haven.attack_rounds_lost == 558
+        assert haven.attack_rounds_won == 755
+        assert haven.attack_rounds_lost == 573
         assert haven.defense_round_win_rate == 61.0
-        assert haven.defense_rounds_won == 805
-        assert haven.defense_rounds_lost == 519
+        assert haven.defense_rounds_won == 820
+        assert haven.defense_rounds_lost == 532
 
     def test_parse_team_with_minimal_map_data(self):
         html = _load_html(17676, "stats.html")
