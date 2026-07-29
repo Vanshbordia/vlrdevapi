@@ -139,7 +139,7 @@ def _parse_agent_row(tr: Node) -> AgentStats:
     stats = AgentStats()
     tds = tr.css("td")
 
-    if len(tds) < 17:
+    if len(tds) < 16:
         return stats
 
     img_el = tds[0].css_first("img")
@@ -160,12 +160,10 @@ def _parse_agent_row(tr: Node) -> AgentStats:
     stats.kast = tds[7].text(strip=True)
     stats.kpr = _parse_float(tds[8].text(strip=True))
     stats.apr = _parse_float(tds[9].text(strip=True))
-    stats.fkpr = _parse_float(tds[10].text(strip=True))
-    stats.fdpr = _parse_float(tds[11].text(strip=True))
-    stats.kills = _parse_int(tds[12].text(strip=True))
-    stats.deaths = _parse_int(tds[13].text(strip=True))
-    stats.assists = _parse_int(tds[14].text(strip=True))
-    stats.first_kills = _parse_int(tds[15].text(strip=True))
-    stats.first_deaths = _parse_int(tds[16].text(strip=True))
+    stats.kills = _parse_int(tds[11].text(strip=True))
+    stats.deaths = _parse_int(tds[12].text(strip=True))
+    stats.assists = _parse_int(tds[13].text(strip=True))
+    stats.first_kills = _parse_int(tds[14].text(strip=True))
+    stats.first_deaths = _parse_int(tds[15].text(strip=True))
 
     return stats

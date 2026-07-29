@@ -66,16 +66,6 @@ class TestSyncYuvi:
         result = client.player.agents(46051, timespan="all")
         assert result.agents[0].apr is None or result.agents[0].apr >= 0
 
-    def test_first_agent_fkpr(self, client, mock_vlr):
-        self._mock_yuvi(mock_vlr)
-        result = client.player.agents(46051, timespan="all")
-        assert result.agents[0].fkpr is None or result.agents[0].fkpr >= 0
-
-    def test_first_agent_fdpr(self, client, mock_vlr):
-        self._mock_yuvi(mock_vlr)
-        result = client.player.agents(46051, timespan="all")
-        assert result.agents[0].fdpr is None or result.agents[0].fdpr >= 0
-
     def test_first_agent_kills(self, client, mock_vlr):
         self._mock_yuvi(mock_vlr)
         result = client.player.agents(46051, timespan="all")

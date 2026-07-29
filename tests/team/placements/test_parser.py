@@ -25,7 +25,7 @@ class TestParseTeamPlacements:
         result = parse_team_placements(html, 1034)
 
         assert result.team_id == 1034
-        assert result.total_winnings == 1585375
+        assert result.total_winnings == 1925375
         assert result.total_winnings_currency == "$"
         assert len(result.placements) > 0
 

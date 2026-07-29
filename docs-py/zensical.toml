@@ -64,6 +64,7 @@ nav = [
     { "Series" = "api/series.md" },
     { "Teams" = "api/teams.md" },
   ]},
+  { "Changelog" = "changelog.md" },
 ]
 
 # With the "extra_css" option you can add your own CSS styling to customize
