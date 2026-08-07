@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.1.0] - 2026-08-07
+
+### Added
+
+- **Event teams player rosters** — `event.teams()` now includes a `players`
+  list on each `Team`, containing each player's `name` and `id` parsed from
+  the event page. The `players` field is optional and defaults to `[]` when
+  roster data is unavailable. A new `TeamPlayer` model was added and exposed
+  from the `_event.teams` submodule.
+
+### Changed
+
+- **Documentation** — event teams reference updated with the new `players`
+  field, a `TeamPlayer` fields table, and a roster iteration example.
+
 ## [2.0.1] - 2026-07-29
 
 ### Fixed
@@ -92,5 +107,6 @@ The API surface, module structure, and type system are all new.
 - `aiohttp` and `asyncio` dependencies.
 - v1.x match/event/team parsing modules.
 
+[2.1.0]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Vanshbordia/vlrdevapi/compare/v1.6.2...v2.0.0

@@ -8,6 +8,27 @@ export const metadata: Metadata = {
 
 const versions = [
   {
+    version: '2.1.0',
+    date: '7 August 2026',
+    summary: 'Adds player rosters to event teams, exposing each player\'s name and id on every team.',
+    sections: [
+      {
+        title: 'Added',
+        items: [
+          '`event.teams()` now includes a `players` list on each `Team`, containing each player\'s `name` and `id` parsed from the event page.',
+          'New `TeamPlayer` model exposed from the `_event.teams` submodule.',
+          'The `players` field is optional and defaults to `[]` when roster data is unavailable.',
+        ],
+      },
+      {
+        title: 'Changed',
+        items: [
+          'Event teams reference docs updated with the new `players` field, a `TeamPlayer` fields table, and a roster iteration example.',
+        ],
+      },
+    ],
+  },
+  {
     version: '2.0.1',
     date: '29 July 2026',
     summary: 'Maintenance release removing deprecated agent stat fields removed by vlr.gg and updating CSS selectors for the latest site markup.',

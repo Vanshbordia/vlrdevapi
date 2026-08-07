@@ -88,6 +88,29 @@ event.teams(
     typeDescription: "str | None",
     default: "None",
   },
+  "players": {
+    description: 'List of players on the team (name and id only). May be empty if the roster is unavailable.',
+    type: "list[TeamPlayer]",
+    typeDescription: "list[TeamPlayer]",
+    default: "[]",
+  },
+}} />
+
+### `TeamPlayer` Fields
+
+<TypeTable type={{
+  "id": {
+    description: "Player identifier from vlr.gg (e.g. 1311).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: 'Player in-game name (e.g. "Melser").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
 }} />
 
 ## Behaviour
@@ -140,6 +163,22 @@ for stage_teams in playoff_teams:
     print(f"Stage: {stage_teams.stage_name}")
     for team in stage_teams.teams:
         print(f"  {team.name}")
+```
+
+### Fetch teams with their players
+
+Each `Team` includes a `players` list with each player's `name` and `id`. This is useful for displaying full rosters per team. Some teams may have an empty `players` list if the roster is unavailable, so always guard against that.
+
+```python
+import vlrdevapi
+
+teams = vlrdevapi.event(2347).teams(stage="group_stage")
+for stage_teams in teams:
+    print(f"--- {stage_teams.stage_name} ---")
+    for team in stage_teams.teams:
+        print(team.name)
+        for player in team.players:
+            print(f"  {player.name} (id: {player.id})")
 ```
 
 ### Count teams per stage

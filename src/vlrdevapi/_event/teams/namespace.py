@@ -43,8 +43,9 @@ class EventTeamsNamespace:
             stage: Optional stage name or path to filter by (e.g. 'playoffs').
 
         Returns:
-            EventTeams: Teams grouped by stage, with team ``name``, ``tag``,
-            ``logo_url``, and roster info where available.
+            EventTeams: Teams grouped by stage, with team ``name``, ``id``,
+            optional ``note``, and a ``players`` list (each with ``name``
+            and ``id``) where available.
 
         Raises:
             ValidationError: If ``event_id`` is not a valid positive integer.

@@ -99,8 +99,9 @@ class EventMatchNamespace:
                 If ``None``, returns teams for all stages.
 
         Returns:
-            EventTeams: Teams grouped by stage, with team ``name``, ``tag``,
-            ``logo_url``, and roster info where available.
+            EventTeams: Teams grouped by stage, with team ``name``, ``id``,
+            optional ``note``, and a ``players`` list (each with ``name``
+            and ``id``) where available.
 
         Raises:
             NotFoundError: If the event page does not exist (HTTP 404).
@@ -241,6 +242,7 @@ class EventNamespace:
         Returns:
             An ``EventTeamsNamespace`` instance. Call with an ``event_id``
             and optional ``stage`` to return an ``EventTeams`` model.
+            Each ``Team`` includes an optional ``players`` roster list.
 
         """
         return self._teams

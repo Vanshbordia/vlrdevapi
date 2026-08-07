@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this page.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.1.0] - 2026-08-07
+
+### Added
+
+- **Event teams player rosters** — `event.teams()` now includes a `players`
+  list on each `Team`, containing each player's `name` and `id` parsed from
+  the event page. The `players` field is optional and defaults to `[]` when
+  roster data is unavailable. A new `TeamPlayer` model was added and exposed
+  from the `_event.teams` submodule.
+
+### Changed
+
+- **Documentation** — event teams reference updated with the new `players`
+  field, a `TeamPlayer` fields table, and a roster iteration example.
+
 ## [2.0.1] - 2026-07-29
 
 ### Fixed
