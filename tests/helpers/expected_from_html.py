@@ -53,10 +53,12 @@ def _parse_month_day_year(text: str, default_year: int | None = None) -> datetim
 
     match = re.match(r"^([A-Za-z]+)\s+(\d{1,2})$", text)
     if match and default_year is not None:
-        for fmt in ("%b %d", "%B %d"):
+        for fmt in ("%b %d %Y", "%B %d %Y"):
             try:
-                parsed = datetime.strptime(f"{match.group(1)} {match.group(2)}", fmt)
-                return _utc(default_year, parsed.month, parsed.day)
+                parsed = datetime.strptime(
+                    f"{match.group(1)} {match.group(2)} {default_year}", fmt
+                )
+                return _utc(parsed.year, parsed.month, parsed.day)
             except ValueError:
                 continue
 

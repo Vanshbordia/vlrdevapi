@@ -189,10 +189,9 @@ def _parse_subnav_single_date(text: str, year: int | None) -> date | None:
         return None
 
     if year is not None:
-        for fmt in ("%b %d", "%B %d"):
+        for fmt in ("%b %d %Y", "%B %d %Y"):
             try:
-                dt = datetime.strptime(text, fmt)
-                return dt.replace(year=year).date()
+                return datetime.strptime(f"{text} {year}", fmt).date()
             except ValueError:
                 continue
 
@@ -220,10 +219,9 @@ def _parse_subnav_partial_date(text: str, year: int) -> date | None:
     if full is not None:
         return full
 
-    for fmt in ("%b %d", "%B %d"):
+    for fmt in ("%b %d %Y", "%B %d %Y"):
         try:
-            dt = datetime.strptime(text, fmt)
-            return dt.replace(year=year).date()
+            return datetime.strptime(f"{text} {year}", fmt).date()
         except ValueError:
             continue
 

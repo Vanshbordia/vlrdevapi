@@ -8,6 +8,25 @@ export const metadata: Metadata = {
 
 const versions = [
   {
+    version: 'Unreleased',
+    date: 'In development',
+    summary: 'Uses a sentinel year for events-list dates that omit the year and removes date-parsing deprecation warnings.',
+    sections: [
+      {
+        title: 'Changed',
+        items: [
+          '`event.list()` dates are rendered on vlr.gg without a year (e.g. "Jul 9 – Aug 23"). These now use a sentinel year of `2019` instead of the current year. Any parsed date with `year < 2020` means the source omitted the year, so guard with `event.start_date.year < 2020` before relying on it.',
+        ],
+      },
+      {
+        title: 'Fixed',
+        items: [
+          '`datetime.strptime` emits a `DeprecationWarning` when parsing a day-of-month without a year (and will change behavior in Python 3.15). All such parses now supply an explicit year derived from context (reference date, page-header year, or the sentinel above).',
+        ],
+      },
+    ],
+  },
+  {
     version: '2.1.0',
     date: '7 August 2026',
     summary: 'Adds player rosters to event teams, exposing each player\'s name and id on every team.',

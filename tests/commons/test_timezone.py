@@ -69,11 +69,10 @@ class TestDetectVlrTimezone:
             time_match.group("time").upper(),
             "%I:%M %p",
         ).time()
-        partial_date = datetime.strptime(
-            date_el.text(strip=True),
-            "%A, %B %d",
-        )
-        local_date = partial_date.replace(year=stored.year).date()
+        local_date = datetime.strptime(
+            f"{date_el.text(strip=True)} {stored.year}",
+            "%A, %B %d %Y",
+        ).date()
         localized = datetime.combine(local_date, local_time, tzinfo=zone)
         assert abs((localized.astimezone(UTC) - stored).total_seconds()) <= 3600
 

@@ -242,7 +242,7 @@ def _detect_from_offset(
     except ValueError:
         return None
 
-    date_formats = ("%A, %B %d", "%A, %B %d, %Y", "%B %d, %Y", "%b %d, %Y")
+    date_formats = ("%A, %B %d, %Y", "%B %d, %Y", "%b %d, %Y")
     local_date = None
     for fmt in date_formats:
         try:
@@ -251,7 +251,14 @@ def _detect_from_offset(
         except ValueError:
             continue
     if local_date is None:
-        local_date = canonical.date()
+        try:
+            # Weekday-only format with no year; the reference timestamp
+            # provides the canonical year.
+            local_date = datetime.strptime(
+                f"{displayed_date.strip()} {canonical.year}", "%A, %B %d %Y"
+            ).date()
+        except ValueError:
+            local_date = canonical.date()
     else:
         local_date = local_date.replace(year=canonical.year)
 

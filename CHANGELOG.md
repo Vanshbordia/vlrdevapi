@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- **Events list dates without a year** — `event.list()` dates are rendered
+  on vlr.gg without a year (e.g. `"Jul 9 – Aug 23"`). These now use a
+  sentinel year of `2019` instead of the current year. Any parsed date with
+  `year < 2020` means the source omitted the year, so guard with
+  `event.start_date.year < 2020` before relying on it.
+
+### Fixed
+
+- **Python 3.13/3.15 date parsing deprecation** — `datetime.strptime` emits
+  a `DeprecationWarning` when parsing a day-of-month without a year (and will
+  change behavior in Python 3.15). All such parses now supply an explicit
+  year derived from context (reference date, page-header year, or the
+  sentinel above).
+
 ## [2.1.0] - 2026-08-07
 
 ### Added

@@ -22,8 +22,16 @@ class EventListItem(BaseModel):
         default="upcoming", description="Event status",
     )
     prize: EventPrize | None = Field(default=None, description="Prize information")
-    start_date: date | None = Field(default=None, description="Event start date")
-    end_date: date | None = Field(default=None, description="Event end date")
+    start_date: date | None = Field(
+        default=None,
+        description="Event start date. Year is 2019 when the listing omitted it "
+        "(year < 2020 means the year is not present).",
+    )
+    end_date: date | None = Field(
+        default=None,
+        description="Event end date. Year is 2019 when the listing omitted it "
+        "(year < 2020 means the year is not present).",
+    )
     region: str = Field(default="", description="Country or region name from flag")
     image_url: str = Field(default="", description="URL to the event thumbnail image")
     url: str = Field(default="", description="Full URL to the event page on vlr.gg")
