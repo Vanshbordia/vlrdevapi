@@ -172,7 +172,7 @@ Each `Team` includes a `players` list with each player's `name` and `id`. This i
 ```python
 import vlrdevapi
 
-teams = vlrdevapi.event(2347).teams(stage="group_stage")
+teams = vlrdevapi.event(2347).teams(stage="group-stage")
 for stage_teams in teams:
     print(f"--- {stage_teams.stage_name} ---")
     for team in stage_teams.teams:
