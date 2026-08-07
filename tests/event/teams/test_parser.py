@@ -34,6 +34,6 @@ def test_parse_teams_with_players():
 
 def test_parse_team_no_players_defaults_empty():
     teams = parse_teams(_fixture())
-    # players is optional; even if a team somehow lacks any, it should default to [].
+    # players is always present; even if a team somehow lacks any, it should default to [].
     for team in teams:
         assert isinstance(team.players, list)

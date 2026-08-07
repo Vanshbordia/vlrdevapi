@@ -17,7 +17,7 @@ const versions = [
         items: [
           '`event.teams()` now includes a `players` list on each `Team`, containing each player\'s `name` and `id` parsed from the event page.',
           'New `TeamPlayer` model exposed from the `_event.teams` submodule.',
-          'The `players` field is optional and defaults to `[]` when roster data is unavailable.',
+          'The `players` field is always present and defaults to `[]` when roster data is unavailable.',
         ],
       },
       {

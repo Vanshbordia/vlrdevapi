@@ -45,7 +45,8 @@ class EventTeamsNamespace:
         Returns:
             EventTeams: Teams grouped by stage, with team ``name``, ``id``,
             optional ``note``, and a ``players`` list (each with ``name``
-            and ``id``) where available.
+            and ``id``). ``players`` is always present and may be an empty
+            list when roster data is unavailable.
 
         Raises:
             ValidationError: If ``event_id`` is not a valid positive integer.

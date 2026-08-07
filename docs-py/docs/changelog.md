@@ -11,8 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - **Event teams player rosters** — `event.teams()` now includes a `players`
   list on each `Team`, containing each player's `name` and `id` parsed from
-  the event page. The `players` field is optional and defaults to `[]` when
-  roster data is unavailable. A new `TeamPlayer` model was added and exposed
+  the event page. The `players` field is always present and defaults to `[]`
+  when roster data is unavailable. A new `TeamPlayer` model was added and exposed
   from the `_event.teams` submodule.
 
 ### Changed
