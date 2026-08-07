@@ -116,13 +116,13 @@ event.list(
     default: '""',
   },
   "start_date": {
-    description: "Event start date.",
+    description: 'Event start date. The listing omits the year on vlr.gg, so the year is 2019 (a sentinel); check `date.year < 2020` to detect that the year was not present.',
     type: "date | None",
     typeDescription: "datetime.date | None",
     default: "None",
   },
   "end_date": {
-    description: "Event end date.",
+    description: 'Event end date. The listing omits the year on vlr.gg, so the year is 2019 (a sentinel); check `date.year < 2020` to detect that the year was not present.',
     type: "date | None",
     typeDescription: "datetime.date | None",
     default: "None",

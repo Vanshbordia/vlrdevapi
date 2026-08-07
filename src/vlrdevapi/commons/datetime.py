@@ -5,6 +5,12 @@ from zoneinfo import ZoneInfo
 
 UTC = UTC
 
+# Sentinel year used when a vlr.gg page omits the year from a date
+# (e.g. ``"Sep 14"``). Any parsed date with ``year < 2020`` means the
+# source did not specify a year; Valorant launched in 2020, so no real
+# data can carry the sentinel year 2019.
+_UNKNOWN_YEAR = 2019
+
 # Fallback when no ``source_tz`` is provided. Prefer passing an explicit
 # timezone from :class:`~vlrdevapi._client.VLRClient` (``source_tz`` or
 # ``auto_detect_tz=True``).
@@ -108,7 +114,9 @@ def parse_vlr_date_range(text: str) -> tuple[date | None, date | None]:
 
     Supports en-dash, em-dash, and hyphen as separators. If the right side is
     ``"TBD"``, the end date is ``None``. If no separator is found, the same
-    date is returned for both start and end.
+    date is returned for both start and end. When a side has no year, the
+    sentinel year :data:`_UNKNOWN_YEAR` (2019) is used; a parsed date with
+    ``year < 2020`` means the source omitted the year.
 
     Args:
         text: The date range string to parse.
@@ -154,7 +162,10 @@ def _parse_list_date(text: str) -> date | None:
     """Parse a date string from list/match pages.
 
     Tries formats with year (``%b %d, %Y``, etc.) first, then formats
-    without year (assuming the current year).
+    without year. When the year is absent, the sentinel year
+    :data:`_UNKNOWN_YEAR` (2019) is used to signal that the source did not
+    specify a year (any parsed date with ``year < 2020`` means the year is
+    unknown).
 
     Args:
         text: The date string to parse.
@@ -176,12 +187,11 @@ def _parse_list_date(text: str) -> date | None:
         except ValueError:
             continue
 
-    # Try formats without year, assume current year
-    current_year = datetime.now().year
-    for fmt in ("%b %d", "%B %d"):
+    # Try formats without year; the source omits the year, so use the
+    # sentinel year to signal that it is unknown.
+    for fmt in ("%b %d %Y", "%B %d %Y"):
         try:
-            dt = datetime.strptime(text, fmt)
-            return dt.replace(year=current_year).date()
+            return datetime.strptime(f"{text} {_UNKNOWN_YEAR}", fmt).date()
         except ValueError:
             continue
 
@@ -207,12 +217,11 @@ def _parse_list_partial_date(text: str, reference: date) -> date | None:
     if not text:
         return None
     full = _parse_list_date(text)
-    if full is not None:
+    if full is not None and full.year != _UNKNOWN_YEAR:
         return full
-    for fmt in ("%b %d", "%B %d"):
+    for fmt in ("%b %d %Y", "%B %d %Y"):
         try:
-            dt = datetime.strptime(text, fmt)
-            return dt.replace(year=reference.year).date()
+            return datetime.strptime(f"{text} {reference.year}", fmt).date()
         except ValueError:
             continue
     return None

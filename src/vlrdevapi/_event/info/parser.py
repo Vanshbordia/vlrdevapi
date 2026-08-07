@@ -288,10 +288,9 @@ def _parse_partial_date(text: str, reference_end: date) -> date | None:
     if full_attempt is not None:
         return full_attempt
 
-    for fmt in ("%b %d", "%B %d"):
+    for fmt in ("%b %d %Y", "%B %d %Y"):
         try:
-            dt = datetime.strptime(text, fmt)
-            return dt.replace(year=reference_end.year).date()
+            return datetime.strptime(f"{text} {reference_end.year}", fmt).date()
         except ValueError:
             continue
 

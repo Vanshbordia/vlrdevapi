@@ -1,6 +1,23 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class TeamPlayer(BaseModel):
+    """Player information for a team at an event."""
+
+    model_config = ConfigDict(
+        json_schema_extra={"description": "Player information for a team at an event."},
+    )
+
+    id: int = Field(
+        default=0,
+        description="Player identifier from vlr.gg (e.g., 1311)",
+    )
+    name: str = Field(
+        default="",
+        description="Player in-game name (e.g., 'Melser')",
+    )
+
+
 class Team(BaseModel):
     """Team information for an event from vlr.gg."""
 
@@ -19,6 +36,10 @@ class Team(BaseModel):
     note: str | None = Field(
         default=None,
         description="Optional note (e.g., 'Partner Team')",
+    )
+    players: list[TeamPlayer] = Field(
+        default_factory=list,
+        description="List of players on the team (name and id). Always present; empty when roster data is unavailable.",
     )
 
 

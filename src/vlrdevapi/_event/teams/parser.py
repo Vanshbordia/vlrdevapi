@@ -1,7 +1,6 @@
-
 from selectolax.parser import HTMLParser, Node
 
-from vlrdevapi._event.teams.models import Team
+from vlrdevapi._event.teams.models import Team, TeamPlayer
 
 
 def parse_subnav(html: HTMLParser) -> list[tuple[str, str]]:
@@ -70,4 +69,32 @@ def _parse_team_card(card: Node) -> Team | None:
     note_el = card.css_first(".event-team-note")
     note = note_el.text(strip=True) if note_el else None
 
-    return Team(name=name, id=team_id, note=note)
+    players = _parse_players(card)
+
+    return Team(name=name, id=team_id, note=note, players=players)
+
+
+def _parse_players(card: Node) -> list[TeamPlayer]:
+    """Parse the players listed on a team card."""
+    players = []
+    for item in card.css(".event-team-players-item"):
+        player = _parse_player_item(item)
+        if player:
+            players.append(player)
+    return players
+
+
+def _parse_player_item(item: Node) -> TeamPlayer | None:
+    """Parse a single player anchor (e.g. /player/1311/melser)."""
+    href = item.attributes.get("href", "")
+    if not href or "/player/" not in href:
+        return None
+
+    try:
+        id_str = href.split("/player/")[1].split("/")[0]
+        player_id = int(id_str)
+    except (ValueError, IndexError):
+        return None
+
+    name = item.text(strip=True)
+    return TeamPlayer(id=player_id, name=name)
