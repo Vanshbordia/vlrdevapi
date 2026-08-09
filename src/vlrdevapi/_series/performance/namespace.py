@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 import httpx
 
 from vlrdevapi._base import SyncNamespace
+from vlrdevapi._series._utils import PlayerMap
 from vlrdevapi._series.performance.models import PerformanceData
 from vlrdevapi._series.performance.parser import parse_performance_data
 from vlrdevapi._series.players.parser import parse_players_stats
@@ -19,23 +20,27 @@ from vlrdevapi.fetcher import (
 from vlrdevapi.validators import sanitize_and_validate
 
 
-def _get_player_mapping_sync(ns: SyncNamespace, series_id: int) -> dict[str, int]:
-    """Fetch player name-to-ID mapping from the series page.
+def _get_player_mapping_sync(ns: SyncNamespace, series_id: int) -> PlayerMap:
+    """Fetch a player name-to-ID mapping from the series overview tab.
+
+    The performance tab renders player cells without links, so player IDs
+    are recovered from the overview tab, keyed by team abbreviation and
+    player name.
 
     Args:
         ns: SyncNamespace instance for HTTP requests.
         series_id: The unique series identifier on vlr.gg.
 
     Returns:
-        dict[str, int]: Mapping of player names to player IDs.
+        PlayerMap: Mapping of (team_short, name) to player IDs.
 
     """
     html = ns._fetch(f"{series_path(series_id)}/?game=all&tab=overview")
     players_stats = parse_players_stats(html, game_id="all")
-    mapping: dict[str, int] = {}
+    mapping = PlayerMap()
     for team in [players_stats.team1, players_stats.team2]:
         for player in team.players:
-            mapping[player.name] = player.player_id
+            mapping.add(player.team_short, player.name, player.player_id)
     return mapping
 
 
@@ -60,7 +65,8 @@ class SeriesPerformanceNamespace:
 
         Args:
             series_id: The unique series identifier on vlr.gg.
-            game_id: The unique game/map identifier ("all" for combined, or numeric ID).
+            game_id: The game number within the series (1-based), a real
+                VLR game ID, or "all" for combined stats.
 
         Returns:
             PerformanceData: Performance metrics including ``all_kills_matrix``,

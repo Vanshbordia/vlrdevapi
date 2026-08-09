@@ -48,6 +48,22 @@ class TestSyncModuleLevel:
         win_types = set(r.win_type for r in result.rounds)
         assert win_types == {"Elimination", "Defuse", "Spike detonation", "Time out"}
 
+    def test_rounds_positional_game_one(self, mock_vlr):
+        mock_vlr.get(f"/{SERIES_ID}?game=1&tab=overview").respond(200, text=load_fixture("series", "644718", "game_258363_rounds.html"))
+        mock_vlr.get(f"/{SERIES_ID}").respond(200, text=load_fixture("series", "644718", "overview.html"))
+        result = vlrdevapi.series.rounds(SERIES_ID, game_id=1)
+        assert result.series_id == SERIES_ID
+        assert result.game_id == 1
+        assert len(result.rounds) == 24
+        assert result.rounds[0].round_number == 1
+
+    def test_rounds_positional_game_two_differs(self, mock_vlr):
+        mock_vlr.get(f"/{SERIES_ID}?game=2&tab=overview").respond(200, text=load_fixture("series", "644718", "game_258363_rounds.html"))
+        mock_vlr.get(f"/{SERIES_ID}").respond(200, text=load_fixture("series", "644718", "overview.html"))
+        result = vlrdevapi.series.rounds(SERIES_ID, game_id=2)
+        assert result.game_id == 2
+        assert len(result.rounds) == 23
+
 
 class TestSyncWithClient:
     def test_rounds_specific_game(self, mock_vlr):

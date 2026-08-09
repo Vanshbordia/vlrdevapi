@@ -130,7 +130,8 @@ class SeriesMatchNamespace:
         """Get round-by-round data for a game in this series.
 
         Args:
-            game_id: Game number within the series (1-based).
+            game_id: Game number within the series (1-based), or its real
+                VLR game ID.
 
         Returns:
             RoundsData: Round-by-round data including ``rounds``
@@ -191,7 +192,8 @@ class SeriesMatchNamespace:
         """Get economy data for a game in this series.
 
         Args:
-            game_id: Game number within the series (1-based).
+            game_id: Game number within the series (1-based), or its real
+                VLR game ID.
 
         Returns:
             EconomyData: Economy data including ``rounds`` (list of

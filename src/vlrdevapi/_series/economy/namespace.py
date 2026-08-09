@@ -41,7 +41,8 @@ class SeriesEconomyNamespace:
 
         Args:
             series_id: The unique series identifier on vlr.gg.
-            game_id: The unique game/map identifier on vlr.gg.
+            game_id: The game number within the series (1-based), or its
+                real VLR game ID.
 
         Returns:
             EconomyData: Economy data including ``rounds`` (list of
@@ -66,7 +67,7 @@ class SeriesEconomyNamespace:
 
         """
         html = self._sync._fetch(f"{series_path(series_id)}?game={game_id}&tab=economy")
-        result = parse_economy_data(html)
+        result = parse_economy_data(html, game_id=game_id)
         result.series_id = series_id
         result.game_id = game_id
 

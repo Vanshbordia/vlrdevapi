@@ -1,20 +1,28 @@
 from selectolax.parser import HTMLParser
 
+from vlrdevapi._series._utils import resolve_game_id
 from vlrdevapi._series.rounds.models import RoundData, RoundsData, RoundWinType
 
 
-def parse_rounds_data(html: HTMLParser) -> RoundsData:
+def parse_rounds_data(html: HTMLParser, game_id: int | str = "all") -> RoundsData:
     """Parse round-by-round data from the series page HTML.
 
     Args:
         html: The selectolax HTMLParser of the series page.
+        game_id: Game number within the series (1-based), or a real VLR
+            game ID ("all" for the combined overview).
 
     Returns:
         RoundsData: Parsed round data with team names and per-round
         results.
 
     """
-    rounds_container = html.css_first(".vlr-rounds")
+    gid = resolve_game_id(html, game_id)
+    game_div = html.css_first(f'.vm-stats-game[data-game-id="{gid}"]')
+    if not game_div:
+        return RoundsData()
+
+    rounds_container = game_div.css_first(".vlr-rounds")
     if not rounds_container:
         return RoundsData()
 

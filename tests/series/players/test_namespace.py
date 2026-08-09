@@ -39,6 +39,14 @@ class TestSyncModuleLevel:
         assert len(result.team1.players) == 5
         assert len(result.team2.players) == 5
 
+    def test_players_positional_game(self):
+        with patch("vlrdevapi._base.fetch_sync", side_effect=_fetch_side_effect):
+            result = vlrdevapi.series.players(SERIES_ID, game_id=1)
+        assert result.series_id == SERIES_ID
+        assert result.game_id == "1"
+        assert result.map_name == "Corrode"
+        assert len(result.team1.players) == 5
+
     def test_brawk_all_stats(self):
         with patch("vlrdevapi._base.fetch_sync", side_effect=_fetch_side_effect):
             result = vlrdevapi.series.players(SERIES_ID, game_id="all")
