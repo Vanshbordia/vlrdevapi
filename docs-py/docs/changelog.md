@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this page.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.3.0] - 2026-08-11
+
+### Added
+
+- **News namespace** — `vlrdevapi.news(page=1)` lists news items from
+  vlr.gg/news, each with `title`, `subtitle`, `link`, `country_name`,
+  `date`, and `author`, plus `has_next_page` and `page_number` on the
+  returned page.
+- **News article content** — `vlrdevapi.news.article(article_id)` fetches
+  a single news article with its `title`, `author`, `date`, associated
+  `event_name`/`event_link`, and the full `content` body text. The body
+  is also available as Markdown via `content_md`, preserving headings,
+  lists, links, emphasis, and clip embeds.
+- **News out-of-range pages** — requesting a news page beyond the last
+  available page now raises `NotFoundError` instead of silently returning
+  an empty result.
+
 ## [2.2.0] - 2026-08-11
 
 ### Changed

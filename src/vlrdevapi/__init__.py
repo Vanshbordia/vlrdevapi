@@ -34,6 +34,7 @@ import contextlib
 if TYPE_CHECKING:
     from vlrdevapi._event.namespace import EventNamespace
     from vlrdevapi._matches.namespace import MatchesNamespace
+    from vlrdevapi._news.namespace import NewsNamespace
     from vlrdevapi._player.namespace import PlayerNamespace
     from vlrdevapi._series.namespace import SeriesNamespace
     from vlrdevapi._team.namespace import TeamNamespace
@@ -43,9 +44,10 @@ if TYPE_CHECKING:
     player: PlayerNamespace
     team: TeamNamespace
     matches: MatchesNamespace
+    news: NewsNamespace
     client: type[VLRClient]
 
-__version__ = "2.2.0"
+__version__ = "2.3.0"
 
 _default_client: "VLRClient | None" = None
 

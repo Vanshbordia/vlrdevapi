@@ -13,3 +13,4 @@ description: Complete API reference for VLRdevAPI covering the client, namespace
 - [Players](players.md) - `vlrdevapi._player.namespace.PlayerNamespace`
 - [Series](series.md) - `vlrdevapi._series.namespace.SeriesNamespace`
 - [Teams](teams.md) - `vlrdevapi._team.namespace.TeamNamespace`
+- [News](news.md) - `vlrdevapi._news.namespace.NewsNamespace`

@@ -1,4 +1,9 @@
-"""Parse news from the vlr.gg/news HTML page."""
+"""Parse the vlr.gg/news listing pages.
+
+Each page contains up to 30 news items rendered as ``a.wf-module-item``
+anchors. Pagination state is derived from the ``div.action-container-pages``
+controls.
+"""
 
 import logging
 from datetime import datetime
@@ -6,7 +11,7 @@ from datetime import datetime
 from selectolax.parser import HTMLParser, Node
 
 from vlrdevapi._news.common import check_pagination, get_page_number
-from vlrdevapi._news.models import News, NewsPage
+from vlrdevapi._news.list.models import News, NewsPage
 from vlrdevapi.commons.countries import get_country_name
 from vlrdevapi.commons.datetime import date_to_utc_datetime
 
@@ -17,18 +22,23 @@ def parse_news_page(html: HTMLParser) -> NewsPage:
     """Parse the vlr.gg/news page and extract news entries.
 
     Args:
-        html: Parsed HTML document.
+        html: Parsed HTML document of a news listing page.
 
     Returns:
-        NewsPage: Container with a list of ``News`` entries and a
-            ``has_next_page`` flag.
+        NewsPage: Container with a list of ``News`` entries, a
+            ``has_next_page`` flag, and the current ``page_number``.
+            The ``news`` list is empty when the page exists but has no
+            items (for example, an out-of-range page number).
+
+    Examples:
+        >>> result = parse_news_page(vlrdevapi_news_html)
+        >>> len(result.news)
+        30
 
     """
     news = []
-    
     for item in html.css("a.wf-module-item"):
         parsed = _parse_news_item(item)
-    
         if parsed is not None:
             news.append(parsed)
 
@@ -38,13 +48,14 @@ def parse_news_page(html: HTMLParser) -> NewsPage:
 
 
 def _parse_news_item(item: Node) -> News | None:
-    """Parse a single news entry from a ``a.wf-module-item`` anchor.
+    """Parse a single news entry from an ``a.wf-module-item`` anchor.
 
     Args:
         item: The ``a.wf-module-item`` DOM node.
 
     Returns:
-        A ``News`` entry, or ``None`` if parsing fails.
+        A ``News`` entry with the id/title/subtitle/link/country/date/author
+        populated, or ``None`` if the item could not be parsed.
 
     """
     try:
@@ -52,7 +63,7 @@ def _parse_news_item(item: Node) -> News | None:
 
         href = item.attributes.get("href") or ""
         news.link = href
-        
+
         if href.startswith("/"):
             news.id = int(href.strip("/").split("/")[0])
 
@@ -64,7 +75,7 @@ def _parse_news_item(item: Node) -> News | None:
             news.subtitle = text_divs[1].text(strip=True)
 
         flag_el = item.css_first("i.flag")
-        
+
         if flag_el:
             for cls in (flag_el.attributes.get("class") or "").split():
                 if cls.startswith("mod-"):
@@ -72,7 +83,7 @@ def _parse_news_item(item: Node) -> News | None:
                     break
 
         meta_el = item.css_first("div.ge-text-light")
-        
+
         if meta_el:
             for child in meta_el.iter(include_text=True):
                 if child.tag != "-text":
@@ -80,7 +91,7 @@ def _parse_news_item(item: Node) -> News | None:
                 part = child.text(strip=True)
                 if not part:
                     continue
-                
+
                 if part.startswith("by "):
                     news.author = part.removeprefix("by ").strip()
                 else:

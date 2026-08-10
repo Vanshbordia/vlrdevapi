@@ -8,6 +8,21 @@ export const metadata: Metadata = {
 
 const versions = [
   {
+    version: '2.3.0',
+    date: '11 August 2026',
+    summary: 'Adds a news namespace for browsing vlr.gg news listings and fetching full article content.',
+    sections: [
+      {
+        title: 'Added',
+        items: [
+          '`vlrdevapi.news(page=1)` lists news items from vlr.gg/news, each with `title`, `subtitle`, `link`, `country_name`, `date`, and `author`, plus `has_next_page` and `page_number` on the returned page.',
+          '`vlrdevapi.news.article(article_id)` fetches a single news article with its `title`, `author`, `date`, associated `event_name`/`event_link`, and the full `content` body text. The body is also available as Markdown via `content_md`, preserving headings, lists, links, emphasis, and clip embeds.',
+          'Requesting a news page beyond the last available page (e.g. `page=176`) now raises `NotFoundError` instead of silently returning an empty result.',
+        ],
+      },
+    ],
+  },
+  {
     version: '2.2.0',
     date: '11 August 2026',
     summary: 'Renames series performance fields, fixes per-game series stat resolution, and uses a sentinel year for events-list dates that omit the year.',

@@ -29,6 +29,15 @@ ROUTES += [
     ("/matches/results/?page=2", "matches/results_page2.html", {}),
 ]
 
+# ── News ───────────────────────────────────────────────────────
+ROUTES += [
+    ("/news", "news/news.html", {}),
+    ("/news/?page=2", "news/news_page2.html", {}),
+    ("/news/?page=126", "news/news_page126.html", {}),
+    ("/news/?page=176", "news/news_page176.html", {}),
+    ("/734100", "news/article_734100.html", {}),
+]
+
 # ── Events ─────────────────────────────────────────────────────
 ROUTES += [
     ("/events", "events/events.html", {}),

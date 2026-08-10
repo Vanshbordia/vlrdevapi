@@ -63,6 +63,7 @@ nav = [
     { "Players" = "api/players.md" },
     { "Series" = "api/series.md" },
     { "Teams" = "api/teams.md" },
+    { "News" = "api/news.md" },
   ]},
   { "Changelog" = "changelog.md" },
 ]

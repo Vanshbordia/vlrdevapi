@@ -1,6 +1,7 @@
 from vlrdevapi._client import VLRClient
 from vlrdevapi._event.namespace import EventNamespace
 from vlrdevapi._matches.namespace import MatchesNamespace
+from vlrdevapi._news.namespace import NewsNamespace
 from vlrdevapi._player.namespace import PlayerNamespace
 from vlrdevapi._series.namespace import SeriesNamespace
 from vlrdevapi._team.namespace import TeamNamespace
@@ -67,6 +68,20 @@ Examples:
     >>> upcoming = vlrdevapi.matches.upcoming()
     >>> live = vlrdevapi.matches.live()
     >>> completed = vlrdevapi.matches.completed()
+"""
+
+news: NewsNamespace
+"""Access news from vlr.gg: news listings and full article content.
+
+Returns:
+    NewsNamespace instance bound to the default client. Call it with a
+    ``page`` number to browse the news listing, or use ``.article()`` to
+    fetch a single article (plain text and Markdown).
+
+Examples:
+    >>> page = vlrdevapi.news(page=1)
+    >>> article = vlrdevapi.news.article(734100)
+    >>> print(article.content_md)
 """
 
 client: type[VLRClient]

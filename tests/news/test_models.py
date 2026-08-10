@@ -1,4 +1,5 @@
-from vlrdevapi._news.models import News, NewsPage
+from vlrdevapi._news.article.models import NewsArticle
+from vlrdevapi._news.list.models import News, NewsPage
 
 
 class TestNews:
@@ -11,6 +12,19 @@ class TestNews:
         assert news.country_name == ""
         assert news.date is None
         assert news.author == ""
+
+
+class TestNewsArticle:
+    def test_defaults(self):
+        article = NewsArticle()
+        assert article.id == 0
+        assert article.title == ""
+        assert article.author == ""
+        assert article.date is None
+        assert article.event_name == ""
+        assert article.event_link == ""
+        assert article.content == ""
+        assert article.content_md == ""
 
 
 class TestNewsPage:

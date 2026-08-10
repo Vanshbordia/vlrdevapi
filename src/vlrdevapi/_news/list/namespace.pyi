@@ -3,11 +3,10 @@ from zoneinfo import ZoneInfo
 
 import httpx
 
-from vlrdevapi._news.article.models import NewsArticle
 from vlrdevapi._news.list.models import NewsPage
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
 
-class NewsNamespace:
+class NewsListNamespace:
     def __init__(
         self,
         client: httpx.Client,
@@ -19,5 +18,3 @@ class NewsNamespace:
     ) -> None: ...
 
     def __call__(self, page: int = 1) -> NewsPage: ...
-
-    def article(self, article_id: int) -> NewsArticle: ...

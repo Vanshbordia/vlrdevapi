@@ -2,7 +2,9 @@ from datetime import UTC, datetime
 
 from selectolax.parser import HTMLParser
 
-from vlrdevapi._news.parser import _parse_news_item, parse_news_page
+from tests.conftest import load_fixture
+from vlrdevapi._news.article.parser import parse_news_article
+from vlrdevapi._news.list.parser import _parse_news_item, parse_news_page
 
 
 def _item_html(
@@ -113,3 +115,98 @@ class TestParseNewsPage:
         result = parse_news_page(html)
 
         assert result.has_next_page is True
+
+    def test_no_next_page_on_last_page(self):
+        html_content = """
+        <div class="action-container-pages">
+            <a class="btn mod-page" href="/news">1</a>
+            <a class="btn mod-page" href="/news/?page=123">123</a>
+            <a class="btn mod-page" href="/news/?page=124">124</a>
+            <a class="btn mod-page" href="/news/?page=125">125</a>
+            <span class="btn mod-page mod-active">126</span>
+        </div>
+        """
+        html = HTMLParser(html_content)
+        result = parse_news_page(html)
+
+        assert result.page_number == 126
+        assert result.has_next_page is False
+
+
+class TestParseNewsFixture:
+    def test_live_page_1(self):
+        html = HTMLParser(load_fixture("news", "news.html"))
+        result = parse_news_page(html)
+
+        assert len(result.news) == 30
+        assert result.page_number == 1
+        assert result.has_next_page is True
+        first = result.news[0]
+        assert first.id > 0
+        assert first.link.startswith("/")
+        assert first.title != ""
+        assert first.country_name != ""
+        assert first.date is not None
+        assert first.author != ""
+
+    def test_live_last_page(self):
+        html = HTMLParser(load_fixture("news", "news_page126.html"))
+        result = parse_news_page(html)
+
+        assert len(result.news) > 0
+        assert result.page_number == 126
+        assert result.has_next_page is False
+
+    def test_out_of_range_page_has_no_items(self):
+        html = HTMLParser(load_fixture("news", "news_page176.html"))
+        result = parse_news_page(html)
+
+        assert result.news == []
+
+
+class TestParseNewsArticle:
+    def test_fixture_article(self):
+        html = HTMLParser(load_fixture("news", "article_734100.html"))
+        article = parse_news_article(html)
+
+        assert article.id == 734100
+        assert article.title == "Gen.G, Global, VARREL, PRX bypass Pacific Stage 2 Play-Ins"
+        assert article.author == "jenopelle"
+        assert article.date is not None
+        assert article.date.tzinfo is UTC
+        assert article.event_name == "VCT 2026: Pacific Stage 2"
+        assert article.event_link == "/event/2776/vct-2026-pacific-stage-2"
+        assert article.content != ""
+        assert "Pacific Stage 2 has drawn to a close" in article.content
+        assert "Rank #" not in article.content
+        assert "Meiy" not in article.content
+
+    def test_fixture_article_markdown(self):
+        html = HTMLParser(load_fixture("news", "article_734100.html"))
+        article = parse_news_article(html)
+
+        assert article.content_md != ""
+        assert "## 1. Gen.G (5-0)" in article.content_md
+        assert "# Up Next" in article.content_md
+        assert "- [DetonatioN FocusMe](/team/278/detonation-focusme)" in article.content_md
+        assert "[Pacific Stage 2](https://www.vlr.gg/event/2776/vct-2026-pacific-stage-2/group-stage)" in article.content_md
+        assert "*It's an eco, but my goodness, Karon.*" in article.content_md
+        assert article.content_md.startswith(
+            "The [Pacific Stage 2](https://www.vlr.gg/event/2776/vct-2026-pacific-stage-2/group-stage) has drawn to a close"
+        )
+        assert "Rank #" not in article.content_md
+        assert "Meiy" not in article.content_md
+        assert "parent=www.vlr.gg" not in article.content_md
+
+    def test_empty_html(self):
+        html = HTMLParser("<html><body></body></html>")
+        article = parse_news_article(html)
+
+        assert article.id == 0
+        assert article.title == ""
+        assert article.author == ""
+        assert article.date is None
+        assert article.event_name == ""
+        assert article.event_link == ""
+        assert article.content == ""
+        assert article.content_md == ""

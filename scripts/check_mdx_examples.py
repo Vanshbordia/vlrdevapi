@@ -39,7 +39,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = REPO_ROOT / "official-docs" / "content"
 DEFAULT_FIXTURES_DIR = REPO_ROOT / ".cache" / "mdx-html"
 
-DYNAMIC_PATHS = frozenset({"/matches", "/matches/results", "/events"})
+DYNAMIC_PATHS = frozenset({"/matches", "/matches/results", "/events", "/news"})
 
 
 class Result(NamedTuple):

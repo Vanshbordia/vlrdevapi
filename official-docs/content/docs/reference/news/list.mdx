@@ -1,0 +1,122 @@
+---
+title: News List
+description: Browse news items on vlr.gg with pagination.
+---
+
+`news()` returns a paginated list of news items from vlr.gg.
+
+## Signature
+
+```python
+news(
+    page: int = 1,
+) -> NewsPage
+```
+
+## Parameters
+
+<TypeTable type={{
+  "page": {
+    description: "Page number (1-indexed).",
+    type: "int",
+    typeDescription: "Positive integer",
+    default: "1",
+    required: false,
+  },
+}} />
+
+## Returns - `NewsPage`
+
+<TypeTable type={{
+  "news": {
+    description: "List of news items.",
+    type: "list[News]",
+    typeDescription: "list[News] - see nested fields below",
+    default: "[]",
+  },
+  "has_next_page": {
+    description: "Whether there is a next page of results.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "page_number": {
+    description: "Current page number (1-indexed).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+}} />
+
+### `News` Fields
+
+<TypeTable type={{
+  "id": {
+    description: "Unique news identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "title": {
+    description: "Title of the news item.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "subtitle": {
+    description: "Short subtitle or summary of the news item.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "link": {
+    description: "Relative URL to the full news article.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_name": {
+    description: "Country associated with the news item (e.g. \"South Korea\").",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "date": {
+    description: "Publication date in UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+  "author": {
+    description: "Author of the news item.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Examples
+
+### Fetch the latest news
+
+```python
+import vlrdevapi
+
+result = vlrdevapi.news(page=1)
+print(f"News items on this page: {len(result.news)}")
+print(f"More pages available: {result.has_next_page}")
+
+for item in result.news:
+    print(f"{item.date.date()} | {item.title} | by {item.author}")
+```
+
+### Filter by country
+
+```python
+import vlrdevapi
+
+result = vlrdevapi.news(page=1)
+local_news = [n for n in result.news if n.country_name == "Brazil"]
+for n in local_news:
+    print(f"{n.title} - {n.author}")
+```

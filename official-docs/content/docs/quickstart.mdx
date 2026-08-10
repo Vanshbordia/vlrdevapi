@@ -9,6 +9,7 @@ This tutorial walks through real data from multiple VLRdevAPI namespaces. Save t
 
 ```python
 import vlrdevapi
+from vlrdevapi.exceptions import DataNotFoundError
 
 # Fetch upcoming matches
 page = vlrdevapi.matches.upcoming()
@@ -25,11 +26,16 @@ match = page.matches[0]
 t1 = match.team1
 if t1:
     info = vlrdevapi.team(t1.id).info()
-    roster = vlrdevapi.team(t1.id).roster()
     print(f"\nTeam: {info.name} ({info.tag})")
     print(f"Country: {info.country}")
-    for player in roster.players:
-        print(f"  Player: {player.ign}")
+    # Some teams have no roster section yet — handle it gracefully
+    try:
+        roster = vlrdevapi.team(t1.id).roster()
+    except DataNotFoundError:
+        print("Roster unavailable")
+    else:
+        for player in roster.players:
+            print(f"  Player: {player.ign}")
 ```
 
 Example output (will vary based on live data):
