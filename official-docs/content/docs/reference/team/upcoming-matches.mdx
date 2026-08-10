@@ -112,9 +112,9 @@ Print all upcoming matches with opponent and event details.
 ```python
 import vlrdevapi
 
-upcoming = vlrdevapi.team.upcoming_matches(team_id=624)
+upcoming = vlrdevapi.team.upcoming_matches(team_id=2593)
 if not upcoming.matches:
-    print("No upcoming matches for Paper Rex")
+    print("No upcoming matches for this team")
 for m in upcoming.matches:
     opp = m.opponent.name if m.opponent else "TBD"
     print(f"vs {opp} ({m.event} - {m.stage}) at {m.datetime}")
@@ -127,7 +127,7 @@ Filter upcoming matches to a specific event.
 ```python
 import vlrdevapi
 
-upcoming = vlrdevapi.team.upcoming_matches(team_id=624)
+upcoming = vlrdevapi.team.upcoming_matches(team_id=2593)
 vct = [m for m in upcoming.matches if "vct" in m.event.lower()]
 if vct:
     for m in vct:
@@ -144,7 +144,7 @@ Access upcoming matches using the curried `team()` shorthand.
 ```python
 import vlrdevapi
 
-team = vlrdevapi.team(624)
+team = vlrdevapi.team(2593)
 upcoming = team.upcoming_matches()
 if not upcoming.matches:
     print("No upcoming matches")

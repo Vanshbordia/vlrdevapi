@@ -26,4 +26,8 @@ jobs:
         run: uv sync --group dev
 
       - name: Run MDX examples check
-        run: uv run scripts/check_mdx_examples.py
+        run: uv run scripts/check_mdx_examples.py --live
+        # --live: single validated pass, fresh vlr.gg data, in-run dedup only.
+        # No persisted fixture cache in CI: GitHub's cache is scoped per
+        # branch/PR and would validate against data from when a branch was
+        # created — wrong by merge time. Fixtures stay a local-dev convenience.
