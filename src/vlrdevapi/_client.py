@@ -12,6 +12,7 @@ import httpx
 from vlrdevapi.commons.timezone import REFERENCE_MATCH_PATH, detect_vlr_timezone
 from vlrdevapi._event.namespace import EventNamespace
 from vlrdevapi._matches.namespace import MatchesNamespace
+from vlrdevapi._news.namespace import NewsNamespace
 from vlrdevapi._player.namespace import PlayerNamespace
 from vlrdevapi._series.namespace import SeriesNamespace
 from vlrdevapi._team.namespace import TeamNamespace
@@ -111,6 +112,7 @@ class VLRClient:
         self.matches = MatchesNamespace(self._client, self.timeout, self.retry_config, self._rate_limiter, merged_headers, self._source_tz)
         self.team = TeamNamespace(self._client, self.timeout, self.retry_config, self._rate_limiter, merged_headers, self._source_tz)
         self.event = EventNamespace(self._client, self.timeout, self.retry_config, self._rate_limiter, merged_headers, self._source_tz)
+        self.news = NewsNamespace(self._client, self.timeout, self.retry_config, self._rate_limiter, merged_headers, self._source_tz)
 
     def _detect_timezone(self) -> ZoneInfo | tzinfo | None:
         """Detect the viewer timezone VLR.gg renders for this client session."""

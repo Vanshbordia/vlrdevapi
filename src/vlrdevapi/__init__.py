@@ -67,7 +67,7 @@ def _cleanup_default_client() -> None:
 
 _atexit.register(_cleanup_default_client)
 
-_BOUND_NAMES = frozenset({"event", "series", "player", "team", "matches"})
+_BOUND_NAMES = frozenset({"event", "series", "player", "team", "matches", "news"})
 
 
 def __getattr__(name: str) -> object:
@@ -89,6 +89,7 @@ __all__ = [
     "client",
     "event",
     "matches",
+    "news",
     "player",
     "series",
     "team",
