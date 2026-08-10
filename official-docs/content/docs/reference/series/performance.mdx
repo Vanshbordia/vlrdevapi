@@ -229,19 +229,19 @@ vlrdevapi.series(series_id).performance(game_id: int | str = "all") -> Performan
     typeDescription: "int | None",
     default: "None",
   },
-  "econ": {
+  "economy": {
     description: "Econ rating.",
     type: "int | None",
     typeDescription: "int | None",
     default: "None",
   },
-  "pl": {
+  "plants": {
     description: "Number of spike plants.",
     type: "int | None",
     typeDescription: "int | None",
     default: "None",
   },
-  "de": {
+  "defuses": {
     description: "Number of spike defuses.",
     type: "int | None",
     typeDescription: "int | None",
@@ -315,7 +315,7 @@ for player in perf.adv_stats:
     print(f"{player.name} ({player.team_short}) - {player.agent}")
     print(f"  2K: {player.two_k} | 3K: {player.three_k} | 4K: {player.four_k} | 5K: {player.five_k}")
     print(f"  1v1: {player.one_v1} | 1v2: {player.one_v2} | 1v3: {player.one_v3}")
-    print(f"  Econ: {player.econ} | Plants: {player.pl} | Defuses: {player.de}")
+    print(f"  Econ: {player.economy} | Plants: {player.plants} | Defuses: {player.defuses}")
 ```
 
 ### Notable round details

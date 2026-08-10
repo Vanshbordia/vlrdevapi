@@ -5,3 +5,7 @@ docs-py/** linguist-vendored
 # Exclude test fixtures
 tests/test_html/** linguist-vendored
 tests/test_html/** linguist-detectable=false
+
+# Normalize workflow YAML line endings
+*.yml text eol=lf
+*.yaml text eol=lf

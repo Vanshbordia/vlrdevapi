@@ -1,8 +1,10 @@
 
+import contextlib
 import re
 
 from selectolax.parser import HTMLParser, Node
 
+from vlrdevapi._series._utils import resolve_game_id
 from vlrdevapi._series.players.models import (
     PlayerGameStats,
     PlayersStats,
@@ -11,7 +13,6 @@ from vlrdevapi._series.players.models import (
     TeamPlayers,
 )
 from vlrdevapi.commons.countries import get_country_name
-import contextlib
 
 
 def _parse_pct(val: str) -> float | None:
@@ -322,11 +323,12 @@ def parse_players_stats(html: HTMLParser, game_id: str = "all") -> PlayersStats:
     team1_id, team1_name = _parse_team_link(link1)
     team2_id, team2_name = _parse_team_link(link2)
 
-    game_div = html.css_first(f'.vm-stats-game[data-game-id="{game_id}"]')
+    gid = resolve_game_id(html, game_id)
+    game_div = html.css_first(f'.vm-stats-game[data-game-id="{gid}"]')
     if not game_div:
         return result
 
-    if game_id != "all":
+    if gid != "all":
         map_div = game_div.css_first(".vm-stats-game-header .map")
         if map_div:
             bold_div = map_div.css_first("div[style*='font-weight: 700']")

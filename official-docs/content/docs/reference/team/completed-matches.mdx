@@ -130,7 +130,7 @@ Print the team's most recent completed matches with scores.
 ```python
 import vlrdevapi
 
-history = vlrdevapi.team.completed_matches(team_id=624)
+history = vlrdevapi.team.completed_matches(team_id=2593)
 print(f"Completed matches for team {history.team_id}:")
 for m in history.matches[:10]:
     result = "WON" if m.is_win else "lost"
@@ -145,7 +145,7 @@ Calculate and display the team's overall win/loss record.
 ```python
 import vlrdevapi
 
-history = vlrdevapi.team.completed_matches(team_id=624)
+history = vlrdevapi.team.completed_matches(team_id=2593)
 wins = sum(1 for m in history.matches if m.is_win)
 losses = sum(1 for m in history.matches if not m.is_win)
 total = wins + losses
@@ -160,7 +160,7 @@ Access completed matches using the curried `team()` shorthand.
 ```python
 import vlrdevapi
 
-team = vlrdevapi.team(624)
+team = vlrdevapi.team(2593)
 history = team.completed_matches()
 for m in history.matches[:5]:
     tag = m.opponent.tag if m.opponent else "TBD"

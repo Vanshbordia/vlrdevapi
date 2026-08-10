@@ -3,6 +3,8 @@ from unittest.mock import patch
 from selectolax.parser import HTMLParser
 
 from tests.conftest import load_fixture
+from vlrdevapi._series._utils import PlayerMap
+from vlrdevapi._series.players.parser import parse_players_stats
 import vlrdevapi
 
 SERIES_ID = 542272
@@ -12,7 +14,12 @@ _OVERVIEW = HTMLParser(load_fixture(_SERIES_DIR, "overview.html"))
 
 
 def _mock_player_mapping(ns, series_id):
-    return {"brawk": 2172, "Ethan": 5035, "crashies": 456, "Chronicle": 789}
+    stats = parse_players_stats(_OVERVIEW, game_id="all")
+    mapping = PlayerMap()
+    for team in [stats.team1, stats.team2]:
+        for player in team.players:
+            mapping.add(player.team_short, player.name, player.player_id)
+    return mapping
 
 
 class TestSyncModuleLevel:
@@ -33,6 +40,16 @@ class TestSyncModuleLevel:
         assert result.game_id == "233478"
         assert len(result.all_kills_matrix.entries) == 25
         assert len(result.adv_stats) == 10
+
+    def test_performance_positional_game(self):
+        with patch("vlrdevapi._base.fetch_sync", return_value=_PERF_FIXTURE):
+            with patch("vlrdevapi._series.performance.namespace._get_player_mapping_sync", side_effect=_mock_player_mapping):
+                result = vlrdevapi.series.performance(SERIES_ID, game_id=1)
+        assert result.series_id == SERIES_ID
+        assert result.game_id == "1"
+        assert len(result.all_kills_matrix.entries) == 25
+        assert len(result.adv_stats) == 10
+        assert result.adv_stats[0].agent == "Sova"
 
     def test_performance_lookup(self):
         with patch("vlrdevapi._base.fetch_sync", return_value=_PERF_FIXTURE):
@@ -80,6 +97,15 @@ class TestSyncModuleLevel:
         assert brawk.name == "brawk"
         assert brawk.agent == "Sova"
         assert brawk.two_k == 12
+        assert brawk.player_id == 2172
+
+    def test_performance_kill_matrix_ids(self):
+        with patch("vlrdevapi._base.fetch_sync", return_value=_PERF_FIXTURE):
+            with patch("vlrdevapi._series.performance.namespace._get_player_mapping_sync", side_effect=_mock_player_mapping):
+                result = vlrdevapi.series.performance(SERIES_ID, game_id="all")
+        e = result.all_kills_matrix.lookup("brawk", "Chronicle")
+        assert e.killer_id == 2172
+        assert e.victim_id == 458
 
 
 class TestSyncWithClient:

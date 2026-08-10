@@ -3,7 +3,9 @@ import pytest
 from selectolax.parser import HTMLParser
 
 from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
+from vlrdevapi._series._utils import PlayerMap
 from vlrdevapi._series.performance.parser import parse_performance_data
+from vlrdevapi._series.players.parser import parse_players_stats
 
 
 _FIXTURES = (
@@ -29,13 +31,24 @@ def _load_html(filename: str) -> HTMLParser:
     pytest.fail(f"Fixture not found: {path}")
 
 
+def _overview_mapping() -> PlayerMap:
+    """Build a player map from the series overview fixture."""
+    overview = _load_html("overview.html")
+    stats = parse_players_stats(overview, game_id="all")
+    mapping = PlayerMap()
+    for team in [stats.team1, stats.team2]:
+        for player in team.players:
+            mapping.add(player.team_short, player.name, player.player_id)
+    return mapping
+
+
 class TestParsePerformanceGame233478:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.result = parse_performance_data(
             _load_html("game_233478_performance.html"),
             game_id="233478",
-            player_mapping={},
+            player_mapping=PlayerMap(),
         )
 
     def test_all_kills_matrix_entries_count(self):
@@ -148,8 +161,8 @@ class TestParsePerformanceGame233478:
         assert brawk.agent == "Sova"
         assert brawk.two_k == 5
         assert brawk.three_k == 3
-        assert brawk.econ == 99
-        assert brawk.de == 2
+        assert brawk.economy == 99
+        assert brawk.defuses == 2
 
     def test_adv_stats_skuba(self):
         skuba = self.result.adv_stats[3]
@@ -164,20 +177,20 @@ class TestParsePerformanceGame233478:
         assert crashies.team_short == "FNC"
         assert crashies.agent == "Fade"
         assert crashies.one_v1 == 1
-        assert crashies.pl == 4
+        assert crashies.plants == 4
 
     def test_adv_stats_alfajer(self):
         alfajer = self.result.adv_stats[9]
         assert alfajer.name == "Alfajer"
         assert alfajer.agent == "Vyse"
-        assert alfajer.econ == 37
+        assert alfajer.economy == 37
 
 
 class TestParsePerformanceGameAll:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.result = parse_performance_data(
-            _load_html("game_233478_performance.html"), game_id="all", player_mapping={}
+            _load_html("game_233478_performance.html"), game_id="all", player_mapping=PlayerMap()
         )
 
     def test_all_kills_matrix_entries(self):
@@ -202,13 +215,13 @@ class TestParsePerformanceGameAll:
         assert brawk.name == "brawk"
         assert brawk.two_k == 12
         assert brawk.three_k == 8
-        assert brawk.econ == 66
+        assert brawk.economy == 66
 
     def test_adv_stats_alfajer(self):
         alfajer = self.result.adv_stats[9]
         assert alfajer.name == "Alfajer"
         assert alfajer.two_k == 14
-        assert alfajer.econ == 51
+        assert alfajer.economy == 51
 
 
 class TestParsePerformanceInvalidGame:
@@ -217,10 +230,104 @@ class TestParsePerformanceInvalidGame:
         self.result = parse_performance_data(
             _load_html("game_233478_performance.html"),
             game_id="999999",
-            player_mapping={},
+            player_mapping=PlayerMap(),
         )
 
     def test_empty_result_for_invalid_game(self):
         assert self.result.all_kills_matrix.entries == []
         assert self.result.adv_stats == []
+
+
+class TestParsePerformancePositional:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.html = _load_html("game_233478_performance.html")
+        self.game1 = parse_performance_data(self.html, game_id=1, player_mapping=PlayerMap())
+        self.game2 = parse_performance_data(self.html, game_id=2, player_mapping=PlayerMap())
+
+    def test_positional_game_one_matches_real_id(self):
+        real = parse_performance_data(self.html, game_id="233478", player_mapping=PlayerMap())
+        assert self.game1.all_kills_matrix.entries == real.all_kills_matrix.entries
+        assert [e.name for e in self.game1.adv_stats] == [e.name for e in real.adv_stats]
+
+    def test_positional_game_one_non_empty(self):
+        assert len(self.game1.all_kills_matrix.entries) == 25
+        assert len(self.game1.adv_stats) == 10
+
+    def test_positional_game_one_top_player(self):
+        brawk = self.game1.adv_stats[0]
+        assert brawk.name == "brawk"
+        assert brawk.agent == "Sova"
+        assert brawk.two_k == 5
+        assert brawk.economy == 99
+
+    def test_positional_game_two_differs_from_game_one(self):
+        brawk1 = self.game1.adv_stats[0]
+        brawk2 = self.game2.adv_stats[0]
+        assert brawk1.agent == "Sova"
+        assert brawk2.agent == "Vyse"
+        assert brawk1.two_k == 5
+        assert brawk2.two_k == 1
+        assert brawk1.economy == 99
+        assert brawk2.economy == 51
+
+
+class TestParsePerformancePlayerIds:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_performance_data(
+            _load_html("game_233478_performance.html"),
+            game_id="233478",
+            player_mapping=_overview_mapping(),
+        )
+
+    def test_adv_stats_player_ids_resolved_from_overview(self):
+        by_name = {e.name: e for e in self.result.adv_stats}
+        expected = {
+            "brawk": 2172,
+            "Ethan": 11225,
+            "skuba": 11118,
+            "mada": 5132,
+            "s0m": 4164,
+            "kaajak": 9554,
+            "Alfajer": 9810,
+            "Chronicle": 458,
+            "crashies": 4,
+            "Boaster": 438,
+        }
+        for name, player_id in expected.items():
+            assert by_name[name].player_id == player_id
+
+    def test_adv_stats_team_short_preserved(self):
+        brawk = self.result.adv_stats[0]
+        assert brawk.player_id == 2172
+        assert brawk.team_short == "NRG"
+
+    def test_kill_matrix_ids_resolved(self):
+        for entry in self.result.all_kills_matrix.entries:
+            assert entry.killer_id != 0
+            assert entry.victim_id != 0
+        e = self.result.all_kills_matrix.lookup("brawk", "Chronicle")
+        assert e.killer_id == 2172
+        assert e.victim_id == 458
+
+    def test_notable_round_victim_ids_resolved(self):
+        brawk = self.result.adv_stats[0]
+        victim_ids = {
+            v.name: v.player_id for r in brawk.two_k_rounds for v in r.victims
+        }
+        assert victim_ids["Chronicle"] == 458
+        assert victim_ids["crashies"] == 4
+        assert victim_ids["Boaster"] == 438
+        assert all(pid is not None for pid in victim_ids.values())
+
+    def test_renamed_fields(self):
+        brawk = self.result.adv_stats[0]
+        crashies = self.result.adv_stats[5]
+        assert brawk.economy == 99
+        assert brawk.defuses == 2
+        assert crashies.plants == 4
+        assert not hasattr(brawk, "econ")
+        assert not hasattr(brawk, "pl")
+        assert not hasattr(brawk, "de")
 
