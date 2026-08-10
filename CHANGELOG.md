@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **News namespace** - `vlrdevapi.news(page=1)` lists news items from
+  vlr.gg/news, each with `title`, `subtitle`, `link`, `country_name`,
+  `date`, and `author`, plus `has_next_page` and `page_number` on the
+  returned page.
+
 ### Changed
 
 - **Events list dates without a year** — `event.list()` dates are rendered
