@@ -10,6 +10,7 @@ wheels/
 .venv
 tests/test_html/
 .cache/mdx-html/
+fixtures.tar.gz
 
 nul
 .pytest_cache/

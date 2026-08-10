@@ -32,10 +32,11 @@ jobs:
         if: github.ref_name == 'main'
         run: uv run scripts/check_mdx_examples.py --live
 
+      # actions/cache v6.1.0, pinned to a reviewed commit SHA.
       - name: Restore fixture cache (branch)
         id: mdx-fixtures
         if: github.ref_name != 'main'
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: fixtures.tar.gz
           key: mdx-fixtures-${{ github.ref_name }}-run-${{ github.run_id }}
@@ -95,7 +96,7 @@ jobs:
 
       - name: Save fixture cache (branch)
         if: always() && github.ref_name != 'main' && steps.cache-age.outputs.fresh == 'false'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: fixtures.tar.gz
           key: mdx-fixtures-${{ github.ref_name }}-${{ steps.cache-age.outputs.now }}
