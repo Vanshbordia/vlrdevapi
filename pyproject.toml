@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vlrdevapi"
-version = "2.1.0"
+version = "2.2.0"
 description = "A Python library to scrape data from vlr.gg"
 readme = "README.md"
 requires-python = ">=3.11"

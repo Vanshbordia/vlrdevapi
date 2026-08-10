@@ -8,20 +8,24 @@ export const metadata: Metadata = {
 
 const versions = [
   {
-    version: 'Unreleased',
-    date: 'In development',
-    summary: 'Uses a sentinel year for events-list dates that omit the year and removes date-parsing deprecation warnings.',
+    version: '2.2.0',
+    date: '11 August 2026',
+    summary: 'Renames series performance fields, fixes per-game series stat resolution, and uses a sentinel year for events-list dates that omit the year.',
     sections: [
       {
         title: 'Changed',
         items: [
           '`event.list()` dates are rendered on vlr.gg without a year (e.g. "Jul 9 – Aug 23"). These now use a sentinel year of `2019` instead of the current year. Any parsed date with `year < 2020` means the source omitted the year, so guard with `event.start_date.year < 2020` before relying on it.',
+          '`AdvStatsEntry` fields renamed to descriptive names: `econ` → `economy`, `pl` → `plants`, and `de` → `defuses`. Update any code referencing the old field names. The series performance reference docs were updated to match.',
         ],
       },
       {
         title: 'Fixed',
         items: [
           '`datetime.strptime` emits a `DeprecationWarning` when parsing a day-of-month without a year (and will change behavior in Python 3.15). All such parses now supply an explicit year derived from context (reference date, page-header year, or the sentinel above).',
+          'Series `players()`, `rounds()`, `performance()`, and `economy()` game identifiers can now be a 1-based game number within the series, resolved to the real VLR game ID from the page\'s game nav tabs. A real VLR game ID is still accepted unchanged; previously passing a game number produced empty results.',
+          'Series economy and round-by-round data are now parsed from the selected game\'s section only. The economy parser previously collected tables from the whole page, so a per-game request could include data from other maps.',
+          'Series performance player IDs are now recovered from the series overview tab (keyed by team abbreviation and player name) and attached to kill-matrix entries, advanced stats, and notable-round victims, instead of being left as `0`.',
         ],
       },
     ],

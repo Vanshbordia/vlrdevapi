@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this page.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## Unreleased
+## [2.2.0] - 2026-08-11
 
 ### Changed
 
@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   sentinel year of `2019` instead of the current year. Any parsed date with
   `year < 2020` means the source omitted the year, so guard with
   `event.start_date.year < 2020` before relying on it.
+- **Series performance field renames (breaking)** — `AdvStatsEntry` fields
+  were renamed to descriptive names: `econ` → `economy`, `pl` → `plants`,
+  and `de` → `defuses`. Update any code referencing the old field names.
+  The series performance reference docs were updated to match.
 
 ### Fixed
 
@@ -22,6 +26,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   change behavior in Python 3.15). All such parses now supply an explicit
   year derived from context (reference date, page-header year, or the
   sentinel above).
+- **Series per-game stats by game number** — `players()`, `rounds()`,
+  `performance()`, and `economy()` game identifiers can now be a 1-based
+  game number within the series, resolved to the real VLR game ID from the
+  page's game nav tabs. A real VLR game ID is still accepted unchanged;
+  previously passing a game number produced empty results.
+- **Series economy and rounds scope** — economy and round-by-round data are
+  now parsed from the selected game's section only. The economy parser
+  previously collected tables from the whole page, so a per-game request
+  could include data from other maps.
+- **Series performance player IDs** — the performance tab renders player
+  cells without links, leaving player IDs as `0`. IDs are now recovered from
+  the series overview tab (keyed by team abbreviation and player name) and
+  attached to kill-matrix entries, advanced stats, and notable-round victims.
 
 ## [2.1.0] - 2026-08-07
 
