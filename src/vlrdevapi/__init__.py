@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     matches: MatchesNamespace
     client: type[VLRClient]
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 
 _default_client: "VLRClient | None" = None
 

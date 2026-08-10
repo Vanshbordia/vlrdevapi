@@ -1,12 +1,12 @@
 from selectolax.parser import HTMLParser
 
+from vlrdevapi._series._utils import resolve_game_id
 from vlrdevapi._series.economy.models import (
     BuyType,
     EconomyData,
     RoundEconomyData,
     RoundWinner,
 )
-
 
 _BUY_TYPE_MAP: dict[str, BuyType] = {
     "": BuyType.ECO,
@@ -30,18 +30,25 @@ def _get_buy_type(text: str) -> BuyType:
     return _BUY_TYPE_MAP.get(text, BuyType.ECO)
 
 
-def parse_economy_data(html: HTMLParser) -> EconomyData:
+def parse_economy_data(html: HTMLParser, game_id: int | str = "all") -> EconomyData:
     """Parse economy data from the series page HTML.
 
     Args:
         html: The selectolax HTMLParser of the series page.
+        game_id: Game number within the series (1-based), or a real VLR
+            game ID ("all" for the combined overview).
 
     Returns:
         EconomyData: Parsed economy data with per-round team banks and
         spends.
 
     """
-    econ_tables = html.css(".wf-table-inset.mod-econ")
+    gid = resolve_game_id(html, game_id)
+    game_div = html.css_first(f'.vm-stats-game[data-game-id="{gid}"]')
+    if not game_div:
+        return EconomyData()
+
+    econ_tables = game_div.css(".wf-table-inset.mod-econ")
     if not econ_tables:
         return EconomyData()
 

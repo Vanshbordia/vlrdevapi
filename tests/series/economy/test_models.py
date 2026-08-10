@@ -63,6 +63,25 @@ class TestSyncModuleLevel:
         assert len(fnc_wins) == 13
         assert len(vit_wins) == 11
 
+    def test_economy_positional_game_one(self, mock_vlr):
+        mock_vlr.get(f"/{SERIES_ID}?game=1&tab=economy").respond(200, text=load_fixture("series", "644718", "game_258363_economy.html"))
+        mock_vlr.get(f"/{SERIES_ID}").respond(200, text=load_fixture("series", "644718", "overview.html"))
+        result = vlrdevapi.series.economy(SERIES_ID, game_id=1)
+        assert result.series_id == SERIES_ID
+        assert result.game_id == 1
+        assert result.team1 == "FNC"
+        assert result.team1_id == 2593
+        assert len(result.rounds) == 24
+        assert result.rounds[0].spent_team1 == 4050
+
+    def test_economy_positional_game_two_differs(self, mock_vlr):
+        mock_vlr.get(f"/{SERIES_ID}?game=2&tab=economy").respond(200, text=load_fixture("series", "644718", "game_258363_economy.html"))
+        mock_vlr.get(f"/{SERIES_ID}").respond(200, text=load_fixture("series", "644718", "overview.html"))
+        result = vlrdevapi.series.economy(SERIES_ID, game_id=2)
+        assert result.game_id == 2
+        assert len(result.rounds) == 23
+        assert result.rounds[0].spent_team1 == 3650
+
 
 class TestSyncWithClient:
     def test_economy_specific_game(self, mock_vlr):

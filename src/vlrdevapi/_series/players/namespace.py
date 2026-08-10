@@ -39,7 +39,8 @@ class SeriesPlayersNamespace:
 
         Args:
             series_id: The unique series identifier on vlr.gg.
-            game_id: The game/map identifier ("all" for combined, or numeric ID).
+            game_id: The game number within the series (1-based), a real
+                VLR game ID, or "all" for combined stats.
 
         Returns:
             PlayersStats: Player statistics for both teams including

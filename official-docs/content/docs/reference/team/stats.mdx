@@ -238,7 +238,7 @@ Print map statistics for the last 30 days.
 ```python
 import vlrdevapi
 
-stats = vlrdevapi.team.stats(team_id=624)
+stats = vlrdevapi.team.stats(team_id=2593)
 print(f"Team {stats.team_id} map stats:")
 for m in stats.maps:
     wr = f"{m.win_rate:.0f}%" if m.win_rate is not None else "N/A"
@@ -254,7 +254,7 @@ Print map statistics over the last 90 days.
 ```python
 import vlrdevapi
 
-stats = vlrdevapi.team.stats(team_id=624, last_days=90)
+stats = vlrdevapi.team.stats(team_id=2593, last_days=90)
 for m in stats.maps:
     wins = m.wins or 0
     losses = m.losses or 0
@@ -269,7 +269,7 @@ Use `agent_composition="basic"` to see which agent comps the team plays on each 
 ```python
 import vlrdevapi
 
-stats = vlrdevapi.team.stats(team_id=624, last_days=90, agent_composition="basic")
+stats = vlrdevapi.team.stats(team_id=2593, last_days=90, agent_composition="basic")
 for m in stats.maps:
     print(f"\n{m.map_name}:")
     if m.compositions:
@@ -287,7 +287,7 @@ Filter map statistics to a specific event.
 ```python
 import vlrdevapi
 
-stats = vlrdevapi.team.stats(team_id=624, event_id=2765)
+stats = vlrdevapi.team.stats(team_id=2593, event_id=2765)
 if stats.maps:
     for m in stats.maps:
         wins = m.wins or 0
@@ -304,7 +304,7 @@ Access stats using the curried `team()` shorthand.
 ```python
 import vlrdevapi
 
-team = vlrdevapi.team(624)
+team = vlrdevapi.team(2593)
 stats = team.stats(last_days=90)
 if stats.maps:
     best_map = max(stats.maps, key=lambda m: m.win_rate or 0)

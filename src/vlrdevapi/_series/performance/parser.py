@@ -1,6 +1,9 @@
 
+import contextlib
+
 from selectolax.parser import HTMLParser, Node
 
+from vlrdevapi._series._utils import PlayerMap, resolve_game_id
 from vlrdevapi._series.performance.models import (
     AdvStatsEntry,
     AdvStatsNotableRound,
@@ -9,7 +12,6 @@ from vlrdevapi._series.performance.models import (
     NotableVictim,
     PerformanceData,
 )
-import contextlib
 
 
 def _parse_int(val: str) -> int | None:
@@ -27,6 +29,28 @@ def _parse_int(val: str) -> int | None:
         return int(val)
     except ValueError:
         return None
+
+
+def _resolve_player_id(
+    name: str, team_short: str, player_id: int, player_mapping: PlayerMap | None
+) -> int:
+    """Resolve a player ID, falling back to the overview-derived mapping.
+
+    Args:
+        name: The player's in-game name.
+        team_short: The player's team abbreviation.
+        player_id: The player ID parsed from the cell (0 if absent).
+        player_mapping: Overview-derived player map, or None.
+
+    Returns:
+        int: The resolved player ID (0 if unresolvable).
+
+    """
+    if player_id:
+        return player_id
+    if player_mapping and name:
+        return player_mapping.get(name, team_short) or 0
+    return player_id
 
 
 def _parse_player_from_td(td: Node) -> tuple[str, int, str]:
@@ -93,11 +117,12 @@ def _parse_matrix_cell(td: Node) -> tuple[int | None, int | None, int | None, bo
     return _parse_int(kills_text), _parse_int(deaths_text), _parse_int(diff_text), False
 
 
-def _parse_matrix_table(table: Node) -> KillMatrix:
+def _parse_matrix_table(table: Node, player_mapping: PlayerMap | None) -> KillMatrix:
     """Parse a kill matrix table into a KillMatrix model.
 
     Args:
         table: The table Node containing the kill matrix.
+        player_mapping: Overview-derived player map, or None.
 
     Returns:
         KillMatrix: Parsed kill entries with killer/victim pairs.
@@ -118,12 +143,14 @@ def _parse_matrix_table(table: Node) -> KillMatrix:
             continue
 
         killer_name, killer_id, killer_team = _parse_player_from_td(tds[0])
+        killer_id = _resolve_player_id(killer_name, killer_team, killer_id, player_mapping)
 
         for j, td in enumerate(tds[1:]):
             if j >= len(col_players):
                 break
             victim_name, victim_id, victim_team = col_players[j]
-            kills, deaths, diff, is_null = _parse_matrix_cell(td)
+            victim_id = _resolve_player_id(victim_name, victim_team, victim_id, player_mapping)
+            kills, deaths, diff, _is_null = _parse_matrix_cell(td)
 
             matrix.entries.append(
                 KillEntry(
@@ -143,13 +170,13 @@ def _parse_matrix_table(table: Node) -> KillMatrix:
 
 
 def _parse_notable_rounds(
-    popable_div: Node | None, player_mapping: dict[str, int],
+    popable_div: Node | None, player_mapping: PlayerMap | None,
 ) -> list[AdvStatsNotableRound]:
     """Parse notable round details from a popover div.
 
     Args:
         popable_div: The popover content Node, or None.
-        player_mapping: Mapping of player names to player IDs.
+        player_mapping: Overview-derived player map, or None.
 
     Returns:
         list[AdvStatsNotableRound]: Parsed notable round entries.
@@ -171,7 +198,7 @@ def _parse_notable_rounds(
         for vd in victim_divs:
             text = vd.text(strip=True)
             if text:
-                player_id = player_mapping.get(text)
+                player_id = player_mapping.get(text) if player_mapping else None
                 victims.append(NotableVictim(name=text, player_id=player_id))
 
         rounds.append(AdvStatsNotableRound(round_number=round_num, victims=victims))
@@ -179,12 +206,12 @@ def _parse_notable_rounds(
     return rounds
 
 
-def _parse_adv_stats_row(tr: Node, player_mapping: dict[str, int]) -> AdvStatsEntry:
+def _parse_adv_stats_row(tr: Node, player_mapping: PlayerMap | None) -> AdvStatsEntry:
     """Parse an advanced stats row into an AdvStatsEntry.
 
     Args:
         tr: The table row Node.
-        player_mapping: Mapping of player names to player IDs.
+        player_mapping: Overview-derived player map, or None.
 
     Returns:
         AdvStatsEntry: Parsed advanced stats entry.
@@ -198,7 +225,7 @@ def _parse_adv_stats_row(tr: Node, player_mapping: dict[str, int]) -> AdvStatsEn
     player_td = tds[0]
     name, player_id, team_short = _parse_player_from_td(player_td)
     entry.name = name
-    entry.player_id = player_id
+    entry.player_id = _resolve_player_id(name, team_short, player_id, player_mapping)
     entry.team_short = team_short
 
     agent_td = tds[1]
@@ -244,30 +271,30 @@ def _parse_adv_stats_row(tr: Node, player_mapping: dict[str, int]) -> AdvStatsEn
     if len(tds) > 11:
         econ_sq = tds[11].css_first("div.stats-sq")
         if econ_sq:
-            entry.econ = _parse_int(econ_sq.text(deep=False, strip=True))
+            entry.economy = _parse_int(econ_sq.text(deep=False, strip=True))
 
     if len(tds) > 12:
         pl_sq = tds[12].css_first("div.stats-sq")
         if pl_sq:
-            entry.pl = _parse_int(pl_sq.text(deep=False, strip=True))
+            entry.plants = _parse_int(pl_sq.text(deep=False, strip=True))
 
     if len(tds) > 13:
         de_sq = tds[13].css_first("div.stats-sq")
         if de_sq:
-            entry.de = _parse_int(de_sq.text(deep=False, strip=True))
+            entry.defuses = _parse_int(de_sq.text(deep=False, strip=True))
 
     return entry
 
 
 def parse_performance_data(
-    html: HTMLParser, game_id: str = "all", player_mapping: dict[str, int] | None = None,
+    html: HTMLParser, game_id: str = "all", player_mapping: PlayerMap | None = None,
 ) -> PerformanceData:
     """Parse performance metrics from the series page HTML.
 
     Args:
         html: The selectolax HTMLParser of the series page.
         game_id: Game/map identifier ('all' for combined, or numeric ID).
-        player_mapping: Optional mapping of player names to player IDs.
+        player_mapping: Overview-derived player map, or None.
 
     Returns:
         PerformanceData: Parsed performance data with kill matrices and
@@ -276,7 +303,8 @@ def parse_performance_data(
     """
     result = PerformanceData()
 
-    game_div = html.css_first(f'.vm-stats-game[data-game-id="{game_id}"]')
+    gid = resolve_game_id(html, game_id)
+    game_div = html.css_first(f'.vm-stats-game[data-game-id="{gid}"]')
     if not game_div:
         return result
 
@@ -289,15 +317,15 @@ def parse_performance_data(
 
     normal_table = game_div.css_first("table.mod-matrix.mod-normal")
     if normal_table:
-        result.all_kills_matrix = _parse_matrix_table(normal_table)
+        result.all_kills_matrix = _parse_matrix_table(normal_table, player_mapping)
 
     fkfd_table = game_div.css_first("table.mod-matrix.mod-fkfd")
     if fkfd_table:
-        result.first_kills_matrix = _parse_matrix_table(fkfd_table)
+        result.first_kills_matrix = _parse_matrix_table(fkfd_table, player_mapping)
 
     op_table = game_div.css_first("table.mod-matrix.mod-op")
     if op_table:
-        result.op_kills_matrix = _parse_matrix_table(op_table)
+        result.op_kills_matrix = _parse_matrix_table(op_table, player_mapping)
 
     adv_table = game_div.css_first("table.mod-adv-stats")
     if adv_table:
@@ -306,7 +334,7 @@ def parse_performance_data(
             tds = tr.css("td")
             if len(tds) < 3:
                 continue
-            entry = _parse_adv_stats_row(tr, player_mapping or {})
+            entry = _parse_adv_stats_row(tr, player_mapping)
             if entry.name:
                 result.adv_stats.append(entry)
 

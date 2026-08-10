@@ -186,3 +186,28 @@ class TestParseGame233478:
         assert mada.stats.overall.rating == 1.41
         assert mada.stats.overall.acs == 295.0
 
+
+class TestParseGamePositional:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.html = _load_html("overview.html")
+        self.game1 = parse_players_stats(self.html, game_id=1)
+        self.game2 = parse_players_stats(self.html, game_id=2)
+
+    def test_positional_game_one_map(self):
+        assert self.game1.map_name == "Corrode"
+        assert len(self.game1.team1.players) == 5
+        assert len(self.game1.team2.players) == 5
+
+    def test_positional_game_two_map(self):
+        assert self.game2.map_name == "Lotus"
+        assert len(self.game2.team1.players) == 5
+
+    def test_game_one_matches_real_id(self):
+        real = parse_players_stats(self.html, game_id="233478")
+        assert self.game1.map_name == real.map_name == "Corrode"
+        assert self.game1.team1.players[0].name == real.team1.players[0].name
+
+    def test_positional_games_differ(self):
+        assert self.game1.map_name != self.game2.map_name
+
