@@ -3,7 +3,7 @@
 
 MATCHES = "/matches"
 MATCHES_RESULTS = "/matches/results"
-
+NEWS = "/news"
 
 def series(series_id: int) -> str:
     """Build a URL path for a series page.
