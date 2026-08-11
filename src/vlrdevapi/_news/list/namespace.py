@@ -44,7 +44,9 @@ class NewsListNamespace:
         source_tz: ZoneInfo | tzinfo | None = None,
     ):
         self._source_tz = source_tz
-        self._sync = SyncNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
+        self._sync = SyncNamespace(
+            client, timeout, retry_config, rate_limiter, extra_headers
+        )
 
     @sanitize_and_validate
     def __call__(self, page: int = 1) -> NewsPage:
@@ -65,7 +67,6 @@ class NewsListNamespace:
                 items are returned for out-of-range pages).
             RequestError: If the HTTP request fails.
             RateLimitError: If the rate limit is exceeded.
-            ParsingError: If the page structure is unrecognised.
 
         Examples:
             >>> result = vlrdevapi.news(page=1)

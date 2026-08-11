@@ -1,5 +1,12 @@
 from vlrdevapi.commons.countries import COUNTRIES, get_country_name
-from vlrdevapi.commons.datetime import UTC, VLR_TIMEZONE, parse_vlr_date, parse_vlr_datetime, parse_vlr_time
+from vlrdevapi.commons.datetime import (
+    UTC,
+    VLR_TIMEZONE,
+    parse_vlr_date,
+    parse_vlr_datetime,
+    parse_vlr_iso_datetime,
+    parse_vlr_time,
+)
 from vlrdevapi.commons.prizes import parse_prize_amount
 from vlrdevapi.commons.timezone import (
     REFERENCE_MATCH_PATH,
@@ -21,6 +28,7 @@ __all__ = [
     "parse_prize_amount",
     "parse_vlr_date",
     "parse_vlr_datetime",
+    "parse_vlr_iso_datetime",
     "parse_vlr_stored_datetime",
     "parse_vlr_time",
 ]

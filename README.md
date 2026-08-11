@@ -20,7 +20,7 @@ Access Valorant esports data from VLR.gg with a clean, type-safe Python API. Get
 
 ## Features
 
-- **Complete Data Access** - Events, matches, players, teams, and series
+- **Complete Data Access** - Events, matches, players, teams, series, and news
 - **Type-Safe** - Pydantic models with rich type hints and field descriptions
 - **Production-Ready** - Retry logic, rate limiting, and LRU-cached enrichment
 - **Curried Access** - Bind a player/team/series ID once, then call sub-methods without re-passing
@@ -131,6 +131,17 @@ players = s.players(game_id=1)           # Per-game player stats
 rounds = s.rounds(game_id=1)             # Round-by-round data
 performance = s.performance()            # Advanced performance stats
 economy = s.economy(game_id=1)           # Economy data
+```
+
+### News
+
+```python
+page = client.news(page=1)               # Browse the news listing
+for item in page.news[:5]:
+    print(item.title)
+
+article = client.news.article(734100)    # Fetch a full article
+print(article.content_md)                # Article body as Markdown
 ```
 
 ## Documentation

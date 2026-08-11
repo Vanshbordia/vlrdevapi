@@ -1,7 +1,7 @@
 import pytest
 
-from tests.conftest import load_fixture
 import vlrdevapi
+from tests.conftest import load_fixture
 from vlrdevapi.exceptions import NotFoundError, ValidationError
 
 
@@ -71,3 +71,11 @@ class TestSyncNews:
     def test_news_article_invalid_id(self):
         with pytest.raises(ValidationError):
             vlrdevapi.news.article(0)
+
+    def test_news_article_missing_raises_not_found(self, mock_vlr):
+        mock_vlr.get("/720034").respond(
+            200, text="<html><body><p>Not an article page</p></body></html>"
+        )
+
+        with pytest.raises(NotFoundError):
+            vlrdevapi.news.article(720034)

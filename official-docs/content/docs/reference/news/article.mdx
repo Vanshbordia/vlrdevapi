@@ -3,7 +3,9 @@ title: News Article
 description: Fetch the full content of a news article from vlr.gg.
 ---
 
-`news.article()` fetches the full body content of a single news article from vlr.gg. The body is returned both as plain text (`content`) and as a Markdown conversion (`content_md`) that preserves headings, lists, links, emphasis, and clip embeds.
+`news.article()` fetches the full body content of a single news article from vlr.gg. The body is returned both as plain text (`content`) and as a Markdown conversion (`content_md`) that preserves headings, nested lists, tables, links, verbatim code, emphasis, and clip embeds. `date` is returned as a timezone-aware UTC datetime.
+
+If the article ID does not exist on vlr.gg, a `NotFoundError` is raised (vlr.gg returns a generic page for unknown IDs, so this is detected from the page content).
 
 ## Signature
 
@@ -47,7 +49,7 @@ news.article(
     default: '""',
   },
   "date": {
-    description: "Publication date in UTC.",
+    description: "Publication date as a timezone-aware UTC datetime.",
     type: "datetime | None",
     typeDescription: "datetime.datetime | None",
     default: "None",
@@ -59,7 +61,7 @@ news.article(
     default: '""',
   },
   "event_link": {
-    description: "Relative URL to the associated event page.",
+    description: "Link to the associated event page.",
     type: "str",
     typeDescription: "str",
     default: '""',
@@ -71,7 +73,7 @@ news.article(
     default: '""',
   },
   "content_md": {
-    description: "Full body of the news article converted to Markdown, preserving headings, lists, links, emphasis, and Twitch clip embeds.",
+    description: "Full body of the news article converted to Markdown, preserving headings, nested lists, tables, links, verbatim code, emphasis, and Twitch clip embeds.",
     type: "str",
     typeDescription: "str",
     default: '""',

@@ -45,10 +45,9 @@ All news methods raise typed exceptions from `vlrdevapi.exceptions`:
 | Exception | Raised When |
 |-----------|-------------|
 | `ValidationError` | Invalid arguments (bad `page`, etc.) |
-| `NotFoundError` | Page doesn't exist (HTTP 404) |
+| `NotFoundError` | Page or article doesn't exist (out-of-range news page, or unknown article ID — vlr.gg returns a generic page for these, so it is detected from the content) |
 | `RequestError` | Network failure or HTTP error |
 | `RateLimitError` | Too many requests (HTTP 429) |
-| `ParsingError` | Page structure is unrecognised |
 
 ```python
 import vlrdevapi

@@ -37,6 +37,8 @@ class NewsNamespace:
         print(first.content_md)
     """
 
+    __slots__ = ("_article", "_list", "_source_tz")
+
     def __init__(
         self,
         client: httpx.Client,
@@ -47,8 +49,22 @@ class NewsNamespace:
         source_tz: ZoneInfo | tzinfo | None = None,
     ):
         self._source_tz = source_tz
-        self._list = NewsListNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
-        self._article = NewsArticleNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._list = NewsListNamespace(
+            client,
+            timeout,
+            retry_config,
+            rate_limiter,
+            extra_headers,
+            source_tz=source_tz,
+        )
+        self._article = NewsArticleNamespace(
+            client,
+            timeout,
+            retry_config,
+            rate_limiter,
+            extra_headers,
+            source_tz=source_tz,
+        )
 
     @sanitize_and_validate
     def __call__(self, page: int = 1) -> NewsPage:
@@ -58,15 +74,17 @@ class NewsNamespace:
             page: Page number (1-indexed). Defaults to the first page.
 
         Returns:
-            NewsPage: An object with ``news`` (a list of ``News`` items)
-            and ``has_next_page``.
+            NewsPage: An object with ``news`` (a list of ``News`` items,
+            each with ``title``, ``subtitle``, ``link``, ``country_name``,
+            ``date``, and ``author``), ``has_next_page``, and
+            ``page_number``.
 
         Raises:
             ValidationError: If ``page`` is not a valid positive integer.
-            NotFoundError: If the requested page does not exist.
+            NotFoundError: If the requested page does not exist (no news
+                items are returned for out-of-range pages).
             RequestError: If the HTTP request fails.
             RateLimitError: If the rate limit is exceeded.
-            ParsingError: If the page structure is unrecognised.
 
         Examples:
             >>> result = vlrdevapi.news(page=1)
@@ -87,19 +105,23 @@ class NewsNamespace:
         Returns:
             NewsArticle: The article with ``title``, ``author``, ``date``,
                 ``event_name``, ``event_link``, ``content`` (plain text),
-                and ``content_md`` (Markdown).
+                and ``content_md`` (Markdown preserving headings, nested
+                lists, tables, links, verbatim code, and clip embeds).
 
         Raises:
             ValidationError: If ``article_id`` is not a valid positive integer.
-            NotFoundError: If the article does not exist (HTTP 404).
+            NotFoundError: If the article does not exist. vlr.gg returns a
+                generic page (HTTP 200) for unknown article IDs, so this
+                is detected from the page content.
             RequestError: If the HTTP request fails.
             RateLimitError: If the rate limit is exceeded.
-            ParsingError: If the page structure is unrecognised.
 
         Examples:
             >>> article = vlrdevapi.news.article(734100)
             >>> article.title
             'Gen.G, Global, VARREL, PRX bypass Pacific Stage 2 Play-Ins'
+            >>> article.content_md.startswith('The [Pacific Stage 2]')
+            True
 
         """
         return self._article(article_id)

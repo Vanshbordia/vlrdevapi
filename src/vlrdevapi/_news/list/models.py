@@ -13,7 +13,7 @@ class News(BaseModel):
         link: Relative URL to the article page.
         country_name: Country associated with the item, derived from the
             flag icon shown next to it.
-        date: Publication date in UTC.
+        date: Publication date as a timezone-aware UTC datetime.
         author: Author of the news item.
     """
 
@@ -25,8 +25,13 @@ class News(BaseModel):
     title: str = Field(default="", description="Title of the news item")
     subtitle: str = Field(default="", description="Subtitle of the news item")
     link: str = Field(default="", description="Link to the news item")
-    country_name: str = Field(default="", description="Country associated with the news item")
-    date: datetime_ | None = Field(default=None, description="Date of the news item")
+    country_name: str = Field(
+        default="", description="Country associated with the news item"
+    )
+    date: datetime_ | None = Field(
+        default=None,
+        description="Publication date as a timezone-aware UTC datetime",
+    )
     author: str = Field(default="", description="Author of the news item")
 
 
@@ -44,5 +49,7 @@ class NewsPage(BaseModel):
     )
 
     news: list[News] = Field(default_factory=list, description="List of news items")
-    has_next_page: bool = Field(default=False, description="Whether there is a next page of results")
+    has_next_page: bool = Field(
+        default=False, description="Whether there is a next page of results"
+    )
     page_number: int = Field(default=0, description="Current page number")

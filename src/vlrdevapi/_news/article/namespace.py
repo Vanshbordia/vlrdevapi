@@ -9,6 +9,7 @@ from vlrdevapi._base import SyncNamespace
 from vlrdevapi._news.article.models import NewsArticle
 from vlrdevapi._news.article.parser import parse_news_article
 from vlrdevapi._utils.paths import news_article
+from vlrdevapi.exceptions import NotFoundError
 from vlrdevapi.fetcher import (
     DEFAULT_RETRY_CONFIG,
     DEFAULT_TIMEOUT,
@@ -42,7 +43,9 @@ class NewsArticleNamespace:
         source_tz: ZoneInfo | tzinfo | None = None,
     ):
         self._source_tz = source_tz
-        self._sync = SyncNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
+        self._sync = SyncNamespace(
+            client, timeout, retry_config, rate_limiter, extra_headers
+        )
 
     @sanitize_and_validate
     def __call__(self, article_id: int) -> NewsArticle:
@@ -60,18 +63,24 @@ class NewsArticleNamespace:
 
         Raises:
             ValidationError: If ``article_id`` is not a valid positive integer.
-            NotFoundError: If the article does not exist (HTTP 404).
+            NotFoundError: If the article does not exist. vlr.gg returns a
+                generic page (HTTP 200) for unknown article IDs, so this
+                is detected from the page content.
             RequestError: If the HTTP request fails.
             RateLimitError: If the rate limit is exceeded.
-            ParsingError: If the page structure is unrecognised.
 
         Examples:
             >>> article = vlrdevapi.news.article(734100)
             >>> article.title
             'Gen.G, Global, VARREL, PRX bypass Pacific Stage 2 Play-Ins'
-            >>> article.content_md.startswith('## 1. Gen.G (5-0)')
+            >>> article.content_md.startswith('The [Pacific Stage 2]')
             True
 
         """
         html = self._sync._fetch(news_article(article_id))
-        return parse_news_article(html)
+        article = parse_news_article(html, source_tz=self._source_tz)
+        if article.id == 0:
+            raise NotFoundError(
+                f"News article {article_id} not found (page contains no article content)."
+            )
+        return article

@@ -14,7 +14,7 @@ The library offers two ways to access data:
 - **Module-level access** - a lazy-initialized default client provides quick one-liners
 - **Explicit `VLRClient`** - gives you full control over configuration, timeouts, and resource lifetime
 
-Both approaches expose the same five namespaces:
+Both approaches expose the same six namespaces:
 
 | Namespace | Description |
 |-----------|-------------|
@@ -23,6 +23,7 @@ Both approaches expose the same five namespaces:
 | `player` | Player profiles, agents, teams, match history |
 | `event` | Event info, stages, standings, teams, matches |
 | `series` | Series info, VODs, player stats, economy data |
+| `news` | News listings and full news articles |
 
 ## Prerequisites
 
@@ -104,6 +105,7 @@ Each namespace has dedicated methods for different data types:
 - **`player(id)`** - player-specific data (profile, agents, teams, matches)
 - **`event(id)`** - event-specific data (info, stages, standings, teams)
 - **`series(id)`** - series-specific data (info, VODs, player stats, economy)
+- **`news(page)`** / **`news.article(article_id)`** - news listings and full articles
 
 ## Next Steps
 

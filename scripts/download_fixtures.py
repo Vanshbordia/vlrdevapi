@@ -36,6 +36,7 @@ ROUTES += [
     ("/news/?page=126", "news/news_page126.html", {}),
     ("/news/?page=176", "news/news_page176.html", {}),
     ("/734100", "news/article_734100.html", {}),
+    ("/720033/americas-recent-victors-start-strong-in-week-1", "news/article_720033.html", {}),
 ]
 
 # ── Events ─────────────────────────────────────────────────────

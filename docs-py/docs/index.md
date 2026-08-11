@@ -6,7 +6,7 @@ description: API reference for VLRdevAPI - a type-safe Python SDK for Valorant e
 
 # VLRdevAPI
 
-A Python library for fetching data from [vlr.gg](https://www.vlr.gg/). Provides a synchronous, typed interface for accessing match listings, event data, team/player profiles, and statistics.
+A Python library for fetching data from [vlr.gg](https://www.vlr.gg/). Provides a synchronous, typed interface for accessing match listings, event data, team/player profiles, statistics, and news.
 
 ## Quick links
 
