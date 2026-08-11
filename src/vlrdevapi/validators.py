@@ -11,7 +11,7 @@ from pydantic import validate_call
 
 from vlrdevapi.exceptions import ValidationError
 
-_ID_PARAMS = frozenset({"event_id", "team_id", "player_id", "series_id", "page", "limit", "subseries_id", "last_days"})
+_ID_PARAMS = frozenset({"event_id", "team_id", "player_id", "series_id", "page", "limit", "subseries_id", "last_days", "article_id"})
 _MAX_PAGE_PARAMS = frozenset({"max_page"})
 
 

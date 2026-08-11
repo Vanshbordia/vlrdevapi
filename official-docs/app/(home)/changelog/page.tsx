@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+
+import ChangelogTimeline from './changelog-timeline'
 
 export const metadata: Metadata = {
   title: 'Changelog',
@@ -8,8 +9,43 @@ export const metadata: Metadata = {
 
 const versions = [
   {
+    version: '2.3.0',
+    date: '11 August 2026',
+    github: 'https://github.com/vanshbordia/vlrdevapi/releases/tag/2.3.0',
+    pypi: 'https://pypi.org/project/vlrdevapi/2.3.0/',
+    summary: 'Adds a news namespace for browsing vlr.gg news listings and fetching full article content.',
+    sections: [
+      {
+        title: 'Added',
+        items: [
+          '`vlrdevapi.news(page=1)` lists news items from vlr.gg/news, each with `title`, `subtitle`, `link`, `country_name`, `date`, and `author`, plus `has_next_page` and `page_number` on the returned page.',
+          '`vlrdevapi.news.article(article_id)` fetches a single news article with its `title`, `author`, `date`, associated `event_name`/`event_link`, and the full `content` body text. The body is also available as Markdown via `content_md`, preserving headings, lists, links, emphasis, and clip embeds.',
+          'Requesting a news page beyond the last available page (e.g. `page=176`) now raises `NotFoundError` instead of silently returning an empty result.',
+        ],
+      },
+      {
+        title: 'Changed',
+        items: [
+          'News article Markdown links are now absolute: links in `content_md` are prefixed with `https://www.vlr.gg` when they are relative (e.g. `/player/5132/mada` → `https://www.vlr.gg/player/5132/mada`). Absolute and `www.`-prefixed URLs are left untouched. `NewsArticle.event_link` is now an absolute URL as well.',
+        ],
+      },
+      {
+        title: 'Fixed',
+        items: [
+          'News article clip embeds — `content_md` clip embeds now link to the directly openable watch URL (e.g. `https://clips.twitch.tv/<slug>`) for Twitch clips, Twitch VODs, YouTube, and Soop embeds, instead of the embed URL which could not be opened in a new tab.',
+          'News article Markdown whitespace/emphasis — inline emphasis and bold render correctly around links: source indentation whitespace no longer produces double spaces, and `*`/`**` markers no longer wrap whitespace.',
+          'News article dates are now timezone-aware — the article date is parsed through the shared `parse_vlr_iso_datetime` helper. Offset-aware `datetime` attributes are converted to UTC as-is; naive values are localised to the client\'s `source_tz` (or UTC) instead of the local machine timezone.',
+          'Unknown article IDs now raise `NotFoundError` — vlr.gg returns a generic HTTP 200 page for non-existent article IDs; `news.article()` detects the missing article card and raises `NotFoundError` instead of returning an empty article.',
+          'News article Markdown fidelity — `content_md` now renders nested lists, tables (as pipe tables), and inline `code` verbatim (whitespace preserved). Links whose href is `www.`-prefixed are upgraded to `https://`, fixing broken relative links in Markdown.',
+        ],
+      },
+    ],
+  },
+  {
     version: '2.2.0',
     date: '11 August 2026',
+    github: 'https://github.com/vanshbordia/vlrdevapi/releases/tag/2.2.0',
+    pypi: 'https://pypi.org/project/vlrdevapi/2.2.0/',
     summary: 'Renames series performance fields, fixes per-game series stat resolution, and uses a sentinel year for events-list dates that omit the year.',
     sections: [
       {
@@ -33,6 +69,8 @@ const versions = [
   {
     version: '2.1.0',
     date: '7 August 2026',
+    github: 'https://github.com/vanshbordia/vlrdevapi/releases/tag/2.1.0',
+    pypi: 'https://pypi.org/project/vlrdevapi/2.1.0/',
     summary: 'Adds player rosters to event teams, exposing each player\'s name and id on every team.',
     sections: [
       {
@@ -54,8 +92,25 @@ const versions = [
   {
     version: '2.0.1',
     date: '29 July 2026',
+    github: 'https://github.com/vanshbordia/vlrdevapi/releases/tag/2.0.1',
+    pypi: 'https://pypi.org/project/vlrdevapi/2.0.1/',
     summary: 'Maintenance release removing deprecated agent stat fields removed by vlr.gg and updating CSS selectors for the latest site markup.',
     sections: [
+      {
+        title: 'Changed',
+        items: [
+          'Agents schema reference updated to reflect the removal of `fkpr` and `fdpr`.',
+        ],
+      },
+      {
+        title: 'Fixed',
+        items: [
+          'Series player stats — the overview tab HTML changed from `<table>` to `<div>` on vlr.gg; CSS selectors updated to match the new structure.',
+          'Player agent stats — the agent table class changed from `wf-table` to `st-table.mod-agent-rows`, and the column count dropped from 17 to 16 after FKPR and FDPR merged into a single FK:FD ratio column.',
+          'Player profile — same agent table selector fix; the fallback to `timespan=all` now works correctly.',
+          'Team fixtures — stale test assertions updated for NRG Haven map stats and total winnings to match current vlr.gg data.',
+        ],
+      },
       {
         title: 'Removed',
         items: [
@@ -67,48 +122,46 @@ const versions = [
   {
     version: '2.0.0',
     date: '7 July 2026',
-    summary: 'Initial release of VLRdevAPI. A type-safe Python SDK for Valorant esports data from VLR.gg.',
+    github: 'https://github.com/vanshbordia/vlrdevapi/releases/tag/2.0.0',
+    pypi: 'https://pypi.org/project/vlrdevapi/2.0.0/',
+    summary: 'Complete rewrite of the library. v2.0.0 replaces the asynchronous aiohttp-based v1.x with a synchronous httpx-based architecture.',
     sections: [
       {
-        title: 'Features',
+        title: 'Added',
         items: [
-          'Match listings: live matches, upcoming with pagination (`matches.upcoming(page=2, return_all=True)`), completed with date filtering.',
-          'Team data: info (name, tag, socials), roster with roles/captain/sub status, map stats with agent composition breakdowns, completed and upcoming matches, roster transactions, event placement history with prize winnings.',
-          'Player profiles: basic info, current and past teams, agent usage stats (`30d`, `60d`, `90d`, `all`), match history with configurable limit, consolidated profile with top agents.',
-          'Event/tournament coverage: list with tier/region/status filters, info (dates, prize pool, location), stages, teams, matches, standings.',
-          'Series/match detail: full match overview (teams, scores, map veto, per-game breakdowns), VOD links (YouTube/Twitch), per-player performance stats with ratings, round-by-round data, economy analysis, kill matrices, advanced stats (aces, clutches, multi-kills).',
-        ],
-      },
-      {
-        title: 'API',
-        items: [
-          'Synchronous VLRClient with context manager support and curried access pattern (`client.team(4568).roster()`).',
+          'Synchronous `VLRClient` with context manager support and thread-safe parallel enrichment for bulk operations.',
+          'Curried access pattern — bind a player/team/series/event ID once, then chain sub-methods without re-passing the ID.',
+          'Event namespace — list with pagination and filtering (tier, region, status), plus info, matches, stages, standings, and teams.',
+          'Match listing namespace — live, upcoming (paginated), and completed (paginated) match feeds with team enrichment.',
+          'Player namespace — info, teams (current/past), agent stats (`30d`/`60d`/`90d`/`all`), match history (paginated), and consolidated profile.',
+          'Series namespace — info (veto, games, scores), player stats per game, round-by-round data, performance (kill matrices, advanced stats), economy (buy types, spend analysis), and VOD links.',
+          'Team namespace — info, roster, stats (per-map with optional agent composition), placements, transactions, and completed/upcoming matches.',
+          'Pydantic v2 models — fully typed with Google-style docstrings and field descriptions.',
+          'Built-in resilience — configurable retry with exponential/linear/constant backoff, jitter, and token-bucket rate limiting.',
+          'Thread-safe LRU cache — bounded `LRUCache` to avoid redundant HTTP requests during enrichment.',
+          'Input validation — `@sanitize_and_validate` decorator with positive-ID checks and Pydantic type coercion.',
+          'Custom exceptions — typed hierarchy (`NotFoundError`, `RateLimitError`, `ParsingError`, `ValidationError`, etc.).',
           'Module-level convenience access via `import vlrdevapi` with a lazy-initialized default client.',
-          'Pydantic v2 models with full type hints, field descriptions, and validation across all endpoints.',
-          'Typed exception hierarchy: VLRdevError, NotFoundError, RequestError, RateLimitError, ParsingError, ValidationError.',
-        ],
-      },
-      {
-        title: 'Infrastructure',
-        items: [
-          'Automatic retry logic with configurable strategy (max retries, backoff factor, status codes).',
-          'Rate limiting with configurable max requests per minute per namespace.',
-          'LRU response caching with configurable TTL to reduce redundant requests.',
-          'URL enrichment that automatically resolves team IDs and series info on match listings.',
-          'Dependency management with uv for fast installs and reproducible builds.',
-          'Supports Python 3.11 and later.',
-        ],
-      },
-      {
-        title: 'Documentation',
-        items: [
-          'Official documentation site at https://vlrdevapi.pages.dev built with Next.js 16 and Fumadocs.',
-          'API reference covering every namespace, method, parameter, and return type.',
-          'Practical examples for events, matches, teams, players, and cross-namespace queries.',
-          'Getting started guide, quickstart tutorial, and development setup guide.',
-          'Doc validation scripts (check_mdx_examples.py) that verify syntax and live execution of code examples in CI.',
-          'GitHub Actions workflow for automatic doc validation on pull requests.',
+          'Official website and API reference built with Next.js + Fumadocs and Zensical/MkDocs, with live doc validation in CI.',
           'Comprehensive test suite with fixture-based offline tests and live integration tests.',
+        ],
+      },
+      {
+        title: 'Changed',
+        items: [
+          'Architecture — migrated from async aiohttp to synchronous httpx. No more `await` or `async with` required.',
+          'No explicit session management — `VLRClient` handles connection pooling, retries, and rate limiting internally.',
+          'Type system — replaced raw dict returns with Pydantic v2 models for all endpoints.',
+          'Build system — moved from setuptools to hatchling with `uv` for dependency management.',
+          'Python requirement — raised minimum to 3.11.',
+        ],
+      },
+      {
+        title: 'Removed',
+        items: [
+          'All v1.x async endpoints (`get_event`, `get_team`, `get_player`, etc.) — see the new module-level or client-based API.',
+          '`aiohttp` and `asyncio` dependencies.',
+          'v1.x match/event/team parsing modules.',
         ],
       },
     ],
@@ -178,82 +231,7 @@ export default function ChangelogPage() {
 
       <section>
         <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[220px_1fr] lg:gap-16">
-            {/* Sticky timeline sidebar */}
-            <aside className="relative">
-              <div className="lg:sticky lg:top-28 lg:self-start">
-                <nav aria-label="Version timeline">
-                  <ol className="relative border-l border-border">
-                    {versions.map((v) => (
-                      <li key={v.version} className="pl-6 pb-10 last:pb-0">
-                        <div className="absolute left-0 top-1.5 -translate-x-1/2 size-3 rounded-full border-2 border-fd-primary bg-background" />
-                        <time className="text-xs font-semibold uppercase tracking-widest text-fd-primary">
-                          {v.date}
-                        </time>
-                        <p className="mt-1 text-sm font-bold text-foreground">
-                          v{v.version}
-                        </p>
-                      </li>
-                    ))}
-                  </ol>
-                </nav>
-              </div>
-            </aside>
-
-            {/* Version entries */}
-            <div className="min-w-0">
-              {versions.map((v) => (
-                <article key={v.version} id={v.version}>
-                  <div className="mb-2 flex items-baseline gap-3 lg:hidden">
-                    <time className="text-xs font-semibold uppercase tracking-widest text-fd-primary">
-                      {v.date}
-                    </time>
-                    <span className="text-sm font-bold text-foreground">
-                      v{v.version}
-                    </span>
-                  </div>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {v.summary}
-                  </p>
-
-                  {v.sections.map((section) => (
-                    <div key={section.title} className="mt-8 first:mt-6">
-                      <h3 className="text-sm font-bold text-foreground tracking-tight">
-                        {section.title}
-                      </h3>
-                      <ul className="mt-3 space-y-2">
-                        {section.items.map((item) => (
-                          <li key={item} className="flex items-start gap-2 text-sm leading-snug text-muted-foreground">
-                            <span className="mt-[5px] size-1.5 shrink-0 rounded-full bg-border" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-
-                  <div className="mt-8 flex items-center gap-4 border-t border-border pt-6">
-                    <Link
-                      href="https://github.com/vanshbordia/vlrdevapi/releases"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-9 items-center justify-center bg-foreground px-4 text-xs font-medium tracking-tight text-background transition-all hover:brightness-110"
-                    >
-                      View on GitHub
-                    </Link>
-                    <Link
-                      href="https://pypi.org/project/vlrdevapi/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-9 items-center justify-center border border-border bg-background px-4 text-xs font-medium tracking-tight text-foreground transition-all hover:bg-muted"
-                    >
-                      Install from PyPI
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
+          <ChangelogTimeline versions={versions} />
         </div>
       </section>
     </main>

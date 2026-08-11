@@ -1,6 +1,6 @@
 {
   "title": "API Reference",
-  "pages": ["events", "series", "matches", "player", "team"],
+  "pages": ["events", "series", "matches", "player", "team", "news"],
   "pagesIndex": "index",
   "defaultOpen": true
 }

@@ -3,7 +3,20 @@
 
 MATCHES = "/matches"
 MATCHES_RESULTS = "/matches/results"
+NEWS = "/news"
 
+
+def news_article(article_id: int) -> str:
+    """Build a URL path for a news article page.
+
+    Args:
+        article_id: The news article ID.
+
+    Returns:
+        str: The URL path ``"/<article_id>"``.
+
+    """
+    return f"/{article_id}"
 
 def series(series_id: int) -> str:
     """Build a URL path for a series page.

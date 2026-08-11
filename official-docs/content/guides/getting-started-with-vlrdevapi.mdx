@@ -59,6 +59,12 @@ print(f"Event stages: {len(stages)}")
 # Series
 info = vlrdevapi.series(670471).info()
 print(f"Series: {info.team1.name} vs {info.team2.name}")
+
+# News
+page = vlrdevapi.news(page=1)
+print(f"News items: {len(page.news)}")
+first = vlrdevapi.news.article(page.news[0].id)
+print(f"Article: {first.title} by {first.author}")
 ```
 
 ## Using VLRClient

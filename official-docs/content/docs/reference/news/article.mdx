@@ -1,0 +1,115 @@
+---
+title: News Article
+description: Fetch the full content of a news article from vlr.gg.
+---
+
+`news.article()` fetches the full body content of a single news article from vlr.gg. The body is returned both as plain text (`content`) and as a Markdown conversion (`content_md`) that preserves headings, nested lists, tables, links, verbatim code, emphasis, and clip embeds. `date` is returned as a timezone-aware UTC datetime.
+
+If the article ID does not exist on vlr.gg, a `NotFoundError` is raised (vlr.gg returns a generic page for unknown IDs, so this is detected from the page content).
+
+## Signature
+
+```python
+news.article(
+    article_id: int,
+) -> NewsArticle
+```
+
+## Parameters
+
+<TypeTable type={{
+  "article_id": {
+    description: "News article ID. Use `News.id` from a news listing, or the numeric prefix of `News.link`.",
+    type: "int",
+    typeDescription: "Positive integer",
+    default: "-",
+    required: true,
+  },
+}} />
+
+## Returns - `NewsArticle`
+
+<TypeTable type={{
+  "id": {
+    description: "Unique news article identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "title": {
+    description: "Title of the news article.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "author": {
+    description: "Author of the news article.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "date": {
+    description: "Publication date as a timezone-aware UTC datetime.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+  "event_name": {
+    description: "Event the article is associated with.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event_link": {
+    description: "Link to the associated event page.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "content": {
+    description: "Full body text of the news article as plain text.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "content_md": {
+    description: "Full body of the news article converted to Markdown, preserving headings, nested lists, tables, links, verbatim code, emphasis, and Twitch clip embeds.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Examples
+
+### Fetch an article
+
+```python
+import vlrdevapi
+
+article = vlrdevapi.news.article(734100)
+print(f"{article.title}")
+print(f"By {article.author} on {article.date}")
+print(f"Event: {article.event_name}")
+print(article.content)
+```
+
+### Read the article as Markdown
+
+```python
+import vlrdevapi
+
+article = vlrdevapi.news.article(734100)
+print(article.content_md)
+```
+
+### Read an article found in the news list
+
+```python
+import vlrdevapi
+
+page = vlrdevapi.news(page=1)
+article_id = page.news[0].id
+article = vlrdevapi.news.article(article_id)
+print(article.title)
+```

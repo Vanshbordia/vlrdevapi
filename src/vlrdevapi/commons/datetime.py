@@ -30,6 +30,38 @@ def date_to_utc_datetime(d: date) -> datetime:
     return datetime(d.year, d.month, d.day, tzinfo=UTC)
 
 
+def parse_vlr_iso_datetime(
+    text: str,
+    source_tz: ZoneInfo | tzinfo | None = None,
+) -> datetime | None:
+    """Parse an ISO-8601 datetime string into a UTC-aware datetime.
+
+    Offset-aware values (e.g. ``2026-08-10T04:16:27+05:30``) are converted
+    to UTC as-is. Naive values (no offset) are localized to *source_tz*
+    (or ``VLR_TIMEZONE``) before converting, matching how the other
+    vlr.gg datetime parsers handle server-rendered local times.
+
+    Args:
+        text: The ISO-8601 datetime string to parse.
+        source_tz: The timezone to assume for naive values. Defaults to
+            ``VLR_TIMEZONE``.
+
+    Returns:
+        datetime | None: A UTC-aware datetime, or ``None`` if parsing fails.
+
+    """
+    text = text.strip()
+    if not text:
+        return None
+    try:
+        dt = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=source_tz or VLR_TIMEZONE)
+    return dt.astimezone(UTC)
+
+
 def parse_vlr_date(text: str) -> date | None:
     """Parse a date string in vlr.gg format.
 

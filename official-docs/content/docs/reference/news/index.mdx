@@ -1,0 +1,63 @@
+---
+title: News API Overview
+description: Browse the latest Valorant news on vlr.gg with the news namespace.
+icon: Newspaper
+---
+
+The News API provides access to the news listings on vlr.gg. It is accessed via `vlrdevapi.news` through a default client or an explicit `VLRClient` instance.
+
+<Callout type="info">
+The news namespace is **not** callable with a curried ID — it has no pre-bound access pattern. It is fetched directly by page number.
+</Callout>
+
+## Access Patterns
+
+### Module-level (default client)
+
+```python
+import vlrdevapi
+
+result = vlrdevapi.news(page=1)
+print(f"News items on page 1: {len(result.news)}")
+```
+
+### Explicit client
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient() as client:
+    result = client.news(page=1)
+    print(f"More pages available: {result.has_next_page}")
+```
+
+## Reference
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| [`news(page)`](./list) | `NewsPage` | Browse news listings with pagination |
+| [`news.article(article_id)`](./article) | `NewsArticle` | Fetch the full content of a news article |
+
+## Common Error Handling
+
+All news methods raise typed exceptions from `vlrdevapi.exceptions`:
+
+| Exception | Raised When |
+|-----------|-------------|
+| `ValidationError` | Invalid arguments (bad `page`, etc.) |
+| `NotFoundError` | Page or article doesn't exist (out-of-range news page, or unknown article ID — vlr.gg returns a generic page for these, so it is detected from the content) |
+| `RequestError` | Network failure or HTTP error |
+| `RateLimitError` | Too many requests (HTTP 429) |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import ValidationError, RequestError
+
+try:
+    result = vlrdevapi.news(page=1)
+    print(f"Fetched {len(result.news)} news items")
+except ValidationError as e:
+    print(f"Invalid input: {e}")
+except RequestError as e:
+    print(f"Request failed: {e}")
+```
