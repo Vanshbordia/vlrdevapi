@@ -102,3 +102,152 @@ class TestParseSeriesInfo:
         assert game5.team2_defense_rounds == 3
         assert game5.duration_seconds == 2538
 
+
+_BO1_FIXTURES = FIXTURES_DIR / "series" / "704037"
+
+
+def _load_bo1_html(filename: str) -> HTMLParser:
+    path = _BO1_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoBo1:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_bo1_html("overview.html"))
+        self.result.series_id = 704037
+
+    def test_basic_info(self):
+        assert self.result.series_id == 704037
+        assert self.result.status == "completed"
+        assert self.result.event_name == "Game Changers 2026: EMEA Stage 2 - Promotion/Relegation"
+        assert self.result.stage == "Swiss Stage"
+        assert self.result.bracket == "Round 1"
+
+    def test_teams(self):
+        assert self.result.team1.name == "Mushoku"
+        assert self.result.team2.name == "Fallen Angels"
+
+    def test_scores(self):
+        assert self.result.score1 == 0
+        assert self.result.score2 == 1
+        assert self.result.best_of == 1
+
+    def test_single_game(self):
+        assert len(self.result.games) == 1
+
+    def test_game_details(self):
+        game = self.result.games[0]
+        assert game.game_id == 274641
+        assert game.map_name == "Pearl"
+        assert game.order == 1
+        assert game.played is True
+        assert game.team1_score == 2
+        assert game.team2_score == 13
+        assert game.team1_defense_rounds == 2
+        assert game.team1_attack_rounds == 0
+        assert game.team2_attack_rounds == 10
+        assert game.team2_defense_rounds == 3
+        assert game.duration_seconds == 2148
+
+
+_BO1_VETO_FIXTURES = FIXTURES_DIR / "series" / "64819"
+
+
+def _load_bo1_veto_html(filename: str) -> HTMLParser:
+    path = _BO1_VETO_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoBo1WithDeciderVeto:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_bo1_veto_html("overview.html"))
+        self.result.series_id = 64819
+
+    def test_basic_info(self):
+        assert self.result.series_id == 64819
+        assert self.result.status == "completed"
+        assert self.result.best_of == 1
+
+    def test_teams(self):
+        assert self.result.team1.name == "Madness Esports"
+        assert self.result.team2.name == "Huat Zai"
+
+    def test_scores(self):
+        assert self.result.score1 == 0
+        assert self.result.score2 == 1
+
+    def test_veto_parsed(self):
+        assert len(self.result.veto) == 7
+        assert self.result.veto[0].veto_type == "ban"
+        assert self.result.veto[0].map_name == "Bind"
+        assert self.result.veto[0].team == "MAD"
+        assert self.result.veto[6].veto_type == "decider"
+        assert self.result.veto[6].map_name == "Breeze"
+        assert self.result.veto[6].team == ""
+
+    def test_single_game(self):
+        assert len(self.result.games) == 1
+
+    def test_game_details(self):
+        game = self.result.games[0]
+        assert game.game_id == 65212
+        assert game.map_name == "Breeze"
+        assert game.order == 1
+        assert game.played is True
+        assert game.team1_score == 7
+        assert game.team2_score == 13
+
+
+_BO1_PICK_FIXTURES = FIXTURES_DIR / "series" / "30788"
+
+
+def _load_bo1_pick_html(filename: str) -> HTMLParser:
+    path = _BO1_PICK_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoBo1WithPickVeto:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_bo1_pick_html("overview.html"))
+        self.result.series_id = 30788
+
+    def test_basic_info(self):
+        assert self.result.series_id == 30788
+        assert self.result.status == "completed"
+        assert self.result.best_of == 1
+
+    def test_teams(self):
+        assert self.result.team1.name == "Cynical"
+        assert self.result.team2.name == "NXLG Academy"
+
+    def test_scores(self):
+        assert self.result.score1 == 1
+        assert self.result.score2 == 0
+
+    def test_veto_parsed(self):
+        assert len(self.result.veto) == 1
+        assert self.result.veto[0].veto_type == "pick"
+        assert self.result.veto[0].map_name == "Icebox"
+        assert self.result.veto[0].team == "NXLGA"
+
+    def test_single_game(self):
+        assert len(self.result.games) == 1
+
+    def test_game_details(self):
+        game = self.result.games[0]
+        assert game.game_id == 47971
+        assert game.map_name == "Icebox"
+        assert game.order == 1
+        assert game.played is True
+        assert game.team1_score == 13
+        assert game.team2_score == 11
+

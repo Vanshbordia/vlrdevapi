@@ -56,7 +56,10 @@ def parse_rounds_data(html: HTMLParser, game_id: int | str = "all") -> RoundsDat
             if not rnd_num_elem:
                 continue
 
-            round_number = int(rnd_num_elem.text(strip=True))
+            try:
+                round_number = int(rnd_num_elem.text(strip=True))
+            except ValueError:
+                continue
 
             sqs = col.css(".rnd-sq")
             if len(sqs) != 2:

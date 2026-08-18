@@ -1,11 +1,10 @@
+import contextlib
 import re
-from datetime import datetime
 
 from selectolax.parser import HTMLParser, Node
 
 from vlrdevapi._series.info.models import MapVeto, SeriesGame, SeriesInfo, SeriesTeam
 from vlrdevapi.commons.timezone import parse_vlr_stored_datetime
-import contextlib
 
 
 def _parse_team_link(el: Node) -> SeriesTeam:
@@ -300,6 +299,11 @@ def _parse_game_scores(html: HTMLParser) -> dict[int, dict]:
 def _parse_games(html: HTMLParser, info: SeriesInfo) -> list[SeriesGame]:
     """Parse game/map entries from the series navigation tabs.
 
+    For multi-map series VLR renders one nav tab per map.  For single-map
+    (Bo1) series the nav tabs are omitted entirely; in that case games
+    are discovered from the ``.vm-stats-game`` content containers and the
+    map name is extracted from the game header.
+
     Args:
         html: The selectolax HTMLParser of the series page.
         info: Partially parsed SeriesInfo used for veto cross-reference.
@@ -311,46 +315,82 @@ def _parse_games(html: HTMLParser, info: SeriesInfo) -> list[SeriesGame]:
     """
     games: list[SeriesGame] = []
     nav_items = html.css(".vm-stats-gamesnav-item.js-map-switch")
-    for el in nav_items:
-        if "mod-all" in (el.attributes.get("class") or ""):
-            continue
 
-        game = SeriesGame()
+    if nav_items:
+        for el in nav_items:
+            if "mod-all" in (el.attributes.get("class") or ""):
+                continue
 
-        game_id_str = el.attributes.get("data-game-id", "") or ""
-        if game_id_str:
-            with contextlib.suppress(ValueError):
-                game.game_id = int(game_id_str)
+            game = SeriesGame()
 
-        disabled_str = el.attributes.get("data-disabled", "") or "0"
-        game.played = disabled_str != "1"
-
-        map_div = el.css_first("div[style*='text-align: center']")
-        if map_div:
-            span_el = map_div.css_first("span")
-            if span_el:
+            game_id_str = el.attributes.get("data-game-id", "") or ""
+            if game_id_str:
                 with contextlib.suppress(ValueError):
-                    game.order = int(span_el.text(strip=True))
-            map_text = map_div.text(strip=True)
-            if span_el:
-                order_str = span_el.text(strip=True)
-                map_text = map_text[len(order_str) :].strip()
-            game.map_name = map_text
+                    game.game_id = int(game_id_str)
 
-        raw_html = el.html or ""
-        pick_match = re.search(r"Pick:\s*(\S+)", raw_html)
-        if pick_match:
-            game.picked_by = pick_match.group(1)
+            disabled_str = el.attributes.get("data-disabled", "") or "0"
+            game.played = disabled_str != "1"
 
-        if not game.picked_by and game.map_name:
-            for v in info.veto:
-                if v.veto_type == "pick" and v.map_name == game.map_name:
-                    game.picked_by = v.team
-                    break
+            map_div = el.css_first("div[style*='text-align: center']")
+            if map_div:
+                span_el = map_div.css_first("span")
+                if span_el:
+                    with contextlib.suppress(ValueError):
+                        game.order = int(span_el.text(strip=True))
+                map_text = map_div.text(strip=True)
+                if span_el:
+                    order_str = span_el.text(strip=True)
+                    map_text = map_text[len(order_str) :].strip()
+                game.map_name = map_text
 
-        games.append(game)
+            raw_html = el.html or ""
+            pick_match = re.search(r"Pick:\s*(\S+)", raw_html)
+            if pick_match:
+                game.picked_by = pick_match.group(1)
 
-    # Enrich with scores, attack/defense rounds, and duration from game headers
+            if not game.picked_by and game.map_name:
+                for v in info.veto:
+                    if v.veto_type == "pick" and v.map_name == game.map_name:
+                        game.picked_by = v.team
+                        break
+
+            games.append(game)
+    else:
+        for idx, container in enumerate(
+            html.css(".vm-stats-game[data-game-id]"),
+            start=1,
+        ):
+            gid_str = (container.attributes.get("data-game-id") or "").strip()
+            if not gid_str or gid_str == "all":
+                continue
+
+            game = SeriesGame()
+            with contextlib.suppress(ValueError):
+                game.game_id = int(gid_str)
+            game.order = idx
+
+            map_div = container.css_first(".vm-stats-game-header .map")
+            if map_div:
+                bold_div = map_div.css_first("div[style*='font-weight: 700']")
+                if bold_div:
+                    span = bold_div.css_first("span")
+                    if span:
+                        game.map_name = span.text(deep=False, strip=True)
+                if not game.map_name:
+                    game.map_name = map_div.text(strip=True)
+
+            if not game.map_name:
+                for v in info.veto:
+                    if v.veto_type == "pick":
+                        game.picked_by = v.team
+                        game.map_name = v.map_name
+                        break
+                    if v.veto_type == "decider":
+                        game.map_name = v.map_name
+                        break
+
+            games.append(game)
+
     game_scores = _parse_game_scores(html)
     for game in games:
         data = game_scores.get(game.game_id)

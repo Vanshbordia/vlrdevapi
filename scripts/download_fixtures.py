@@ -321,6 +321,89 @@ ROUTES += [
 ]
 
 
+# ── Series 704037 Bo1 (single-map game, no nav tabs, no veto) ─
+SERIES_ID_BO1 = 704037
+SERIES_SLUG_BO1 = "mushoku-vs-fallen-angels-game-changers-2026-emea-stage-2-promotion-relegation-r1"
+GAME_ID_BO1 = 274641
+
+ROUTES += [
+    (
+        f"/{SERIES_ID_BO1}/{SERIES_SLUG_BO1}",
+        f"series/{SERIES_ID_BO1}/overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1}?game={GAME_ID_BO1}&tab=overview",
+        f"series/{SERIES_ID_BO1}/game_{GAME_ID_BO1}_overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1}?game={GAME_ID_BO1}&tab=performance",
+        f"series/{SERIES_ID_BO1}/game_{GAME_ID_BO1}_performance.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1}?game={GAME_ID_BO1}&tab=economy",
+        f"series/{SERIES_ID_BO1}/game_{GAME_ID_BO1}_economy.html",
+        {},
+    ),
+]
+
+# ── Series 64819 Bo1 (single-map, bans + decider veto) ────────
+SERIES_ID_BO1_VETO = 64819
+GAME_ID_BO1_VETO = 65212
+
+ROUTES += [
+    (
+        f"/{SERIES_ID_BO1_VETO}",
+        f"series/{SERIES_ID_BO1_VETO}/overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1_VETO}?game={GAME_ID_BO1_VETO}&tab=overview",
+        f"series/{SERIES_ID_BO1_VETO}/game_{GAME_ID_BO1_VETO}_overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1_VETO}?game={GAME_ID_BO1_VETO}&tab=performance",
+        f"series/{SERIES_ID_BO1_VETO}/game_{GAME_ID_BO1_VETO}_performance.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1_VETO}?game={GAME_ID_BO1_VETO}&tab=economy",
+        f"series/{SERIES_ID_BO1_VETO}/game_{GAME_ID_BO1_VETO}_economy.html",
+        {},
+    ),
+]
+
+# ── Series 30788 Bo1 (single-map, pick veto) ──────────────────
+SERIES_ID_BO1_PICK = 30788
+GAME_ID_BO1_PICK = 47971
+
+ROUTES += [
+    (
+        f"/{SERIES_ID_BO1_PICK}",
+        f"series/{SERIES_ID_BO1_PICK}/overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1_PICK}?game={GAME_ID_BO1_PICK}&tab=overview",
+        f"series/{SERIES_ID_BO1_PICK}/game_{GAME_ID_BO1_PICK}_overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1_PICK}?game={GAME_ID_BO1_PICK}&tab=performance",
+        f"series/{SERIES_ID_BO1_PICK}/game_{GAME_ID_BO1_PICK}_performance.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1_PICK}?game={GAME_ID_BO1_PICK}&tab=economy",
+        f"series/{SERIES_ID_BO1_PICK}/game_{GAME_ID_BO1_PICK}_economy.html",
+        {},
+    ),
+]
+
+
 async def download_all():
     async with httpx.AsyncClient(
         base_url=BASE_URL, headers=HEADERS, follow_redirects=True, timeout=30
