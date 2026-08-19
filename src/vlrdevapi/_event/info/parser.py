@@ -16,11 +16,24 @@ from vlrdevapi._event.info.models import (
 )
 from vlrdevapi.commons.countries import get_country_name
 from vlrdevapi.commons.prizes import parse_prize_amount
+from vlrdevapi.commons.regions import resolve_country_to_region, resolve_subregion_to_region
 import contextlib
 
 
 def parse_event_info(html: HTMLParser, event_id: int) -> EventInfo:
     """Parse event info from the event page HTML.
+
+    After basic parsing the region list is post-processed:
+
+    1. Duplicates (same region name from ``region=`` and ``subregion=``
+       breadcrumbs) are collapsed; the entry carrying a ``subregion``
+       value is kept.
+    2. Two or more distinct regions collapse to a single
+       ``EventRegion(name="International")``.
+    3. When no breadcrumb region was found, the ``region_location``
+       country is tried first; if absent, ``location.country`` is
+       tried.  Either is resolved via ``resolve_country_to_region``
+       to infer the parent region.
 
     Args:
         html: Parsed HTML from the event page.
@@ -42,6 +55,28 @@ def parse_event_info(html: HTMLParser, event_id: int) -> EventInfo:
     _parse_title(header, event)
     _parse_desc_items(header, event)
 
+    seen: dict[str, EventRegion] = {}
+    for r in event.regions:
+        if r.name not in seen:
+            seen[r.name] = r
+        elif r.subregion and not seen[r.name].subregion:
+            seen[r.name] = r
+    event.regions = list(seen.values())
+
+    if len(event.regions) > 1:
+        event.regions = [EventRegion(name="International")]
+
+    if not event.regions:
+        country = None
+        if event.region_location and event.region_location.country:
+            country = event.region_location.country
+        elif event.location and event.location.country:
+            country = event.location.country
+        if country:
+            parent = resolve_country_to_region(country)
+            if parent:
+                event.regions = [EventRegion(name=parent)]
+
     return event
 
 
@@ -62,7 +97,14 @@ def _parse_image(header: Node, event: EventInfo) -> None:
 
 
 def _parse_breadcrumb(header: Node, event: EventInfo) -> None:
-    """Parse breadcrumb links (series, stage, regions) from the header.
+    """Parse breadcrumb links (series, stage, regions/subregions) from the header.
+
+    Region resolution priority:
+
+    1. ``region=`` links are stored directly.
+    2. ``subregion=`` links are resolved to their parent region via
+       ``resolve_subregion_to_region``; the original subregion name is
+       preserved in ``EventRegion.subregion``.
 
     Args:
         header: The event-header root node.
@@ -93,9 +135,11 @@ def _parse_breadcrumb(header: Node, event: EventInfo) -> None:
 
         if "stage=" in href:
             event.stage = EventStageTag(name=name, href=href)
+        elif "subregion=" in href:
+            parent = resolve_subregion_to_region(name)
+            if parent:
+                event.regions.append(EventRegion(name=parent, subregion=name, href=href))
         elif "region=" in href:
-            event.regions.append(EventRegion(name=name, href=href))
-        else:
             event.regions.append(EventRegion(name=name, href=href))
 
 

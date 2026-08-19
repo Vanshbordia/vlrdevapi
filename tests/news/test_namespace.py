@@ -1,7 +1,9 @@
 import pytest
+from selectolax.parser import HTMLParser
 
 import vlrdevapi
 from tests.conftest import load_fixture
+from vlrdevapi._news.common import get_page_number
 from vlrdevapi.exceptions import NotFoundError, ValidationError
 
 
@@ -32,13 +34,16 @@ class TestSyncNews:
         assert result.has_next_page is True
 
     def test_news_last_page_has_no_next(self, mock_vlr):
-        mock_vlr.get("/news/", params={"page": "126"}).respond(
-            200, text=load_fixture("news", "news_page126.html")
+        html = load_fixture("news", "news_last_page.html")
+        last_page = get_page_number(HTMLParser(html))
+
+        mock_vlr.get("/news/", params={"page": str(last_page)}).respond(
+            200, text=html
         )
 
-        result = vlrdevapi.news(page=126)
+        result = vlrdevapi.news(page=last_page)
 
-        assert result.page_number == 126
+        assert result.page_number == last_page
         assert result.has_next_page is False
         assert len(result.news) > 0
 
@@ -47,12 +52,12 @@ class TestSyncNews:
             vlrdevapi.news(page=0)
 
     def test_news_out_of_range_page_raises(self, mock_vlr):
-        mock_vlr.get("/news/", params={"page": "176"}).respond(
-            200, text=load_fixture("news", "news_page176.html")
+        mock_vlr.get("/news/", params={"page": "300"}).respond(
+            200, text=load_fixture("news", "news_page300.html")
         )
 
         with pytest.raises(NotFoundError):
-            vlrdevapi.news(page=176)
+            vlrdevapi.news(page=300)
 
     def test_news_article(self, mock_vlr):
         mock_vlr.get("/734100").respond(

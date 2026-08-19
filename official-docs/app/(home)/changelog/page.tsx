@@ -9,6 +9,53 @@ export const metadata: Metadata = {
 
 const versions = [
   {
+    version: '2.4.0',
+    date: '19 August 2026',
+    github: 'https://github.com/vanshbordia/vlrdevapi/releases/tag/2.4.0',
+    pypi: 'https://pypi.org/project/vlrdevapi/2.4.0/',
+    summary: 'Adds Bo1 series support, event subregion resolution, a shared commons.regions module, series forfeit detection, and fixes economy/rounds enrichment mismatches.',
+    sections: [
+      {
+        title: 'Added',
+        items: [
+          'Bo1 series support — single-map series now resolve games from `.vm-stats-game` containers when nav tabs are absent. `resolve_game_id` raises `ParsingError` instead of silently returning wrong data.',
+          'Event region resolution — `_parse_breadcrumb` resolves `subregion=` breadcrumb links (e.g. "Japan", "North America") to their parent region via `commons.regions.resolve_subregion_to_region`. New `EventRegion.subregion` field preserves the original subregion name.',
+          'Event country-to-region fallback — when no breadcrumb region is present, the `region_location` country flag is resolved via `resolve_country_to_region` to infer the parent region.',
+          'Event region deduplication — duplicate region entries (from both `region=` and `subregion=` breadcrumbs for the same parent) are collapsed, preferring the entry that carries a subregion name.',
+          'New `commons.regions` module with `VALID_REGIONS`, `SUBREGION_TO_REGION` (17 VCL/GC subregions), `COUNTRY_TO_REGION` (~100+ countries), `resolve_subregion_to_region`, and `resolve_country_to_region`.',
+          'Region utilities re-exported from `vlrdevapi.commons` for convenience.',
+          'Series forfeit detection — new `ForfeitInfo` model on `SeriesInfo.forfeit` exposes `forfeited`, `team`, `team_id`, and `reason` fields. Parser detects "forfeited by TEAM" in the match header and maps the team name to the corresponding team ID.',
+          'Series match notes — new `SeriesInfo.notes` list captures non-veto `match-header-note` text such as technical pause warnings and lobby remake notices.',
+        ],
+      },
+      {
+        title: 'Changed',
+        items: [
+          'Series economy and rounds enrichment now try abbreviation-level names from `.ovw-player-tag` elements first (e.g. "SEN"), then fall back to full team names. This fixes mismatches where the economy/rounds tab shows a different abbreviation than the overview header.',
+          'Bo1 veto fallback now handles the "bans + decider" pattern (e.g. "Ban1 remains") in addition to pick/ban. The PICK badge is excluded from map names.',
+          'Series info notes parsing now iterates all `match-header-note` elements instead of only the first, correctly separating forfeit reasons, informational notes, and map veto text.',
+        ],
+      },
+      {
+        title: 'Fixed',
+        items: [
+          'Economy bank/spend parsing — `int()` calls on `.rnd-sq` title attributes and `.rnd-num` text are wrapped in `try/except ValueError`; malformed values default to `0` instead of crashing the parser.',
+          'Event region from location country — events that only have a "Location" label with a flag (no separate "Region" label) now resolve the region from `location.country` via `resolve_country_to_region`.',
+          'Phantom pagination in matches — terminal pages no longer report `has_next_page = True` (PR #50).',
+        ],
+      },
+      {
+        title: 'Documentation',
+        items: [
+          'Event info reference — `EventRegion` fields table now documents the `subregion` field. Region example demonstrates subregion access.',
+          'Series info reference — `ForfeitInfo` fields table documents the new `forfeit` nested model. `notes` field description explains the distinction between forfeit reasons and informational notes.',
+          'Series economy/rounds docstrings reference correct model types.',
+          'Project structure in contributing guide updated with actual directory names and new modules.',
+        ],
+      },
+    ],
+  },
+  {
     version: '2.3.0',
     date: '11 August 2026',
     github: 'https://github.com/vanshbordia/vlrdevapi/releases/tag/2.3.0',

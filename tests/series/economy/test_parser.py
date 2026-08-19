@@ -56,3 +56,77 @@ class TestParseEconomyGame:
         assert [r.spent_team1 for r in real.rounds] == [
             r.spent_team1 for r in self.game1.rounds
         ]
+
+
+_BO1_VETO_FIXTURES = FIXTURES_DIR / "series" / "64819"
+
+
+def _load_bo1_veto_html(filename: str) -> HTMLParser:
+    path = _BO1_VETO_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseEconomyBo1WithDeciderVeto:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.html = _load_bo1_veto_html("game_65212_economy.html")
+        self.result = parse_economy_data(self.html, game_id=1)
+
+    def test_teams(self):
+        assert self.result.team1 == "MAD"
+        assert self.result.team2 == "HZ"
+
+    def test_rounds_exist(self):
+        assert len(self.result.rounds) > 0
+
+    def test_first_round(self):
+        round_1 = self.result.rounds[0]
+        assert round_1.round_number == 1
+        assert isinstance(round_1.spent_team1, int)
+        assert isinstance(round_1.spent_team2, int)
+
+    def test_positional_matches_real_id(self):
+        real = parse_economy_data(self.html, game_id="65212")
+        assert len(real.rounds) == len(self.result.rounds)
+        assert [r.spent_team1 for r in real.rounds] == [
+            r.spent_team1 for r in self.result.rounds
+        ]
+
+
+_BO1_PICK_FIXTURES = FIXTURES_DIR / "series" / "30788"
+
+
+def _load_bo1_pick_html(filename: str) -> HTMLParser:
+    path = _BO1_PICK_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseEconomyBo1WithPickVeto:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.html = _load_bo1_pick_html("game_47971_economy.html")
+        self.result = parse_economy_data(self.html, game_id=1)
+
+    def test_teams(self):
+        assert self.result.team1 == "CNL"
+        assert self.result.team2 == "NXLGA"
+
+    def test_rounds_exist(self):
+        assert len(self.result.rounds) > 0
+
+    def test_first_round(self):
+        round_1 = self.result.rounds[0]
+        assert round_1.round_number == 1
+        assert isinstance(round_1.spent_team1, int)
+        assert isinstance(round_1.spent_team2, int)
+
+    def test_positional_matches_real_id(self):
+        real = parse_economy_data(self.html, game_id="47971")
+        assert len(real.rounds) == len(self.result.rounds)
+        assert [r.spent_team1 for r in real.rounds] == [
+            r.spent_team1 for r in self.result.rounds
+        ]

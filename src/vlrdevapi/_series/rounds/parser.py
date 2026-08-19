@@ -1,3 +1,5 @@
+"""Series rounds parser — extracts per-round win types and scores."""
+
 from selectolax.parser import HTMLParser
 
 from vlrdevapi._series._utils import resolve_game_id
@@ -56,7 +58,10 @@ def parse_rounds_data(html: HTMLParser, game_id: int | str = "all") -> RoundsDat
             if not rnd_num_elem:
                 continue
 
-            round_number = int(rnd_num_elem.text(strip=True))
+            try:
+                round_number = int(rnd_num_elem.text(strip=True))
+            except ValueError:
+                continue
 
             sqs = col.css(".rnd-sq")
             if len(sqs) != 2:

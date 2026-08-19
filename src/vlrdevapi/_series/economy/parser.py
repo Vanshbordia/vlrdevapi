@@ -1,3 +1,5 @@
+"""Series economy parser — extracts per-round bank and spend data."""
+
 from selectolax.parser import HTMLParser
 
 from vlrdevapi._series._utils import resolve_game_id
@@ -101,8 +103,11 @@ def parse_economy_data(html: HTMLParser, game_id: int | str = "all") -> EconomyD
         sq1 = rnd_sqs[0]  # team1
         sq2 = rnd_sqs[1]  # team2
 
-        spent_team1 = int(sq1.attributes.get("title") or "0")
-        spent_team2 = int(sq2.attributes.get("title") or "0")
+        try:
+            spent_team1 = int(sq1.attributes.get("title") or "0")
+            spent_team2 = int(sq2.attributes.get("title") or "0")
+        except ValueError:
+            continue
 
         buy_type_team1 = _get_buy_type(sq1.text(strip=True))
         buy_type_team2 = _get_buy_type(sq2.text(strip=True))

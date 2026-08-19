@@ -62,7 +62,7 @@ event.info(event_id: int) -> EventInfo
     default: "None",
   },
   "regions": {
-    description: "Region tags associated with the event (multiple = International).",
+    description: "Region tags associated with the event. Multiple distinct regions collapse to International; individual tags may carry a subregion.",
     type: "list[EventRegion]",
     typeDescription: "list[EventRegion] - see nested fields below",
     default: "[]",
@@ -137,13 +137,19 @@ event.info(event_id: int) -> EventInfo
 
 <TypeTable type={{
   "name": {
-    description: "Region name (e.g. Americas, EMEA).",
+    description: "Region name (e.g. Americas, EMEA, Pacific, China, International).",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
+  "subregion": {
+    description: "Subregion name when parsed from a subregion= breadcrumb (e.g. Japan, North America). None for region= links.",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
   "href": {
-    description: "Relative URL to the region page.",
+    description: "Relative URL to the region or subregion page.",
     type: "str",
     typeDescription: "str",
     default: '""',
@@ -240,7 +246,7 @@ if info.prize.amount:
 
 ### Location and regions
 
-Access the event's physical location and associated regions. Events can have multiple regions (e.g. an International event) and may have separate region-level and venue-level locations.
+Access the event's physical location and associated regions. Regions are resolved from breadcrumb links; a `subregion` value (e.g. "Japan") indicates the event was tagged with a regional qualifier. Events tagged with multiple distinct regions collapse to "International".
 
 ```python
 import vlrdevapi
@@ -252,7 +258,9 @@ if info.location:
 if info.region_location:
     print(f"Region: {info.region_location.country}")
 for region in info.regions:
-    print(f"Tag: {region.name}")
+    print(f"Region: {region.name}")
+    if region.subregion:
+        print(f"  Subregion: {region.subregion}")
 ```
 
 ### Series and stage context

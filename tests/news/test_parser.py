@@ -177,15 +177,14 @@ class TestParseNewsFixture:
         assert first.author != ""
 
     def test_live_last_page(self):
-        html = HTMLParser(load_fixture("news", "news_page126.html"))
+        html = HTMLParser(load_fixture("news", "news_last_page.html"))
         result = parse_news_page(html)
 
         assert len(result.news) > 0
-        assert result.page_number == 126
         assert result.has_next_page is False
 
     def test_out_of_range_page_has_no_items(self):
-        html = HTMLParser(load_fixture("news", "news_page176.html"))
+        html = HTMLParser(load_fixture("news", "news_page300.html"))
         result = parse_news_page(html)
 
         assert result.news == []

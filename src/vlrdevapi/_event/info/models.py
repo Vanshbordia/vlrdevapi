@@ -63,6 +63,10 @@ class EventRegion(BaseModel):
         default="",
         description="Region name (e.g., 'EMEA', 'Pacific', 'Americas', 'China', 'International')",
     )
+    subregion: str | None = Field(
+        default=None,
+        description="Subregion name if parsed from a subregion= breadcrumb (e.g., 'Japan', 'North America'); None for region= links",
+    )
     href: str = Field(default="", description="Relative path (e.g., '/vct/?region=27')")
 
 

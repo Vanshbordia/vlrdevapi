@@ -78,6 +78,27 @@ class SeriesGame(BaseModel):
     )
 
 
+class ForfeitInfo(BaseModel):
+    """Forfeit/walkover information for a match."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "description": "Forfeit/walkover information for a match.",
+        },
+    )
+
+    forfeited: bool = Field(default=False, description="Whether the match was forfeited")
+    team: str | None = Field(
+        default=None, description="Full name of the team that forfeited",
+    )
+    team_id: int | None = Field(
+        default=None, description="vlr.gg team ID of the forfeiting team",
+    )
+    reason: str | None = Field(
+        default=None, description="Forfeit explanation from match notes",
+    )
+
+
 class SeriesInfo(BaseModel):
     """Overview information for a match/series on vlr.gg."""
 
@@ -111,3 +132,11 @@ class SeriesInfo(BaseModel):
     )
     veto: list[MapVeto] = Field(default_factory=list, description="Map veto/pick/ban info")
     games: list[SeriesGame] = Field(default_factory=list, description="Games/maps in the series")
+    forfeit: ForfeitInfo = Field(
+        default_factory=ForfeitInfo,
+        description="Forfeit/walkover information if the match was forfeited",
+    )
+    notes: list[str] = Field(
+        default_factory=list,
+        description="Non-veto match notes (e.g. technical pauses, lobby remakes)",
+    )

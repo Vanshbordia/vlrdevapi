@@ -6,6 +6,7 @@ from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from vlrdevapi._series._utils import PlayerMap
 from vlrdevapi._series.performance.parser import parse_performance_data
 from vlrdevapi._series.players.parser import parse_players_stats
+from vlrdevapi.exceptions import ParsingError
 
 
 _FIXTURES = (
@@ -225,17 +226,13 @@ class TestParsePerformanceGameAll:
 
 
 class TestParsePerformanceInvalidGame:
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        self.result = parse_performance_data(
-            _load_html("game_233478_performance.html"),
-            game_id="999999",
-            player_mapping=PlayerMap(),
-        )
-
-    def test_empty_result_for_invalid_game(self):
-        assert self.result.all_kills_matrix.entries == []
-        assert self.result.adv_stats == []
+    def test_raises_for_invalid_game(self):
+        with pytest.raises(ParsingError, match="index out of range"):
+            parse_performance_data(
+                _load_html("game_233478_performance.html"),
+                game_id="999999",
+                player_mapping=PlayerMap(),
+            )
 
 
 class TestParsePerformancePositional:
