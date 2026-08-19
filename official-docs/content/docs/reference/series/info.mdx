@@ -119,6 +119,17 @@ vlrdevapi.series(series_id).info() -> SeriesInfo
     typeDescription: "list[SeriesGame] - see nested fields below",
     default: "[]",
   },
+  "forfeit": {
+    description: "Forfeit/walkover information if the match was forfeited.",
+    type: "ForfeitInfo",
+    typeDescription: "ForfeitInfo - see nested fields below",
+  },
+  "notes": {
+    description: "Non-veto match notes (e.g. technical pauses, lobby remakes).",
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
 }} />
 
 ### `SeriesTeam` Fields
@@ -262,6 +273,35 @@ vlrdevapi.series(series_id).info() -> SeriesInfo
   },
 }} />
 
+### `ForfeitInfo` Fields
+
+<TypeTable type={{
+  "forfeited": {
+    description: "Whether the match was forfeited.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "team": {
+    description: 'Full name of the team that forfeited (e.g. "YFP X", "T1").',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "team_id": {
+    description: "vlr.gg team ID of the forfeiting team.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "reason": {
+    description: "Forfeit explanation from match notes.",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
 ## Examples
 
 ### Basic series info
@@ -323,4 +363,22 @@ info = series.info()
 print(f"{info.team1.name} ({info.team1.tag}) vs {info.team2.name} ({info.team2.tag})")
 print(f"Event: {info.event_name}")
 print(f"Total maps: {len(info.games)}")
+```
+
+### Forfeit detection
+
+Check if a match was forfeited and which team walked over. The `forfeit` field provides the team name, team ID, and reason when available. Non-forfeit notes (e.g. technical pauses, lobby remakes) appear in the `notes` list.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.series.info(series_id=477343)
+if info.forfeit.forfeited:
+    print(f"Forfeited by: {info.forfeit.team} (ID: {info.forfeit.team_id})")
+    print(f"Reason: {info.forfeit.reason}")
+else:
+    print("No forfeit")
+
+if info.notes:
+    print(f"Notes: {', '.join(info.notes)}")
 ```

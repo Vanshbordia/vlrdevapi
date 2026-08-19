@@ -7,6 +7,7 @@ import httpx
 from selectolax.parser import HTMLParser
 
 from vlrdevapi._base import SyncNamespace
+from vlrdevapi._series._utils import _extract_team_abbreviations
 from vlrdevapi._series.economy.models import EconomyData
 from vlrdevapi._series.economy.parser import parse_economy_data
 from vlrdevapi._series.info.parser import parse_series_info
@@ -46,7 +47,7 @@ class SeriesEconomyNamespace:
 
         Returns:
             EconomyData: Economy data including ``rounds`` (list of
-            ``EconomyRound`` with purchases, remaining credits, and
+            ``RoundEconomyData`` with purchases, remaining credits, and
             team spending per round), ``team1`` and ``team2`` names,
             and enriched team IDs.
 
@@ -60,8 +61,8 @@ class SeriesEconomyNamespace:
 
         Examples:
             >>> econ = vlrdevapi.series.economy(series_id=12345, game_id=1)
-            >>> econ.rounds[0].team1_creds
-            24000
+            >>> econ.rounds[0].bank_team1
+            24000.0
             >>> econ.rounds[0].winner.name
             'FNATIC'
 
@@ -77,20 +78,32 @@ class SeriesEconomyNamespace:
 
 
 def _enrich_economy(result: EconomyData, html_series: HTMLParser) -> EconomyData:
-    """Enrich economy data with team IDs from the series info.
+    """Enrich economy data with team IDs and round winners from the series info.
+
+    Team matching first tries abbreviation-level names extracted from
+    ``.ovw-player-tag`` elements (e.g. "SEN"), then falls back to full
+    team names from the series header.  Round winners are resolved from
+    the stored ``_temp_winner`` tag set during parsing.
 
     Args:
         result: The EconomyData to enrich.
         html_series: HTML of the series page for team info parsing.
 
     Returns:
-        EconomyData: Enriched economy data with team IDs.
+        EconomyData: Enriched economy data with team IDs and round winners.
 
     """
     series_info = parse_series_info(html_series)
-    if series_info.team1 and series_info.team1.tag == result.team1:
+    team1_abbr, team2_abbr = _extract_team_abbreviations(html_series)
+
+    if team1_abbr == result.team1:
         result.team1_id = series_info.team1.id
-    if series_info.team2 and series_info.team2.tag == result.team2:
+    elif result.team1 and series_info.team1.name == result.team1:
+        result.team1_id = series_info.team1.id
+
+    if team2_abbr == result.team2:
+        result.team2_id = series_info.team2.id
+    elif result.team2 and series_info.team2.name == result.team2:
         result.team2_id = series_info.team2.id
 
     for round_data in result.rounds:

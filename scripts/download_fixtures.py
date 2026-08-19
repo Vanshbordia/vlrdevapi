@@ -33,8 +33,7 @@ ROUTES += [
 ROUTES += [
     ("/news", "news/news.html", {}),
     ("/news/?page=2", "news/news_page2.html", {}),
-    ("/news/?page=126", "news/news_page126.html", {}),
-    ("/news/?page=176", "news/news_page176.html", {}),
+    ("/news/?page=300", "news/news_page300.html", {}),
     ("/734100", "news/article_734100.html", {}),
     ("/720033/americas-recent-victors-start-strong-in-week-1", "news/article_720033.html", {}),
 ]
@@ -110,6 +109,9 @@ ADDITIONAL_EVENTS = [
     (2949, "gameon-productivity-and-technology-tournament-2026"),
     (2847, "challengers-2026-japan-split-1"),
     (58, "100t-x-cashapp-gamers-for-equality"),
+    (2763, "tesfed-turkish-cup-2025"),
+    (2544, "morocco-gaming-expo-2025"),
+    (3074, "raidiant-academy-2026"),
 ]
 
 for _eid, _eslug in ADDITIONAL_EVENTS:
@@ -128,8 +130,8 @@ ROUTES += [
 
 # ── Event standings pages (for standings filtering tests) ──────
 ROUTES += [
-    ("/event/2283", "event/2283/overview.html", {}),
-    ("/event/2682", "event/2682_americas_kickoff/overview.html", {}),
+    ("/event/2283/valorant-champions-2025", "event/2283_valorant-champions-2025/overview.html", {}),
+    ("/event/2682/vct-2026-americas-kickoff", "event/2682_vct-2026-americas-kickoff/overview.html", {}),
 ]
 
 # ── Event matches pages ─────────────────────────────────────────
@@ -321,10 +323,153 @@ ROUTES += [
 ]
 
 
+# ── Series 704037 Bo1 (single-map game, no nav tabs, no veto) ─
+SERIES_ID_BO1 = 704037
+SERIES_SLUG_BO1 = "mushoku-vs-fallen-angels-game-changers-2026-emea-stage-2-promotion-relegation-r1"
+GAME_ID_BO1 = 274641
+
+ROUTES += [
+    (
+        f"/{SERIES_ID_BO1}/{SERIES_SLUG_BO1}",
+        f"series/{SERIES_ID_BO1}/overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1}?game={GAME_ID_BO1}&tab=overview",
+        f"series/{SERIES_ID_BO1}/game_{GAME_ID_BO1}_overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1}?game={GAME_ID_BO1}&tab=performance",
+        f"series/{SERIES_ID_BO1}/game_{GAME_ID_BO1}_performance.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1}?game={GAME_ID_BO1}&tab=economy",
+        f"series/{SERIES_ID_BO1}/game_{GAME_ID_BO1}_economy.html",
+        {},
+    ),
+]
+
+# ── Series 64819 Bo1 (single-map, bans + decider veto) ────────
+SERIES_ID_BO1_VETO = 64819
+GAME_ID_BO1_VETO = 65212
+
+ROUTES += [
+    (
+        f"/{SERIES_ID_BO1_VETO}",
+        f"series/{SERIES_ID_BO1_VETO}/overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1_VETO}?game={GAME_ID_BO1_VETO}&tab=overview",
+        f"series/{SERIES_ID_BO1_VETO}/game_{GAME_ID_BO1_VETO}_overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1_VETO}?game={GAME_ID_BO1_VETO}&tab=performance",
+        f"series/{SERIES_ID_BO1_VETO}/game_{GAME_ID_BO1_VETO}_performance.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1_VETO}?game={GAME_ID_BO1_VETO}&tab=economy",
+        f"series/{SERIES_ID_BO1_VETO}/game_{GAME_ID_BO1_VETO}_economy.html",
+        {},
+    ),
+]
+
+# ── Series 30788 Bo1 (single-map, pick veto) ──────────────────
+SERIES_ID_BO1_PICK = 30788
+GAME_ID_BO1_PICK = 47971
+
+ROUTES += [
+    (
+        f"/{SERIES_ID_BO1_PICK}",
+        f"series/{SERIES_ID_BO1_PICK}/overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1_PICK}?game={GAME_ID_BO1_PICK}&tab=overview",
+        f"series/{SERIES_ID_BO1_PICK}/game_{GAME_ID_BO1_PICK}_overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1_PICK}?game={GAME_ID_BO1_PICK}&tab=performance",
+        f"series/{SERIES_ID_BO1_PICK}/game_{GAME_ID_BO1_PICK}_performance.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO1_PICK}?game={GAME_ID_BO1_PICK}&tab=economy",
+        f"series/{SERIES_ID_BO1_PICK}/game_{GAME_ID_BO1_PICK}_economy.html",
+        {},
+    ),
+]
+
+# ── Series: forfeit and notes parsing ───────────────────────
+SERIES_FORFEIT_NOTES = [
+    (477343, "shopify-rebellion-gold-vs-yfp-x-game-changers-2025-north-america-stage-1-r3"),
+    (67357, "t1-vs-tsm-champions-tour-north-america-stage-1-challengers-lr4"),
+    (155313, "blind-esports-vs-onlyfriends-nsg-yuddha-phase-2-all-india-championship-playoffs-lr1"),
+    (459856, "team-liquid-vs-karmine-corp-champions-tour-2025-emea-stage-1-w5"),
+    (715117, "shopify-rebellion-black-vs-2game-esports-vcl-26-americas-last-chance-qualifier-main-event-gf"),
+]
+
+for _sid, _sslug in SERIES_FORFEIT_NOTES:
+    ROUTES.append((f"/{_sid}/{_sslug}", f"series/{_sid}/overview.html", {}))
+
+
+def _parse_last_page(html: str) -> int | None:
+    """Parse the highest page number from vlr.gg pagination controls."""
+    from selectolax.parser import HTMLParser
+
+    doc = HTMLParser(html)
+    pagination = doc.css_first("div.action-container-pages")
+    if pagination is None:
+        return None
+    max_page = 0
+    for el in pagination.css("a.btn.mod-page, span.btn.mod-page"):
+        try:
+            num = int(el.text(strip=True))
+            if num > max_page:
+                max_page = num
+        except ValueError:
+            continue
+    return max_page if max_page > 0 else None
+
+
+async def _download_news_last_page(client: httpx.AsyncClient) -> None:
+    """Dynamically determine and download the last news page."""
+    out = FIXTURES_DIR / "news" / "news_last_page.html"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    if out.exists():
+        print("SKIP (exists) news/news_last_page.html")
+        return
+
+    print("GET /news (to find last page number)")
+    try:
+        resp = await client.get("/news")
+        resp.raise_for_status()
+        last_page = _parse_last_page(resp.text)
+        if last_page is None:
+            print("         WARNING: could not parse last page number")
+            return
+
+        last_path = f"/news/?page={last_page}"
+        print(f"GET {BASE_URL}{last_path}")
+        resp2 = await client.get(last_path)
+        resp2.raise_for_status()
+        out.write_text(resp2.text, encoding="utf-8")
+        print(f"         -> {out.relative_to(FIXTURES_DIR.parent)}")
+    except (httpx.HTTPStatusError, httpx.RequestError) as e:
+        print(f"         ERROR {e}")
+
+
 async def download_all():
     async with httpx.AsyncClient(
         base_url=BASE_URL, headers=HEADERS, follow_redirects=True, timeout=30
     ) as client:
+        await _download_news_last_page(client)
+
         total = len(ROUTES)
         for i, (path, filename, cookies) in enumerate(ROUTES, 1):
             out = FIXTURES_DIR / filename

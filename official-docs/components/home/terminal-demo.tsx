@@ -14,7 +14,7 @@ export function TerminalDemo() {
         '...     print(f"    {m.team1.name:20s} vs {m.team2.name:20s}")',
       ]}
       outputs={{
-        0: ['Successfully installed vlrdevapi-2.3.0'],
+        0: ['Successfully installed vlrdevapi-2.4.0'],
         1: ['Python 3.12.0 (main, Oct 2 2024)'],
         5: [
           'Sentinels           vs NRG',

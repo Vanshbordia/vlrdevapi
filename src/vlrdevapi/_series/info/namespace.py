@@ -43,7 +43,7 @@ class SeriesInfoNamespace:
         Returns:
             SeriesInfo: Series metadata including ``team1``, ``team2``,
             ``event_name``, ``scores``, ``match_format`` (bo3/bo5),
-            ``status``, and ``patch``.
+            ``status``, ``patch``, ``forfeit``, and ``notes``.
 
         Raises:
             ValidationError: If ``series_id`` is not a valid positive integer.
@@ -58,6 +58,8 @@ class SeriesInfoNamespace:
             'FNATIC'
             >>> result.event_name
             'VCT LOCK//IN São Paulo'
+            >>> result.forfeit.forfeited
+            False
 
         """
         html = self._sync._fetch(series_path(series_id))

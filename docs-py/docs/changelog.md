@@ -5,6 +5,92 @@ All notable changes to this project will be documented in this page.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.4.0] - 2026-08-19
+
+### Added
+
+- **Bo1 series support** — single-map series now resolve games from
+  `.vm-stats-game` containers when nav tabs are absent. `resolve_game_id`
+  raises `ParsingError` instead of silently returning wrong data on
+  out-of-range or empty game lists.
+- **Event region resolution** — `_parse_breadcrumb` resolves `subregion=`
+  breadcrumb links (e.g. "Japan", "North America") to their parent region
+  via `commons.regions.resolve_subregion_to_region`. A new
+  `EventRegion.subregion` field preserves the original subregion name
+  (e.g. `"Japan"`); `None` for `region=` links.
+- **Event country-to-region fallback** — when no breadcrumb region is
+  present, the `region_location` country flag is resolved via
+  `resolve_country_to_region` to infer the parent region.
+- **Event region deduplication** — duplicate region entries (from both
+  `region=` and `subregion=` breadcrumbs for the same parent region)
+  are collapsed, preferring the entry that carries a subregion name.
+- **`commons.regions` module** — new shared utilities for region
+  resolution: `VALID_REGIONS`, `SUBREGION_TO_REGION` (17 VCL/GC
+  subregions), `COUNTRY_TO_REGION` (~100+ countries),
+  `resolve_subregion_to_region`, and `resolve_country_to_region`.
+- **`commons.__init__` re-exports** — `resolve_subregion_to_region`,
+  `resolve_country_to_region`, `VALID_REGIONS`, `SUBREGION_TO_REGION`,
+  and `COUNTRY_TO_REGION` are now re-exported from `vlrdevapi.commons`.
+- **Series forfeit detection** — new `ForfeitInfo` model on
+  `SeriesInfo.forfeit` exposes `forfeited`, `team`, `team_id`, and
+  `reason` fields. Parser detects `"forfeited by TEAM"` in the
+  `match-header-vs-note` element and maps the team name to the
+  corresponding `team1`/`team2` for ID resolution. Note-level
+  forfeit text (e.g. "Blind Esports Forfeit Map 2") is also parsed.
+- **Series match notes** — new `SeriesInfo.notes` list captures
+  non-veto `match-header-note` text such as technical pause warnings
+  and lobby remake notices.
+
+### Changed
+
+- **Series economy enrichment** — team matching now tries abbreviation
+  names from `.ovw-player-tag` elements first (e.g. "SEN"), then falls
+  back to full team names. This fixes mismatches where the economy tab
+  shows a different abbreviation than the overview header.
+- **Series rounds enrichment** — same abbreviation-first matching
+  strategy as economy.
+- **Series info veto parsing** — Bo1 veto fallback now handles the
+  "bans + decider" pattern (e.g. `"Ban1 remains"`) in addition to
+  pick/ban. The PICK badge is excluded from map names via
+  `span.text(deep=False)`.
+- **Series info notes parsing** — the parser now iterates all
+  `match-header-note` elements instead of only the first. This
+  correctly separates forfeit reasons, informational notes, and
+  map veto text when multiple notes are present.
+
+### Fixed
+
+- **Economy bank/spend parsing** — `int()` calls on `.rnd-sq` `title`
+  attributes and `.rnd-num` text are wrapped in `try/except ValueError`;
+  malformed values default to `0` instead of crashing the parser.
+- **Event region from location country** — events that only have a
+  "Location" label with a flag (no separate "Region" label) now resolve
+  the region from `location.country` via `resolve_country_to_region`.
+  Previously the country-to-region fallback only checked `region_location`.
+- **Phantom pagination in matches** — terminal pages no longer report
+  `has_next_page = True` (from DaviAlcanfor PR #50).
+
+### Documentation
+
+- **Event info reference** — `EventRegion` fields table now documents
+  the `subregion` field. Region example demonstrates subregion access.
+  `regions` field description explains deduplication and International
+  collapse.
+- **Series info reference** — `ForfeitInfo` fields table documents the
+  new `forfeit` nested model. `notes` field description explains the
+  distinction between forfeit reasons and informational notes.
+- **Series economy reference** — docstrings reference correct model
+  types (`RoundEconomyData`, `bank_team1`).
+- **Series rounds reference** — docstrings reference correct model
+  types (`RoundData`, `winner_team_name`).
+- **`commons.regions` module** — docstrings describe all mapping
+  dictionaries and resolution functions.
+- **Project structure** — contributing guide updated with actual
+  underscore-prefixed directory names and new modules (`_news/`,
+  `_utils/`, `commons/regions.py`).
+- **Module docstrings** — added to `economy/parser.py`,
+  `rounds/parser.py`, and `commons/__init__.py`.
+
 ## [2.3.0] - 2026-08-11
 
 ### Added

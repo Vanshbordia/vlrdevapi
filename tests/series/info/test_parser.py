@@ -102,3 +102,372 @@ class TestParseSeriesInfo:
         assert game5.team2_defense_rounds == 3
         assert game5.duration_seconds == 2538
 
+
+_BO1_FIXTURES = FIXTURES_DIR / "series" / "704037"
+
+
+def _load_bo1_html(filename: str) -> HTMLParser:
+    path = _BO1_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoBo1:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_bo1_html("overview.html"))
+        self.result.series_id = 704037
+
+    def test_basic_info(self):
+        assert self.result.series_id == 704037
+        assert self.result.status == "completed"
+        assert self.result.event_name == "Game Changers 2026: EMEA Stage 2 - Promotion/Relegation"
+        assert self.result.stage == "Swiss Stage"
+        assert self.result.bracket == "Round 1"
+
+    def test_teams(self):
+        assert self.result.team1.name == "Mushoku"
+        assert self.result.team2.name == "Fallen Angels"
+
+    def test_scores(self):
+        assert self.result.score1 == 0
+        assert self.result.score2 == 1
+        assert self.result.best_of == 1
+
+    def test_single_game(self):
+        assert len(self.result.games) == 1
+
+    def test_game_details(self):
+        game = self.result.games[0]
+        assert game.game_id == 274641
+        assert game.map_name == "Pearl"
+        assert game.order == 1
+        assert game.played is True
+        assert game.team1_score == 2
+        assert game.team2_score == 13
+        assert game.team1_defense_rounds == 2
+        assert game.team1_attack_rounds == 0
+        assert game.team2_attack_rounds == 10
+        assert game.team2_defense_rounds == 3
+        assert game.duration_seconds == 2148
+
+
+_BO1_VETO_FIXTURES = FIXTURES_DIR / "series" / "64819"
+
+
+def _load_bo1_veto_html(filename: str) -> HTMLParser:
+    path = _BO1_VETO_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoBo1WithDeciderVeto:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_bo1_veto_html("overview.html"))
+        self.result.series_id = 64819
+
+    def test_basic_info(self):
+        assert self.result.series_id == 64819
+        assert self.result.status == "completed"
+        assert self.result.best_of == 1
+
+    def test_teams(self):
+        assert self.result.team1.name == "Madness Esports"
+        assert self.result.team2.name == "Huat Zai"
+
+    def test_scores(self):
+        assert self.result.score1 == 0
+        assert self.result.score2 == 1
+
+    def test_veto_parsed(self):
+        assert len(self.result.veto) == 7
+        assert self.result.veto[0].veto_type == "ban"
+        assert self.result.veto[0].map_name == "Bind"
+        assert self.result.veto[0].team == "MAD"
+        assert self.result.veto[6].veto_type == "decider"
+        assert self.result.veto[6].map_name == "Breeze"
+        assert self.result.veto[6].team == ""
+
+    def test_single_game(self):
+        assert len(self.result.games) == 1
+
+    def test_game_details(self):
+        game = self.result.games[0]
+        assert game.game_id == 65212
+        assert game.map_name == "Breeze"
+        assert game.order == 1
+        assert game.played is True
+        assert game.team1_score == 7
+        assert game.team2_score == 13
+
+
+_BO1_PICK_FIXTURES = FIXTURES_DIR / "series" / "30788"
+
+
+def _load_bo1_pick_html(filename: str) -> HTMLParser:
+    path = _BO1_PICK_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoBo1WithPickVeto:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_bo1_pick_html("overview.html"))
+        self.result.series_id = 30788
+
+    def test_basic_info(self):
+        assert self.result.series_id == 30788
+        assert self.result.status == "completed"
+        assert self.result.best_of == 1
+
+    def test_teams(self):
+        assert self.result.team1.name == "Cynical"
+        assert self.result.team2.name == "NXLG Academy"
+
+    def test_scores(self):
+        assert self.result.score1 == 1
+        assert self.result.score2 == 0
+
+    def test_veto_parsed(self):
+        assert len(self.result.veto) == 1
+        assert self.result.veto[0].veto_type == "pick"
+        assert self.result.veto[0].map_name == "Icebox"
+        assert self.result.veto[0].team == "NXLGA"
+
+    def test_single_game(self):
+        assert len(self.result.games) == 1
+
+    def test_game_details(self):
+        game = self.result.games[0]
+        assert game.game_id == 47971
+        assert game.map_name == "Icebox"
+        assert game.order == 1
+        assert game.played is True
+        assert game.team1_score == 13
+        assert game.team2_score == 11
+
+
+_FORFEIT_REASON_FIXTURES = FIXTURES_DIR / "series" / "477343"
+
+
+def _load_forfeit_reason_html(filename: str) -> HTMLParser:
+    path = _FORFEIT_REASON_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoForfeitWithReason:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_forfeit_reason_html("overview.html"))
+        self.result.series_id = 477343
+
+    def test_basic_info(self):
+        assert self.result.series_id == 477343
+        assert self.result.status == "completed"
+        assert self.result.best_of == 3
+
+    def test_teams(self):
+        assert self.result.team1.name == "Shopify Rebellion Gold"
+        assert self.result.team1.id == 14278
+        assert self.result.team2.name == "YFP X"
+        assert self.result.team2.id == 13301
+
+    def test_forfeit_true(self):
+        assert self.result.forfeit.forfeited is True
+
+    def test_forfeit_team(self):
+        assert self.result.forfeit.team == "YFP X"
+
+    def test_forfeit_team_id(self):
+        assert self.result.forfeit.team_id == 13301
+
+    def test_forfeit_reason(self):
+        assert self.result.forfeit.reason == "YFP X forfeit due to technical issues"
+
+    def test_veto_still_parsed(self):
+        assert len(self.result.veto) > 0
+
+    def test_notes_empty(self):
+        assert self.result.notes == []
+
+
+_FORFEIT_NO_REASON_FIXTURES = FIXTURES_DIR / "series" / "67357"
+
+
+def _load_forfeit_no_reason_html(filename: str) -> HTMLParser:
+    path = _FORFEIT_NO_REASON_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoForfeitNoReason:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_forfeit_no_reason_html("overview.html"))
+        self.result.series_id = 67357
+
+    def test_basic_info(self):
+        assert self.result.series_id == 67357
+        assert self.result.status == "completed"
+        assert self.result.best_of == 3
+
+    def test_teams(self):
+        assert self.result.team1.name == "T1"
+        assert self.result.team1.id == 14
+        assert self.result.team2.name == "TSM"
+        assert self.result.team2.id == 106
+
+    def test_forfeit_true(self):
+        assert self.result.forfeit.forfeited is True
+
+    def test_forfeit_team(self):
+        assert self.result.forfeit.team == "T1"
+
+    def test_forfeit_team_id(self):
+        assert self.result.forfeit.team_id == 14
+
+    def test_forfeit_reason_none(self):
+        assert self.result.forfeit.reason is None
+
+    def test_veto_still_parsed(self):
+        assert len(self.result.veto) > 0
+
+    def test_notes_empty(self):
+        assert self.result.notes == []
+
+
+_MAP_FORFEIT_FIXTURES = FIXTURES_DIR / "series" / "155313"
+
+
+def _load_map_forfeit_html(filename: str) -> HTMLParser:
+    path = _MAP_FORFEIT_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoMapForfeit:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_map_forfeit_html("overview.html"))
+        self.result.series_id = 155313
+
+    def test_basic_info(self):
+        assert self.result.series_id == 155313
+        assert self.result.status == "completed"
+        assert self.result.best_of == 3
+
+    def test_teams(self):
+        assert self.result.team1.name == "Blind Esports"
+        assert self.result.team1.id == 7898
+        assert self.result.team2.name == "OnlyFriends"
+        assert self.result.team2.id == 6001
+
+    def test_forfeit_true(self):
+        assert self.result.forfeit.forfeited is True
+
+    def test_forfeit_team(self):
+        assert self.result.forfeit.team == "Blind Esports"
+
+    def test_forfeit_team_id(self):
+        assert self.result.forfeit.team_id == 7898
+
+    def test_forfeit_reason(self):
+        assert self.result.forfeit.reason == "Blind Esports Forfeit Map 2"
+
+    def test_veto_still_parsed(self):
+        assert len(self.result.veto) > 0
+
+    def test_notes_empty(self):
+        assert self.result.notes == []
+
+
+_LOBBY_REMAKE_FIXTURES = FIXTURES_DIR / "series" / "459856"
+
+
+def _load_lobby_remake_html(filename: str) -> HTMLParser:
+    path = _LOBBY_REMAKE_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoInfoNotes:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_lobby_remake_html("overview.html"))
+        self.result.series_id = 459856
+
+    def test_basic_info(self):
+        assert self.result.series_id == 459856
+        assert self.result.status == "completed"
+        assert self.result.best_of == 3
+
+    def test_teams(self):
+        assert self.result.team1.name == "Team Liquid"
+        assert self.result.team1.id == 474
+        assert self.result.team2.name == "Karmine Corp"
+        assert self.result.team2.id == 8877
+
+    def test_forfeit_false(self):
+        assert self.result.forfeit.forfeited is False
+        assert self.result.forfeit.team is None
+        assert self.result.forfeit.team_id is None
+        assert self.result.forfeit.reason is None
+
+    def test_notes_has_lobby_remake(self):
+        assert len(self.result.notes) == 1
+        assert self.result.notes[0] == "Map 1 stats unavailable due to lobby remake."
+
+    def test_veto_still_parsed(self):
+        assert len(self.result.veto) > 0
+
+
+_TECHNICAL_PAUSES_FIXTURES = FIXTURES_DIR / "series" / "715117"
+
+
+def _load_technical_pauses_html(filename: str) -> HTMLParser:
+    path = _TECHNICAL_PAUSES_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoTechnicalPauses:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_technical_pauses_html("overview.html"))
+        self.result.series_id = 715117
+
+    def test_basic_info(self):
+        assert self.result.series_id == 715117
+        assert self.result.status == "completed"
+        assert self.result.best_of == 5
+
+    def test_teams(self):
+        assert self.result.team1.name == "Shopify Rebellion Black"
+        assert self.result.team1.id == 9353
+        assert self.result.team2.name == "2Game Esports"
+        assert self.result.team2.id == 15072
+
+    def test_forfeit_false(self):
+        assert self.result.forfeit.forfeited is False
+        assert self.result.forfeit.team is None
+        assert self.result.forfeit.team_id is None
+        assert self.result.forfeit.reason is None
+
+    def test_notes_has_technical_pauses(self):
+        assert len(self.result.notes) == 1
+        assert self.result.notes[0] == "Stats are incomplete due to multiple technical pauses."
+
+    def test_veto_still_parsed(self):
+        assert len(self.result.veto) > 0
+

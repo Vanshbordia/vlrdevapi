@@ -32,13 +32,15 @@ Thank you for your interest in contributing!
 src/vlrdevapi/
   _base.py          # SyncNamespace base class
   _cache.py         # LRUCache
-  client.py         # VLRClient
-  commons/          # Shared utilities (mappings, datetime, countries)
-  event/            # Event/tournament endpoints
-  matches/          # Match listing endpoints (live / upcoming / completed)
-  player/           # Player endpoints (info / teams / agents / matches / profile)
-  series/           # Series (match detail) endpoints
-  team/             # Team endpoints (info / roster / placements / etc.)
+  _client.py        # VLRClient
+  _event/           # Event/tournament endpoints
+  _matches/         # Match listing endpoints (live / upcoming / completed)
+  _news/            # News listing and article endpoints
+  _player/          # Player endpoints (info / teams / agents / matches / profile)
+  _series/          # Series (match detail) endpoints
+  _team/            # Team endpoints (info / roster / placements / etc.)
+  _utils/           # Internal utilities (pagination, paths)
+  commons/          # Shared utilities (regions, mappings, datetime, countries, prizes, timezone)
   validators.py     # Input sanitization / validation
   fetcher.py        # HTTP fetching with retries and rate limiting
 ```

@@ -7,6 +7,7 @@ import httpx
 from selectolax.parser import HTMLParser
 
 from vlrdevapi._base import SyncNamespace
+from vlrdevapi._series._utils import _extract_team_abbreviations
 from vlrdevapi._series.info.parser import parse_series_info
 from vlrdevapi._series.rounds.models import RoundsData
 from vlrdevapi._series.rounds.parser import parse_rounds_data
@@ -46,8 +47,8 @@ class SeriesRoundsNamespace:
 
         Returns:
             RoundsData: Round-by-round data including ``rounds``
-            (list of ``RoundDetail`` with economy, damage, and kill events),
-            ``team_defense``, ``team_attack``, and enriched team IDs.
+            (list of ``RoundData`` with win type, side, and scores),
+            ``team1`` and ``team2`` names, and enriched team IDs.
 
         Raises:
             ValidationError: If ``series_id`` or ``game_id`` is not a valid
@@ -61,7 +62,7 @@ class SeriesRoundsNamespace:
             >>> data = vlrdevapi.series.rounds(series_id=12345, game_id=1)
             >>> len(data.rounds)
             24
-            >>> data.rounds[0].winning_team
+            >>> data.rounds[0].winner_team_name
             'Team1'
 
         """
@@ -78,6 +79,10 @@ class SeriesRoundsNamespace:
 def _enrich_rounds(result: RoundsData, html_series: HTMLParser) -> RoundsData:
     """Enrich round data with team IDs from the series info.
 
+    Team matching first tries abbreviation-level names extracted from
+    ``.ovw-player-tag`` elements (e.g. "SEN"), then falls back to full
+    team names from the series header.
+
     Args:
         result: The RoundsData to enrich.
         html_series: HTML of the series page for team info parsing.
@@ -87,9 +92,16 @@ def _enrich_rounds(result: RoundsData, html_series: HTMLParser) -> RoundsData:
 
     """
     series_info = parse_series_info(html_series)
-    if series_info.team1 and series_info.team1.tag == result.team1:
+    team1_abbr, team2_abbr = _extract_team_abbreviations(html_series)
+
+    if team1_abbr == result.team1:
         result.team1_id = series_info.team1.id
-    if series_info.team2 and series_info.team2.tag == result.team2:
+    elif result.team1 and series_info.team1.name == result.team1:
+        result.team1_id = series_info.team1.id
+
+    if team2_abbr == result.team2:
+        result.team2_id = series_info.team2.id
+    elif result.team2 and series_info.team2.name == result.team2:
         result.team2_id = series_info.team2.id
 
     for round_data in result.rounds:
