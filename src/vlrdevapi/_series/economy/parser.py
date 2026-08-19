@@ -1,3 +1,5 @@
+"""Series economy parser — extracts per-round bank and spend data."""
+
 from selectolax.parser import HTMLParser
 
 from vlrdevapi._series._utils import resolve_game_id

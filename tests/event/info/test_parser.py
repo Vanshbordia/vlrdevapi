@@ -110,8 +110,10 @@ class TestParseEventInfoGAMEON:
     def test_stage_none(self):
         assert self.result.stage is None
 
-    def test_regions_empty(self):
-        assert self.result.regions == []
+    def test_regions_emea_via_location_fallback(self):
+        assert len(self.result.regions) == 1
+        assert self.result.regions[0].name == "EMEA"
+        assert self.result.regions[0].subregion is None
 
     def test_dates_short_format(self):
         raw = event_dates_text(self.html)
@@ -345,4 +347,87 @@ class TestParseEventInfoRaidiantAcademy:
 
     def test_location_none(self):
         assert self.result.location is None
+
+
+class TestParseEventInfoTurkishCup:
+    """TESFED Turkish Cup 2025 — no Region label, only Location with flag (Turkey)."""
+
+    def setup_method(self):
+        html = _load_event_html(2763, "tesfed-turkish-cup-2025")
+        self.result = parse_event_info(html, 2763)
+
+    def test_id(self):
+        assert self.result.id == 2763
+
+    def test_name(self):
+        assert self.result.name == "TESFED Turkish Cup 2025"
+
+    def test_series_none(self):
+        assert self.result.series is None
+
+    def test_stage_none(self):
+        assert self.result.stage is None
+
+    def test_regions_emea_via_location_fallback(self):
+        assert len(self.result.regions) == 1
+        assert self.result.regions[0].name == "EMEA"
+        assert self.result.regions[0].subregion is None
+
+    def test_region_location_none(self):
+        assert self.result.region_location is None
+
+    def test_location_turkey(self):
+        assert self.result.location is not None
+        assert self.result.location.country == "Turkey"
+        assert self.result.location.venue == "Istanbul"
+
+    def test_dates(self):
+        assert self.result.start_date is not None
+        assert self.result.end_date is not None
+
+    def test_prize(self):
+        assert self.result.prize is not None
+        assert self.result.prize.amount == 350000
+        assert self.result.prize.currency_code == "TRY"
+
+
+class TestParseEventInfoMoroccoGamingExpo:
+    """Morocco Gaming Expo 2025 — has separate Region label with flag (Morocco)."""
+
+    def setup_method(self):
+        html = _load_event_html(2544, "morocco-gaming-expo-2025")
+        self.result = parse_event_info(html, 2544)
+
+    def test_id(self):
+        assert self.result.id == 2544
+
+    def test_name(self):
+        assert self.result.name == "Morocco Gaming Expo 2025"
+
+    def test_series_none(self):
+        assert self.result.series is None
+
+    def test_stage_none(self):
+        assert self.result.stage is None
+
+    def test_regions_emea_via_region_location(self):
+        assert len(self.result.regions) == 1
+        assert self.result.regions[0].name == "EMEA"
+        assert self.result.regions[0].subregion is None
+
+    def test_region_location_morocco(self):
+        assert self.result.region_location is not None
+        assert self.result.region_location.country == "Morocco"
+
+    def test_location_none(self):
+        assert self.result.location is None
+
+    def test_dates(self):
+        assert self.result.start_date is not None
+        assert self.result.end_date is not None
+
+    def test_prize(self):
+        assert self.result.prize is not None
+        assert self.result.prize.amount == 100000
+        assert self.result.prize.currency_code == "MAD"
 

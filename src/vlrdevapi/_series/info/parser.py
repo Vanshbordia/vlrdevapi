@@ -3,7 +3,7 @@ import re
 
 from selectolax.parser import HTMLParser, Node
 
-from vlrdevapi._series.info.models import MapVeto, SeriesGame, SeriesInfo, SeriesTeam
+from vlrdevapi._series.info.models import ForfeitInfo, MapVeto, SeriesGame, SeriesInfo, SeriesTeam
 from vlrdevapi.commons.timezone import parse_vlr_stored_datetime
 
 
@@ -79,7 +79,7 @@ def parse_series_info(html: HTMLParser) -> SeriesInfo:
 
     Returns:
         SeriesInfo: Parsed series metadata including teams, scores,
-        event details, veto, and games.
+        event details, veto, games, forfeit info, and match notes.
 
     """
     info = SeriesInfo()
@@ -137,10 +137,20 @@ def parse_series_info(html: HTMLParser) -> SeriesInfo:
     if vs_section:
         notes = vs_section.css(".match-header-vs-note")
         if notes:
-            first_note = notes[0].text(strip=True).lower()
-            if first_note == "final":
+            first_note_raw = notes[0].text(strip=True)
+            first_note_lower = first_note_raw.lower()
+
+            if first_note_lower.startswith("forfeited by"):
                 info.status = "completed"
-            elif "live" in first_note:
+                lines = [l.strip() for l in first_note_raw.split("\n") if l.strip()]
+                if len(lines) >= 2:
+                    info.forfeit = ForfeitInfo(
+                        forfeited=True,
+                        team=lines[-1],
+                    )
+            elif first_note_lower == "final":
+                info.status = "completed"
+            elif "live" in first_note_lower:
                 info.status = "live"
             else:
                 info.status = "upcoming"
@@ -162,10 +172,28 @@ def parse_series_info(html: HTMLParser) -> SeriesInfo:
             except ValueError:
                 pass
 
-    veto_el = header.css_first(".match-header-note")
-    if veto_el:
-        veto_text = veto_el.text(strip=True)
-        info.veto = _parse_veto(veto_text)
+    for note_el in header.css(".match-header-note"):
+        note_text = note_el.text(strip=True)
+        if not note_text:
+            continue
+
+        is_veto = any(kw in note_text for kw in (" ban ", " pick ", " remains"))
+        if is_veto:
+            info.veto = _parse_veto(note_text)
+        elif info.forfeit.forfeited and not info.forfeit.reason:
+            info.forfeit.reason = note_text
+        elif "forfeit" in note_text.lower():
+            info.forfeit.forfeited = True
+            info.forfeit.reason = note_text
+            words = note_text.split()
+            forfeit_idx = next(
+                (i for i, w in enumerate(words) if w.lower() == "forfeit"),
+                None,
+            )
+            if forfeit_idx and forfeit_idx > 0:
+                info.forfeit.team = " ".join(words[:forfeit_idx])
+        else:
+            info.notes.append(note_text)
 
     tags = {}
     for v in info.veto:
@@ -193,6 +221,12 @@ def parse_series_info(html: HTMLParser) -> SeriesInfo:
         info.team1.tag = info.team1.name
     if not info.team2.tag and len(info.team2.name) <= 3:
         info.team2.tag = info.team2.name
+
+    if info.forfeit.forfeited and info.forfeit.team:
+        if info.forfeit.team == info.team1.name:
+            info.forfeit.team_id = info.team1.id
+        elif info.forfeit.team == info.team2.name:
+            info.forfeit.team_id = info.team2.id
 
     info.games = _parse_games(html, info)
 

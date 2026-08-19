@@ -251,3 +251,223 @@ class TestParseSeriesInfoBo1WithPickVeto:
         assert game.team1_score == 13
         assert game.team2_score == 11
 
+
+_FORFEIT_REASON_FIXTURES = FIXTURES_DIR / "series" / "477343"
+
+
+def _load_forfeit_reason_html(filename: str) -> HTMLParser:
+    path = _FORFEIT_REASON_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoForfeitWithReason:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_forfeit_reason_html("overview.html"))
+        self.result.series_id = 477343
+
+    def test_basic_info(self):
+        assert self.result.series_id == 477343
+        assert self.result.status == "completed"
+        assert self.result.best_of == 3
+
+    def test_teams(self):
+        assert self.result.team1.name == "Shopify Rebellion Gold"
+        assert self.result.team1.id == 14278
+        assert self.result.team2.name == "YFP X"
+        assert self.result.team2.id == 13301
+
+    def test_forfeit_true(self):
+        assert self.result.forfeit.forfeited is True
+
+    def test_forfeit_team(self):
+        assert self.result.forfeit.team == "YFP X"
+
+    def test_forfeit_team_id(self):
+        assert self.result.forfeit.team_id == 13301
+
+    def test_forfeit_reason(self):
+        assert self.result.forfeit.reason == "YFP X forfeit due to technical issues"
+
+    def test_veto_still_parsed(self):
+        assert len(self.result.veto) > 0
+
+    def test_notes_empty(self):
+        assert self.result.notes == []
+
+
+_FORFEIT_NO_REASON_FIXTURES = FIXTURES_DIR / "series" / "67357"
+
+
+def _load_forfeit_no_reason_html(filename: str) -> HTMLParser:
+    path = _FORFEIT_NO_REASON_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoForfeitNoReason:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_forfeit_no_reason_html("overview.html"))
+        self.result.series_id = 67357
+
+    def test_basic_info(self):
+        assert self.result.series_id == 67357
+        assert self.result.status == "completed"
+        assert self.result.best_of == 3
+
+    def test_teams(self):
+        assert self.result.team1.name == "T1"
+        assert self.result.team1.id == 14
+        assert self.result.team2.name == "TSM"
+        assert self.result.team2.id == 106
+
+    def test_forfeit_true(self):
+        assert self.result.forfeit.forfeited is True
+
+    def test_forfeit_team(self):
+        assert self.result.forfeit.team == "T1"
+
+    def test_forfeit_team_id(self):
+        assert self.result.forfeit.team_id == 14
+
+    def test_forfeit_reason_none(self):
+        assert self.result.forfeit.reason is None
+
+    def test_veto_still_parsed(self):
+        assert len(self.result.veto) > 0
+
+    def test_notes_empty(self):
+        assert self.result.notes == []
+
+
+_MAP_FORFEIT_FIXTURES = FIXTURES_DIR / "series" / "155313"
+
+
+def _load_map_forfeit_html(filename: str) -> HTMLParser:
+    path = _MAP_FORFEIT_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoMapForfeit:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_map_forfeit_html("overview.html"))
+        self.result.series_id = 155313
+
+    def test_basic_info(self):
+        assert self.result.series_id == 155313
+        assert self.result.status == "completed"
+        assert self.result.best_of == 3
+
+    def test_teams(self):
+        assert self.result.team1.name == "Blind Esports"
+        assert self.result.team1.id == 7898
+        assert self.result.team2.name == "OnlyFriends"
+        assert self.result.team2.id == 6001
+
+    def test_forfeit_true(self):
+        assert self.result.forfeit.forfeited is True
+
+    def test_forfeit_team(self):
+        assert self.result.forfeit.team == "Blind Esports"
+
+    def test_forfeit_team_id(self):
+        assert self.result.forfeit.team_id == 7898
+
+    def test_forfeit_reason(self):
+        assert self.result.forfeit.reason == "Blind Esports Forfeit Map 2"
+
+    def test_veto_still_parsed(self):
+        assert len(self.result.veto) > 0
+
+    def test_notes_empty(self):
+        assert self.result.notes == []
+
+
+_LOBBY_REMAKE_FIXTURES = FIXTURES_DIR / "series" / "459856"
+
+
+def _load_lobby_remake_html(filename: str) -> HTMLParser:
+    path = _LOBBY_REMAKE_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoInfoNotes:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_lobby_remake_html("overview.html"))
+        self.result.series_id = 459856
+
+    def test_basic_info(self):
+        assert self.result.series_id == 459856
+        assert self.result.status == "completed"
+        assert self.result.best_of == 3
+
+    def test_teams(self):
+        assert self.result.team1.name == "Team Liquid"
+        assert self.result.team1.id == 474
+        assert self.result.team2.name == "Karmine Corp"
+        assert self.result.team2.id == 8877
+
+    def test_forfeit_false(self):
+        assert self.result.forfeit.forfeited is False
+        assert self.result.forfeit.team is None
+        assert self.result.forfeit.team_id is None
+        assert self.result.forfeit.reason is None
+
+    def test_notes_has_lobby_remake(self):
+        assert len(self.result.notes) == 1
+        assert self.result.notes[0] == "Map 1 stats unavailable due to lobby remake."
+
+    def test_veto_still_parsed(self):
+        assert len(self.result.veto) > 0
+
+
+_TECHNICAL_PAUSES_FIXTURES = FIXTURES_DIR / "series" / "715117"
+
+
+def _load_technical_pauses_html(filename: str) -> HTMLParser:
+    path = _TECHNICAL_PAUSES_FIXTURES / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+class TestParseSeriesInfoTechnicalPauses:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_series_info(_load_technical_pauses_html("overview.html"))
+        self.result.series_id = 715117
+
+    def test_basic_info(self):
+        assert self.result.series_id == 715117
+        assert self.result.status == "completed"
+        assert self.result.best_of == 5
+
+    def test_teams(self):
+        assert self.result.team1.name == "Shopify Rebellion Black"
+        assert self.result.team1.id == 9353
+        assert self.result.team2.name == "2Game Esports"
+        assert self.result.team2.id == 15072
+
+    def test_forfeit_false(self):
+        assert self.result.forfeit.forfeited is False
+        assert self.result.forfeit.team is None
+        assert self.result.forfeit.team_id is None
+        assert self.result.forfeit.reason is None
+
+    def test_notes_has_technical_pauses(self):
+        assert len(self.result.notes) == 1
+        assert self.result.notes[0] == "Stats are incomplete due to multiple technical pauses."
+
+    def test_veto_still_parsed(self):
+        assert len(self.result.veto) > 0
+

@@ -47,8 +47,8 @@ class SeriesRoundsNamespace:
 
         Returns:
             RoundsData: Round-by-round data including ``rounds``
-            (list of ``RoundDetail`` with economy, damage, and kill events),
-            ``team_defense``, ``team_attack``, and enriched team IDs.
+            (list of ``RoundData`` with win type, side, and scores),
+            ``team1`` and ``team2`` names, and enriched team IDs.
 
         Raises:
             ValidationError: If ``series_id`` or ``game_id`` is not a valid
@@ -62,7 +62,7 @@ class SeriesRoundsNamespace:
             >>> data = vlrdevapi.series.rounds(series_id=12345, game_id=1)
             >>> len(data.rounds)
             24
-            >>> data.rounds[0].winning_team
+            >>> data.rounds[0].winner_team_name
             'Team1'
 
         """
@@ -78,6 +78,10 @@ class SeriesRoundsNamespace:
 
 def _enrich_rounds(result: RoundsData, html_series: HTMLParser) -> RoundsData:
     """Enrich round data with team IDs from the series info.
+
+    Team matching first tries abbreviation-level names extracted from
+    ``.ovw-player-tag`` elements (e.g. "SEN"), then falls back to full
+    team names from the series header.
 
     Args:
         result: The RoundsData to enrich.

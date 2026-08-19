@@ -47,7 +47,7 @@ class SeriesEconomyNamespace:
 
         Returns:
             EconomyData: Economy data including ``rounds`` (list of
-            ``EconomyRound`` with purchases, remaining credits, and
+            ``RoundEconomyData`` with purchases, remaining credits, and
             team spending per round), ``team1`` and ``team2`` names,
             and enriched team IDs.
 
@@ -61,8 +61,8 @@ class SeriesEconomyNamespace:
 
         Examples:
             >>> econ = vlrdevapi.series.economy(series_id=12345, game_id=1)
-            >>> econ.rounds[0].team1_creds
-            24000
+            >>> econ.rounds[0].bank_team1
+            24000.0
             >>> econ.rounds[0].winner.name
             'FNATIC'
 
@@ -78,14 +78,19 @@ class SeriesEconomyNamespace:
 
 
 def _enrich_economy(result: EconomyData, html_series: HTMLParser) -> EconomyData:
-    """Enrich economy data with team IDs from the series info.
+    """Enrich economy data with team IDs and round winners from the series info.
+
+    Team matching first tries abbreviation-level names extracted from
+    ``.ovw-player-tag`` elements (e.g. "SEN"), then falls back to full
+    team names from the series header.  Round winners are resolved from
+    the stored ``_temp_winner`` tag set during parsing.
 
     Args:
         result: The EconomyData to enrich.
         html_series: HTML of the series page for team info parsing.
 
     Returns:
-        EconomyData: Enriched economy data with team IDs.
+        EconomyData: Enriched economy data with team IDs and round winners.
 
     """
     series_info = parse_series_info(html_series)
