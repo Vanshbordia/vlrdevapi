@@ -5,6 +5,29 @@ from selectolax.parser import HTMLParser
 from vlrdevapi.exceptions import ParsingError
 
 
+def _extract_team_abbreviations(html: HTMLParser) -> tuple[str, str]:
+    """Extract short team names from ``.ovw-player-tag`` in overview tables.
+
+    The series overview page renders two ``.ovw-table`` elements per
+    section (current-map and series), one for each team.  The first
+    table always belongs to **team 1** and the second to **team 2**.
+
+    Args:
+        html: Parsed series overview page.
+
+    Returns:
+        ``(team1_abbreviation, team2_abbreviation)`` — empty strings when
+        the expected structure is missing.
+
+    """
+    tables = html.css("div.ovw-table")
+    if len(tables) < 2:
+        return "", ""
+    t1_el = tables[0].css_first(".ovw-player-tag")
+    t2_el = tables[1].css_first(".ovw-player-tag")
+    return (t1_el.text(strip=True) if t1_el else ""), (t2_el.text(strip=True) if t2_el else "")
+
+
 def _ordered_game_ids(html: HTMLParser) -> list[str]:
     """Return the real VLR game IDs in map order from the series nav tabs.
 

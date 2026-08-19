@@ -7,6 +7,7 @@ import httpx
 from selectolax.parser import HTMLParser
 
 from vlrdevapi._base import SyncNamespace
+from vlrdevapi._series._utils import _extract_team_abbreviations
 from vlrdevapi._series.economy.models import EconomyData
 from vlrdevapi._series.economy.parser import parse_economy_data
 from vlrdevapi._series.info.parser import parse_series_info
@@ -88,9 +89,16 @@ def _enrich_economy(result: EconomyData, html_series: HTMLParser) -> EconomyData
 
     """
     series_info = parse_series_info(html_series)
-    if series_info.team1 and series_info.team1.tag == result.team1:
+    team1_abbr, team2_abbr = _extract_team_abbreviations(html_series)
+
+    if team1_abbr == result.team1:
         result.team1_id = series_info.team1.id
-    if series_info.team2 and series_info.team2.tag == result.team2:
+    elif result.team1 and series_info.team1.name == result.team1:
+        result.team1_id = series_info.team1.id
+
+    if team2_abbr == result.team2:
+        result.team2_id = series_info.team2.id
+    elif result.team2 and series_info.team2.name == result.team2:
         result.team2_id = series_info.team2.id
 
     for round_data in result.rounds:
