@@ -16,6 +16,7 @@ from vlrdevapi._event.info.models import (
 )
 from vlrdevapi.commons.countries import get_country_name
 from vlrdevapi.commons.prizes import parse_prize_amount
+from vlrdevapi.commons.regions import resolve_country_to_region, resolve_subregion_to_region
 import contextlib
 
 
@@ -41,6 +42,22 @@ def parse_event_info(html: HTMLParser, event_id: int) -> EventInfo:
     _parse_breadcrumb(header, event)
     _parse_title(header, event)
     _parse_desc_items(header, event)
+
+    seen: dict[str, EventRegion] = {}
+    for r in event.regions:
+        if r.name not in seen:
+            seen[r.name] = r
+        elif r.subregion and not seen[r.name].subregion:
+            seen[r.name] = r
+    event.regions = list(seen.values())
+
+    if len(event.regions) > 1:
+        event.regions = [EventRegion(name="International")]
+
+    if not event.regions and event.region_location and event.region_location.country:
+        parent = resolve_country_to_region(event.region_location.country)
+        if parent:
+            event.regions = [EventRegion(name=parent)]
 
     return event
 
@@ -93,9 +110,11 @@ def _parse_breadcrumb(header: Node, event: EventInfo) -> None:
 
         if "stage=" in href:
             event.stage = EventStageTag(name=name, href=href)
+        elif "subregion=" in href:
+            parent = resolve_subregion_to_region(name)
+            if parent:
+                event.regions.append(EventRegion(name=parent, subregion=name, href=href))
         elif "region=" in href:
-            event.regions.append(EventRegion(name=name, href=href))
-        else:
             event.regions.append(EventRegion(name=name, href=href))
 
 

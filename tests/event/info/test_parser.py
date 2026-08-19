@@ -52,6 +52,7 @@ class TestParseEventInfoVCTEMEA:
     def test_regions(self):
         assert len(self.result.regions) == 1
         assert self.result.regions[0].name == "EMEA"
+        assert self.result.regions[0].subregion is None
         assert self.result.regions[0].href == "/vct/?region=27"
 
     def test_dates(self):
@@ -176,6 +177,11 @@ class TestParseEventInfoChallengersJapan:
         assert self.result.region_location.country == "Japan"
         assert self.result.region_location.venue == ""
 
+    def test_regions_single_pacific(self):
+        assert len(self.result.regions) == 1
+        assert self.result.regions[0].name == "Pacific"
+        assert self.result.regions[0].subregion == "Japan"
+
     def test_location_none(self):
         assert self.result.location is None
 
@@ -221,6 +227,33 @@ class TestParseEventInfo100TCashApp:
         assert self.result.location is None
 
 
+class TestParseEventInfoVCTChampions:
+    """Valorant Champions 2025 — 4 regions in breadcrumb collapse to International."""
+
+    def setup_method(self):
+        html = _load_event_html(2283, "valorant-champions-2025")
+        self.result = parse_event_info(html, 2283)
+
+    def test_id(self):
+        assert self.result.id == 2283
+
+    def test_name(self):
+        assert self.result.name == "Valorant Champions 2025"
+
+    def test_regions_international(self):
+        assert len(self.result.regions) == 1
+        assert self.result.regions[0].name == "International"
+        assert self.result.regions[0].subregion is None
+
+    def test_series(self):
+        assert self.result.series is not None
+        assert self.result.series.name == "Valorant Champions Tour 2025"
+
+    def test_stage(self):
+        assert self.result.stage is not None
+        assert self.result.stage.name == "Champions"
+
+
 class TestParseEventInfoVCTAmericas:
     """VCT 2026: Americas Kickoff — full breadcrumb, location with venue."""
 
@@ -246,6 +279,7 @@ class TestParseEventInfoVCTAmericas:
     def test_regions(self):
         assert len(self.result.regions) == 1
         assert self.result.regions[0].name == "Americas"
+        assert self.result.regions[0].subregion is None
 
     def test_dates(self):
         assert self.result.start_date is not None
@@ -264,4 +298,51 @@ class TestParseEventInfoVCTAmericas:
         assert self.result.location is not None
         assert self.result.location.country == "United States"
         assert "Los Angeles" in self.result.location.venue
+
+
+class TestParseEventInfoRaidiantAcademy:
+    """Raidiant Academy 2026: 302 — year= in breadcrumb, region resolved from mod-us flag."""
+
+    def setup_method(self):
+        html = _load_event_html(3074, "raidiant-academy-2026")
+        self.result = parse_event_info(html, 3074)
+
+    def test_id(self):
+        assert self.result.id == 3074
+
+    def test_name(self):
+        assert self.result.name == "Raidiant Academy 2026: 302"
+
+    def test_series(self):
+        assert self.result.series is not None
+        assert self.result.series.name == "Raidiant Academy"
+        assert self.result.series.href == "/series/66/raidiant-academy"
+
+    def test_stage_none(self):
+        assert self.result.stage is None
+
+    def test_regions_americas_via_flag_fallback(self):
+        assert len(self.result.regions) == 1
+        assert self.result.regions[0].name == "Americas"
+        assert self.result.regions[0].subregion is None
+
+    def test_region_location_us(self):
+        assert self.result.region_location is not None
+        assert self.result.region_location.country == "United States"
+
+    def test_dates(self):
+        assert self.result.start_date is not None
+        assert self.result.end_date is not None
+        e_s = datetime(2026, 7, 26, tzinfo=timezone.utc)
+        e_e = datetime(2026, 7, 27, tzinfo=timezone.utc)
+        assert e_s - timedelta(days=1) <= self.result.start_date <= e_s + timedelta(days=1)
+        assert e_e - timedelta(days=1) <= self.result.end_date <= e_e + timedelta(days=1)
+
+    def test_prize(self):
+        assert self.result.prize is not None
+        assert self.result.prize.amount == 2000
+        assert self.result.prize.currency_code == "USD"
+
+    def test_location_none(self):
+        assert self.result.location is None
 
