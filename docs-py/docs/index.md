@@ -1,6 +1,6 @@
 ---
 icon: lucide/rocket
-title: VLRdevAPI
+title: Python SDK for Valorant esports data
 description: API reference for VLRdevAPI - a type-safe Python SDK for Valorant esports data from VLR.gg.
 ---
 
@@ -10,7 +10,9 @@ A Python library for fetching data from [vlr.gg](https://www.vlr.gg/). Provides 
 
 ## Quick links
 
-- [Official documentation](https://vlrdevapi.pages.dev/) - getting started, guides, examples, blog
+- [Official documentation](https://vlrdevapi.pages.dev/) - getting started, examples, and the blog
+- [Tutorial guides](https://vlrdevapi.pages.dev/guides/) - step-by-step walkthroughs
+- [FAQ](https://vlrdevapi.pages.dev/faq/) - install, rate limits, and data coverage
 - [GitHub](https://github.com/Vanshbordia/vlrdevapi) - source code, issues, contributing
 - [API Reference](api/index.md) - this site (readthedocs)
 

@@ -4,6 +4,7 @@ import { StickyTabs } from '@/components/home/sticky-tabs';
 import { TerminalDemo } from '@/components/home/terminal-demo';
 import { CopyCommand } from '@/components/ui/copy-command';
 import { HowItWorksCard } from '@/components/home/how-it-works-card';
+import { getGuides } from '@/lib/content';
 import { canonicalUrl, siteUrl } from '@/lib/shared';
 import { project, projectAuthor, projectSameAs, projectUrls } from '@/lib/project';
 
@@ -38,6 +39,36 @@ const jsonLdSoftwareApp = {
 };
 
 export default function HomePage() {
+  const exploreCards = [
+    {
+      href: '/vlr-gg-api/',
+      title: 'VLR.gg API for Python',
+      desc: 'VLR.gg has no public API. See what VLRdevAPI provides instead.',
+    },
+    {
+      href: '/valorant-esports-api/',
+      title: 'Valorant esports API',
+      desc: 'Matches, results, standings, rosters, and stats in Python.',
+    },
+    {
+      href: '/valorant-api-python/',
+      title: 'Valorant API for Python',
+      desc: 'Install the SDK and query typed models with no API key.',
+    },
+    {
+      href: '/valorant-stats-api/',
+      title: 'Valorant stats API',
+      desc: 'Player, team, and match statistics for dashboards.',
+    },
+    ...getGuides()
+      .slice(0, 2)
+      .map((guide) => ({
+        href: `/guides/${guide.slug}`,
+        title: guide.title,
+        desc: guide.description,
+      })),
+  ];
+
   return (
     <main className="flex-1">
       <script
@@ -257,6 +288,40 @@ export default function HomePage() {
               </li>
             ))}
           </ul>
+        </div>
+      </section>
+
+      {/* Explore */}
+      <section className="border-t border-border pt-20 md:pt-30 xl:pt-45">
+        <div className="mx-auto max-w-7xl px-6 pb-24 md:pb-32">
+          <div className="inline-flex items-center gap-2.5 rounded border border-border px-3 py-1.5 w-fit">
+            <span className="relative h-[0.625rem] w-[0.625rem]">
+              <span className="absolute inset-0 rounded-[2px] blur-[5px] bg-fd-primary"></span>
+              <span className="absolute inset-0 rounded-[2px] blur-[2px] bg-fd-primary"></span>
+              <span className="absolute inset-0 rounded-[2px] bg-fd-primary"></span>
+            </span>
+            <span className="text-xs font-semibold uppercase tracking-widest text-foreground">Explore</span>
+          </div>
+          <h2 className="mt-8 font-heading max-w-[34rem] text-3xl font-bold leading-[1.125] text-foreground sm:text-[2.5rem] md:text-[2.25rem] lg:text-[2.5rem]">
+            Guides, use cases, and references
+          </h2>
+          <p className="mt-6 max-w-[36rem] text-base leading-relaxed text-muted-foreground lg:text-lg">
+            Start with a use case, follow a tutorial, or jump straight into the API reference.
+          </p>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {exploreCards.map((card) => (
+              <Link
+                key={card.href}
+                href={card.href}
+                className="group flex flex-col border border-border bg-background p-6 transition-all hover:border-fd-primary/50"
+              >
+                <h3 className="text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-fd-primary">
+                  {card.title}
+                </h3>
+                <p className="mt-2 text-sm leading-snug text-muted-foreground">{card.desc}</p>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
     </main>

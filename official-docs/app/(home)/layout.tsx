@@ -8,7 +8,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {children}
       <footer className="border-t">
         <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-          <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-5">
             <div className="sm:col-span-2 lg:col-span-2">
               <h3 className="text-lg font-bold text-foreground">VLRdevAPI</h3>
               <p className="mt-2 max-w-md text-sm leading-snug text-muted-foreground">
@@ -17,15 +17,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </p>
             </div>
             <div>
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground">Use cases</h4>
+              <ul className="mt-4 flex flex-col gap-3">
+                <li><Link href="/vlr-gg-api/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">VLR.gg API</Link></li>
+                <li><Link href="/valorant-esports-api/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Valorant esports API</Link></li>
+                <li><Link href="/valorant-api-python/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Valorant API in Python</Link></li>
+                <li><Link href="/valorant-stats-api/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Valorant stats API</Link></li>
+              </ul>
+            </div>
+            <div>
               <h4 className="text-xs font-semibold uppercase tracking-widest text-foreground">Docs</h4>
               <ul className="mt-4 flex flex-col gap-3">
-                <li><Link href="/docs/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Getting Started</Link></li>
-                <li><Link href="/docs/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">API Reference</Link></li>
+                <li><Link href="/docs/getting-started/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Getting Started</Link></li>
+                <li><Link href="/docs/reference/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">API Reference</Link></li>
+                <li><Link href="/docs/installation/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Installation</Link></li>
                 <li><Link href="/guides/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Guides</Link></li>
                 <li><Link href="/blog/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
                 <li><Link href="/changelog/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Changelog</Link></li>
                 <li><Link href="/faq/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">FAQ</Link></li>
-                <li><Link href="/docs/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Installation</Link></li>
               </ul>
             </div>
             <div>

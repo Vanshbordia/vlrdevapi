@@ -50,3 +50,33 @@ VLRdevAPI is a Python library that provides a clean, type-safe interface for fet
   />
 </Cards>
 
+## Quickstart
+
+```bash
+pip install vlrdevapi
+```
+
+```python
+# doc-check: skip
+import vlrdevapi
+
+page = vlrdevapi.matches.upcoming()
+for match in page.matches[:3]:
+    team1 = match.team1.name if match.team1 else "TBD"
+    team2 = match.team2.name if match.team2 else "TBD"
+    print(f"{team1} vs {team2} | {match.event}")
+```
+
+## Popular use cases
+
+- [VLR.gg API for Python](/vlr-gg-api/) - Why an unofficial client exists for VLR.gg, and what it fetches
+- [Valorant esports API](/valorant-esports-api/) - Query Valorant esports data from VLR.gg in Python
+- [Valorant API for Python](/valorant-api-python/) - Install the client and work with typed models
+- [Valorant stats API](/valorant-stats-api/) - Player, team, and match statistics in Python
+
+## More
+
+- [Tutorial guides](/guides/) - Step-by-step walkthroughs for real projects
+- [Blog](/blog/) - Builds, comparisons, and deep dives
+- [FAQ](/faq/) - Answers about installation, rate limits, and data coverage
+

@@ -22,7 +22,7 @@ export const project = {
 export const projectUrls = {
   home: canonicalUrl('/'),
   docs: canonicalUrl('/docs/'),
-  logo: assetUrl('/logo.svg'),
+  logo: assetUrl('/logo.png'),
 } as const;
 
 /** Profiles that identify the same project across the web. */
