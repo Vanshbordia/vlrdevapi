@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 
 import ChangelogTimeline from './changelog-timeline'
+import { canonicalUrl } from '@/lib/shared'
 
 export const metadata: Metadata = {
   title: 'Changelog',
   description: 'Release history and version notes for VLRdevAPI.',
+  alternates: { canonical: canonicalUrl('/changelog/') },
 }
 
 const versions = [

@@ -27,7 +27,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'What Python version is required?',
-        a: <>Python 3.11 or later. The library uses modern Python features including type hints and async support.</>,
+        a: <>Python 3.11 or later. The library uses modern Python features including type hints and Pydantic models.</>,
       },
       {
         q: 'How do I install VLRdevAPI?',
@@ -51,8 +51,8 @@ const sections: FaqSection[] = [
         a: <>Yes. The built-in client respects a default rate limit to avoid overloading VLR.gg. You can configure the rate limit and retry behavior when creating a <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">VLRClient</code> instance. See the <Link href="/docs/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">API reference</Link> for configuration options.</>,
       },
       {
-        q: 'Can I use VLRdevAPI asynchronously?',
-        a: <>Yes. Both module-level access (sync) and async client are supported. Use <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">VLRClient</code> with <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">async with</code> for concurrent data fetching. Check the <Link href="/guides/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">guides</Link> for async examples.</>,
+        q: 'Is VLRdevAPI synchronous or asynchronous?',
+        a: <>Synchronous. Every method is a blocking call, so wrap independent fetches in a thread pool, or use <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">asyncio.to_thread</code> from an async framework such as FastAPI. Multi-stage endpoints already parallelize their stage pages internally.</>,
       },
       {
         q: 'What data can I access?',
@@ -81,7 +81,7 @@ const sections: FaqSection[] = [
     items: [
       {
         q: 'Does VLRdevAPI have any dependencies?',
-        a: <>The core dependency is Pydantic v2 for data modeling and validation. The async client uses httpx for HTTP requests.</>,
+        a: <>The core dependency is Pydantic v2 for data modeling and validation. HTTP requests go through httpx.</>,
       },
       {
         q: 'How does VLRdevAPI compare to web scraping?',
@@ -126,7 +126,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'I get a RateLimitError. What should I do?',
-        a: <>Reduce the frequency of your requests or increase the <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">rate_limit_per_minute</code> setting on your VLRClient. The default limit is conservative to protect both your application and VLR.gg. Consider spreading requests across longer intervals or using the async client for concurrent fetching with built-in throttling.</>,
+        a: <>Reduce the frequency of your requests or raise the <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">requests_per_second</code> setting on your VLRClient. The default limit is conservative to protect both your application and VLR.gg. Spacing requests out over longer intervals usually helps more than fetching in parallel.</>,
       },
       {
         q: 'How do I enable debug logging?',
@@ -155,7 +155,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'Can I use VLRdevAPI with frameworks like FastAPI or Django?',
-        a: <>Yes. VLRdevAPI works with any Python web framework. Use the async client with FastAPI for non-blocking request handling, or the sync client with Django views. Both patterns are supported and documented in the <Link href="/guides/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">guides</Link>.</>,
+        a: <>Yes. VLRdevAPI works with any Python web framework. It is synchronous, so call it directly from Django or Flask views, and in FastAPI or another async framework run calls in a thread with <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">asyncio.to_thread</code> so the event loop stays free.</>,
       },
     ],
   },

@@ -1,8 +1,14 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { StickyTabs } from '@/components/home/sticky-tabs';
 import { TerminalDemo } from '@/components/home/terminal-demo';
 import { CopyCommand } from '@/components/ui/copy-command';
 import { HowItWorksCard } from '@/components/home/how-it-works-card';
+import { canonicalUrl } from '@/lib/shared';
+
+export const metadata: Metadata = {
+  alternates: { canonical: canonicalUrl('/') },
+};
 
 const jsonLdSoftwareApp = {
   '@context': 'https://schema.org',

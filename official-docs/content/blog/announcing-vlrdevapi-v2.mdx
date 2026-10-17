@@ -1,24 +1,26 @@
 ---
 title: Announcing VLRdevAPI v2.0
-description: A new major release with async support, typed exceptions, and expanded coverage across matches, teams, players, events, and series.
+description: A new major release with a synchronous client, typed exceptions, and expanded coverage across matches, teams, players, events, and series.
 date: 2026-07-05
 author: RiftWatch
 ---
 
-We're excited to announce VLRdevAPI v2.0 — the biggest update to the library since its initial release. This version introduces a redesigned client, full async support, and comprehensive coverage across five namespaces.
+We're excited to announce VLRdevAPI v2.0 — the biggest update to the library since its initial release. This version introduces a redesigned synchronous client and comprehensive coverage across five namespaces.
 
 ## What's New
 
-### Async-First Design
+### Synchronous by Design
 
-Every API method now supports both sync and async usage:
+v2.0 drops the async API from v1.x. Every method is a plain blocking call that returns a typed model:
 
 ```python
 import vlrdevapi
 
 matches = vlrdevapi.matches.upcoming()
-print(f"Sync: {len(matches.matches)} upcoming matches")
+print(f"{len(matches.matches)} upcoming matches")
 ```
+
+For concurrent work, run independent calls in a thread pool. Multi-stage endpoints already fetch their pages in parallel internally.
 
 ### Five Namespaces
 
@@ -64,7 +66,7 @@ print(f"{len(stats.maps)} maps in stats")
 
 If you're upgrading from v1.x, the main changes are:
 
-- `VLRClient` replaces the old client class and now uses `async with`
+- `VLRClient` is synchronous and supports the context manager protocol; v1.x's `async with` pattern is gone
 - Module-level access is still available for quick scripts
 - Exception types have been moved to `vlrdevapi.exceptions`
 - New namespaces: `series` and `event` require no additional setup

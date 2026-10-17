@@ -12,7 +12,7 @@ import { notFound } from 'next/navigation';
 import { getMDXComponents } from '@/components/mdx';
 import type { Metadata } from 'next';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
-import { gitConfig } from '@/lib/shared';
+import { gitConfig, canonicalUrl } from '@/lib/shared';
 
 
 export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
@@ -24,7 +24,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const MDX = page.data.body;
   const markdownUrl = getPageMarkdownUrl(page).url;
 
-  const pageUrl = `https://vlrdevapi.pages.dev${page.url}${page.url.endsWith('/') ? '' : '/'}`;
+  const pageUrl = canonicalUrl(page.url);
 
   const jsonLdArticle = {
     '@context': 'https://schema.org',
@@ -116,11 +116,12 @@ export async function generateMetadata(props: PageProps<'/docs/[[...slug]]'>): P
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
-  const ogUrl = `https://vlrdevapi.pages.dev${page.url}${page.url.endsWith('/') ? '' : '/'}`;
+  const ogUrl = canonicalUrl(page.url);
 
   return {
     title: page.data.title,
     description: page.data.description,
+    alternates: { canonical: ogUrl },
     openGraph: {
       url: ogUrl,
       images: getPageImage(page).url,

@@ -3,11 +3,12 @@ import { Provider } from '@/components/provider';
 import type { Metadata } from 'next';
 import './global.css';
 import { Geist } from "next/font/google";
+import { siteUrl } from '@/lib/shared';
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'VLRdevAPI - Python SDK for Valorant Esports Data (VLR.gg)',
     template: '%s | VLRdevAPI',
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
     title: 'VLRdevAPI - Python SDK for Valorant Esports Data',
     description:
       'Fetch live and historical Valorant esports data from VLR.gg with a clean, type-safe Python interface. Match results, player stats, team rosters, and tournament brackets.',
-    url: 'https://vlrdevapi.pages.dev/',
+    url: `${siteUrl}/`,
     siteName: 'VLRdevAPI by RiftWatch',
     type: 'website',
   },

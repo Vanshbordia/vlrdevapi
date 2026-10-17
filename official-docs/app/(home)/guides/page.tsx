@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getGuides } from '@/lib/content'
+import { canonicalUrl } from '@/lib/shared'
 
 export const metadata: Metadata = {
   title: 'Guides',
   description: 'Step-by-step walkthroughs for integrating VLRdevAPI into your Valorant esports projects.',
+  alternates: { canonical: canonicalUrl('/guides/') },
 }
 
 const jsonLd = {

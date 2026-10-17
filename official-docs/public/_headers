@@ -1,0 +1,8 @@
+# Cloudflare Pages headers (static export compatible).
+# Link relations help agents and crawlers discover the machine-readable
+# resources (llms.txt, sitemap) without parsing HTML.
+
+/*
+  Link: </llms.txt>; rel="describedby"; type="text/plain"
+  Link: </sitemap.xml>; rel="sitemap"; type="application/xml"
+  X-Content-Type-Options: nosniff

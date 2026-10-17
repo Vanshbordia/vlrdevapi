@@ -6,6 +6,7 @@ import { getMDXComponents } from '@/components/mdx'
 import { TocLayout } from '@/components/toc-layout'
 import { extractToc } from '@/components/toc'
 import { CtaSection } from '@/components/cta'
+import { canonicalUrl } from '@/lib/shared'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -23,6 +24,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   return {
     title: page.data.title,
     description: page.data.description,
+    alternates: { canonical: canonicalUrl(`/blog/${slug}`) },
     openGraph: {
       title: `${page.data.title} - VLRdevAPI Blog`,
       description: page.data.description,
