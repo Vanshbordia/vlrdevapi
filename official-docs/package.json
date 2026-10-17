@@ -8,7 +8,6 @@
     "start": "serve out",
     "types:check": "fumadocs-mdx && next typegen && tsc --noEmit",
     "postinstall": "fumadocs-mdx",
-    "assets:logo": "node scripts/generate-logo.mjs",
     "lint": "eslint"
   },
   "dependencies": {
