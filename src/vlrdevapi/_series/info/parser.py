@@ -411,6 +411,14 @@ def _parse_games(html: HTMLParser, info: SeriesInfo) -> list[SeriesGame]:
                     if span:
                         game.map_name = span.text(deep=False, strip=True)
                 if not game.map_name:
+                    name_div = map_div.css_first(".map-name")
+                    if name_div:
+                        span = name_div.css_first("span")
+                        if span:
+                            game.map_name = span.text(deep=False, strip=True)
+                        if not game.map_name:
+                            game.map_name = name_div.text(strip=True)
+                if not game.map_name:
                     game.map_name = map_div.text(strip=True)
 
             if not game.map_name:

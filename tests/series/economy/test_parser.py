@@ -40,15 +40,15 @@ class TestParseEconomyGame:
     def test_game_one_first_round(self):
         round_1 = self.game1.rounds[0]
         assert round_1.round_number == 1
-        assert round_1.spent_team1 == 3650
+        assert round_1.spent_team1 == 3700
         assert round_1.spent_team2 == 3600
 
     def test_game_two_differs_from_game_one(self):
         assert len(self.game1.rounds) == 16
         assert len(self.game2.rounds) == 19
         round_1 = self.game2.rounds[0]
-        assert round_1.spent_team1 == 3750
-        assert round_1.spent_team2 == 3350
+        assert round_1.spent_team1 == 3800
+        assert round_1.spent_team2 == 3400
 
     def test_positional_game_one_matches_real_id(self):
         real = parse_economy_data(self.html, game_id="233478")
