@@ -22,7 +22,7 @@ site_description = "A type-safe Python SDK for Valorant esports data from VLR.gg
 # The site_author attribute. This is used in the HTML head element.
 #
 # Read more: https://zensical.org/docs/setup/basics/#site_author
-site_author = "RiftWatch"
+site_author = "VLRdevAPI"
 
 # The site_url is the canonical URL for your site. When building online
 # documentation you should set this.
@@ -42,7 +42,7 @@ edit_uri = "edit/master/docs-py/docs/"
 #
 # Read more: https://zensical.org/docs/setup/basics/#copyright
 copyright = """
-&copy; 2026 VLRdevAPI by RiftWatch. Not affiliated with Riot Games or VLR.gg.
+&copy; 2026 VLRdevAPI. Not affiliated with Riot Games or VLR.gg.
 """
 
 # Zensical supports both implicit navigation and explicitly defined navigation.

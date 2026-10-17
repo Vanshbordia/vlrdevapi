@@ -1,0 +1,10 @@
+# Cloudflare Pages headers (static export compatible).
+# Link relations help agents and crawlers discover the documentation and the
+# machine-readable resources (llms.txt, sitemap) without parsing HTML.
+# RFC 8288 (Link), IANA link relations: service-doc, describedby, sitemap.
+
+/*
+  Link: </docs/>; rel="service-doc"
+  Link: </llms.txt>; rel="describedby"; type="text/plain"
+  Link: </sitemap.xml>; rel="sitemap"; type="application/xml"
+  X-Content-Type-Options: nosniff

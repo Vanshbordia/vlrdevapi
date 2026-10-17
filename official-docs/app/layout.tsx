@@ -3,33 +3,33 @@ import { Provider } from '@/components/provider';
 import type { Metadata } from 'next';
 import './global.css';
 import { Geist } from "next/font/google";
+import { siteUrl } from '@/lib/shared';
+import {
+  project,
+  projectAuthor,
+  projectKeywords,
+  projectPublisher,
+  projectSameAs,
+  projectUrls,
+} from '@/lib/project';
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'VLRdevAPI - Python SDK for Valorant Esports Data (VLR.gg)',
     template: '%s | VLRdevAPI',
   },
   description:
-    'A type-safe Python SDK for Valorant esports data from VLR.gg. Fetch match results, player stats, team rosters, and tournament brackets through a fully typed Python interface. Built by RiftWatch.',
-  keywords: [
-    'Valorant esports API',
-    'Python SDK',
-    'VLR.gg API',
-    'Valorant match data',
-    'Valorant player statistics',
-    'esports data pipeline',
-    'Valorant tournament brackets',
-    'Python Valorant API',
-  ],
+    'A type-safe Python SDK for Valorant esports data from VLR.gg. Fetch match results, player stats, team rosters, and tournament brackets through a fully typed Python interface.',
+  keywords: projectKeywords,
   openGraph: {
     title: 'VLRdevAPI - Python SDK for Valorant Esports Data',
     description:
       'Fetch live and historical Valorant esports data from VLR.gg with a clean, type-safe Python interface. Match results, player stats, team rosters, and tournament brackets.',
-    url: 'https://vlrdevapi.pages.dev/',
-    siteName: 'VLRdevAPI by RiftWatch',
+    url: `${siteUrl}/`,
+    siteName: 'VLRdevAPI',
     type: 'website',
   },
   twitter: {
@@ -49,50 +49,22 @@ export const metadata: Metadata = {
 
 const jsonLdOrganization = {
   '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'RiftWatch',
-  url: 'https://riftwatch.org',
-  logo: 'https://vlrdevapi.pages.dev/logo.png',
+  '@id': `${siteUrl}/#organization`,
+  ...projectPublisher,
 };
 
 const jsonLdWebSite = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'VLRdevAPI',
-  url: 'https://vlrdevapi.pages.dev',
-  description:
-    'A type-safe Python SDK for Valorant esports data from VLR.gg.',
-  author: [
-    {
-      '@type': 'Person',
-      name: 'Vansh Bordia',
-    },
-    {
-      '@type': 'Organization',
-      name: 'RiftWatch',
-      url: 'https://riftwatch.org',
-    },
-  ],
-  about: {
-    '@type': 'SoftwareSourceCode',
-    name: 'VLRdevAPI',
-    description:
-      'A type-safe Python SDK for Valorant esports data from VLR.gg.',
-    programmingLanguage: 'Python',
-    runtimePlatform: 'Python 3.11+',
-    codeRepository: 'https://github.com/vanshbordia/vlrdevapi',
-    author: [
-      {
-        '@type': 'Person',
-        name: 'Vansh Bordia',
-      },
-      {
-        '@type': 'Organization',
-        name: 'RiftWatch',
-        url: 'https://riftwatch.org',
-      },
-    ],
-  },
+  '@id': `${siteUrl}/#website`,
+  name: project.name,
+  alternateName: 'VLR.gg Python API',
+  url: projectUrls.home,
+  description: project.description,
+  inLanguage: 'en',
+  publisher: { '@id': `${siteUrl}/#organization` },
+  author: projectAuthor,
+  sameAs: projectSameAs,
 };
 
 export default function Layout({ children }: LayoutProps<'/'>) {

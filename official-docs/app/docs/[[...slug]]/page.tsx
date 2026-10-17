@@ -12,7 +12,8 @@ import { notFound } from 'next/navigation';
 import { getMDXComponents } from '@/components/mdx';
 import type { Metadata } from 'next';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
-import { gitConfig } from '@/lib/shared';
+import { canonicalUrl, gitConfig, siteUrl } from '@/lib/shared';
+import { projectAuthor, projectUrls } from '@/lib/project';
 
 
 export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
@@ -24,7 +25,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const MDX = page.data.body;
   const markdownUrl = getPageMarkdownUrl(page).url;
 
-  const pageUrl = `https://vlrdevapi.pages.dev${page.url}${page.url.endsWith('/') ? '' : '/'}`;
+  const pageUrl = canonicalUrl(page.url);
 
   const jsonLdArticle = {
     '@context': 'https://schema.org',
@@ -33,35 +34,25 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
     description: page.data.description,
     url: pageUrl,
     dateModified: page.data.lastModified?.toISOString() ?? new Date().toISOString(),
-    author: [
-      {
-        '@type': 'Person',
-        name: 'Vansh Bordia',
-      },
-      {
-        '@type': 'Organization',
-        name: 'RiftWatch',
-        url: 'https://riftwatch.org',
-      },
-    ],
-    publisher: {
-      '@type': 'Organization',
-      name: 'RiftWatch',
-      url: 'https://riftwatch.org',
-    },
+    author: projectAuthor,
+    publisher: { '@id': `${siteUrl}/#organization` },
+    inLanguage: 'en',
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': pageUrl,
     },
   };
 
+  const segmentLabel = (segment: string) =>
+    segment.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+
   const breadcrumbItems = [
-    { '@type': 'ListItem', position: 1, name: 'Docs', item: 'https://vlrdevapi.pages.dev/docs/' },
+    { '@type': 'ListItem', position: 1, name: 'Docs', item: projectUrls.docs },
     ...(params.slug ?? []).map((segment, i) => ({
       '@type': 'ListItem' as const,
       position: i + 2,
-      name: segment,
-      item: `https://vlrdevapi.pages.dev/docs/${(params.slug ?? []).slice(0, i + 1).join('/')}/`,
+      name: segmentLabel(segment),
+      item: canonicalUrl(`/docs/${(params.slug ?? []).slice(0, i + 1).join('/')}`),
     })),
   ];
 
@@ -116,11 +107,12 @@ export async function generateMetadata(props: PageProps<'/docs/[[...slug]]'>): P
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
-  const ogUrl = `https://vlrdevapi.pages.dev${page.url}${page.url.endsWith('/') ? '' : '/'}`;
+  const ogUrl = canonicalUrl(page.url);
 
   return {
     title: page.data.title,
     description: page.data.description,
+    alternates: { canonical: ogUrl },
     openGraph: {
       url: ogUrl,
       images: getPageImage(page).url,

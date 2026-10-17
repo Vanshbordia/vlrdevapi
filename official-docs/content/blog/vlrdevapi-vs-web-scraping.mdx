@@ -2,7 +2,7 @@
 title: VLRdevAPI vs. Traditional Web Scraping
 description: A comparison of using VLRdevAPI versus scraping VLR.gg directly — covering reliability, speed, maintenance, and developer experience.
 date: 2026-07-03
-author: RiftWatch
+author: VLRdevAPI
 ---
 
 If you're building a Valorant esports project, you have two paths: use VLRdevAPI or scrape VLR.gg directly. Here's a breakdown of what each approach means in practice.
@@ -46,7 +46,7 @@ for card in cards:
 | Rate limiting | Built-in | Must implement yourself |
 | Data normalization | Automatic | Manual for every field |
 | Error handling | Typed exceptions | Try/except soup |
-| Async support | Native | DIY |
+| Concurrent fetching | Built-in thread pool | DIY |
 
 ## Performance
 
@@ -77,7 +77,7 @@ pip install --upgrade vlrdevapi
 - You want clean, structured data with minimal code
 - You need reliable uptime for production apps
 - You're building a bot, dashboard, or analysis tool
-- You want async support without complexity
+- You want automatic parallel fetching for multi-stage data
 
 **Scraping might make sense when:**
 - You need data not covered by the library

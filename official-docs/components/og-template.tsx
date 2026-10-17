@@ -158,7 +158,7 @@ export function OGTemplate({ title, description, site = 'VLRdevAPI' }: OGTemplat
                 fontWeight: 500,
               }}
             >
-              RiftWatch
+              VLRdevAPI
             </span>
           </div>
         </div>

@@ -1,0 +1,15 @@
+# Cloudflare Pages redirects (static export compatible).
+# Legacy /docs/api/* URLs from the old site structure are still indexed by
+# Google but now 404. Send them to their current /docs/reference/* homes.
+# Specific rules first, then a catch-all for anything unmapped.
+
+/docs/api/teams/completed-matches  /docs/reference/team/completed-matches/  301
+/docs/api/teams/info               /docs/reference/team/info/               301
+/docs/api/players/agent-stats      /docs/reference/player/agents/           301
+/docs/api/events/standings         /docs/reference/events/standings/        301
+/docs/api/events/matches           /docs/reference/events/matches/          301
+/docs/api/series/info              /docs/reference/series/info/             301
+/docs/api/series/matches           /docs/reference/series/                  301
+/docs/api/matches/upcoming         /docs/reference/matches/upcoming/        301
+/docs/api/matches                  /docs/reference/matches/                 301
+/docs/api/*                        /docs/reference/                         301

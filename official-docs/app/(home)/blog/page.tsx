@@ -1,23 +1,23 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getBlogPosts } from '@/lib/content'
+import { canonicalUrl, siteUrl } from '@/lib/shared'
+import { project } from '@/lib/project'
 
 export const metadata: Metadata = {
   title: 'Blog',
   description: 'News, tutorials, and deep dives on building with the VLRdevAPI Python SDK for Valorant esports.',
+  alternates: { canonical: canonicalUrl('/blog/') },
 }
 
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Blog',
-  name: 'VLRdevAPI Blog',
+  name: `${project.name} Blog`,
   description: 'News, tutorials, and deep dives on building with the VLRdevAPI Python SDK for Valorant esports.',
-  url: 'https://vlrdevapi.pages.dev/blog/',
-  publisher: {
-    '@type': 'Organization',
-    name: 'RiftWatch',
-    url: 'https://riftwatch.org',
-  },
+  url: canonicalUrl('/blog/'),
+  inLanguage: 'en',
+  publisher: { '@id': `${siteUrl}/#organization` },
 }
 
 export default function BlogPage() {
@@ -65,6 +65,33 @@ export default function BlogPage() {
               ))}
             </div>
           )}
+        </div>
+      </section>
+
+      <section className="border-t border-border">
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+          <h2 className="font-heading text-xl font-bold tracking-tight text-foreground md:text-2xl">
+            Related
+          </h2>
+          <ul className="mt-6 flex flex-wrap gap-3">
+            {[
+              { href: '/vlr-gg-api/', label: 'VLR.gg API for Python' },
+              { href: '/valorant-api-python/', label: 'Valorant API for Python' },
+              { href: '/valorant-esports-api/', label: 'Valorant esports API' },
+              { href: '/valorant-stats-api/', label: 'Valorant stats API' },
+              { href: '/guides/', label: 'Guides' },
+              { href: '/docs/', label: 'Documentation' },
+            ].map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="inline-flex items-center border border-border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-fd-primary/50 hover:text-foreground"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
     </main>

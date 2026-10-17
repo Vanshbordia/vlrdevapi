@@ -23,7 +23,7 @@ export const docs = defineDocs({
 
 const contentPageSchema = pageSchema.extend({
   date: z.string(),
-  author: z.string().default('RiftWatch'),
+  author: z.string().default('VLRdevAPI'),
 });
 
 export const blog = defineDocs({
