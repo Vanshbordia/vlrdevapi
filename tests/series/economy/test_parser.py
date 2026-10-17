@@ -57,6 +57,28 @@ class TestParseEconomyGame:
             r.spent_team1 for r in self.game1.rounds
         ]
 
+    def test_unplayed_grid_columns_are_skipped(self):
+        # The real ECR grid always renders a column per possible round, but
+        # game 1 ended at round 16. The blank (unplayed) columns carry no
+        # spend title and must be dropped, leaving contiguous round numbers.
+        game = self.html.css_first('.vm-stats-game[data-game-id="233478"]')
+        grid_cols = [
+            col
+            for col in game.css(".vlr-rounds.ecr .vlr-rounds-row-col")
+            if "mod-teams" not in (col.attributes.get("class") or "")
+        ]
+        assert len(grid_cols) > len(self.game1.rounds)
+        assert [r.round_number for r in self.game1.rounds] == list(
+            range(1, len(self.game1.rounds) + 1)
+        )
+
+    def test_every_buy_level_is_decoded(self):
+        buys = set()
+        for round_data in self.game1.rounds:
+            buys.add(round_data.buy_type_team1)
+            buys.add(round_data.buy_type_team2)
+        assert buys == {"Eco", "Semi-eco", "Semi-buy", "Full-buy"}
+
 
 _BO1_VETO_FIXTURES = FIXTURES_DIR / "series" / "64819"
 
