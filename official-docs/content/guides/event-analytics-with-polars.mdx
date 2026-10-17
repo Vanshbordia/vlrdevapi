@@ -1,0 +1,146 @@
+---
+title: Event Analytics with Polars
+description: Load a Valorant tournament's VLR.gg standings into Polars and break down prize money by placement and by country.
+date: 2026-10-16
+author: RiftWatch
+---
+
+Standings pages answer a narrow set of questions: who finished where, how much each placing paid, and which regions took the money home. Those are all column operations on one table, which makes event standings a good fit for Polars. This guide loads one tournament's standings, then breaks the prize pool down by placement and by country.
+
+## What you need
+
+- Python 3.11 or newer.
+- `vlrdevapi` and `polars`.
+
+```bash
+pip install vlrdevapi polars
+```
+
+Every event has an ID in its VLR.gg URL, for example `vlr.gg/event/2765`. The examples use `2765`.
+
+## Fetch the standings
+
+`event.standings()` returns the standings grouped by stage. Each stage holds a list of entries with a placement string, prize money, circuit points, and a team object.
+
+```python
+import vlrdevapi
+
+standings = vlrdevapi.event(event_id=2765).standings()
+print(f"{len(standings)} stage(s) returned")
+
+for stage in standings:
+    print(stage.stage_name, len(stage.standings), "teams")
+```
+
+Large events return several stages, and a team that reached both the group stage and the playoffs appears once in each. Deduplicate later if you want one row per team.
+
+## Build a DataFrame
+
+Flatten the nested stages and entries into rows.
+
+```python
+# doc-check: skip
+import polars as pl
+import vlrdevapi
+
+EVENT_ID = 2765
+
+standings = vlrdevapi.event(event_id=EVENT_ID).standings()
+
+rows = []
+for stage in standings:
+    for entry in stage.standings:
+        rows.append({
+            "stage": stage.stage_name,
+            "place": entry.place,
+            "team": entry.team.name,
+            "country": entry.team.country,
+            "points": entry.points,
+            "prize": entry.prize_money,
+        })
+
+df = pl.DataFrame(rows)
+print(df.select(pl.len()).item(), "rows")
+print(df.head(5))
+```
+
+There is no missing-value dtype guessing here. Polars gives `points` and `prize` the integer type, and uses `null` where the source has no value. `prize` is `null` for placements that pay nothing or for entries where the prize was not parsed.
+
+## Prize money by placement
+
+The `place` column is a string like `"1st"` or `"3rd-4th"`, so it is not the right key for sorting. Sort by prize instead, and divide by a thousand to keep the numbers readable.
+
+```python
+# doc-check: skip
+prize_table = (
+    df.lazy()
+    .filter(pl.col("prize").is_not_null())
+    .with_columns((pl.col("prize") / 1000).round(1).alias("prize_k"))
+    .sort("prize", descending=True)
+    .select("stage", "place", "team", "prize_k")
+    .collect()
+)
+
+print(prize_table)
+```
+
+This is a lazy pipeline. Nothing runs until `collect()`, which lets Polars push the filter down and avoid materializing rows it will drop. On a single event the difference is small, but the same pipeline runs unchanged across many events.
+
+The total pool is one line:
+
+```python
+# doc-check: skip
+total = df.select(pl.col("prize").sum()).item()
+print(f"Total prize pool: {total:,}")
+```
+
+## Prize money by country
+
+Group by country and sum the prizes. Polars expressions make the two aggregates readable in one block.
+
+```python
+# doc-check: skip
+by_country = (
+    df.filter(pl.col("prize").is_not_null())
+    .group_by("country")
+    .agg(
+        pl.len().alias("entries"),
+        pl.col("prize").sum().alias("prize"),
+    )
+    .with_columns((pl.col("prize") / 1000).round(1).alias("prize_k"))
+    .sort("prize", descending=True)
+    .select("country", "entries", "prize_k")
+)
+
+print(by_country)
+```
+
+`entries` counts standing rows, not teams, so a country whose team made both stages counts twice. If you want teams instead, deduplicate by team name first and keep the row with the largest prize.
+
+```python
+# doc-check: skip
+per_team = (
+    df.filter(pl.col("team").is_not_null())
+    .group_by("team")
+    .agg(
+        pl.col("country").first().alias("country"),
+        pl.col("prize").max().alias("prize"),
+    )
+    .sort("prize", descending=True, nulls_last=True)
+)
+
+print(per_team.head(8))
+```
+
+Now each team appears exactly once, with its best prize across all stages.
+
+## Why Polars here
+
+Polars reads like SQL in method form. A filter sits next to a group by and a sort without any intermediate variables, and the lazy variant lets the engine reorder the work. It also keeps nulls as nulls rather than converting them to NaN, which matters when a placement genuinely paid nothing against one where the prize failed to parse.
+
+The same questions in pandas would work, but they turn into chained `query`, `groupby`, and `assign` calls with more temporary frames in between.
+
+## Next steps
+
+- [Player Analytics with pandas](/guides/player-analytics-with-pandas/) covers player stats in a different library.
+- [Event reference](/docs/reference/events/) documents standings, stages, and match fields.

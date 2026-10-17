@@ -46,10 +46,43 @@ export const guides = defineDocs({
   },
 });
 
+/**
+ * scripts/check_mdx_examples.py skips any code block containing a
+ * `# doc-check: skip` line. That marker only exists for the checker, so remove
+ * it from code blocks before they render. The raw MDX files keep the marker,
+ * which means the checker still sees it.
+ */
+const DOC_CHECK_MARKER = '# doc-check: skip';
+
+interface MdastNode {
+  type: string;
+  value?: string;
+  children?: MdastNode[];
+}
+
+function stripDocCheckMarker() {
+  const strip = (node: MdastNode) => {
+    if (
+      node.type === 'code' &&
+      typeof node.value === 'string' &&
+      node.value.includes(DOC_CHECK_MARKER)
+    ) {
+      node.value = node.value
+        .split('\n')
+        .filter((line) => !line.trim().startsWith(DOC_CHECK_MARKER))
+        .join('\n')
+        .replace(/^\n+/, '');
+    }
+    node.children?.forEach(strip);
+  };
+
+  return (tree: unknown) => strip(tree as MdastNode);
+}
+
 export default defineConfig({
     plugins: [lastModified()],
   mdxOptions: {
-    remarkPlugins: [remarkSteps], 
+    remarkPlugins: [remarkSteps, stripDocCheckMarker], 
     // MDX options
     rehypeCodeOptions: {
       themes: {

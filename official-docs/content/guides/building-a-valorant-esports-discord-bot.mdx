@@ -1,0 +1,138 @@
+---
+title: Building a Valorant Esports Discord Bot
+description: A Discord bot that answers a slash command with the upcoming Valorant schedule and posts an alert when a new match goes live, using discord.py and VLRdevAPI.
+date: 2026-10-17
+author: RiftWatch
+---
+
+Discord is where a lot of Valorant communities already sit, so a bot that posts the schedule is useful without any extra tooling. This guide builds one with two jobs: a `/schedule` command that lists the next few matches, and a background loop that posts a message the first time it sees a match go live.
+
+## What you need
+
+- Python 3.11 or newer.
+- A Discord application and bot token from the [Discord developer portal](https://discord.com/developers/applications).
+- The bot invited to your server with permission to send messages in one channel.
+- The channel ID where alerts should land. Enable Developer Mode in Discord, right click the channel, and copy the ID.
+
+Install the libraries:
+
+```bash
+pip install vlrdevapi discord.py
+```
+
+## Project setup
+
+Create `bot.py` and start with the imports and configuration. The token and channel ID come from environment variables so they stay out of your code.
+
+```python
+# doc-check: skip
+import asyncio
+import os
+
+import discord
+import vlrdevapi
+from discord import app_commands
+from discord.ext import tasks
+
+TOKEN = os.environ["DISCORD_TOKEN"]
+ALERT_CHANNEL_ID = int(os.environ["ALERT_CHANNEL_ID"])
+
+client = discord.Client(intents=discord.Intents.default())
+tree = app_commands.CommandTree(client)
+```
+
+The bot only sends messages, so the default intents are enough. Reading message content is a privileged intent and none of this code needs it.
+
+## Format a match
+
+Before wiring up commands, add a helper that turns a match object into text. An upcoming match always has an event name and a stage, and `team1` and `team2` can be `None` when a slot is still undecided.
+
+```python
+# doc-check: skip
+def format_match(match) -> str:
+    team1 = match.team1.name if match.team1 else "TBD"
+    team2 = match.team2.name if match.team2 else "TBD"
+    if match.datetime:
+        when = match.datetime.strftime("%d %b %H:%M UTC")
+    else:
+        when = "time TBD"
+    return f"**{team1}** vs **{team2}**\n{match.event} - {match.stage} - {when}"
+```
+
+`vlrdevapi.matches.upcoming()` is a blocking network call. Inside an async bot, run it in a thread with `asyncio.to_thread` so the event loop stays free for other commands.
+
+## Add the schedule command
+
+The command fetches the upcoming list and replies with the first `count` matches.
+
+```python
+# doc-check: skip
+@tree.command(name="schedule", description="Show upcoming Valorant matches")
+@app_commands.describe(count="How many matches to show (default 5)")
+async def schedule(interaction: discord.Interaction, count: int = 5):
+    page = await asyncio.to_thread(vlrdevapi.matches.upcoming)
+    matches = page.matches[:count]
+    if not matches:
+        await interaction.response.send_message("No upcoming matches right now.")
+        return
+    text = "\n\n".join(format_match(m) for m in matches)
+    await interaction.response.send_message(text)
+```
+
+The first response to an interaction has to go through `interaction.response.send_message`. If you later need a second message, use `interaction.followup.send` instead, because a response can only be sent once.
+
+## Watch for live matches
+
+The library exposes live matches through `vlrdevapi.matches.live()`. A loop every five minutes checks for matches that were not seen before and posts one message per new match. The `seen` set is what keeps the channel from filling with repeats.
+
+```python
+# doc-check: skip
+seen: set[int] = set()
+
+@tasks.loop(minutes=5)
+async def live_watch():
+    channel = client.get_channel(ALERT_CHANNEL_ID)
+    if channel is None:
+        return
+    live = await asyncio.to_thread(vlrdevapi.matches.live)
+    for match in live.matches:
+        if match.match_id in seen:
+            continue
+        seen.add(match.match_id)
+        team1 = match.team1.name if match.team1 else "TBD"
+        team2 = match.team2.name if match.team2 else "TBD"
+        await channel.send(f"Live now: {team1} vs {team2} ({match.event})")
+```
+
+Five minutes is a reasonable starting interval. VLR.gg updates live scores as rounds finish, so a faster loop mostly adds requests rather than fresher data.
+
+## Start it up
+
+Register the commands and start the loop when the bot connects.
+
+```python
+# doc-check: skip
+@client.event
+async def on_ready():
+    await tree.sync()
+    print(f"Logged in as {client.user}")
+    live_watch.start()
+
+client.run(TOKEN)
+```
+
+Run it with the environment variables set:
+
+```bash
+DISCORD_TOKEN=your-token ALERT_CHANNEL_ID=123456789 python bot.py
+```
+
+On Windows, set the variables first with `set DISCORD_TOKEN=your-token` and `set ALERT_CHANNEL_ID=123456789`, then run `python bot.py`. The first slash command can take a moment to appear while `tree.sync()` finishes.
+
+## Where to take it next
+
+- Add a `/team` command that takes a team ID and replies with `vlrdevapi.team(team_id).roster()` and `vlrdevapi.team(team_id).placements()`, so members can look up a lineup without leaving Discord.
+- Post the daily schedule once each morning with a second `tasks.loop` set to `time=datetime.time(hour=8)`.
+- Send a standings digest for an event with `vlrdevapi.event(event_id).standings()` if your server follows one tournament closely.
+
+The [API reference](/docs/reference/) lists every method and field you can surface in a command.

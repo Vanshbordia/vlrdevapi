@@ -1,0 +1,78 @@
+---
+title: VLRdevAPI vs Other Valorant Esports APIs
+description: How VLRdevAPI compares to self-hosted VLR.gg JSON services, the Riot official API, and writing your own scraper, with the cost and upkeep of each.
+date: 2026-10-15
+author: RiftWatch
+---
+
+If you need Valorant esports data in an application, four routes are common, and they suit different jobs. This page compares them on the parts that usually decide the choice: cost, setup, the data you get back, and how much upkeep the source needs.
+
+## The options at a glance
+
+The VLRdevAPI column is the one this site is built around, so it is highlighted in each row to make the comparison easy to scan.
+
+| | **VLRdevAPI** | A self-hosted VLR.gg JSON API | The Riot official API | Your own scraper |
+|---|---|---|---|---|
+| Cost | **Free, MIT licensed** | Free software, you pay for hosting | Free key, approval needed | Free, plus your time |
+| Language | **Python** | Any client that reads JSON | Any | Any |
+| Where it runs | **In your process** | A service you host | Calls Riot | In your process |
+| API key | **Not needed** | Not needed | Required | Not needed |
+| Data | **VLR.gg pages as typed models** | VLR.gg pages as JSON | In-client match telemetry | Whatever you parse |
+| Setup | **One `pip install`** | Deploy and run a service | Register and manage a key | Write a parser for each page |
+| Upkeep | **Library updates** | You update the service | You track Riot versions | You fix selectors yourself |
+
+## Is VLRdevAPI free?
+
+Yes, and the same is not true of every option here. VLRdevAPI is free and open source under the MIT licence, installable from PyPI, and usable in commercial projects without a fee, a key, or an approval step. The Riot API is also free but requires an approved key scoped to your application and region. A self-hosted VLR.gg JSON service uses free software while costing you a server to keep running. A scraper costs nothing to write and a lot to maintain over time.
+
+For esports data specifically, that cost difference is the usual reason people land on VLRdevAPI. Esports results, standings, rosters, and prize pools are not in the Riot API at all, and the paid providers that do carry them charge for what VLR.gg already publishes.
+
+## VLRdevAPI
+
+VLRdevAPI is a Python library for VLR.gg esports data. It exposes six namespaces: `matches`, `team`, `player`, `event`, `series`, and `news`. Every method returns Pydantic models with field descriptions, so your editor autocompletes field names and a type checker catches mistakes before you run anything.
+
+```python
+import vlrdevapi
+
+standings = vlrdevapi.event(2765).standings()
+for stage in standings:
+    for entry in stage.standings:
+        prize = entry.prize_money or 0
+        print(entry.place, entry.team.name, prize)
+```
+
+Reach for it when you write Python, want typed data without writing parsers, and would rather not run another service.
+
+## A self-hosted VLR.gg JSON API
+
+Community projects wrap VLR.gg in an HTTP service, most of them on Node.js. You run the service yourself and call it over HTTP. That fits a JavaScript frontend, a Go service, a spreadsheet, or anything else that reads JSON but is not Python.
+
+The cost is a second process to own. You deploy it, keep it current, and read its logs when VLR.gg changes. The response shapes are decided by that project, so a field rename upstream can reach your code.
+
+Choose this when you need JSON from a non-Python stack and you are comfortable running and updating a small server.
+
+## The Riot official API
+
+Riot's API is the only source for some data, mainly raw match telemetry from the client and account level statistics. It needs a key, it is scoped to your application and region, and it has no notion of esports tournaments. There are no prize pools, event standings, or news articles in it, because those live on VLR.gg rather than inside the game.
+
+Use it when you need in-client telemetry or account data. When you also need esports context, run it alongside VLRdevAPI.
+
+## Writing your own scraper
+
+Scraping VLR.gg directly gives you full control. You pick the selectors, the caching, and the retry policy. The cost arrives later: VLR.gg changes its markup, and selectors that worked in January return empty lists in June. Someone has to notice and fix each one.
+
+VLRdevAPI exists to remove that job. Parsing and normalization live in the library, and a free package update replaces the selectors you would otherwise edit by hand.
+
+## When to use what
+
+- Python project that needs esports data: VLRdevAPI.
+- Non-Python service that needs JSON: a self-hosted VLR.gg API.
+- In-client telemetry or account statistics: the Riot official API.
+- A page field that no library exposes: your own scraper, for that one page.
+
+Most projects end up using more than one. VLRdevAPI covers the esports layer for free, and the Riot API covers anything that only exists inside the client.
+
+## Next steps
+
+- [How to get Valorant esports data in Python](/blog/how-to-get-valorant-esports-data-python/)
+- [Full API reference](/docs/reference/)

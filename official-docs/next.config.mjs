@@ -14,6 +14,14 @@ const config = {
         source: '/docs/:path*.mdx',
         destination: '/llms.mdx/docs/:path*',
       },
+      {
+        source: '/blog/:slug.mdx',
+        destination: '/llms.mdx/blog/:slug/content.md',
+      },
+      {
+        source: '/guides/:slug.mdx',
+        destination: '/llms.mdx/guides/:slug/content.md',
+      },
     ];
   },
 };

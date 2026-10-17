@@ -46,10 +46,17 @@ export function getPageMarkdownUrl(page: (typeof source)['$inferPage']) {
   };
 }
 
-export async function getLLMText(page: (typeof source)['$inferPage']) {
+export async function getLLMTextFor(page: {
+  url: string;
+  data: { title: string; getText: (type: 'processed') => Promise<string> };
+}) {
   const processed = await page.data.getText('processed');
 
   return `# ${page.data.title} (${page.url})
 
 ${processed}`;
+}
+
+export async function getLLMText(page: (typeof source)['$inferPage']) {
+  return getLLMTextFor(page);
 }
