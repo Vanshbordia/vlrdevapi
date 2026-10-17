@@ -44,6 +44,10 @@ export const metadata: Metadata = {
   },
   verification: {
     google: 'yVaBi-Tr3-OH7NnWQ8GPL1vbkqC_FOXAEQPlbSLKdsE',
+    other: {
+      // Bing Webmaster Tools.
+      'msvalidate.01': 'C5DF5211F5F3C14452F41EFC044D7E89',
+    },
   },
 };
 
