@@ -13,7 +13,7 @@ const versions = [
     date: '17 October 2026',
     github: 'https://github.com/vanshbordia/vlrdevapi/releases/tag/2.4.1',
     pypi: 'https://pypi.org/project/vlrdevapi/2.4.1/',
-    summary: 'Fixes series player-stat, economy, VOD, and map-name parsing for the latest vlr.gg markup, and makes economy team matching case-insensitive.',
+    summary: 'Fixes series player-stat, economy, VOD, and map-name parsing for the latest vlr.gg markup, makes economy team matching case-insensitive, and moves HTML parsing to selectolax\'s Lexbor engine.',
     sections: [
       {
         title: 'Fixed',
@@ -28,6 +28,8 @@ const versions = [
         title: 'Changed',
         items: [
           'Series economy team/abbreviation resolution is now case-insensitive, so team IDs resolve for pages that render short tags.',
+          'HTML parsing backend — parsing now uses selectolax\'s Lexbor engine (`selectolax.lexbor`) instead of the discontinued Modest engine (`selectolax.parser`), which selectolax removed in 1.0. This is an internal change: the public API, CSS selectors, and parsed output are unchanged.',
+          'Dependencies — raised the `selectolax` minimum to `>=1.0.0` and moved `pydantic` to the 2.14 series.',
         ],
       },
     ],

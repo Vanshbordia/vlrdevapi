@@ -6,10 +6,11 @@ build:
     python: latest
   jobs:
     install:
-      - pip install zensical mkdocstrings mkdocstrings-python
+      - pip install uv
+      - uv sync --group dev
     build:
       html:
-        - cd docs-py && zensical build
+        - cd docs-py && uv run zensical build
     post_build:
       - mkdir -p $READTHEDOCS_OUTPUT/html/
       - cp --recursive docs-py/site/* $READTHEDOCS_OUTPUT/html/

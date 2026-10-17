@@ -1,4 +1,4 @@
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from tests.conftest import load_fixture
 from tests.helpers.expected_from_html import player_team_dates_from_lines

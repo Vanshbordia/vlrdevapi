@@ -29,6 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - **Series economy team matching** — team/abbreviation resolution is now
   case-insensitive, so team IDs resolve for pages that render short tags.
+- **HTML parsing backend** — parsing now uses selectolax's Lexbor engine
+  (`selectolax.lexbor`) instead of the discontinued Modest engine
+  (`selectolax.parser`), which selectolax removed in 1.0. This is an internal
+  change: the public API, CSS selectors, and parsed output are unchanged.
+- **Dependencies** — raised the `selectolax` minimum to `>=1.0.0` and moved
+  `pydantic` to the 2.14 series.
 
 ### Documentation
 

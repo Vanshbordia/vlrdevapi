@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from tests.helpers.expected_from_html import event_dates_label

@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 import pytest
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from vlrdevapi._team.upcoming_matches.parser import _parse_match_item, parse_team_upcoming_matches

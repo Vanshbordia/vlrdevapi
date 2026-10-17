@@ -1,4 +1,4 @@
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from vlrdevapi._player._common_parsing import _next_sibling_card, _parse_team_entry
 from vlrdevapi._player.teams.models import PlayerTeams

@@ -6,7 +6,8 @@ built separately in ``tests.helpers.expected_from_html``.
 
 from __future__ import annotations
 
-from selectolax.parser import HTMLParser, Node
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
+from selectolax.lexbor import LexborNode as Node
 
 
 def event_dates_text(html: HTMLParser) -> str:

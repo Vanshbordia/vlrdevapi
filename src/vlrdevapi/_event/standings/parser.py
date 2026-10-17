@@ -1,6 +1,7 @@
 """Event standings parser."""
 
-from selectolax.parser import HTMLParser, Node
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
+from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._event.standings.models import StandingEntry, TeamStanding
 from vlrdevapi.commons.prizes import parse_prize_amount

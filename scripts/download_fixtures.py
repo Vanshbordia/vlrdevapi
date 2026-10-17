@@ -420,7 +420,7 @@ for _sid, _sslug in SERIES_FORFEIT_NOTES:
 
 def _parse_last_page(html: str) -> int | None:
     """Parse the highest page number from vlr.gg pagination controls."""
-    from selectolax.parser import HTMLParser
+    from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
     doc = HTMLParser(html)
     pagination = doc.css_first("div.action-container-pages")
