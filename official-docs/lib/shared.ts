@@ -18,6 +18,14 @@ export function canonicalUrl(path: string) {
   return `${siteUrl}${withLeadingSlash.endsWith('/') ? withLeadingSlash : `${withLeadingSlash}/`}`;
 }
 
+/**
+ * Absolute URL for a static asset (image, file). Unlike {@link canonicalUrl}
+ * this never appends a trailing slash.
+ */
+export function assetUrl(path: string) {
+  return `${siteUrl}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
 // fill this with your actual GitHub info, for example:
 export const gitConfig = {
   user: 'vanshbordia',

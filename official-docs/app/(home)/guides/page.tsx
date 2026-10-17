@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getGuides } from '@/lib/content'
-import { canonicalUrl } from '@/lib/shared'
+import { canonicalUrl, siteUrl } from '@/lib/shared'
+import { project } from '@/lib/project'
 
 export const metadata: Metadata = {
   title: 'Guides',
@@ -12,14 +13,11 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
-  name: 'VLRdevAPI Guides',
+  name: `${project.name} Guides`,
   description: 'Step-by-step walkthroughs for integrating VLRdevAPI into your Valorant esports projects.',
-  url: 'https://vlrdevapi.pages.dev/guides/',
-  publisher: {
-    '@type': 'Organization',
-    name: 'RiftWatch',
-    url: 'https://riftwatch.org',
-  },
+  url: canonicalUrl('/guides/'),
+  inLanguage: 'en',
+  publisher: { '@id': `${siteUrl}/#organization` },
 }
 
 export default function GuidesPage() {

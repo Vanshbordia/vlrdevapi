@@ -9,7 +9,7 @@
 
 - **Bug reports**: Open an issue at https://github.com/Vanshbordia/vlrdevapi/issues with the `bug` label.
 - **Feature requests**: Open an issue with the `enhancement` label.
-- **Security issues**: Email vanshb@riftwatch.org — do not file a public issue.
+- **Security issues**: Use private vulnerability reporting at https://github.com/vanshbordia/vlrdevapi/security/advisories/new — do not file a public issue.
 
 ## Community
 

@@ -4,7 +4,8 @@ import { StickyTabs } from '@/components/home/sticky-tabs';
 import { TerminalDemo } from '@/components/home/terminal-demo';
 import { CopyCommand } from '@/components/ui/copy-command';
 import { HowItWorksCard } from '@/components/home/how-it-works-card';
-import { canonicalUrl } from '@/lib/shared';
+import { canonicalUrl, siteUrl } from '@/lib/shared';
+import { project, projectAuthor, projectSameAs, projectUrls } from '@/lib/project';
 
 export const metadata: Metadata = {
   alternates: { canonical: canonicalUrl('/') },
@@ -13,24 +14,27 @@ export const metadata: Metadata = {
 const jsonLdSoftwareApp = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
-  name: 'VLRdevAPI',
-  url: 'https://vlrdevapi.pages.dev',
-  description:
-    'A type-safe Python SDK for Valorant esports data from VLR.gg. Fetch match results, player stats, team rosters, and tournament brackets.',
+  '@id': `${projectUrls.home}#software`,
+  name: project.name,
+  url: projectUrls.home,
+  description: project.description,
   applicationCategory: 'DeveloperApplication',
-  operatingSystem: 'Python 3.11+',
+  applicationSubCategory: 'Esports data SDK',
+  operatingSystem: project.runtimePlatform,
+  programmingLanguage: project.programmingLanguage,
+  softwareVersion: project.version,
+  license: project.licenseUrl,
+  isAccessibleForFree: true,
+  softwareHelp: projectUrls.docs,
+  downloadUrl: project.packageUrl,
   offers: {
     '@type': 'Offer',
     price: '0',
     priceCurrency: 'USD',
   },
-  author: {
-    '@type': 'Organization',
-    name: 'RiftWatch',
-    url: 'https://riftwatch.org',
-  },
-  downloadUrl: 'https://pypi.org/project/vlrdevapi/',
-  sameAs: 'https://github.com/vanshbordia/vlrdevapi',
+  author: projectAuthor,
+  publisher: { '@id': `${siteUrl}/#organization` },
+  sameAs: projectSameAs,
 };
 
 export default function HomePage() {
@@ -66,8 +70,7 @@ export default function HomePage() {
               <p className="mt-7 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg lg:text-xl">
                 A type-safe Python SDK for Valorant esports data from VLR.gg.
                 Fetch live match results, player statistics, team rosters, and tournament brackets
-                through a fully typed interface. Built by{' '}
-                <Link href="https://riftwatch.org" target="_blank" rel="noopener noreferrer" className="text-foreground underline underline-offset-4 decoration-border hover:decoration-foreground/50 transition-colors">RiftWatch</Link>.
+                through a fully typed interface.
               </p>
               <div className="mt-6 flex flex-wrap items-center gap-2">
                 <CopyCommand command="pip install vlrdevapi" />

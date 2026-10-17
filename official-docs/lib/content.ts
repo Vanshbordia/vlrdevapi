@@ -44,7 +44,7 @@ function readDir(dir: string): ContentPost[] {
         title: typeof data.title === 'string' ? data.title : slug,
         description: typeof data.description === 'string' ? data.description : '',
         date: dateStr,
-        author: typeof data.author === 'string' ? data.author : 'RiftWatch',
+        author: typeof data.author === 'string' ? data.author : 'VLRdevAPI',
         content,
       }
     })

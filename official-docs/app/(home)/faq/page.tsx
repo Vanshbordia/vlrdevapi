@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { canonicalUrl, siteUrl } from '@/lib/shared'
+import { project } from '@/lib/project'
 
 interface FaqItem {
   q: string
@@ -60,7 +62,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'Is VLRdevAPI production-ready?',
-        a: <>Yes. The library is used in production by RiftWatch and the community. It includes error handling, retry logic, rate limiting, and typed exceptions for reliable operation. See the <Link href="/guides/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">getting started guide</Link> for best practices.</>,
+        a: <>Yes. The library is used in production. It includes error handling, retry logic, rate limiting, and typed exceptions for reliable operation. See the <Link href="/guides/" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">getting started guide</Link> for best practices.</>,
       },
       {
         q: 'How do I handle errors?',
@@ -164,7 +166,7 @@ const sections: FaqSection[] = [
     items: [
       {
         q: 'Is this project affiliated with Riot Games or VLR.gg?',
-        a: <>No. VLRdevAPI is an independent open-source project by <Link href="https://riftwatch.org" target="_blank" rel="noopener noreferrer" className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary">RiftWatch</Link>. It is not affiliated with, endorsed by, or connected to Riot Games or VLR.gg.</>,
+        a: <>No. VLRdevAPI is an independent open-source project. It is not affiliated with, endorsed by, or connected to Riot Games or VLR.gg.</>,
       },
       {
         q: 'How can I contribute?',
@@ -201,9 +203,11 @@ const sections: FaqSection[] = [
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  name: 'VLRdevAPI FAQ',
+  name: `${project.name} FAQ`,
   description: 'Frequently asked questions about VLRdevAPI, the Python SDK for Valorant esports data.',
-  url: 'https://vlrdevapi.pages.dev/faq/',
+  url: canonicalUrl('/faq/'),
+  inLanguage: 'en',
+  publisher: { '@id': `${siteUrl}/#organization` },
   mainEntity: sections.flatMap((section) =>
     section.items.map((item) => ({
       '@type': 'Question',

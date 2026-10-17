@@ -6,7 +6,8 @@ import { getMDXComponents } from '@/components/mdx'
 import { TocLayout } from '@/components/toc-layout'
 import { extractToc } from '@/components/toc'
 import { CtaSection } from '@/components/cta'
-import { canonicalUrl } from '@/lib/shared'
+import { canonicalUrl, siteUrl } from '@/lib/shared'
+import { project, projectAuthor, projectUrls } from '@/lib/project'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -28,7 +29,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     openGraph: {
       title: `${page.data.title} - VLRdevAPI Guides`,
       description: page.data.description,
-      url: `https://vlrdevapi.pages.dev/guides/${slug}/`,
+      url: canonicalUrl(`/guides/${slug}`),
       type: 'article',
       publishedTime: page.data.date,
     },
@@ -45,47 +46,36 @@ export default async function GuidePage(props: Props) {
 
   const MDX = page.data.body
 
+  const canonical = canonicalUrl(`/guides/${slug}`)
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'TechArticle',
     headline: page.data.title,
     description: page.data.description,
     datePublished: page.data.date,
-    author: [
-      {
-        '@type': 'Person',
-        name: 'Vansh Bordia',
-      },
-      {
-        '@type': 'Organization',
-        name: 'RiftWatch',
-        url: 'https://riftwatch.org',
-      },
-    ],
-    publisher: {
-      '@type': 'Organization',
-      name: 'RiftWatch',
-      url: 'https://riftwatch.org',
-      logo: {
-        '@type': 'ImageObject',
-        url: 'https://vlrdevapi.pages.dev/logo.png',
-      },
+    inLanguage: 'en',
+    author: projectAuthor,
+    publisher: { '@id': `${siteUrl}/#organization` },
+    isPartOf: {
+      '@type': 'CollectionPage',
+      '@id': canonicalUrl('/guides/'),
+      name: `${project.name} Guides`,
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://vlrdevapi.pages.dev/guides/${slug}/`,
+      '@id': canonical,
     },
-    proficiencyLevel: 'Beginner',
-    url: `https://vlrdevapi.pages.dev/guides/${slug}/`,
+    url: canonical,
   }
 
   const jsonLdBreadcrumb = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://vlrdevapi.pages.dev' },
-      { '@type': 'ListItem', position: 2, name: 'Guides', item: 'https://vlrdevapi.pages.dev/guides/' },
-      { '@type': 'ListItem', position: 3, name: page.data.title, item: `https://vlrdevapi.pages.dev/guides/${slug}/` },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: projectUrls.home },
+      { '@type': 'ListItem', position: 2, name: 'Guides', item: canonicalUrl('/guides/') },
+      { '@type': 'ListItem', position: 3, name: page.data.title, item: canonical },
     ],
   }
 

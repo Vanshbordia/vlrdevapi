@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 
 import ChangelogTimeline from './changelog-timeline'
-import { canonicalUrl } from '@/lib/shared'
+import { canonicalUrl, siteUrl } from '@/lib/shared'
+import { project, projectAuthor, projectUrls } from '@/lib/project'
 
 export const metadata: Metadata = {
   title: 'Changelog',
@@ -247,8 +248,8 @@ const jsonLdBreadcrumb = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://vlrdevapi.pages.dev' },
-    { '@type': 'ListItem', position: 2, name: 'Changelog', item: 'https://vlrdevapi.pages.dev/changelog/' },
+    { '@type': 'ListItem', position: 1, name: 'Home', item: projectUrls.home },
+    { '@type': 'ListItem', position: 2, name: 'Changelog', item: canonicalUrl('/changelog/') },
   ],
 }
 
@@ -257,24 +258,21 @@ const jsonLdWebPage = {
   '@type': 'WebPage',
   name: 'Changelog',
   description: 'Release history and version notes for VLRdevAPI.',
-  url: 'https://vlrdevapi.pages.dev/changelog/',
+  url: canonicalUrl('/changelog/'),
+  inLanguage: 'en',
+  isPartOf: {
+    '@type': 'WebSite',
+    '@id': `${siteUrl}/#website`,
+  },
+  publisher: { '@id': `${siteUrl}/#organization` },
   about: {
     '@type': 'SoftwareSourceCode',
-    name: 'VLRdevAPI',
-    programmingLanguage: 'Python',
-    runtimePlatform: 'Python 3.11+',
-    codeRepository: 'https://github.com/vanshbordia/vlrdevapi',
-    author: [
-      {
-        '@type': 'Person',
-        name: 'Vansh Bordia',
-      },
-      {
-        '@type': 'Organization',
-        name: 'RiftWatch',
-        url: 'https://riftwatch.org',
-      },
-    ],
+    name: project.name,
+    programmingLanguage: project.programmingLanguage,
+    runtimePlatform: project.runtimePlatform,
+    codeRepository: project.repositoryUrl,
+    license: project.licenseUrl,
+    author: projectAuthor,
   },
 }
 

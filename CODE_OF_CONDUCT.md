@@ -15,5 +15,6 @@ diverse, inclusive, and healthy community.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the project maintainers at vanshb@riftwatch.org. All complaints
+reported to the project maintainers via the repository at
+https://github.com/vanshbordia/vlrdevapi. All complaints
 will be reviewed and investigated.

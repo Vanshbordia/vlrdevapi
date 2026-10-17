@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="official-docs/public/logo.svg" width="120" alt="vlrdevapi logo">
+<img src="official-docs/public/logo.png" width="120" alt="vlrdevapi logo">
 
 # vlrdevapi
 

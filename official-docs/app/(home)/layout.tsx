@@ -12,8 +12,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="sm:col-span-2 lg:col-span-2">
               <h3 className="text-lg font-bold text-foreground">VLRdevAPI</h3>
               <p className="mt-2 max-w-md text-sm leading-snug text-muted-foreground">
-                A type-safe Python SDK for the Valorant esports data API from VLR.gg, built by{' '}
-                <Link href="https://riftwatch.org" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">RiftWatch</Link>.
+                A type-safe Python SDK for the Valorant esports data API from VLR.gg.
                 Fetch match results, player stats, team rosters, and tournament brackets through a fully typed Python interface.
               </p>
             </div>
@@ -40,13 +39,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
             <p className="text-xs text-muted-foreground">
-              &copy; {new Date().getFullYear()} VLRdevAPI by{' '}
-              <Link href="https://riftwatch.org" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">RiftWatch</Link>. Not affiliated with Riot Games or VLR.gg.
+              &copy; {new Date().getFullYear()} VLRdevAPI. Not affiliated with Riot Games or VLR.gg.
             </p>
             <p className="text-xs text-muted-foreground">
               Built with Python &middot; Open source on{' '}
-              <Link href="https://github.com/vanshbordia/vlrdevapi" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">GitHub</Link> &middot;{' '}
-              <Link href="https://riftwatch.org" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">RiftWatch</Link>
+              <Link href="https://github.com/vanshbordia/vlrdevapi" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">GitHub</Link>
             </p>
           </div>
         </div>

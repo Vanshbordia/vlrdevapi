@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getBlogPosts } from '@/lib/content'
-import { canonicalUrl } from '@/lib/shared'
+import { canonicalUrl, siteUrl } from '@/lib/shared'
+import { project } from '@/lib/project'
 
 export const metadata: Metadata = {
   title: 'Blog',
@@ -12,14 +13,11 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Blog',
-  name: 'VLRdevAPI Blog',
+  name: `${project.name} Blog`,
   description: 'News, tutorials, and deep dives on building with the VLRdevAPI Python SDK for Valorant esports.',
-  url: 'https://vlrdevapi.pages.dev/blog/',
-  publisher: {
-    '@type': 'Organization',
-    name: 'RiftWatch',
-    url: 'https://riftwatch.org',
-  },
+  url: canonicalUrl('/blog/'),
+  inLanguage: 'en',
+  publisher: { '@id': `${siteUrl}/#organization` },
 }
 
 export default function BlogPage() {
