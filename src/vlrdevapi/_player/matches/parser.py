@@ -2,7 +2,8 @@
 from datetime import tzinfo
 from zoneinfo import ZoneInfo
 
-from selectolax.parser import HTMLParser, Node
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
+from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._player.matches.models import MatchEntry, MatchHistoryPage, TeamInMatch
 from vlrdevapi.commons.datetime import (

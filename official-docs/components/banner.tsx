@@ -48,6 +48,8 @@ export function Banner({
   const globalKey = id ? `nd-banner-${encodeBase32(id)}` : null;
 
   useEffect(() => {
+    // client-only: SSR has no localStorage, so sync the persisted dismissal after hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read from localStorage on mount
     if (globalKey && localStorage.getItem(globalKey) === 'true') setOpen(false);
   }, [globalKey]);
 

@@ -1,0 +1,182 @@
+---
+title: Player Analytics with pandas
+description: "Load a Valorant player's VLR.gg stats into pandas and answer three questions: which agents they play, which ones they play best, and how their recent form looks."
+date: 2026-10-14
+author: RiftWatch
+---
+
+A player page on VLR.gg holds more numbers than a table can show at once. This guide pulls one player's agent stats and match history into pandas, then works through the questions a coach or a fan usually asks: what do they play, what do they play well, and how are they doing lately.
+
+## What you need
+
+- Python 3.11 or newer.
+- `vlrdevapi` and `pandas`.
+
+```bash
+pip install vlrdevapi pandas
+```
+
+Every player has an ID in their VLR.gg profile URL, for example `vlr.gg/player/438`. The examples below use `438`.
+
+## Fetch the agent stats
+
+Start with the raw data. `player.agents()` returns one entry per agent with rounds, rating, ACS, K/D, ADR, and KAST.
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.player.agents(player_id=438, timespan="all")
+print(f"{len(stats.agents)} agents played")
+
+for agent in stats.agents[:3]:
+    print(agent.agent, agent.rounds, agent.rating)
+```
+
+The `timespan` argument accepts `"30d"`, `"60d"`, `"90d"`, or `"all"`. Use a short window to see current form, and `"all"` to see a career.
+
+## Build a DataFrame
+
+Convert the list of models into a DataFrame. Some fields can be `None` for agents with very few rounds, so fill those before doing arithmetic.
+
+```python
+# doc-check: skip
+import pandas as pd
+import vlrdevapi
+
+PLAYER_ID = 438
+
+stats = vlrdevapi.player.agents(player_id=PLAYER_ID, timespan="all")
+
+agents = pd.DataFrame([
+    {
+        "agent": a.agent,
+        "rounds": a.rounds,
+        "rating": a.rating,
+        "acs": a.acs,
+        "kd": a.kd,
+        "adr": a.adr,
+        "kast": a.kast,
+    }
+    for a in stats.agents
+])
+
+agents["rounds"] = agents["rounds"].fillna(0).astype(int)
+agents["play_share"] = agents["rounds"] / agents["rounds"].sum()
+
+print(agents.sort_values("rounds", ascending=False).head(8))
+```
+
+`play_share` is the fraction of the player's rounds spent on each agent, which is a cleaner way to compare agents than raw round counts when the timespans differ.
+
+## Which agents does the player actually play?
+
+Sort by play share and look at the top of the list.
+
+```python
+# doc-check: skip
+top_agents = (
+    agents.sort_values("play_share", ascending=False)
+    .head(5)[["agent", "rounds", "play_share"]]
+)
+print(top_agents.to_string(index=False))
+```
+
+One agent usually dominates the list for a duelist or a controller, while a flex player spreads rounds across several. The shape of this table tells you what role the player fills before you look at any rating.
+
+## Which agents does the player play best?
+
+Rating and ACS say more about impact, but a small sample lies. Filter to agents with a real number of rounds first, then sort by rating.
+
+```python
+# doc-check: skip
+MIN_ROUNDS = 100
+
+best = (
+    agents[agents["rounds"] >= MIN_ROUNDS]
+    .sort_values("rating", ascending=False)
+    .head(5)[["agent", "rounds", "rating", "acs", "kd"]]
+)
+print(best.to_string(index=False))
+```
+
+Raising `MIN_ROUNDS` makes the table more trustworthy and shorter. At 100 rounds, every row reflects at least a few full matches rather than one good half.
+
+## How is the player doing lately?
+
+Agent stats cover a whole timespan. For recent form, use the match history and a rolling win rate.
+
+```python
+# doc-check: skip
+history = vlrdevapi.player.matches(player_id=PLAYER_ID, limit=50)
+
+matches = pd.DataFrame([
+    {
+        "date": m.date,
+        "event": m.event,
+        "result": m.result,
+        "team": m.team1.name,
+        "opponent": m.team2.name,
+        "score": f"{m.score1}-{m.score2}",
+    }
+    for m in history
+])
+
+matches["date"] = pd.to_datetime(matches["date"])
+matches = matches.sort_values("date")
+matches["form"] = (matches["result"] == "win").rolling(10, min_periods=1).mean()
+
+print(matches[["date", "opponent", "score", "result", "form"]].tail(10).to_string(index=False))
+```
+
+The `form` column is the win rate over the last ten matches at each point in time. An upward slope near the bottom of the table means the player's team is trending up, and a downward slope means the opposite, even if the season win rate looks fine.
+
+## Put it in one script
+
+Wrap the steps into a function so you can run the report for any player.
+
+```python
+# doc-check: skip
+import pandas as pd
+import vlrdevapi
+
+
+def load_agents(player_id: int, timespan: str = "all") -> pd.DataFrame:
+    stats = vlrdevapi.player.agents(player_id=player_id, timespan=timespan)
+    df = pd.DataFrame([
+        {
+            "agent": a.agent,
+            "rounds": a.rounds,
+            "rating": a.rating,
+            "acs": a.acs,
+            "kd": a.kd,
+            "adr": a.adr,
+        }
+        for a in stats.agents
+    ])
+    df["rounds"] = df["rounds"].fillna(0).astype(int)
+    return df
+
+
+def recent_form(player_id: int, limit: int = 50) -> pd.DataFrame:
+    history = vlrdevapi.player.matches(player_id=player_id, limit=limit)
+    df = pd.DataFrame([
+        {"date": m.date, "result": m.result, "opponent": m.team2.name}
+        for m in history
+    ])
+    df["date"] = pd.to_datetime(df["date"])
+    df = df.sort_values("date")
+    df["form"] = (df["result"] == "win").rolling(10, min_periods=1).mean()
+    return df
+
+
+if __name__ == "__main__":
+    agents = load_agents(438)
+    print(agents.sort_values("rounds", ascending=False).head(5).to_string(index=False))
+```
+
+The same pattern works for a whole roster. Pass each player ID from `vlrdevapi.team(team_id).roster()` through `load_agents` and concatenate the frames to compare teammates on shared agents.
+
+## Next steps
+
+- [Event Analytics with Polars](/guides/event-analytics-with-polars/) covers tournament standings in a different library.
+- [Player reference](/docs/reference/player/) documents every field returned by the player namespace.

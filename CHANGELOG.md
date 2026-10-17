@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.4.1] - 2026-10-17
+
+### Fixed
+
+- **Series players/stats parsing** — newer vlr.gg overview tables add a
+  dedicated `.mod-agents` cell before the stat columns. Stat cells are now
+  mapped dynamically around that column, and agents are read from the new
+  cell. This fixes `SideStats` validation errors and misaligned values
+  (rating, ACS, KDA, KAST, ADR, HS%, first kills/deaths).
+- **Series economy parsing** — the round-by-round economy grid now uses the
+  newer `.vlr-rounds.ecr` markup (`.ecr-bank`, `.ecc-c`, `.ecc-sq`). Banks,
+  spends, buy types, and round winners are read from it, with the legacy
+  `.wf-table-inset.mod-econ` table kept as a fallback.
+- **Series VODs parsing** — VODs are now read from the newer `.sm-vods`
+  module (`.sm-vod-name` labels, `a.sm-ext` links), keeping the legacy
+  `.match-vods` container as a fallback.
+- **Series game map names** — the game header now renders the duration as a
+  sibling of the map name. The map name is read from `.map-name`, so the
+  duration is no longer concatenated (e.g. `Pearl` instead of `Pearl35:48`).
+
+### Changed
+
+- **Series economy team matching** — team/abbreviation resolution is now
+  case-insensitive, so team IDs resolve for pages that render short tags.
+- **HTML parsing backend** — parsing now uses selectolax's Lexbor engine
+  (`selectolax.lexbor`) instead of the discontinued Modest engine
+  (`selectolax.parser`), which selectolax removed in 1.0. This is an internal
+  change: the public API, CSS selectors, and parsed output are unchanged.
+- **Dependencies** — raised the `selectolax` minimum to `>=1.0.0` and moved
+  `pydantic` to the 2.14 series.
+
+### Documentation
+
+- **Changelog** — this release is mirrored across `CHANGELOG.md`, the
+  ReadTheDocs changelog (`docs-py/docs/changelog.md`), and the official
+  site changelog (`official-docs/app/(home)/changelog/page.tsx`).
+
 ## [2.4.0] - 2026-08-19
 
 ### Added
@@ -279,6 +316,7 @@ The API surface, module structure, and type system are all new.
 - `aiohttp` and `asyncio` dependencies.
 - v1.x match/event/team parsing modules.
 
+[2.4.1]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.1.0...v2.2.0

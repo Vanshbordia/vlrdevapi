@@ -2,7 +2,7 @@ import logging
 from collections.abc import Callable
 from typing import Protocol, TypeVar
 
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from vlrdevapi._cache import LRUCache
 from vlrdevapi._utils.paths import team as team_path

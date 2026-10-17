@@ -46,10 +46,54 @@ export const guides = defineDocs({
   },
 });
 
+/**
+ * scripts/check_mdx_examples.py understands two markers inside code blocks:
+ *
+ *   `# doc-check: skip`         block is not executed by the checker.
+ *   `# doc-check: allow-empty`  block runs, but empty output is acceptable
+ *                               (e.g. a filtered loop over live data).
+ *
+ * Both markers exist only for the checker, so remove them from code blocks
+ * before they render. The raw MDX files keep them, which means the checker
+ * still sees them.
+ */
+const DOC_CHECK_MARKERS = ['# doc-check: skip', '# doc-check: allow-empty'];
+
+interface MdastNode {
+  type: string;
+  value?: string;
+  children?: MdastNode[];
+}
+
+function stripDocCheckMarker() {
+  const hasMarker = (value: string) =>
+    DOC_CHECK_MARKERS.some((marker) => value.includes(marker));
+
+  const strip = (node: MdastNode) => {
+    if (
+      node.type === 'code' &&
+      typeof node.value === 'string' &&
+      hasMarker(node.value)
+    ) {
+      node.value = node.value
+        .split('\n')
+        .filter(
+          (line) =>
+            !DOC_CHECK_MARKERS.some((marker) => line.trim().startsWith(marker)),
+        )
+        .join('\n')
+        .replace(/^\n+/, '');
+    }
+    node.children?.forEach(strip);
+  };
+
+  return (tree: unknown) => strip(tree as MdastNode);
+}
+
 export default defineConfig({
     plugins: [lastModified()],
   mdxOptions: {
-    remarkPlugins: [remarkSteps], 
+    remarkPlugins: [remarkSteps, stripDocCheckMarker], 
     // MDX options
     rehypeCodeOptions: {
       themes: {

@@ -8,7 +8,8 @@ controls.
 import logging
 from datetime import datetime
 
-from selectolax.parser import HTMLParser, Node
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
+from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._news.common import check_pagination, get_page_number
 from vlrdevapi._news.list.models import News, NewsPage

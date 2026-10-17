@@ -10,7 +10,7 @@ import vlrdevapi
 
 
 class TestEconomyEnrichment704037:
-    """Bo1, no veto — economy page uses full team names."""
+    """Bo1, no veto — economy page uses abbreviations."""
 
     SERIES_ID = 704037
     GAME_ID = 274641
@@ -23,9 +23,9 @@ class TestEconomyEnrichment704037:
         )
         mock_vlr.get(f"/{self.SERIES_ID}").respond(200, text=load_fixture(self.OVW))
         result = vlrdevapi.series.economy(self.SERIES_ID, game_id=self.GAME_ID)
-        assert result.team1 == "Mushoku"
+        assert result.team1 == "MUSH"
         assert result.team1_id == 22117
-        assert result.team2 == "Fallen Angels"
+        assert result.team2 == "FALL"
         assert result.team2_id == 22762
 
     def test_winner_ids(self, mock_vlr):

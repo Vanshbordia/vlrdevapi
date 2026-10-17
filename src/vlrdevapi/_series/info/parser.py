@@ -1,7 +1,8 @@
 import contextlib
 import re
 
-from selectolax.parser import HTMLParser, Node
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
+from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._series.info.models import ForfeitInfo, MapVeto, SeriesGame, SeriesInfo, SeriesTeam
 from vlrdevapi.commons.timezone import parse_vlr_stored_datetime
@@ -410,6 +411,14 @@ def _parse_games(html: HTMLParser, info: SeriesInfo) -> list[SeriesGame]:
                     span = bold_div.css_first("span")
                     if span:
                         game.map_name = span.text(deep=False, strip=True)
+                if not game.map_name:
+                    name_div = map_div.css_first(".map-name")
+                    if name_div:
+                        span = name_div.css_first("span")
+                        if span:
+                            game.map_name = span.text(deep=False, strip=True)
+                        if not game.map_name:
+                            game.map_name = name_div.text(strip=True)
                 if not game.map_name:
                     game.map_name = map_div.text(strip=True)
 

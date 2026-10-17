@@ -1,6 +1,6 @@
 """Series rounds parser — extracts per-round win types and scores."""
 
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from vlrdevapi._series._utils import resolve_game_id
 from vlrdevapi._series.rounds.models import RoundData, RoundsData, RoundWinType

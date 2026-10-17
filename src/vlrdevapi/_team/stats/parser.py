@@ -2,7 +2,8 @@ import logging
 import re
 from collections.abc import Callable
 
-from selectolax.parser import HTMLParser, Node
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
+from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._series.info.models import SeriesInfo
 from vlrdevapi._team.stats.models import (

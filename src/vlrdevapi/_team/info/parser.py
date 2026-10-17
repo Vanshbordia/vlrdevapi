@@ -1,7 +1,7 @@
 
 from urllib.parse import urlparse
 
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from vlrdevapi._team.info.models import TeamInfo, TeamSocial, TeamSuccessor
 from vlrdevapi.commons.countries import get_country_name

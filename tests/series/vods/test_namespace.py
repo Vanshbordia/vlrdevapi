@@ -13,9 +13,9 @@ class TestSyncModuleLevel:
         result = vlrdevapi.series.vods(SERIES_ID)
         assert result.series_id == SERIES_ID
         assert len(result.vods) > 0
-        assert result.vods[0].label == "Full Match"
+        assert result.vods[0].label == "Full match"
         assert "twitch.tv" in result.vods[0].url
-        assert result.vods[1].label == "Map 1"
+        assert result.vods[1].label == "Corrode"
         assert "youtu" in result.vods[1].url
 
     def test_vods_labels(self, mock_vlr):
@@ -23,9 +23,9 @@ class TestSyncModuleLevel:
 
         result = vlrdevapi.series.vods(SERIES_ID)
         labels = [v.label for v in result.vods]
-        assert "Full Match" in labels
-        assert "Map 1" in labels
-        assert "Map 2" in labels
+        assert "Full match" in labels
+        assert "Corrode" in labels
+        assert "Lotus" in labels
 
     def test_vods_urls_have_domain(self, mock_vlr):
         mock_vlr.get(f"/{SERIES_ID}").respond(200, text=load_fixture("series", _SERIES_DIR, "overview.html"))
@@ -42,6 +42,6 @@ class TestSyncWithClient:
         with vlrdevapi.VLRClient() as client:
             result = client.series.vods(SERIES_ID)
         assert result.series_id == SERIES_ID
-        assert result.vods[0].label == "Full Match"
+        assert result.vods[0].label == "Full match"
         assert "twitch.tv" in result.vods[0].url
 

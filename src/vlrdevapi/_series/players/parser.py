@@ -2,7 +2,8 @@
 import contextlib
 import re
 
-from selectolax.parser import HTMLParser, Node
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
+from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._series._utils import resolve_game_id
 from vlrdevapi._series.players.models import (
@@ -184,6 +185,23 @@ def _parse_player_row(cell: Node) -> PlayerGameStats:
     return player
 
 
+def _parse_agents_cell(cell: Node, player: PlayerGameStats) -> None:
+    """Append agents played to ``player`` from a dedicated agents cell.
+
+    Newer vlr.gg overview tables render agents in their own
+    ``.mod-agents`` cell rather than inside the player cell.
+
+    Args:
+        cell: The ``.ovw-cell.mod-agents`` node.
+        player: The player to append agent names to.
+
+    """
+    for img in cell.css(".ovw-agents img"):
+        alt = img.attributes.get("alt", "") or ""
+        if alt:
+            player.agents.append(alt.title())
+
+
 def _parse_kda_cell(cell: Node) -> tuple:
     kills_o = kills_a = kills_d = None
     deaths_o = deaths_a = deaths_d = None
@@ -221,20 +239,32 @@ def _parse_table(table: Node) -> list[PlayerGameStats]:
 
         player = _parse_player_row(cells[0])
 
-        rating_vals = _parse_stat_cell(cells[1])
-        acs_vals = _parse_stat_cell(cells[2])
+        # Newer vlr.gg tables add a dedicated ".mod-agents" cell before the
+        # stat columns, shifting every stat cell one position to the right.
+        has_agents_cell = any(
+            "mod-agents" in (c.attributes.get("class") or "") for c in cells
+        )
+        offset = 1 if has_agents_cell else 0
+        if len(cells) < 11 + offset:
+            continue
+
+        if has_agents_cell:
+            _parse_agents_cell(cells[1], player)
+
+        rating_vals = _parse_stat_cell(cells[1 + offset])
+        acs_vals = _parse_stat_cell(cells[2 + offset])
         kills_vals, deaths_vals, assists_vals = None, None, None
-        kda_vals = _parse_kda_cell(cells[3])
+        kda_vals = _parse_kda_cell(cells[3 + offset])
         kills_vals = (kda_vals[0], kda_vals[1], kda_vals[2])
         deaths_vals = (kda_vals[3], kda_vals[4], kda_vals[5])
         assists_vals = (kda_vals[6], kda_vals[7], kda_vals[8])
-        kd_diff_vals = _parse_stat_cell(cells[4])
-        kast_vals = _parse_stat_cell(cells[5])
-        adr_vals = _parse_stat_cell(cells[6])
-        hs_percent_vals = _parse_stat_cell(cells[7])
-        first_kills_vals = _parse_stat_cell(cells[8])
-        first_deaths_vals = _parse_stat_cell(cells[9])
-        fk_fd_diff_vals = _parse_stat_cell(cells[10])
+        kd_diff_vals = _parse_stat_cell(cells[4 + offset])
+        kast_vals = _parse_stat_cell(cells[5 + offset])
+        adr_vals = _parse_stat_cell(cells[6 + offset])
+        hs_percent_vals = _parse_stat_cell(cells[7 + offset])
+        first_kills_vals = _parse_stat_cell(cells[8 + offset])
+        first_deaths_vals = _parse_stat_cell(cells[9 + offset])
+        fk_fd_diff_vals = _parse_stat_cell(cells[10 + offset])
 
         def _build_side(
             rating_t, acs_t, kills_t, deaths_t, assists_t, kd_diff_t, kast_t, adr_t, hs_percent_t, first_kills_t, first_deaths_t, fk_fd_diff_t,
@@ -331,11 +361,19 @@ def parse_players_stats(html: HTMLParser, game_id: str = "all") -> PlayersStats:
     if gid != "all":
         map_div = game_div.css_first(".vm-stats-game-header .map")
         if map_div:
-            bold_div = map_div.css_first("div[style*='font-weight: 700']")
-            if bold_div:
-                m = re.search(r"<span[^>]*>\s*([A-Za-z]+)", bold_div.html or "")
-                if m:
-                    result.map_name = m.group(1)
+            name_div = map_div.css_first(".map-name")
+            if name_div:
+                span = name_div.css_first("span")
+                if span:
+                    result.map_name = span.text(deep=False, strip=True)
+                if not result.map_name:
+                    result.map_name = name_div.text(strip=True)
+            if not result.map_name:
+                bold_div = map_div.css_first("div[style*='font-weight: 700']")
+                if bold_div:
+                    m = re.search(r"<span[^>]*>\s*([A-Za-z]+)", bold_div.html or "")
+                    if m:
+                        result.map_name = m.group(1)
             if not result.map_name:
                 result.map_name = map_div.text(strip=True)
 

@@ -1,0 +1,147 @@
+---
+title: How to Get Valorant Esports Data in Python
+description: VLR.gg has no public API. VLRdevAPI reads it for you and returns typed Python objects, for free and with no API key. Here is how to install it and pull matches, teams, players, events, and series.
+date: 2026-10-12
+author: RiftWatch
+---
+
+Most public Valorant esports data lives on VLR.gg: schedules, results, tournament standings, rosters, and player statistics. The site does not publish an API, so the practical options are to write a scraper or to use a library that already did. VLRdevAPI is a free, open source Python library for VLR.gg esports data. It fetches the pages, parses them, and hands back typed objects.
+
+## TL;DR
+
+- `pip install vlrdevapi`, Python 3.11 or newer.
+- Free and open source, with no API key and no paid tier.
+- `vlrdevapi.matches.upcoming()` returns upcoming matches as objects.
+- Teams, players, events, series, and news all follow the same pattern.
+
+## Is it free to use?
+
+Yes. VLRdevAPI is free and open source under the MIT licence. There is no API key, no account, and no paid tier, so a new script can reach live data without a signup or a billing step. All you need is an internet connection to reach VLR.gg, the same public pages your browser already loads.
+
+That is worth saying out loud, because Valorant esports data often sits behind a paid provider or inside a spreadsheet that someone maintains by hand. Here the install is the whole setup, and it costs nothing to run.
+
+## Install
+
+```bash
+pip install vlrdevapi
+```
+
+With uv:
+
+```bash
+uv add vlrdevapi
+```
+
+The package depends on httpx, pydantic, and selectolax, all installed for you.
+
+## Pull the upcoming match list
+
+```python
+import vlrdevapi
+
+page = vlrdevapi.matches.upcoming()
+print(f"{len(page.matches)} upcoming matches")
+
+for match in page.matches[:5]:
+    team1 = match.team1.name if match.team1 else "TBD"
+    team2 = match.team2.name if match.team2 else "TBD"
+    print(f"{team1} vs {team2} ({match.event})")
+```
+
+Each entry in `page.matches` has an event name, a stage, an `eta` string, and `team1` and `team2` objects. `match.datetime` is a Python datetime in UTC, so sorting and filtering do not require parsing text.
+
+To collect every page in one call:
+
+```python
+import vlrdevapi
+
+results = vlrdevapi.matches.upcoming(return_all=True)
+print(f"{len(results.matches)} upcoming matches across all pages")
+```
+
+Live matches come from `vlrdevapi.matches.live()` and finished matches from `vlrdevapi.matches.completed()`.
+
+## Look up a team, a player, or an event
+
+Every namespace takes an ID from a VLR.gg URL. Bind the ID once if you plan to make several calls for the same entity.
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+print(team.info().name)
+print([player.ign for player in team.roster().players])
+
+player = vlrdevapi.player(438)
+for agent in player.agents(timespan="90d").agents[:3]:
+    print(agent.agent, agent.rating, agent.acs)
+```
+
+The curried form, `vlrdevapi.player(438).agents()`, saves you from passing `player_id` to every call.
+
+## Open one match
+
+A match ID from any listing opens the full series page, which holds map scores, per-game player stats, round timelines, and VOD links.
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+info = series.info()
+print(info.team1.name, info.score1, info.score2, info.team2.name)
+```
+
+## Handle empty sections and errors
+
+Some pages have no roster yet, some players have no agent stats, and some matches have no VODs. Those methods return empty lists or `None` instead of raising, so check before you index.
+
+Real failures raise typed exceptions:
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import NotFoundError, RateLimitError
+
+try:
+    team = vlrdevapi.team(2593).info()
+    print(team.name)
+except NotFoundError:
+    print("That team ID does not exist")
+except RateLimitError:
+    print("Rate limited, retry shortly")
+```
+
+The library raises `NotFoundError`, `RequestError`, `RateLimitError`, `ParsingError`, and `ValidationError`. Retries and rate limiting are handled inside the client, which defaults to a conservative request rate.
+
+## Configure the client
+
+The module-level functions share one default client. Create your own when you need a different timeout or want to close connections:
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=30, max_retries=5, requests_per_second=8) as client:
+    live = client.matches.live()
+    print(f"{len(live.matches)} matches live")
+```
+
+## Free library, paid scraper, or Riot API
+
+Here is how VLRdevAPI lines up against the two other common ways to get this data. The cost row is first, since it is often the deciding factor.
+
+| | **VLRdevAPI** | A custom scraper | The Riot official API |
+|---|---|---|---|
+| Cost | **Free and open source** | Free, plus your time to maintain | Free key, approval needed |
+| API key | **Not needed** | Not needed | Required |
+| Source | **VLR.gg pages** | VLR.gg pages | In-client match data |
+| Output | **Typed Python objects** | Whatever you parse | JSON |
+| Site redesign | **Fixed in a package update** | You edit selectors | Not affected |
+| Rate limiting | **Built in** | You add it | Quota based |
+| Esports standings and rosters | **Yes** | Only if you parse them | No |
+
+The Riot API is the right choice for raw in-game telemetry and account data. It has no concept of tournaments, prize pools, or rosters, because those are esports facts rather than game facts. VLRdevAPI covers that layer, and it covers it without a key or a fee.
+
+## Next steps
+
+- [Build a real-time match monitor](/guides/building-a-real-time-match-monitor/) polls live matches on a timer.
+- [Quick start](/docs/quickstart/) runs in a few minutes.
+- [API reference](/docs/reference/) documents every method and field.

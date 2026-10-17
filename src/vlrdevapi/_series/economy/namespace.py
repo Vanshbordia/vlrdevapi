@@ -4,7 +4,7 @@ from datetime import tzinfo
 from zoneinfo import ZoneInfo
 
 import httpx
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from vlrdevapi._base import SyncNamespace
 from vlrdevapi._series._utils import _extract_team_abbreviations
@@ -80,10 +80,11 @@ class SeriesEconomyNamespace:
 def _enrich_economy(result: EconomyData, html_series: HTMLParser) -> EconomyData:
     """Enrich economy data with team IDs and round winners from the series info.
 
-    Team matching first tries abbreviation-level names extracted from
-    ``.ovw-player-tag`` elements (e.g. "SEN"), then falls back to full
-    team names from the series header.  Round winners are resolved from
-    the stored ``_temp_winner`` tag set during parsing.
+    Team matching compares the parsed economy team tag against both the
+    abbreviation-level names extracted from ``.ovw-player-tag`` elements
+    (e.g. "SEN") and the full team names from the series header, using a
+    case-insensitive match.  Round winners are resolved from the stored
+    ``_temp_winner`` tag set during parsing.
 
     Args:
         result: The EconomyData to enrich.
@@ -96,14 +97,16 @@ def _enrich_economy(result: EconomyData, html_series: HTMLParser) -> EconomyData
     series_info = parse_series_info(html_series)
     team1_abbr, team2_abbr = _extract_team_abbreviations(html_series)
 
-    if team1_abbr == result.team1:
-        result.team1_id = series_info.team1.id
-    elif result.team1 and series_info.team1.name == result.team1:
+    def _normalize(value: str) -> str:
+        return (value or "").strip().casefold()
+
+    team1_keys = {_normalize(team1_abbr), _normalize(series_info.team1.name)}
+    team2_keys = {_normalize(team2_abbr), _normalize(series_info.team2.name)}
+
+    if _normalize(result.team1) in team1_keys:
         result.team1_id = series_info.team1.id
 
-    if team2_abbr == result.team2:
-        result.team2_id = series_info.team2.id
-    elif result.team2 and series_info.team2.name == result.team2:
+    if _normalize(result.team2) in team2_keys:
         result.team2_id = series_info.team2.id
 
     for round_data in result.rounds:

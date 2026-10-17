@@ -4,7 +4,8 @@ from datetime import date, datetime
 
 from vlrdevapi.commons.datetime import date_to_utc_datetime
 
-from selectolax.parser import HTMLParser, Node
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
+from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._event.info.models import (
     EventInfo,

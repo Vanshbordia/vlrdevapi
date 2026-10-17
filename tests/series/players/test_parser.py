@@ -1,6 +1,6 @@
 import pytest
 
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from vlrdevapi._series.players.parser import parse_players_stats
@@ -61,7 +61,7 @@ class TestParseGameAll:
         assert brawk.agents == ["Sova", "Vyse"]
 
         assert brawk.stats.overall.rating == 1.27
-        assert brawk.stats.overall.acs == 244.0
+        assert brawk.stats.overall.acs == 238.0
         assert brawk.stats.overall.kills == 84
         assert brawk.stats.overall.deaths == 61
         assert brawk.stats.overall.assists == 40

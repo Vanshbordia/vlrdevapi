@@ -1,6 +1,6 @@
 from unittest.mock import patch
 import pytest
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 import vlrdevapi

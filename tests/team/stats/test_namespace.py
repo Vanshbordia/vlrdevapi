@@ -2,7 +2,7 @@ from datetime import date
 from unittest.mock import patch
 
 import pytest
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from tests.conftest import _LIVE, live_fetch, load_fixture
 from tests.conftest import mock_vlr  # noqa: F401

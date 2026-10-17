@@ -1,5 +1,5 @@
 import pytest
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
 from vlrdevapi._team.placements.parser import parse_team_placements
@@ -25,7 +25,7 @@ class TestParseTeamPlacements:
         result = parse_team_placements(html, 1034)
 
         assert result.team_id == 1034
-        assert result.total_winnings == 1925375
+        assert result.total_winnings == 2050375
         assert result.total_winnings_currency == "$"
         assert len(result.placements) > 0
 

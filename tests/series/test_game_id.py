@@ -1,5 +1,5 @@
 import pytest
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from tests.conftest import load_fixture
 from vlrdevapi._series._utils import resolve_game_id

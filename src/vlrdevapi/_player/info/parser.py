@@ -1,4 +1,4 @@
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from vlrdevapi._player.info.models import PlayerInfo
 from vlrdevapi.commons.countries import get_country_name

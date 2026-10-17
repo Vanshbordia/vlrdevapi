@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vlrdevapi"
-version = "2.4.0"
+version = "2.4.1"
 description = "A Python library to scrape data from vlr.gg"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -22,8 +22,8 @@ classifiers = [
 ]
 dependencies = [
     "httpx>=0.28.1",
-    "pydantic>=2.12.5",
-    "selectolax>=0.4.7",
+    "pydantic>=2.14.1",
+    "selectolax>=1.0.0",
 ]
 
 [project.urls]
@@ -33,22 +33,22 @@ Documentation = "https://vlrdevapi.pages.dev/docs"
 
 [project.optional-dependencies]
 test = [
-    "pytest>=8.0",
+    "pytest>=9.1.1",
     "respx>=0.23.1",
     "pytest-cov>=7.1.0",
 ]
 
 [dependency-groups]
 dev = [
-    "ruff>=0.15.10",
-    "pytest>=8.0",
-    "tzdata>=2026.1",
-    "ty>=0.0.31",
+    "ruff>=0.17.1",
+    "pytest>=9.1.1",
+    "tzdata>=2026.5",
+    "ty>=0.0.89",
     "respx>=0.23.1",
     "pytest-cov>=7.1.0",
-    "zensical>=0.0.46",
-    "mkdocstrings>=0.28.0",
-    "mkdocstrings-python>=1.16.0",
+    "zensical>=0.0.71",
+    "mkdocstrings>=1.0.7",
+    "mkdocstrings-python>=2.0.9",
 ]
 
 [tool.pytest.ini_options]

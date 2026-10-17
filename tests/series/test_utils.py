@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from vlrdevapi._series._utils import _extract_team_abbreviations
 

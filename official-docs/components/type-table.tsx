@@ -103,6 +103,8 @@ function Item({
   useEffect(() => {
     const hash = window.location.hash;
     if (!id || !hash) return;
+    // client-only: the URL hash is unavailable during SSR, so reveal after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time sync with window.location.hash on mount
     if (`#${id}` === hash) setOpen(true);
   }, [id]);
 

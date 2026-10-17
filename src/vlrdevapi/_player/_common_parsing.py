@@ -7,7 +7,7 @@ from datetime import date, datetime, timezone
 
 from typing import TYPE_CHECKING
 
-from selectolax.parser import Node
+from selectolax.lexbor import LexborNode as Node
 
 if TYPE_CHECKING:
     from vlrdevapi._player.agents.models import AgentStats

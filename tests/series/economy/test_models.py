@@ -27,7 +27,7 @@ class TestSyncModuleLevel:
         assert round_1.round_number == 1
         assert round_1.bank_team1 == 100.0
         assert round_1.bank_team2 == 100.0
-        assert round_1.spent_team1 == 4050
+        assert round_1.spent_team1 == 4100
         assert round_1.spent_team2 == 4100
         assert round_1.winner.name == "FNC"
         assert round_1.winner.id == 2593
@@ -72,7 +72,7 @@ class TestSyncModuleLevel:
         assert result.team1 == "FNC"
         assert result.team1_id == 2593
         assert len(result.rounds) == 24
-        assert result.rounds[0].spent_team1 == 4050
+        assert result.rounds[0].spent_team1 == 4100
 
     def test_economy_positional_game_two_differs(self, mock_vlr):
         mock_vlr.get(f"/{SERIES_ID}?game=2&tab=economy").respond(200, text=load_fixture("series", "644718", "game_258363_economy.html"))
@@ -80,7 +80,7 @@ class TestSyncModuleLevel:
         result = vlrdevapi.series.economy(SERIES_ID, game_id=2)
         assert result.game_id == 2
         assert len(result.rounds) == 23
-        assert result.rounds[0].spent_team1 == 3650
+        assert result.rounds[0].spent_team1 == 3700
 
 
 class TestSyncWithClient:

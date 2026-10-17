@@ -1,4 +1,4 @@
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from vlrdevapi._event.list.parser import (
     parse_event_list,

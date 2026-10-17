@@ -1,6 +1,6 @@
 """Shared helpers for reading pagination state from vlr.gg/news pages."""
 
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 
 def get_page_number(html: HTMLParser) -> int:

@@ -1,5 +1,6 @@
 
-from selectolax.parser import HTMLParser, Node
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
+from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._team.roster.models import Player, TeamRoster
 from vlrdevapi.commons.countries import get_country_name

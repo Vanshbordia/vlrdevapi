@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from vlrdevapi._base import SyncNamespace
 from vlrdevapi._event._common import _filter_stages

@@ -11,7 +11,8 @@ from datetime import tzinfo
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from zoneinfo import ZoneInfo
 
-from selectolax.parser import HTMLParser, Node
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
+from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._news.article.models import NewsArticle
 from vlrdevapi.commons.datetime import parse_vlr_iso_datetime

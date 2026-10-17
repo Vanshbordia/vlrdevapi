@@ -130,7 +130,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'How do I enable debug logging?',
-        a: <>Set the log level to DEBUG in your application. VLRdevAPI uses Python's standard logging module. Add <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">import logging; logging.basicConfig(level=logging.DEBUG)</code> to see detailed information about requests, responses, and caching behavior.</>,
+        a: <>Set the log level to DEBUG in your application. VLRdevAPI uses Python&apos;s standard logging module. Add <code className="text-sm font-normal text-foreground bg-muted px-1 py-0.5">import logging; logging.basicConfig(level=logging.DEBUG)</code> to see detailed information about requests, responses, and caching behavior.</>,
       },
       {
         q: 'The data I get does not match what I see on VLR.gg',
