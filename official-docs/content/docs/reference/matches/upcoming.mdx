@@ -190,8 +190,11 @@ import vlrdevapi
 
 results = vlrdevapi.matches.upcoming(return_all=True)
 vct_matches = [m for m in results.matches if "VCT" in m.event]
-for m in vct_matches:
-    t1 = m.team1.name if m.team1 else "TBD"
-    t2 = m.team2.name if m.team2 else "TBD"
-    print(f"{t1} vs {t2} - {m.stage} ({m.eta})")
+if vct_matches:
+    for m in vct_matches:
+        t1 = m.team1.name if m.team1 else "TBD"
+        t2 = m.team2.name if m.team2 else "TBD"
+        print(f"{t1} vs {t2} - {m.stage} ({m.eta})")
+else:
+    print("No VCT matches in the upcoming list right now.")
 ```

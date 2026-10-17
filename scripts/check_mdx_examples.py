@@ -6,6 +6,12 @@ executes examples. An ``httpx.Client.get`` interceptor de-duplicates
 fetches within a run and can replay validation offline against HTML
 fixtures saved under ``.cache/mdx-html/`` (gitignored).
 
+Blocks may carry two markers (both stripped from rendered docs by the
+remark plugin in ``official-docs/source.config.ts``):
+
+    ``# doc-check: skip``          never execute (non-runnable demo code)
+    ``# doc-check: allow-empty``   execute, but empty output is acceptable
+
 CI/CD usage:
     python scripts/check_mdx_examples.py              # warm + offline replay
     python scripts/check_mdx_examples.py --skip-warm  # offline replay only
@@ -401,6 +407,26 @@ def has_skip_marker(code: str) -> bool:
     return any(line.strip().startswith("# doc-check: skip") for line in code.splitlines())
 
 
+def has_allow_empty_marker(code: str) -> bool:
+    """Blocks may opt out of the empty-output rule with `# doc-check: allow-empty`.
+
+    Use for examples that filter live data and can legitimately match nothing
+    on a given day. The block still runs and still fails on exceptions or
+    timeouts; only the "no output" requirement is relaxed.
+    """
+    return any(
+        line.strip().startswith("# doc-check: allow-empty")
+        for line in code.splitlines()
+    )
+
+
+def apply_allow_empty(code: str, run_ok: bool, run_msg: str) -> tuple[bool, str]:
+    """Relax an empty-output failure for blocks marked `# doc-check: allow-empty`."""
+    if not run_ok and has_allow_empty_marker(code) and "no output" in run_msg.lower():
+        return True, "(no output - allowed by marker)"
+    return run_ok, run_msg
+
+
 async def execute_blocks(
     results: list[Result],
     timeout: float,
@@ -432,6 +458,11 @@ async def execute_blocks(
             run_ok, run_msg, dur = await exec_async(code, timeout)
         else:
             run_ok, run_msg, dur = await exec_sync(code, timeout)
+
+        # Blocks marked `# doc-check: allow-empty` may legitimately print
+        # nothing (e.g. a filtered loop over live data that matched no rows).
+        # They still fail on exceptions and timeouts.
+        run_ok, run_msg = apply_allow_empty(code, run_ok, run_msg)
 
         if record_results:
             results[i] = Result(

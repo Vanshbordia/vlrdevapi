@@ -47,12 +47,17 @@ export const guides = defineDocs({
 });
 
 /**
- * scripts/check_mdx_examples.py skips any code block containing a
- * `# doc-check: skip` line. That marker only exists for the checker, so remove
- * it from code blocks before they render. The raw MDX files keep the marker,
- * which means the checker still sees it.
+ * scripts/check_mdx_examples.py understands two markers inside code blocks:
+ *
+ *   `# doc-check: skip`         block is not executed by the checker.
+ *   `# doc-check: allow-empty`  block runs, but empty output is acceptable
+ *                               (e.g. a filtered loop over live data).
+ *
+ * Both markers exist only for the checker, so remove them from code blocks
+ * before they render. The raw MDX files keep them, which means the checker
+ * still sees them.
  */
-const DOC_CHECK_MARKER = '# doc-check: skip';
+const DOC_CHECK_MARKERS = ['# doc-check: skip', '# doc-check: allow-empty'];
 
 interface MdastNode {
   type: string;
@@ -61,15 +66,21 @@ interface MdastNode {
 }
 
 function stripDocCheckMarker() {
+  const hasMarker = (value: string) =>
+    DOC_CHECK_MARKERS.some((marker) => value.includes(marker));
+
   const strip = (node: MdastNode) => {
     if (
       node.type === 'code' &&
       typeof node.value === 'string' &&
-      node.value.includes(DOC_CHECK_MARKER)
+      hasMarker(node.value)
     ) {
       node.value = node.value
         .split('\n')
-        .filter((line) => !line.trim().startsWith(DOC_CHECK_MARKER))
+        .filter(
+          (line) =>
+            !DOC_CHECK_MARKERS.some((marker) => line.trim().startsWith(marker)),
+        )
         .join('\n')
         .replace(/^\n+/, '');
     }

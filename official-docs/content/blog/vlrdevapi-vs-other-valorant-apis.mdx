@@ -35,10 +35,13 @@ VLRdevAPI is a Python library for VLR.gg esports data. It exposes six namespaces
 import vlrdevapi
 
 standings = vlrdevapi.event(2765).standings()
-for stage in standings:
-    for entry in stage.standings:
+entries = [entry for stage in standings for entry in stage.standings]
+if entries:
+    for entry in entries:
         prize = entry.prize_money or 0
         print(entry.place, entry.team.name, prize)
+else:
+    print("No standings available for this event.")
 ```
 
 Reach for it when you write Python, want typed data without writing parsers, and would rather not run another service.

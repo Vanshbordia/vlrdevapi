@@ -46,6 +46,23 @@ export function getPageMarkdownUrl(page: (typeof source)['$inferPage']) {
   };
 }
 
+/**
+ * `# doc-check: skip` and `# doc-check: allow-empty` exist only for
+ * scripts/check_mdx_examples.py. The remark plugin in source.config.ts strips
+ * them from rendered HTML, but the markdown served to LLMs (content.md,
+ * llms-full.txt) comes from the processed source, so strip them here too.
+ */
+const DOC_CHECK_MARKERS = ['# doc-check: skip', '# doc-check: allow-empty'];
+
+export function stripDocCheckMarkers(text: string) {
+  return text
+    .split('\n')
+    .filter(
+      (line) => !DOC_CHECK_MARKERS.some((marker) => line.trim().startsWith(marker)),
+    )
+    .join('\n');
+}
+
 export async function getLLMTextFor(page: {
   url: string;
   data: { title: string; getText: (type: 'processed') => Promise<string> };
@@ -54,7 +71,7 @@ export async function getLLMTextFor(page: {
 
   return `# ${page.data.title} (${page.url})
 
-${processed}`;
+${stripDocCheckMarkers(processed)}`;
 }
 
 export async function getLLMText(page: (typeof source)['$inferPage']) {

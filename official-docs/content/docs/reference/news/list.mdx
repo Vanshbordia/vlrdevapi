@@ -117,6 +117,9 @@ import vlrdevapi
 
 result = vlrdevapi.news(page=1)
 local_news = [n for n in result.news if n.country_name == "Brazil"]
-for n in local_news:
-    print(f"{n.title} - {n.author}")
+if local_news:
+    for n in local_news:
+        print(f"{n.title} - {n.author}")
+else:
+    print("No Brazilian news items on this page right now.")
 ```
