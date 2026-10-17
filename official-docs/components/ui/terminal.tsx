@@ -23,6 +23,7 @@ export function Terminal({
   const [lines, setLines] = useState<DisplayLine[]>([]);
   const [typing, setTyping] = useState('');
   const [showCursor, setShowCursor] = useState(true);
+  const [done, setDone] = useState(false);
   const doneRef = useRef(false);
 
   useEffect(() => {
@@ -35,6 +36,7 @@ export function Terminal({
     const typeNext = () => {
       if (cmdIdx >= commands.length) {
         doneRef.current = true;
+        setDone(true);
         return;
       }
 
@@ -118,7 +120,7 @@ export function Terminal({
           </div>
         )}
 
-        {!typing && !doneRef.current && (
+        {!typing && !done && (
           <div className="flex items-center">
             <span className="mr-2 text-fd-primary/80 select-none">$</span>
             <span

@@ -1,8 +1,10 @@
 'use client';
 import * as Primitive from '@radix-ui/react-collapsible';
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { cn } from '../../lib/cn';
+
+const emptySubscribe = () => () => {};
 
 export const Collapsible = Primitive.Root;
 
@@ -12,11 +14,12 @@ export function CollapsibleContent({
   children,
   ...props
 }: React.ComponentPropsWithRef<typeof Primitive.CollapsibleContent>) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // `false` while server-rendering / hydrating, `true` after hydration.
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
 
   return (
     <Primitive.CollapsibleContent

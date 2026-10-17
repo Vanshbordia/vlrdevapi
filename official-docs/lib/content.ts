@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import matter from 'gray-matter'
+import yaml from 'js-yaml'
 
 export interface ContentMeta {
   slug: string
@@ -14,6 +14,14 @@ export interface ContentPost extends ContentMeta {
   content: string
 }
 
+function parseFrontmatter(raw: string): { data: Record<string, unknown>; content: string } {
+  const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)([\s\S]*)$/.exec(raw)
+  if (!match) return { data: {}, content: raw }
+
+  const data = (yaml.load(match[1]) ?? {}) as Record<string, unknown>
+  return { data, content: match[2] }
+}
+
 function readDir(dir: string): ContentPost[] {
   const fullPath = path.join(process.cwd(), 'content', dir)
   if (!fs.existsSync(fullPath)) return []
@@ -23,7 +31,7 @@ function readDir(dir: string): ContentPost[] {
   return files
     .map((file) => {
       const raw = fs.readFileSync(path.join(fullPath, file), 'utf-8')
-      const { data, content } = matter(raw)
+      const { data, content } = parseFrontmatter(raw)
       const slug = file.replace(/\.mdx$/, '')
 
       const rawDate = data.date
@@ -33,10 +41,10 @@ function readDir(dir: string): ContentPost[] {
 
       return {
         slug,
-        title: data.title ?? slug,
-        description: data.description ?? '',
+        title: typeof data.title === 'string' ? data.title : slug,
+        description: typeof data.description === 'string' ? data.description : '',
         date: dateStr,
-        author: data.author ?? 'RiftWatch',
+        author: typeof data.author === 'string' ? data.author : 'RiftWatch',
         content,
       }
     })
