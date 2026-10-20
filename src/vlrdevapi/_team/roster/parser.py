@@ -3,6 +3,7 @@ from selectolax.lexbor import LexborHTMLParser as HTMLParser
 from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._team.roster.models import Player, TeamRoster
+from vlrdevapi._utils.text import normalize_whitespace
 from vlrdevapi.commons.countries import get_country_name
 from vlrdevapi.exceptions import DataNotFoundError, ParseStructureError
 
@@ -27,7 +28,7 @@ def parse_team_roster(html: HTMLParser) -> TeamRoster:
     roster_h2s = html.css("h2.wf-label.mod-large")
     roster_h2 = None
     for h2 in roster_h2s:
-        h2_text = h2.text(strip=True).replace("\t", " ").replace("  ", " ")
+        h2_text = normalize_whitespace(h2.text(strip=True))
         if "Current Roster" in h2_text:
             roster_h2 = h2
             break
@@ -122,18 +123,18 @@ def _parse_roster_item(item: Node, section_type: str) -> Player | None:
                 player.country = get_country_name(code)
             flag_text = flag_el.text(strip=True)
             text = text.replace(flag_text, "").strip()
-        player.ign = text
+        player.ign = normalize_whitespace(text)
 
     # Extract real name
     real_name_el = item.css_first(".team-roster-item-name-real")
     if real_name_el:
-        player.real_name = real_name_el.text(strip=True)
+        player.real_name = normalize_whitespace(real_name_el.text(strip=True))
 
     # Extract roles
     role_els = item.css(".wf-tag.mod-light.team-roster-item-name-role")
     roles = []
     for role_el in role_els:
-        role_text = role_el.text(strip=True).title()  # Capitalize
+        role_text = normalize_whitespace(role_el.text(strip=True)).title()
         roles.append(role_text)
         if role_text == "Inactive":
             player.is_active = False

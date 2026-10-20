@@ -86,7 +86,13 @@ team.completed_matches(
     default: '""',
   },
   "stage": {
-    description: "Stage within event.",
+    description: 'Stage within the event (e.g. "Playoffs", "Group Stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "bracket": {
+    description: 'Bracket or round within the stage (e.g. "LBF", "Ro16").',
     type: "str",
     typeDescription: "str",
     default: '""',
@@ -160,7 +166,11 @@ print(f"Completed matches for team {history.team_id}:")
 for m in history.matches[:10]:
     result = "WON" if m.is_win else "lost"
     opp = m.opponent.name if m.opponent else "TBD"
-    print(f"  {m.team_score} - {m.opponent_score} vs {opp} ({result}) - {m.event}")
+    round_label = " ".join(part for part in (m.stage, m.bracket) if part)
+    print(
+        f"  {m.team_score} - {m.opponent_score} vs {opp} "
+        f"({result}) - {m.event} {round_label}"
+    )
 ```
 
 ### Win/loss record

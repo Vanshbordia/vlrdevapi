@@ -19,11 +19,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `return_all`; extra pages are fetched only when the requested limit needs
   them. `TeamCompletedMatches.has_next_page` reports whether more matches exist
   beyond the returned results.
+- **Team match `stage`/`bracket`** - both fields are now parsed separately from
+  the team matches page (e.g. `stage="Playoffs"`, `bracket="LBF"`), and
+  enrichment no longer concatenates them into `"Playoffs - LBF"`.
+- **Parser whitespace** - shared `normalize_whitespace()` collapses raw tabs,
+  newlines, and repeated spaces in parsed event/stage/bracket/role values
+  instead of leaving values such as `"Playoffs ⋅\n\t\t\tLBF"`.
+- **`events.matches()` team countries** - `MatchTeam` now exposes
+  `country_name`, parsed from the team flag on the event matches page.
+
+### Changed
+
+- **`RoundData.win_type` is now a `RoundWinType` enum** instead of a
+  human-readable string. Use `round.win_type.full_name` for display text and
+  `round.win_type.value` (`"elimination"`, `"defuse"`, `"spike_detonation"`,
+  `"time_expired"`) for the raw value.
 
 ### Documentation
 
-- Updated the `team.completed_matches` reference for `limit`, `return_all`, and
-  `has_next_page`.
+- Updated the `team.completed_matches`, `team.upcoming_matches`,
+  `events.matches`, and `series.rounds` references for `bracket`,
+  `country_name`, and the `RoundWinType` enum.
 
 ## [3.0.0] - 2026-10-20
 

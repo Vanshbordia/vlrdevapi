@@ -1,6 +1,6 @@
-from tests.conftest import load_fixture
-from tests.conftest import mock_vlr  # noqa: F401
 import vlrdevapi
+from tests.conftest import load_fixture
+from vlrdevapi._series.rounds.models import RoundWinType
 
 SERIES_ID = 644718
 GAME_ID = 258363
@@ -27,7 +27,7 @@ class TestSyncModuleLevel:
         assert round_1.round_number == 1
         assert round_1.winner_team_name == "FNC"
         assert round_1.winner_team_id == 2593
-        assert round_1.win_type == "Time out"
+        assert round_1.win_type is RoundWinType.TIME_EXPIRED
         assert round_1.side == "Defense"
         assert round_1.team1_score == 1
         assert round_1.team2_score == 0
@@ -45,8 +45,23 @@ class TestSyncModuleLevel:
         mock_vlr.get(f"/{SERIES_ID}?game={GAME_ID}&tab=overview").respond(200, text=load_fixture("series", "644718", "game_258363_rounds.html"))
         mock_vlr.get(f"/{SERIES_ID}").respond(200, text=load_fixture("series", "644718", "overview.html"))
         result = vlrdevapi.series.rounds(SERIES_ID, game_id=GAME_ID)
-        win_types = set(r.win_type for r in result.rounds)
-        assert win_types == {"Elimination", "Defuse", "Spike detonation", "Time out"}
+        win_types = {r.win_type for r in result.rounds}
+        assert win_types == {
+            RoundWinType.ELIMINATION,
+            RoundWinType.DEFUSE,
+            RoundWinType.SPIKE_DETONATION,
+            RoundWinType.TIME_EXPIRED,
+        }
+
+    def test_win_type_values_are_official_names(self):
+        assert RoundWinType.ELIMINATION.value == "elimination"
+        assert RoundWinType.DEFUSE.value == "defuse"
+        assert RoundWinType.SPIKE_DETONATION.value == "spike_detonation"
+        assert RoundWinType.TIME_EXPIRED.value == "time_expired"
+        assert RoundWinType.ELIMINATION.full_name == "Elimination"
+        assert RoundWinType.DEFUSE.full_name == "Defuse"
+        assert RoundWinType.SPIKE_DETONATION.full_name == "Spike detonation"
+        assert RoundWinType.TIME_EXPIRED.full_name == "Time expired"
 
     def test_rounds_positional_game_one(self, mock_vlr):
         mock_vlr.get(f"/{SERIES_ID}?game=1&tab=overview").respond(200, text=load_fixture("series", "644718", "game_258363_rounds.html"))

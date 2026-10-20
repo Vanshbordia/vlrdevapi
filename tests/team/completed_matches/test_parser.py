@@ -1,12 +1,12 @@
 import pytest
 from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
-from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
+from tests.conftest import _LIVE, FIXTURES_DIR, live_fetch
+from vlrdevapi._team.completed_matches.models import TeamCompletedMatches
 from vlrdevapi._team.completed_matches.parser import (
     _parse_match_item,
     parse_team_completed_matches,
 )
-from vlrdevapi._team.completed_matches.models import TeamCompletedMatches
 
 _FIXTURES = FIXTURES_DIR / "team"
 
@@ -90,6 +90,32 @@ class TestParseTeamCompletedMatches:
         for m in result.matches:
             assert m.match_id > 0
             assert m.url.startswith("https://")
+
+
+class TestParseTeamCompletedMatchesStageBracket:
+    def test_stage_and_bracket_are_parsed_separately(self):
+        html = _load_html(120, "completed_matches.html")
+        match = _parse_match_item(
+            html.css("a.wf-card.fc-flex.m-item")[0],
+            120,
+        )
+
+        assert match is not None
+        assert match.event == "Champions 2026"
+        assert match.stage == "Playoffs"
+        assert match.bracket == "LBF"
+
+    def test_stage_and_bracket_have_no_raw_whitespace(self):
+        result = parse_team_completed_matches(
+            _load_page(120, 1),
+            120,
+        )
+
+        for match in result.matches:
+            for value in (match.event, match.stage, match.bracket):
+                assert "\n" not in value
+                assert "\t" not in value
+                assert "  " not in value
 
 
 class TestParseTeamCompletedMatchesPagination:

@@ -9,6 +9,7 @@ from vlrdevapi._team.completed_matches.models import (
     TeamCompletedMatches,
 )
 from vlrdevapi._utils.pagination import check_pagination
+from vlrdevapi._utils.text import normalize_whitespace, split_stage_bracket
 from vlrdevapi.commons.datetime import parse_vlr_datetime
 from vlrdevapi.fetcher import BASE_URL
 
@@ -43,13 +44,21 @@ def _parse_match_item(item: Node, team_id: int, source_tz: ZoneInfo | tzinfo | N
 
     event_el = item.css_first(".m-item-event")
     if event_el:
-        divs = event_el.css("div")
-        if len(divs) >= 2:
-            match.event = divs[1].text(strip=True)
-        full_text = event_el.text(separator=" ", strip=True)
-        if match.event and match.event in full_text:
-            stage_text = full_text.replace(match.event, "").strip()
-            match.stage = stage_text
+        name_el = event_el.css_first('div[style*="font-weight: 700"]')
+        if name_el is None:
+            # Older cards may not carry the inline style; the event name is
+            # still the first inner div.
+            divs = event_el.css("div")
+            name_el = divs[1] if len(divs) >= 2 else None
+        if name_el is not None:
+            match.event = normalize_whitespace(name_el.text(strip=True))
+
+        if match.event:
+            full_text = normalize_whitespace(
+                event_el.text(separator=" ", strip=True),
+            )
+            remaining = full_text.removeprefix(match.event).strip()
+            match.stage, match.bracket = split_stage_bracket(remaining)
 
     result_el = item.css_first(".m-item-result")
     if result_el:

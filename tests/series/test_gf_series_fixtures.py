@@ -14,6 +14,7 @@ from vlrdevapi._series.economy.parser import parse_economy_data
 from vlrdevapi._series.info.parser import parse_series_info
 from vlrdevapi._series.performance.parser import parse_performance_data
 from vlrdevapi._series.players.parser import parse_players_stats
+from vlrdevapi._series.rounds.models import RoundWinType
 from vlrdevapi._series.rounds.parser import parse_rounds_data
 
 SERIES = {
@@ -104,9 +105,9 @@ class TestChampions2022GFRounds:
         assert len(rounds.rounds) == 28
         assert rounds.rounds[0].side == "Attack"
         assert {r.win_type for r in rounds.rounds} == {
-            "Defuse",
-            "Elimination",
-            "Spike detonation",
+            RoundWinType.DEFUSE,
+            RoundWinType.ELIMINATION,
+            RoundWinType.SPIKE_DETONATION,
         }
 
     def test_other_maps_parse(self):
@@ -206,9 +207,9 @@ class TestChampions2026GFRounds:
         assert len(rounds.rounds) == 24
         assert rounds.rounds[0].side == "Defense"
         assert {r.win_type for r in rounds.rounds} == {
-            "Defuse",
-            "Elimination",
-            "Time out",
+            RoundWinType.DEFUSE,
+            RoundWinType.ELIMINATION,
+            RoundWinType.TIME_EXPIRED,
         }
 
     def test_other_maps_parse(self):

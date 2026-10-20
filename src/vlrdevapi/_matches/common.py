@@ -13,6 +13,7 @@ from vlrdevapi._cache import LRUCache
 from vlrdevapi._series.info.namespace import SeriesInfoNamespace
 from vlrdevapi._utils.paths import team as team_path
 from vlrdevapi._utils.team_parsing import _parse_team_basic
+from vlrdevapi._utils.text import normalize_whitespace
 from vlrdevapi.commons.datetime import parse_vlr_datetime
 from vlrdevapi.exceptions import VlrdevapiException
 from vlrdevapi.fetcher import RetryConfig, fetch_sync
@@ -143,11 +144,13 @@ def parse_common_match_item_fields(
 
     event_el = item.css_first("div.match-item-event")
     if event_el:
-        event_text = event_el.text(strip=True)
+        event_text = normalize_whitespace(event_el.text(strip=True))
         series_el = event_el.css_first("div.match-item-event-series")
         if series_el:
-            match.stage = series_el.text(strip=True)
-            match.event = event_text.replace(match.stage, "").strip()
+            match.stage = normalize_whitespace(series_el.text(strip=True))
+            match.event = normalize_whitespace(
+                event_text.replace(match.stage, ""),
+            )
 
     if time_text:
         match.datetime = parse_vlr_datetime(match_date.strftime("%Y/%m/%d"), time_text, source_tz=source_tz)

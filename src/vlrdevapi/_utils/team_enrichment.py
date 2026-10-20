@@ -7,6 +7,7 @@ from selectolax.lexbor import LexborHTMLParser as HTMLParser
 from vlrdevapi._cache import LRUCache
 from vlrdevapi._utils.paths import team as team_path
 from vlrdevapi._utils.team_parsing import _parse_team_basic
+from vlrdevapi._utils.text import normalize_whitespace
 from vlrdevapi.exceptions import VlrdevapiException
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ class SeriesInfoProtocol(Protocol):
 
 
 class OpponentProtocol(Protocol):
-    def __init__(self, *, id: int = 0, name: str = "", tag: str = "") -> None: ...  # noqa: A002
+    def __init__(self, *, id: int = 0, name: str = "", tag: str = "") -> None: ...
     name: str
     tag: str
 
@@ -49,11 +50,11 @@ def enrich_team_match_sync(
         opponent_id = team2_id if team1_id == team_id else team1_id
 
         if series_info.event_name:
-            match.event = series_info.event_name
+            match.event = normalize_whitespace(series_info.event_name)
         if series_info.stage:
-            match.stage = series_info.stage
+            match.stage = normalize_whitespace(series_info.stage)
         if series_info.bracket:
-            match.stage = f"{match.stage} - {series_info.bracket}".strip(" -")
+            match.bracket = normalize_whitespace(series_info.bracket)
 
         if opponent_id > 0:
             opponent = opponent_cls(id=opponent_id)

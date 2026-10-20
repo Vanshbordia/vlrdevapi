@@ -11,6 +11,7 @@ from vlrdevapi._series.info.models import (
     SeriesInfo,
     SeriesTeam,
 )
+from vlrdevapi._utils.text import normalize_whitespace
 from vlrdevapi.commons.timezone import parse_vlr_stored_datetime
 
 
@@ -104,15 +105,15 @@ def parse_series_info(html: HTMLParser) -> SeriesInfo:
 
         bold_el = event_link.css_first("div[style*='font-weight: 700']")
         if bold_el:
-            info.event_name = bold_el.text(strip=True)
+            info.event_name = normalize_whitespace(bold_el.text(strip=True))
 
         series_el = event_link.css_first(".match-header-event-series")
         if series_el:
-            series_text = series_el.text(strip=True)
+            series_text = normalize_whitespace(series_el.text(strip=True))
             if ": " in series_text:
                 parts = series_text.split(": ", 1)
-                info.stage = parts[0].strip()
-                info.bracket = parts[1].strip()
+                info.stage = normalize_whitespace(parts[0])
+                info.bracket = normalize_whitespace(parts[1])
             else:
                 info.stage = series_text
 
