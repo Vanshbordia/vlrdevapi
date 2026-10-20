@@ -5,6 +5,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [3.0.0] - 2026-10-20
+
+### Breaking
+
+- **`BuyType` re-tiered to match vlr.gg** — the economy tab no longer uses
+  its old four spend tiers. `SEMI_ECO` and `SEMI_BUY` are removed and the
+  remaining tiers follow VLR's current categories based on total team
+  spend: `ECO` (under 10k), `HALF_BUY` (10k–18k), and `FULL_BUY` (18k+).
+  A new `PISTOL` member marks pistol-round buys (previously reported as
+  `ECO`). Code switching on `BuyType.SEMI_ECO` / `BuyType.SEMI_BUY` needs
+  updating; string values are `"Pistol"`, `"Eco"`, `"Half-buy"`,
+  `"Full-buy"`.
+
+### Added
+
+- **Buy-type matrix** — `EconomyData` now carries the economy tab's
+  buy-type matrix as `buy_matrix_team1` / `buy_matrix_team2`
+  (`TeamBuyMatrix`): the Pistol / Conv. / Bonus summary and the
+  `On Eco` / `On Half buy` / `On Full buy` records
+  (`BuyTierRecord.vs_eco` / `vs_half` / `vs_full`), each a
+  `won`/`total` `EconScore`. Unplayed matchups are `None`.
+  `series.economy(game_id="all")` on the parser also now returns the
+  all-maps aggregate matrix instead of an empty result.
+- **Convenience accessors** — flat summary shortcuts
+  (`pistol_team1` / `converted_team1` / `bonus_team1` and the
+  `_team2` counterparts), `full_buy` / `half_buy` / `eco` aliases on
+  `TeamBuyMatrix`, and a combined `total` on `BuyTierRecord` for the
+  overall won/total on a tier regardless of the opponent's buy type.
+- **New grand-final fixtures** — series 130685 (LOUD vs OpTic, Champions
+  2022 GF) and 754737 (LOUD vs Vitality, Champions 2026 GF) are now
+  covered by tests across economy, info/pick-bans, players, rounds, and
+  performance parsers.
+- **Round economy in `series.rounds`** — `RoundData` now carries the
+  per-round economy from the economy tab: `bank_team1`/`bank_team2`,
+  `spent_team1`/`spent_team2`, `buy_type_team1`/`buy_type_team2`, and
+  `is_pistol_round`. `series.rounds` fetches and merges the economy tab
+  automatically (economy fields stay `None`/empty when that page is
+  unavailable), making it the single round-by-round source alongside
+  `win_type` and the winner's `side`.
+
+### Documentation
+
+- Series economy reference updated for the new `BuyType` values,
+  buy-matrix fields, and nested models; series rounds reference updated
+  for the merged per-round economy fields.
+
 ## [2.4.1] - 2026-10-17
 
 ### Fixed

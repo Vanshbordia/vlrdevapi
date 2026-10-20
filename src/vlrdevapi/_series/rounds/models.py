@@ -48,6 +48,34 @@ class RoundData(BaseModel):
     team2_score: int = Field(
         default=0, description="Team 2's total score after this round",
     )
+    bank_team1: float | None = Field(
+        default=None,
+        description="Team 1's bank at round start; None when economy data was not merged",
+    )
+    bank_team2: float | None = Field(
+        default=None,
+        description="Team 2's bank at round start; None when economy data was not merged",
+    )
+    spent_team1: int | None = Field(
+        default=None,
+        description="Money spent by team 1 this round; None when economy data was not merged",
+    )
+    spent_team2: int | None = Field(
+        default=None,
+        description="Money spent by team 2 this round; None when economy data was not merged",
+    )
+    buy_type_team1: str = Field(
+        default="",
+        description="Team 1 buy tier: 'Pistol', 'Eco', 'Half-buy', or 'Full-buy' (empty when economy data was not merged)",
+    )
+    buy_type_team2: str = Field(
+        default="",
+        description="Team 2 buy tier: 'Pistol', 'Eco', 'Half-buy', or 'Full-buy' (empty when economy data was not merged)",
+    )
+    is_pistol_round: bool = Field(
+        default=False,
+        description="Whether this is a pistol round (rounds 1 and 13)",
+    )
 
 
 class RoundsData(BaseModel):

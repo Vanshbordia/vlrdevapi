@@ -54,7 +54,7 @@ if TYPE_CHECKING:
     news: NewsNamespace
     client: type[VLRClient]
 
-__version__ = "2.4.1"
+__version__ = "3.0.0"
 
 _default_client: "VLRClient | None" = None
 

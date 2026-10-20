@@ -16,8 +16,8 @@ def parse_rounds_data(html: HTMLParser, game_id: int | str = "all") -> RoundsDat
 
     Returns:
         RoundsData: Parsed round data with team names and per-round
-        results.
-
+        results. Economy fields (bank, spend, buy types) are ``None``
+        here; the rounds namespace merges them from the economy tab.
     """
     gid = resolve_game_id(html, game_id)
     game_div = html.css_first(f'.vm-stats-game[data-game-id="{gid}"]')
@@ -111,6 +111,7 @@ def parse_rounds_data(html: HTMLParser, game_id: int | str = "all") -> RoundsDat
                 side=side,
                 team1_score=team1_score,
                 team2_score=team2_score,
+                is_pistol_round=round_number in (1, 13),
             )
 
             rounds_data.rounds.append(round_data)

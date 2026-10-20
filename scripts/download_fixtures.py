@@ -405,6 +405,68 @@ ROUTES += [
     ),
 ]
 
+# ── Series 130685 Bo5 (pistol/conv/bonus economy matrix, OT maps) ─
+SERIES_ID_BO5_2022 = 130685
+SERIES_SLUG_BO5_2022 = "loud-vs-optic-gaming-valorant-champions-2022-gf"
+GAMES_BO5_2022 = [95131, 95132, 95133, 95134]
+
+ROUTES += [
+    (
+        f"/{SERIES_ID_BO5_2022}/{SERIES_SLUG_BO5_2022}",
+        f"series/{SERIES_ID_BO5_2022}_{SERIES_SLUG_BO5_2022}/overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO5_2022}/{SERIES_SLUG_BO5_2022}/?game={GAMES_BO5_2022[0]}&tab=economy",
+        f"series/{SERIES_ID_BO5_2022}_{SERIES_SLUG_BO5_2022}/game_{GAMES_BO5_2022[0]}_economy.html",
+        {},
+    ),
+]
+for _gid in GAMES_BO5_2022:
+    ROUTES += [
+        (
+            f"/{SERIES_ID_BO5_2022}/{SERIES_SLUG_BO5_2022}/?game={_gid}&tab=overview",
+            f"series/{SERIES_ID_BO5_2022}_{SERIES_SLUG_BO5_2022}/game_{_gid}_overview.html",
+            {},
+        ),
+        (
+            f"/{SERIES_ID_BO5_2022}/{SERIES_SLUG_BO5_2022}/?game={_gid}&tab=performance",
+            f"series/{SERIES_ID_BO5_2022}_{SERIES_SLUG_BO5_2022}/game_{_gid}_performance.html",
+            {},
+        ),
+    ]
+
+# ── Series 754737 Bo5 (Champions 2026 GF; round grids + economy matrix) ─
+SERIES_ID_BO5_2026 = 754737
+SERIES_SLUG_BO5_2026 = "loud-vs-team-vitality-valorant-champions-2026-gf"
+GAMES_BO5_2026 = [283286, 283287, 283288, 283289]
+
+ROUTES += [
+    (
+        f"/{SERIES_ID_BO5_2026}/{SERIES_SLUG_BO5_2026}",
+        f"series/{SERIES_ID_BO5_2026}_{SERIES_SLUG_BO5_2026}/overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO5_2026}/{SERIES_SLUG_BO5_2026}/?game={GAMES_BO5_2026[0]}&tab=economy",
+        f"series/{SERIES_ID_BO5_2026}_{SERIES_SLUG_BO5_2026}/game_{GAMES_BO5_2026[0]}_economy.html",
+        {},
+    ),
+]
+for _gid in GAMES_BO5_2026:
+    ROUTES += [
+        (
+            f"/{SERIES_ID_BO5_2026}/{SERIES_SLUG_BO5_2026}/?game={_gid}&tab=overview",
+            f"series/{SERIES_ID_BO5_2026}_{SERIES_SLUG_BO5_2026}/game_{_gid}_overview.html",
+            {},
+        ),
+        (
+            f"/{SERIES_ID_BO5_2026}/{SERIES_SLUG_BO5_2026}/?game={_gid}&tab=performance",
+            f"series/{SERIES_ID_BO5_2026}_{SERIES_SLUG_BO5_2026}/game_{_gid}_performance.html",
+            {},
+        ),
+    ]
+
 # ── Series: forfeit and notes parsing ───────────────────────
 SERIES_FORFEIT_NOTES = [
     (477343, "shopify-rebellion-gold-vs-yfp-x-game-changers-2025-north-america-stage-1-r3"),

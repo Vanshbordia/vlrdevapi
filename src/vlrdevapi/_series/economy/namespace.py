@@ -47,9 +47,15 @@ class SeriesEconomyNamespace:
 
         Returns:
             EconomyData: Economy data including ``rounds`` (list of
-            ``RoundEconomyData`` with purchases, remaining credits, and
-            team spending per round), ``team1`` and ``team2`` names,
-            and enriched team IDs.
+            ``RoundEconomyData`` with purchases, remaining credits,
+            spending, buy tier, and winner per round; the winning side
+            comes from ``series.rounds``),
+            ``buy_matrix_team1``/``buy_matrix_team2`` (the economy tab's
+            pistol/conv/bonus summary and per-buy-tier records), the flat
+            ``pistol_team1``/``converted_team1``/``bonus_team1`` and
+            ``pistol_team2``/``converted_team2``/``bonus_team2``
+            shortcuts, ``team1`` and ``team2`` names, and enriched team
+            IDs.
 
         Raises:
             ValidationError: If ``series_id`` or ``game_id`` is not a valid
