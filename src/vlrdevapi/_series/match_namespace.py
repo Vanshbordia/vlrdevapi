@@ -11,6 +11,8 @@ from vlrdevapi._series.performance.models import PerformanceData
 from vlrdevapi._series.performance.namespace import SeriesPerformanceNamespace
 from vlrdevapi._series.players.models import PlayersStats
 from vlrdevapi._series.players.namespace import SeriesPlayersNamespace
+from vlrdevapi._series.replay.models import ReplayData
+from vlrdevapi._series.replay.namespace import SeriesReplayNamespace
 from vlrdevapi._series.rounds.models import RoundsData
 from vlrdevapi._series.rounds.namespace import SeriesRoundsNamespace
 from vlrdevapi._series.vods.models import SeriesVods
@@ -34,6 +36,7 @@ class SeriesMatchNamespace:
         rounds: SeriesRoundsNamespace,
         performance: SeriesPerformanceNamespace,
         economy: SeriesEconomyNamespace,
+        replay: SeriesReplayNamespace,
         source_tz: ZoneInfo | tzinfo | None = None,
     ):
         self._source_tz = source_tz
@@ -44,6 +47,7 @@ class SeriesMatchNamespace:
         self._rounds = rounds
         self._performance = performance
         self._economy = economy
+        self._replay = replay
 
     @sanitize_and_validate
     def info(self) -> SeriesInfo:
@@ -217,6 +221,43 @@ class SeriesMatchNamespace:
 
         """
         return self._economy(self._series_id, game_id)
+
+    @sanitize_and_validate
+    def replay(self, game_id: int) -> ReplayData:
+        """Get the kill-feed replay timeline for a game in this series.
+
+        Args:
+            game_id: Game number within the series (1-based), or its real
+                VLR game ID.
+
+        Returns:
+            ReplayData: Replay timeline including ``rounds`` (one
+            ``ReplayRound`` per round with ``events`` — kills (killer,
+            victim, weapon/ability cause, positions, distance), spike
+            plants/defuses with site, the derived ``boom`` detonation
+            marker, derived ``resurrect`` events, and per-event ``alive``
+            snapshots), ``attacking``, ``players``, ``boom_at``,
+            ``team1`` and ``team2`` names with matching
+            ``team1_id``/``team2_id``, and ``num_rounds``. Real player
+            IDs are resolved from the game's overview tab and matched
+            within each player's team; unmatched players keep ID 0.
+
+        Raises:
+            ValidationError: If the bound ``series_id`` or ``game_id``
+                is not a valid positive integer.
+            NotFoundError: If the series page does not exist (HTTP 404).
+            RequestError: If the HTTP request fails.
+            RateLimitError: If the rate limit is exceeded.
+            ParsingError: If the page structure is unrecognised.
+
+        Examples:
+            >>> ns = vlrdevapi.series(12345)
+            >>> replay = ns.replay(game_id=1)
+            >>> replay.rounds[0].events[0].cause
+            'Sheriff'
+
+        """
+        return self._replay(self._series_id, game_id)
 
 
 

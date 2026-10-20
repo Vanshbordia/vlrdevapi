@@ -3,6 +3,7 @@ from vlrdevapi._series.info.namespace import SeriesInfoNamespace
 from vlrdevapi._series.match_namespace import SeriesMatchNamespace
 from vlrdevapi._series.performance.namespace import SeriesPerformanceNamespace
 from vlrdevapi._series.players.namespace import SeriesPlayersNamespace
+from vlrdevapi._series.replay.namespace import SeriesReplayNamespace
 from vlrdevapi._series.rounds.namespace import SeriesRoundsNamespace
 from vlrdevapi._series.vods.namespace import SeriesVodsNamespace
 import httpx
@@ -35,5 +36,8 @@ class SeriesNamespace:
 
     @property
     def economy(self) -> SeriesEconomyNamespace: ...
+
+    @property
+    def replay(self) -> SeriesReplayNamespace: ...
 
     def __call__(self, series_id: int) -> SeriesMatchNamespace: ...

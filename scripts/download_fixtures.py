@@ -467,6 +467,43 @@ for _gid in GAMES_BO5_2026:
         ),
     ]
 
+# ── Replay/logs tab fixtures (series.replay) ──────────────────
+SERIES_LOG_SAMPLES = [
+    (754737, "loud-vs-team-vitality-valorant-champions-2026-gf", 283288),
+    (754742, "100-thieves-vs-g2-esports-valorant-champions-2026-lr3", 283305),
+    (754743, "team-vitality-vs-100-thieves-valorant-champions-2026-lbf", 286701),
+    (378829, "edward-gaming-vs-team-heretics-valorant-champions-2024-gf", 180437),
+]
+
+for _sid, _sslug, _gid in SERIES_LOG_SAMPLES:
+    ROUTES.append(
+        (
+            f"/{_sid}/{_sslug}/?game={_gid}&tab=logs",
+            f"series/{_sid}_{_sslug}/game_{_gid}_logs.html",
+            {},
+        ),
+    )
+
+# Game overview tabs for replay player/team ID enrichment tests
+# (`?game={gid}&tab=overview` carries real VLR team + player IDs).
+for _sid, _sslug, _gid in SERIES_LOG_SAMPLES:
+    ROUTES.append(
+        (
+            f"/{_sid}/{_sslug}/?game={_gid}&tab=overview",
+            f"series/{_sid}_{_sslug}/game_{_gid}_overview.html",
+            {},
+        ),
+    )
+
+# Unplayed map (Abyss, game 4 of the 2026 GF): graceful empty replay data.
+ROUTES.append(
+    (
+        f"/754737/loud-vs-team-vitality-valorant-champions-2026-gf/?game=283290&tab=logs",
+        "series/754737_loud-vs-team-vitality-valorant-champions-2026-gf/game_283290_logs.html",
+        {},
+    ),
+)
+
 # ── Series: forfeit and notes parsing ───────────────────────
 SERIES_FORFEIT_NOTES = [
     (477343, "shopify-rebellion-gold-vs-yfp-x-game-changers-2025-north-america-stage-1-r3"),

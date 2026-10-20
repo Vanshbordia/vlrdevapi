@@ -1,6 +1,6 @@
 ---
 title: Series API Overview
-description: The Series namespace provides access to individual match/series data from vlr.gg - match overview, VODs, player stats, round-by-round data, performance metrics, and economy stats.
+description: The Series namespace provides access to individual match/series data from vlr.gg - match overview, VODs, player stats, round-by-round data, performance metrics, economy stats, and the kill-feed replay timeline.
 icon: Swords
 ---
 
@@ -50,6 +50,8 @@ with VLRClient(timeout=30, requests_per_second=8) as client:
 | [`series.rounds(series_id, game_id)`](./rounds) | `RoundsData` | Round-by-round data incl. per-round economy |
 | [`series.performance(series_id, game_id)`](./performance) | `PerformanceData` | Kill matrices and advanced stats |
 | [`series.economy(series_id, game_id)`](./economy) | `EconomyData` | Economy data per round, incl. buy-type matrix |
+| [`series.replay(series_id, game_id)`](./replay) | `ReplayData` | Kill-feed replay timeline with positions |
+
 ## Common Error Handling
 
 All series methods raise typed exceptions from `vlrdevapi.exceptions`:

@@ -44,12 +44,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   automatically (economy fields stay `None`/empty when that page is
   unavailable), making it the single round-by-round source alongside
   `win_type` and the winner's `side`.
+- **Series replay (logs tab)** — new `series.replay(series_id, game_id)`
+  returning the per-round kill-feed timeline (`ReplayData` /
+  `ReplayRound` / `ReplayEvent`): events typed by the `ReplayEventType`
+  enum (`KILL`, `PLANT`, `DEFUSE`, plus derived `BOOM` detonation and
+  `RESURRECT` events with `derived=True`, since vlr.gg logs neither as
+  feed rows), round clocks in both display (`clock`) and numeric
+  (`seconds`) form, kill cause (weapon or ability, e.g. `Sheriff`,
+  `Overdrive`, `Tour de Force`, `Spike`), killer/victim positions with
+  distance in minimap units, spike sites, and per-event alive snapshots
+  (name, agent, team, side, minimap coordinates, facing angle). Real
+  vlr.gg team and player IDs are resolved from the game's overview tab
+  (one extra request, `team1_id`/`team2_id` and `player_id` fields) and
+  matched strictly within each player's team so duplicate names never
+  cross teams; unplayed maps or maps without round data return an
+  empty timeline gracefully.
 
 ### Documentation
 
 - Series economy reference updated for the new `BuyType` values,
   buy-matrix fields, and nested models; series rounds reference updated
-  for the merged per-round economy fields.
+  for the merged per-round economy fields; new series replay reference
+  page for the kill-feed timeline module.
 
 ## [2.4.1] - 2026-10-17
 

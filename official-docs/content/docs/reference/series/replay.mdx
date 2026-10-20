@@ -1,0 +1,401 @@
+---
+title: Series Replay
+description: Fetch the kill-feed replay timeline per round for a game - kills with weapons and positions, spike plants/defuses, resurrections, and alive-player snapshots with facing angles.
+---
+
+`series.replay(series_id, game_id)` returns the kill-feed replay timeline for each round of a specific game within a series (the logs tab on vlr.gg).
+
+## Signature
+
+```python
+series.replay(
+    series_id: int,
+    game_id: int,
+) -> ReplayData
+```
+
+With curried access:
+
+```python
+vlrdevapi.series(series_id).replay(game_id: int) -> ReplayData
+```
+
+## Parameters
+
+<TypeTable type={{
+  "series_id": {
+    description: "Unique series identifier from vlr.gg.",
+    type: "int",
+    typeDescription: "Positive integer",
+    required: true,
+  },
+  "game_id": {
+    description: "Game number within the series (int, 1-based).",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+}} />
+
+## Returns - `ReplayData`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Unique series identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: "Unique game identifier on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team1": {
+    description: "Team 1 name from the round scoreboard band.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2": {
+    description: "Team 2 name from the round scoreboard band.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1_id": {
+    description: "Team 1 ID on vlr.gg (matched from the game's overview tab header; 0 when not matched).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2_id": {
+    description: "Team 2 ID on vlr.gg (matched from the game's overview tab header; 0 when not matched).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "num_rounds": {
+    description: "Number of rounds with replay data.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "rounds": {
+    description: "Replay rounds in play order.",
+    type: "list[ReplayRound]",
+    typeDescription: "list[ReplayRound] - see nested fields below",
+    default: "[]",
+  },
+}} />
+
+### `round(round_number)` helper
+
+`ReplayData.round(n)` returns the `ReplayRound` for one 1-based round number, or `None` when that round has no replay data.
+
+## ∇ `ReplayRound`
+
+<TypeTable type={{
+  "round_number": {
+    description: "Round number in the game.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "attacking": {
+    description: "Name of the team attacking (planting) in this round.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "players": {
+    description: "The ten players with real player ID, agent, team, and side.",
+    type: "list[ReplayPlayerRef]",
+    typeDescription: "list[ReplayPlayerRef] - see nested fields below",
+    default: "[]",
+  },
+  "events": {
+    description: "Ordered kill-feed events, including derived 'boom' and 'resurrect' entries.",
+    type: "list[ReplayEvent]",
+    typeDescription: "list[ReplayEvent] - see nested fields below",
+    default: "[]",
+  },
+  "boom_at": {
+    description: "Raw vlr.gg detonation marker: the spike explodes between event boom_at - 1 and event boom_at.",
+    type: "int | None",
+    typeDescription: "int or None",
+  },
+}} />
+
+## ∇ `ReplayEvent`
+
+One event in the round timeline. `type` is a `ReplayEventType` enum (`KILL`, `PLANT`, `DEFUSE`, `BOOM`, or `RESURRECT`; `.value` gives the lowercase string and `.full_name` a human-readable label); `derived: True` marks the two kinds vlr.gg does not log as feed rows (the spike detonation and resurrections).
+
+<TypeTable type={{
+  "seq": {
+    description: "Event position within the round (0-based).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "type": {
+    description: "Event type (ReplayEventType enum).",
+    type: "ReplayEventType",
+    typeDescription: 'ReplayEventType.KILL | PLANT | DEFUSE | BOOM | RESURRECT',
+    default: "KILL",
+  },
+  "clock": {
+    description: "Round clock at the event (M:SS); empty for the boom marker when vlr.gg reports no following event.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "seconds": {
+    description: "Round clock at the event in seconds; None when no clock is reported (e.g. a round-ending boom marker after the last feed row).",
+    type: "int | None",
+    typeDescription: "int or None",
+  },
+  "actor": {
+    description: "Acting player (killer, planter, defuser, or revived player).",
+    type: "ReplayActor",
+    typeDescription: "ReplayActor - see nested fields below",
+  },
+  "victim": {
+    description: "Killed player (kill events only).",
+    type: "ReplayActor | None",
+    typeDescription: "ReplayActor or None",
+  },
+  "cause": {
+    description: "Kill cause: the weapon or the ability/ult/spike name (kill events only).",
+    type: "str",
+    typeDescription: '"e.g. Sheriff, Phantom, Overdrive, Tour de Force, Spike"',
+    default: '""',
+  },
+  "site": {
+    description: "Spike site letter ('A', 'B', or 'C') for spike events; empty otherwise.",
+    type: "str",
+    typeDescription: '"A" | "B" | "C" | ""',
+    default: '""',
+  },
+  "pos_x": {
+    description: "Event X coordinate on the 1024x1024 minimap grid (kills: victim position; plants/defuses: actor position).",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "pos_y": {
+    description: "Event Y coordinate on the 1024x1024 minimap grid.",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "from_x": {
+    description: "Killer X coordinate at the moment of the kill (kill events only).",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "from_y": {
+    description: "Killer Y coordinate at the moment of the kill (kill events only).",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "distance_units": {
+    description: "Euclidean killer-to-victim distance in minimap units (kill events only).",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "alive": {
+    description: "Alive players snapshot at this event with map coordinates and facing angles.",
+    type: "list[ReplayAlivePlayer]",
+    typeDescription: "list[ReplayAlivePlayer] - see nested fields below",
+    default: "[]",
+  },
+  "derived": {
+    description: "Whether this event was derived ('boom'/'resurrect') rather than logged as a feed row on vlr.gg.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+## ∇ `ReplayActor` / `ReplayAlivePlayer`
+
+<TypeTable type={{
+  "player_id": {
+    description: "Unique player ID on vlr.gg (matched within the player's team from the game's overview tab; 0 when the player cannot be matched).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Player name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "Agent key in lowercase as shown on vlr.gg (e.g. 'omen').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team": {
+    description: "Team name the player belongs to this round.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "side": {
+    description: "Side the player was on this round.",
+    type: "str",
+    typeDescription: '"Attack" | "Defense"',
+    default: '""',
+  },
+  "x": {
+    description: "Map coordinate on the 1024x1024 minimap grid.",
+    type: "float",
+    typeDescription: "float (alive snapshots only)",
+    default: "0",
+  },
+  "y": {
+    description: "Map coordinate on the 1024x1024 minimap grid.",
+    type: "float",
+    typeDescription: "float (alive snapshots only)",
+    default: "0",
+  },
+  "view_angle": {
+    description: "Facing direction in minimap degrees (0 points to +x, rotates clockwise).",
+    type: "int",
+    typeDescription: "int (alive snapshots only)",
+    default: "0",
+  },
+}} />
+
+## ∇ `ReplayPlayerRef`
+
+<TypeTable type={{
+  "player_id": {
+    description: "Unique player ID on vlr.gg (matched within the player's team from the game's overview tab; 0 when the player cannot be matched).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Player name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "Agent key in lowercase as shown on vlr.gg (e.g. 'omen').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team": {
+    description: "Team name the player belongs to this round.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "side": {
+    description: "Side the player was on this round.",
+    type: "str",
+    typeDescription: '"Attack" | "Defense"',
+    default: '""',
+  },
+}} />
+
+## Examples
+
+### Round 1 kill feed
+
+Walk the first round's timeline with killer, cause, and positions.
+
+```python
+import vlrdevapi
+
+replay = vlrdevapi.series.replay(series_id=754737, game_id=283288)
+print(f"{replay.team1} ({replay.team1_id}) vs {replay.team2} ({replay.team2_id})")
+print(f"{replay.num_rounds} rounds")
+
+for ev in replay.round(1).events:
+    who = ev.actor.name if ev.actor else "-"
+    print(f"{ev.seq}. {ev.seconds}s {ev.type.full_name}: {who}", end="")
+    if ev.cause:
+        print(f" ({ev.cause})", end="")
+    if ev.victim:
+        print(f" -> {ev.victim.name}", end="")
+    print()
+```
+
+### Killer-to-victim distance
+
+For every kill, `distance_units` is the Euclidean distance between the killer (`from_x`/`from_y`) and the victim's death spot (`pos_x`/`pos_y`) in minimap units. There is no meters scale on vlr.gg, so treat the values as relative (consistency across fights of the same map is what matters).
+
+```python
+import vlrdevapi
+from vlrdevapi._series.replay.models import ReplayEventType
+
+replay = vlrdevapi.series.replay(series_id=754737, game_id=283288)
+
+long_range = [
+    ev
+    for rd in replay.rounds
+    for ev in rd.events
+    if ev.type is ReplayEventType.KILL and ev.distance_units is not None
+]
+long_range.sort(key=lambda ev: ev.distance_units, reverse=True)
+for ev in long_range[:5]:
+    print(f"{ev.clock} {ev.actor.name} -> {ev.victim.name}: {ev.distance_units:.0f} units ({ev.cause})")
+```
+
+### Spike plants and detonation
+
+Every spike event carries the site letter and the minimap position. Spike detonations are vlr.gg round markers rather than kill-feed rows, so they surface as a derived `boom` event (`derived: True`).
+
+```python
+import vlrdevapi
+
+replay = vlrdevapi.series.replay(series_id=754737, game_id=283288)
+
+for ev in replay.round(14).events:
+    if ev.type in (ReplayEventType.PLANT, ReplayEventType.DEFUSE, ReplayEventType.BOOM):
+        print(f"{ev.clock or '-'} {ev.type.full_name} site {ev.site} at ({ev.pos_x}, {ev.pos_y})")
+```
+
+### Resurrections
+
+Sage and Clove resurrections do not appear as feed rows on vlr.gg - a revived player simply shows up alive again in a later event snapshot. vlrdevapi derives them as `resurrect` events whose actor is the revived player (the caster cannot be identified from the data).
+
+```python
+import vlrdevapi
+from vlrdevapi._series.replay.models import ReplayEventType
+
+replay = vlrdevapi.series.replay(series_id=378829, game_id=180437)
+
+for rd in replay.rounds:
+    for ev in rd.events:
+        if ev.type is ReplayEventType.RESURRECT:
+            print(f"R{rd.round_number} {ev.clock}: {ev.actor.name} (ID {ev.actor.player_id}) back to life")
+```
+
+### Alive players and facing angles
+
+Each event snapshots every living player's minimap position and the direction they were looking. Angles are in minimap degrees (0 points to +x, rotating clockwise); coordinates use the same 1024x1024 grid vlr.gg renders its minimaps on, so they map straight onto the map image with no conversion factor.
+
+```python
+import vlrdevapi
+
+replay = vlrdevapi.series.replay(series_id=754737, game_id=283288)
+
+first_blood = replay.round(9).events[0]
+for p in first_blood.alive:
+    print(f"{p.name:<10} {p.agent:<8} {p.team:<15} at ({p.x:.0f}, {p.y:.0f}) facing {p.view_angle}deg")
+```
+
+## Notes
+
+- Player and team IDs are real vlr.gg IDs, resolved from the game's overview tab (one extra request). Players are matched by name strictly within their own team; a name is used as a fallback only when it maps to exactly one ID across the match, so duplicate names can never take another player's ID - unmatched players keep 0.
+- If a map is unplayed or vlr.gg carries no round data for it, the result comes back empty (`rounds == []`, `num_rounds == 0`) with team/player IDs left at 0 - no errors, and no enrichment requests are made.
+- Coordinates, angles, and distances are all raw minimap units; vlr.gg renders markers directly on a fixed 1024x1024 minimap image with no per-map conversion factor.
+- Ultimate and ability kills are logged as the kill `cause` (e.g. `Overdrive`, `Tour de Force`, `Not Dead Yet`); the cast itself is not an event.
