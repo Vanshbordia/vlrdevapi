@@ -79,3 +79,12 @@ class TestParseTeamUpcomingMatches:
                 assert m.match_id > 0
                 assert m.url.startswith("https://")
 
+    def test_parse_only_upcoming_section(self):
+        """Regression: the section after the heading must not include Recent Results."""
+        html = _load_html(13790)
+        result = parse_team_upcoming_matches(html, 13790)
+
+        assert [m.match_id for m in result.matches] == [777944]
+        # The page contains five recent results (748620, 724627, 724625, ...).
+        assert all(m.match_id != 748620 for m in result.matches)
+

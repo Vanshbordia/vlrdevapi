@@ -50,3 +50,17 @@ class TestSyncWithClient:
         assert result.score1 == 3
         assert result.score2 == 2
 
+
+class TestUpcoming:
+    def test_series_info_upcoming(self, mock_vlr):
+        mock_vlr.get("/777944").respond(
+            200, text=load_fixture("series", "777944", "overview.html"),
+        )
+
+        result = vlrdevapi.series.info(777944)
+        assert result.series_id == 777944
+        assert result.status == "upcoming"
+        assert result.best_of == 3
+        assert len(result.games) == 3
+        assert all(game.map_name == "TBD" and game.played is False for game in result.games)
+

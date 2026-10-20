@@ -8,6 +8,7 @@ from vlrdevapi._team.completed_matches.models import (
     TeamCompletedMatchEntry,
     TeamCompletedMatches,
 )
+from vlrdevapi._utils.pagination import check_pagination
 from vlrdevapi.commons.datetime import parse_vlr_datetime
 from vlrdevapi.fetcher import BASE_URL
 
@@ -17,7 +18,10 @@ def parse_team_completed_matches(
     team_id: int,
     source_tz: ZoneInfo | tzinfo | None = None,
 ) -> TeamCompletedMatches:
-    result = TeamCompletedMatches(team_id=team_id)
+    result = TeamCompletedMatches(
+        team_id=team_id,
+        has_next_page=check_pagination(html),
+    )
     for item in html.css("a.wf-card.fc-flex.m-item"):
         match = _parse_match_item(item, team_id, source_tz=source_tz)
         if match and match.match_id > 0:

@@ -1,5 +1,6 @@
-from vlrdevapi._team.completed_matches.models import TeamCompletedMatches
 import httpx
+
+from vlrdevapi._team.completed_matches.models import TeamCompletedMatches
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
 
 class TeamCompletedMatchesNamespace:
@@ -12,5 +13,9 @@ class TeamCompletedMatchesNamespace:
         extra_headers: dict[str, str] | None = None,
     ) -> None: ...
 
-    def __call__(self, team_id: int) -> TeamCompletedMatches:
-        ...
+    def __call__(
+        self,
+        team_id: int,
+        limit: int = ...,
+        return_all: bool = ...,
+    ) -> TeamCompletedMatches: ...

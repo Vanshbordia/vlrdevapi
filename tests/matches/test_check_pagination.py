@@ -1,6 +1,6 @@
 from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
-from vlrdevapi._matches.common import check_pagination
+from vlrdevapi._utils.pagination import check_pagination
 
 
 def _page(active: int, last: int) -> HTMLParser:

@@ -2,7 +2,10 @@ import pytest
 from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
-from vlrdevapi._team.completed_matches.parser import _parse_match_item
+from vlrdevapi._team.completed_matches.parser import (
+    _parse_match_item,
+    parse_team_completed_matches,
+)
 from vlrdevapi._team.completed_matches.models import TeamCompletedMatches
 
 _FIXTURES = FIXTURES_DIR / "team"
@@ -11,6 +14,19 @@ _FIXTURES = FIXTURES_DIR / "team"
 def _load_html(team_id: int, filename: str) -> HTMLParser:
     if _LIVE:
         return HTMLParser(live_fetch(f"/team/{team_id}"))
+    path = _FIXTURES / str(team_id) / filename
+    if path.exists():
+        return HTMLParser(path.read_text(encoding="utf-8"))
+    pytest.fail(f"Fixture not found: {path}")
+
+
+def _load_page(team_id: int, page: int) -> HTMLParser:
+    if _LIVE:
+        path = f"/team/matches/{team_id}/?core_id=all&group=completed"
+        if page > 1:
+            path += f"&page={page}"
+        return HTMLParser(live_fetch(path))
+    filename = "completed_matches.html" if page == 1 else f"completed_matches_page{page}.html"
     path = _FIXTURES / str(team_id) / filename
     if path.exists():
         return HTMLParser(path.read_text(encoding="utf-8"))
@@ -74,4 +90,23 @@ class TestParseTeamCompletedMatches:
         for m in result.matches:
             assert m.match_id > 0
             assert m.url.startswith("https://")
+
+
+class TestParseTeamCompletedMatchesPagination:
+    def test_first_page_has_next(self):
+        result = parse_team_completed_matches(_load_page(120, 1), 120)
+        assert len(result.matches) == 50
+        assert result.has_next_page is True
+
+    def test_second_page(self):
+        result = parse_team_completed_matches(_load_page(120, 2), 120)
+        assert len(result.matches) == 50
+        assert result.has_next_page is True
+        assert result.matches[0].match_id == 530905
+
+    def test_last_page_has_no_next(self):
+        result = parse_team_completed_matches(_load_page(17676, 1), 17676)
+        # Humble 5's completed history fits on a single page.
+        assert result.matches
+        assert result.has_next_page is False
 

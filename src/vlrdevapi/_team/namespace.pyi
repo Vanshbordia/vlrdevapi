@@ -1,7 +1,9 @@
 from datetime import date
 
-from vlrdevapi._team.completed_matches.namespace import TeamCompletedMatchesNamespace
+import httpx
+
 from vlrdevapi._team.completed_matches.models import TeamCompletedMatches
+from vlrdevapi._team.completed_matches.namespace import TeamCompletedMatchesNamespace
 from vlrdevapi._team.info.models import TeamInfo
 from vlrdevapi._team.info.namespace import TeamInfoNamespace
 from vlrdevapi._team.placements.models import TeamPlacements
@@ -15,8 +17,6 @@ from vlrdevapi._team.transactions.namespace import TeamTransactionsNamespace
 from vlrdevapi._team.upcoming_matches.models import TeamUpcomingMatches
 from vlrdevapi._team.upcoming_matches.namespace import TeamUpcomingMatchesNamespace
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
-import httpx
-
 
 class TeamMatchNamespace:
     def __init__(
@@ -35,7 +35,11 @@ class TeamMatchNamespace:
 
     def roster(self) -> TeamRoster: ...
 
-    def completed_matches(self) -> TeamCompletedMatches: ...
+    def completed_matches(
+        self,
+        limit: int = ...,
+        return_all: bool = ...,
+    ) -> TeamCompletedMatches: ...
 
     def upcoming_matches(self) -> TeamUpcomingMatches: ...
 

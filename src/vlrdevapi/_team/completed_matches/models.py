@@ -41,3 +41,7 @@ class TeamCompletedMatches(BaseModel):
     matches: list[TeamCompletedMatchEntry] = Field(
         default_factory=list, description="Completed matches",
     )
+    has_next_page: bool = Field(
+        default=False,
+        description="Whether more completed matches exist beyond the returned results",
+    )

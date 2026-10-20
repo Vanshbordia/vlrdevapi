@@ -471,3 +471,36 @@ class TestParseSeriesInfoTechnicalPauses:
     def test_veto_still_parsed(self):
         assert len(self.result.veto) > 0
 
+
+_UPCOMING_FIXTURES = FIXTURES_DIR / "series" / "777944"
+
+
+class TestParseSeriesInfoUpcoming:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        if _LIVE:
+            self.result = parse_series_info(HTMLParser(live_fetch("/777944")))
+        else:
+            path = _UPCOMING_FIXTURES / "overview.html"
+            if not path.exists():
+                pytest.fail(f"Fixture not found: {path}")
+            self.result = parse_series_info(HTMLParser(path.read_text(encoding="utf-8")))
+        self.result.series_id = 777944
+
+    def test_basic_info(self):
+        assert self.result.status == "upcoming"
+        assert self.result.team1.name == "Wolves Esports"
+        assert self.result.team2.name == "A Team"
+        assert self.result.score1 == 0
+        assert self.result.score2 == 0
+
+    def test_best_of_from_any_note(self):
+        # The first two notes are the countdown, not the format.
+        assert self.result.best_of == 3
+
+    def test_tbd_maps_are_not_played(self):
+        assert len(self.result.games) == 3
+        for game in self.result.games:
+            assert game.map_name == "TBD"
+            assert game.played is False
+

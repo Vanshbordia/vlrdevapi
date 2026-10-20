@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- **`team.upcoming_matches()` no longer returns completed matches** - the
+  parser now scopes its search to the heading's section wrapper instead of the
+  whole team-summary column, so "Recent Results" is excluded.
+- **`series.info()` on upcoming/live series** - `best_of` is now read from
+  whichever match-header note contains the format (vlr.gg renders the countdown
+  twice before `BoN`), and `TBD` map tabs are no longer marked `played`.
+- **`team.completed_matches()` pagination** - added `limit` (default `50`) and
+  `return_all`; extra pages are fetched only when the requested limit needs
+  them. `TeamCompletedMatches.has_next_page` reports whether more matches exist
+  beyond the returned results.
+
+### Documentation
+
+- Updated the `team.completed_matches` reference for `limit`, `return_all`, and
+  `has_next_page`.
+
 ## [3.0.0] - 2026-10-20
 
 ### Breaking

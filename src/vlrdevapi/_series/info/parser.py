@@ -4,7 +4,13 @@ import re
 from selectolax.lexbor import LexborHTMLParser as HTMLParser
 from selectolax.lexbor import LexborNode as Node
 
-from vlrdevapi._series.info.models import ForfeitInfo, MapVeto, SeriesGame, SeriesInfo, SeriesTeam
+from vlrdevapi._series.info.models import (
+    ForfeitInfo,
+    MapVeto,
+    SeriesGame,
+    SeriesInfo,
+    SeriesTeam,
+)
 from vlrdevapi.commons.timezone import parse_vlr_stored_datetime
 
 
@@ -156,11 +162,14 @@ def parse_series_info(html: HTMLParser) -> SeriesInfo:
             else:
                 info.status = "upcoming"
 
-        if len(notes) >= 2:
-            bo_text = notes[1].text(strip=True)
-            if bo_text.lower().startswith("bo"):
+        # Upcoming matches render the countdown twice before the format note
+        # (e.g. ["14h 43m", "14h 43m", "Bo3"]), so never assume a fixed index.
+        for note in notes:
+            bo_match = re.fullmatch(r"bo(\d+)", note.text(strip=True), re.IGNORECASE)
+            if bo_match:
                 with contextlib.suppress(ValueError):
-                    info.best_of = int(bo_text[2:])
+                    info.best_of = int(bo_match.group(1))
+                break
 
         score_spans = [
             s for s in vs_section.css("span[class*='match-header-vs-score-']")
@@ -364,7 +373,6 @@ def _parse_games(html: HTMLParser, info: SeriesInfo) -> list[SeriesGame]:
                     game.game_id = int(game_id_str)
 
             disabled_str = el.attributes.get("data-disabled", "") or "0"
-            game.played = disabled_str != "1"
 
             map_div = el.css_first("div[style*='text-align: center']")
             if map_div:
@@ -377,6 +385,15 @@ def _parse_games(html: HTMLParser, info: SeriesInfo) -> list[SeriesGame]:
                     order_str = span_el.text(strip=True)
                     map_text = map_text[len(order_str) :].strip()
                 game.map_name = map_text
+
+            # Upcoming matches expose placeholder tabs (data-disabled="0",
+            # map "TBD") that are not played maps. A map that has a real name
+            # on an upcoming series is still unplayed (only the veto is known).
+            game.played = (
+                disabled_str != "1"
+                and info.status != "upcoming"
+                and game.map_name.strip().upper() != "TBD"
+            )
 
             raw_html = el.html or ""
             pick_match = re.search(r"Pick:\s*(\S+)", raw_html)
@@ -431,6 +448,12 @@ def _parse_games(html: HTMLParser, info: SeriesInfo) -> list[SeriesGame]:
                     if v.veto_type == "decider":
                         game.map_name = v.map_name
                         break
+
+            game.played = (
+                info.status != "upcoming"
+                and bool(game.map_name)
+                and game.map_name.strip().upper() != "TBD"
+            )
 
             games.append(game)
 

@@ -29,8 +29,14 @@ def parse_team_upcoming_matches(
     if not upcoming_h2:
         return result
 
-    container = upcoming_h2.parent
-    if not container:
+    # The match cards live in the element sibling immediately after the
+    # heading. Using the heading's parent would include the "Recent Results"
+    # section as well, returning completed matches.
+    container = upcoming_h2.next
+    while container is not None and container.tag == "-text":
+        container = container.next
+
+    if container is None:
         return result
 
     for item in container.css("a.wf-card.fc-flex.m-item"):

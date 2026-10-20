@@ -263,6 +263,20 @@ for TEAM_ID, TEAM_SLUG in TEAMS:
         ),
     ]
 
+# ── Team with upcoming matches + paginated completed matches ───
+ROUTES += [
+    (
+        "/team/13790/wolves-esports",
+        "team/13790/overview_light.html",
+        {},
+    ),
+    (
+        "/team/matches/120/?core_id=all&group=completed&page=2",
+        "team/120/completed_matches_page2.html",
+        {},
+    ),
+]
+
 STATS_EVENT_ID = 2860
 STATS_SERIES_ID = 5556
 STATS_SUBSERIES_ID = 37169
@@ -466,6 +480,18 @@ for _gid in GAMES_BO5_2026:
             {},
         ),
     ]
+
+# ── Upcoming series (best_of + TBD map tabs) ─────────────────
+SERIES_ID_UPCOMING = 777944
+SERIES_SLUG_UPCOMING = "wolves-esports-vs-a-team-vct-china-2026-threshold-week-1-ro12"
+
+ROUTES.append(
+    (
+        f"/{SERIES_ID_UPCOMING}/{SERIES_SLUG_UPCOMING}",
+        f"series/{SERIES_ID_UPCOMING}/overview.html",
+        {},
+    ),
+)
 
 # ── Replay/logs tab fixtures (series.replay) ──────────────────
 SERIES_LOG_SAMPLES = [

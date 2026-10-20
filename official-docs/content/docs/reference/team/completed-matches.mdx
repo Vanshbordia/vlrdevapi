@@ -5,10 +5,17 @@ description: Fetch completed match history for a team with scores, opponent info
 
 `team.completed_matches(team_id)` returns the completed match history for a team on vlr.gg.
 
+By default it returns the first **50** matches (vlr.gg's first page). Set `limit` to
+fetch more, or `return_all=True` to fetch every page.
+
 ## Signature
 
 ```python
-team.completed_matches(team_id: int) -> TeamCompletedMatches
+team.completed_matches(
+    team_id: int,
+    limit: int = 50,
+    return_all: bool = False,
+) -> TeamCompletedMatches
 ```
 
 ## Parameters
@@ -19,6 +26,18 @@ team.completed_matches(team_id: int) -> TeamCompletedMatches
     type: "int",
     typeDescription: "Positive integer",
     required: true,
+  },
+  "limit": {
+    description: "Maximum number of completed matches to return. Extra pages are fetched only when needed.",
+    type: "int",
+    typeDescription: "Positive integer",
+    default: "50",
+  },
+  "return_all": {
+    description: "Fetch every page and return all matches. Overrides `limit`.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
   },
 }} />
 
@@ -36,6 +55,12 @@ team.completed_matches(team_id: int) -> TeamCompletedMatches
     type: "list[TeamCompletedMatchEntry]",
     typeDescription: "list[TeamCompletedMatchEntry] - see nested fields below",
     default: "[]",
+  },
+  "has_next_page": {
+    description: "Whether more completed matches exist beyond the returned results.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
   },
 }} />
 
@@ -151,6 +176,25 @@ losses = sum(1 for m in history.matches if not m.is_win)
 total = wins + losses
 pct = wins / total * 100 if total else 0
 print(f"{wins}W - {losses}L ({pct:.0f}% win rate) over {total} matches")
+```
+
+### Older history
+
+`limit` fetches as many pages as needed, rounded to vlr.gg's 50-match page size:
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.team.completed_matches(team_id=2593, limit=80)
+print(len(history.matches))   # 80
+print(history.has_next_page)  # True if more than 80 exist
+```
+
+Use `return_all=True` to fetch every page:
+
+```python
+history = vlrdevapi.team.completed_matches(team_id=2593, return_all=True)
+print(len(history.matches))   # all completed matches
 ```
 
 ### Curried access

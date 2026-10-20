@@ -101,14 +101,26 @@ class TeamMatchNamespace:
         return self._roster(self._team_id)
 
     @sanitize_and_validate
-    def completed_matches(self) -> TeamCompletedMatches:
+    def completed_matches(
+        self,
+        limit: int = 50,
+        return_all: bool = False,
+    ) -> TeamCompletedMatches:
         """Get completed match history for this team.
+
+        Args:
+            limit: Maximum number of completed matches to return. Defaults
+                to ``50`` (the first VLR page). Extra pages are fetched only
+                when needed.
+            return_all: If ``True``, fetch every page and return all matches.
+                This overrides ``limit``.
 
         Returns:
             TeamCompletedMatches: Completed matches with ``match_id``,
             ``event_name``, ``opponent``, ``score``, ``rounds_won``,
             ``rounds_lost``, ``stage``, and enrichment data (team IDs,
-            series info).
+            series info). ``has_next_page`` indicates whether more matches
+            exist beyond the returned results.
 
         Raises:
             NotFoundError: If the team page does not exist (HTTP 404).
@@ -119,9 +131,10 @@ class TeamMatchNamespace:
             >>> ns = vlrdevapi.team(4568)
             >>> ns.completed_matches().matches[0].score
             '2-1'
+            >>> ns.completed_matches(limit=80).matches[-1].score
 
         """
-        return self._completed_matches(self._team_id)
+        return self._completed_matches(self._team_id, limit=limit, return_all=return_all)
 
     @sanitize_and_validate
     def upcoming_matches(self) -> TeamUpcomingMatches:
