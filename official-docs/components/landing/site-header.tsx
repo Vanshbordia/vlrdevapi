@@ -152,7 +152,11 @@ export function SiteHeader() {
               ref={whyRef}
               className="relative"
               onMouseEnter={() => setWhyOpen(true)}
-              onMouseLeave={() => setWhyOpen(false)}
+              onMouseLeave={() => {
+                const panel = whyRef.current?.querySelector('#why-menu');
+                if (panel?.contains(document.activeElement)) return;
+                setWhyOpen(false);
+              }}
               onBlur={(event) => {
                 if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
                   setWhyOpen(false);

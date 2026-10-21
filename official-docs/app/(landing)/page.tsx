@@ -142,7 +142,7 @@ export default function LandingPage() {
           __html: JSON.stringify(jsonLdSoftwareApp).replace(/</g, '\\u003c'),
         }}
       />
-      <main id="main" className="flex-1 bg-black text-white">
+      <main id="main" tabIndex={-1} className="flex-1 bg-black text-white">
         {/* Hero */}
         <section className="relative overflow-hidden border-b border-white/10">
           <div

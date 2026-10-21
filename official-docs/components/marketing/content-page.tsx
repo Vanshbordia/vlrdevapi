@@ -2,17 +2,19 @@ import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
 export function formatDate(value: string) {
   const parsed = new Date(`${value}T00:00:00Z`);
 
   if (Number.isNaN(parsed.getTime())) return value;
 
-  return new Intl.DateTimeFormat('en-US', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(parsed);
+  return dateFormatter.format(parsed);
 }
 
 export function ContentHero({
@@ -194,9 +196,9 @@ export function ContentCard({
           {formatDate(date)}
         </time>
       </div>
-      <h2 className="mt-6 text-lg font-medium leading-snug tracking-tight text-white/85 transition-colors group-hover:text-white">
+      <h3 className="mt-6 text-lg font-medium leading-snug tracking-tight text-white/85 transition-colors group-hover:text-white">
         {title}
-      </h2>
+      </h3>
       <p className="mt-3 line-clamp-3 text-[13.5px] leading-relaxed text-white/40">
         {description}
       </p>

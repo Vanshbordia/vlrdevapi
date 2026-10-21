@@ -535,6 +535,14 @@ html > body[data-scroll-locked] {
   transform: translateY(0);
 }
 
+/* Keep content readable when scripting is unavailable. */
+@media (scripting: none) {
+  .landing-reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .landing-line {
   opacity: 0;
   animation: landing-line-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;

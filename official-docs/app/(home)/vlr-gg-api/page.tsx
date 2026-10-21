@@ -2,14 +2,14 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { LandingPage, LandingSection } from '@/components/landing/landing-page';
-import { canonicalUrl } from '@/lib/shared';
+import { createPageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: 'VLR.gg API for Python (Unofficial)',
   description:
     'VLR.gg has no public API. VLRdevAPI is a free, typed Python client that fetches matches, players, teams, events, and news from VLR.gg with no API key.',
-  alternates: { canonical: canonicalUrl('/vlr-gg-api/') },
-};
+  path: '/vlr-gg-api/',
+});
 
 const pipeline = [
   {

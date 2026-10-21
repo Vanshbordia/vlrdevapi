@@ -1,12 +1,21 @@
-'use client'
-
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowUpRight, ChevronDown } from 'lucide-react'
-import { useState } from 'react'
+import { JsonLd } from '@/components/json-ld'
+import { AnchorNav } from '@/components/marketing/anchor-nav'
 import { canonicalUrl, siteUrl } from '@/lib/shared'
+import { createPageMetadata } from '@/lib/seo'
 import { project } from '@/lib/project'
 import { ContentHero, IndexPanel } from '@/components/marketing/content-page'
-import { useActiveId } from '@/components/use-active-id'
+
+export const metadata: Metadata = createPageMetadata({
+  title: 'FAQ',
+  description:
+    'Frequently asked questions about VLRdevAPI, the type-safe Python SDK for Valorant esports data from VLR.gg.',
+  path: '/faq/',
+  openGraph: { title: 'VLRdevAPI FAQ - Python SDK Questions' },
+  twitter: { title: 'VLRdevAPI FAQ - Python SDK Questions' },
+})
 
 interface FaqItem {
   q: string
@@ -207,8 +216,6 @@ function sectionId(title: string) {
   return `section-${title.toLowerCase().replace(/\s+/g, '-')}`
 }
 
-const sectionIds = sections.map((section) => sectionId(section.title))
-
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
@@ -241,17 +248,11 @@ function extractText(node: React.ReactNode): string {
 }
 
 export default function FaqPage() {
-  const activeSection = useActiveId(sectionIds)
   const totalQuestions = sections.reduce((total, section) => total + section.items.length, 0)
 
   return (
-    <main className="flex-1">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
-        }}
-      />
+    <main id="main" tabIndex={-1} className="flex-1">
+      <JsonLd data={jsonLd} />
       <ContentHero
         eyebrow="Support / FAQ"
         title={
@@ -314,36 +315,17 @@ export default function FaqPage() {
         <div className="mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-16">
             <aside className="relative">
-              <nav aria-label="FAQ sections" className="lg:sticky lg:top-24 lg:self-start">
-                <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-white/30">
-                  Sections
-                </p>
-                <ol className="mt-4 border-l border-white/10">
-                  {sections.map((section, index) => {
-                    const id = sectionId(section.title)
-                    const isActive = activeSection === id
-
-                    return (
-                      <li key={section.title}>
-                        <a
-                          href={`#${id}`}
-                          aria-current={isActive ? 'location' : undefined}
-                          className={`-ml-px flex items-center gap-3 border-l py-2.5 pl-4 text-[13px] transition-colors ${
-                            isActive
-                              ? 'border-[#ff4655] text-white'
-                              : 'border-transparent text-white/40 hover:text-white/75'
-                          }`}
-                        >
-                          <span className="font-mono text-[12px] text-white/25">
-                            0{index + 1}
-                          </span>
-                          {section.title}
-                        </a>
-                      </li>
-                    )
-                  })}
-                </ol>
-              </nav>
+              <div className="lg:sticky lg:top-24 lg:self-start">
+                <AnchorNav
+                  label="Sections"
+                  ariaLabel="FAQ sections"
+                  items={sections.map((section, index) => ({
+                    id: sectionId(section.title),
+                    label: section.title,
+                    meta: String(index + 1).padStart(2, '0'),
+                  }))}
+                />
+              </div>
             </aside>
 
             <div className="min-w-0 space-y-14">
@@ -366,11 +348,11 @@ export default function FaqPage() {
                       {section.items.length} questions
                     </span>
                   </div>
-                  <dl className="border-b border-white/10">
+                  <div className="border-b border-white/10">
                     {section.items.map((item) => (
                       <FaqBlock key={item.q} item={item} />
                     ))}
-                  </dl>
+                  </div>
                 </article>
               ))}
             </div>
@@ -382,43 +364,20 @@ export default function FaqPage() {
 }
 
 function FaqBlock({ item }: { item: FaqItem }) {
-  const [open, setOpen] = useState(false)
-
   return (
-    <div className="group border-b border-white/10 last:border-b-0">
-      <dt className="text-[15px] font-medium leading-relaxed text-white/75 transition-colors group-hover:text-white md:text-base">
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          aria-expanded={open}
-          className="flex w-full items-start justify-between gap-6 py-5 text-left"
+    <details className="group border-b border-white/10 last:border-b-0">
+      <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-5 text-left text-[15px] font-medium leading-relaxed text-white/75 transition-colors hover:text-white md:text-base [&::-webkit-details-marker]:hidden">
+        <span className="max-w-3xl">{item.q}</span>
+        <span
+          aria-hidden="true"
+          className="mt-0.5 flex size-7 shrink-0 items-center justify-center border border-white/10 text-white/30 transition-colors group-open:border-[#ff4655]/40 group-open:bg-[#ff4655]/10 group-open:text-[#ff8d97]"
         >
-          <span className="max-w-3xl">{item.q}</span>
-          <span
-            aria-hidden="true"
-            className={`mt-0.5 flex size-7 shrink-0 items-center justify-center border transition-colors ${
-              open
-                ? 'border-[#ff4655]/40 bg-[#ff4655]/10 text-[#ff8d97]'
-                : 'border-white/10 text-white/30 group-hover:border-white/25 group-hover:text-white/60'
-            }`}
-          >
-            <ChevronDown
-              className={`size-3.5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-            />
-          </span>
-        </button>
-      </dt>
-      <dd
-        className={`grid transition-all duration-200 ${
-          open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-        }`}
-      >
-        <div className="overflow-hidden">
-          <div className="max-w-3xl pb-5 pr-10 text-[14px] leading-relaxed text-white/45">
-            {item.a}
-          </div>
-        </div>
-      </dd>
-    </div>
+          <ChevronDown className="size-3.5 transition-transform duration-200 group-open:rotate-180" />
+        </span>
+      </summary>
+      <div className="max-w-3xl pb-5 pr-10 text-[14px] leading-relaxed text-white/45">
+        {item.a}
+      </div>
+    </details>
   )
 }

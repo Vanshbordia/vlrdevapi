@@ -120,6 +120,8 @@ export function HeroDemo() {
 
   useEffect(() => {
     if (paused) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     const interval = setInterval(() => {
       setActiveId((current) => {
         const index = modules.findIndex((item) => item.id === current);

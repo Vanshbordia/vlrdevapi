@@ -1,8 +1,6 @@
-'use client'
-
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
-import { useActiveId } from '@/components/use-active-id'
+import { AnchorNav } from '@/components/marketing/anchor-nav'
 
 export type ChangelogSection = {
   title: string
@@ -36,43 +34,21 @@ function renderInline(value: string) {
 }
 
 export default function ChangelogTimeline({ versions }: { versions: ChangelogVersion[] }) {
-  const active = useActiveId(versions.map((version) => version.version))
-
   return (
     <div className="grid grid-cols-1 gap-12 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-16">
       <aside className="relative">
         <div className="lg:sticky lg:top-24 lg:self-start">
-          <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-white/30">
-            Versions
-          </p>
-          <nav aria-label="Version timeline" className="mt-4">
-            <ol className="border-l border-white/10">
-              {versions.map((v) => {
-                const isActive = active === v.version
-                return (
-                  <li key={v.version}>
-                    <a
-                      href={`#${v.version}`}
-                      className={`group -ml-px flex flex-col gap-1 border-l py-2.5 pl-4 transition-colors ${
-                        isActive
-                          ? 'border-[#ff4655] text-white'
-                          : 'border-transparent text-white/40 hover:text-white/75'
-                      }`}
-                      aria-current={isActive ? 'location' : undefined}
-                    >
-                      <span className="font-mono text-[12px] uppercase tracking-[0.12em] text-[#ff8d97]">
-                        {v.date}
-                      </span>
-                      <span className="text-[13px] font-medium">v{v.version}</span>
-                    </a>
-                  </li>
-                )
-              })}
-            </ol>
-          </nav>
-          <p className="mt-6 border-t border-white/10 pt-4 font-mono text-[12px] uppercase tracking-[0.14em] text-white/25">
-            Newest first
-          </p>
+          <AnchorNav
+            label="Versions"
+            ariaLabel="Version timeline"
+            variant="stacked"
+            note="Newest first"
+            items={versions.map((version) => ({
+              id: version.version,
+              label: `v${version.version}`,
+              meta: version.date,
+            }))}
+          />
         </div>
       </aside>
 

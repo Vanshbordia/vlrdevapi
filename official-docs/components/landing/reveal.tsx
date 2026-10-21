@@ -17,6 +17,11 @@ export function Reveal({
     const element = ref.current;
     if (!element) return;
 
+    if (!('IntersectionObserver' in window)) {
+      element.dataset.revealed = 'true';
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {

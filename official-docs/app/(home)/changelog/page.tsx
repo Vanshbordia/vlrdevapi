@@ -1,15 +1,19 @@
 import type { Metadata } from 'next'
 
 import ChangelogTimeline from './changelog-timeline'
+import { JsonLd } from '@/components/json-ld'
 import { canonicalUrl, siteUrl } from '@/lib/shared'
+import { createPageMetadata } from '@/lib/seo'
 import { project, projectAuthor, projectUrls } from '@/lib/project'
 import { ContentHero, IndexPanel, formatDate } from '@/components/marketing/content-page'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: 'Changelog',
   description: 'Release history and version notes for VLRdevAPI.',
-  alternates: { canonical: canonicalUrl('/changelog/') },
-}
+  path: '/changelog/',
+  openGraph: { title: 'VLRdevAPI Changelog - Release History' },
+  twitter: { title: 'VLRdevAPI Changelog - Release History' },
+})
 
 const versions = [
   {
@@ -336,19 +340,9 @@ export default function ChangelogPage() {
   const latest = versions[0]
 
   return (
-    <main className="flex-1">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLdBreadcrumb).replace(/</g, '\\u003c'),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLdWebPage).replace(/</g, '\\u003c'),
-        }}
-      />
+    <main id="main" tabIndex={-1} className="flex-1">
+      <JsonLd data={jsonLdBreadcrumb} />
+      <JsonLd data={jsonLdWebPage} />
       <ContentHero
         eyebrow="Project / Changelog"
         title={

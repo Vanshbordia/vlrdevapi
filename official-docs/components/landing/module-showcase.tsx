@@ -1,14 +1,11 @@
-'use client';
-
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
-import { useEffect, useState, type MouseEvent, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import snapshot from './landing-snapshot.json';
 import { CodeBlock } from './code-block';
 import { CopyButton } from './copy-button';
+import { ModuleShowcaseNav, type ModuleId } from './module-showcase-nav';
 import { Reveal } from './reveal';
-
-type ModuleId = 'player' | 'team' | 'series' | 'event' | 'news';
 
 const modules: Array<{
   id: ModuleId;
@@ -439,36 +436,6 @@ function CodePanel({ module }: { module: (typeof modules)[number] }) {
 }
 
 export function ModuleShowcase() {
-  const [activeId, setActiveId] = useState<ModuleId>('player');
-
-  useEffect(() => {
-    const sections = modules
-      .map((module) => document.getElementById(module.id))
-      .filter((section): section is HTMLElement => section !== null);
-
-    if (sections.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible[0]) setActiveId(visible[0].target.id as ModuleId);
-      },
-      { rootMargin: '-18% 0px -58% 0px', threshold: [0, 0.15, 0.4] },
-    );
-
-    for (const section of sections) observer.observe(section);
-    return () => observer.disconnect();
-  }, []);
-
-  function scrollToModule(event: MouseEvent<HTMLAnchorElement>, id: ModuleId) {
-    event.preventDefault();
-    setActiveId(id);
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    window.history.replaceState(null, '', `#${id}`);
-  }
-
   return (
     <div className="grid min-w-0 grid-cols-1 gap-10 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-14 xl:grid-cols-[280px_minmax(0,1fr)] xl:gap-16">
       <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
@@ -485,39 +452,9 @@ export function ModuleShowcase() {
           or jump straight to a namespace.
         </p>
 
-        <nav aria-label="API namespaces" className="mt-7 border-t border-white/10">
-          {modules.map((module, index) => {
-            const active = module.id === activeId;
-            return (
-              <a
-                key={module.id}
-                href={`#${module.id}`}
-                onClick={(event) => scrollToModule(event, module.id)}
-                aria-current={active ? 'true' : undefined}
-                className={`group flex items-center gap-3 border-b border-white/10 py-3.5 text-[13px] transition-colors ${
-                  active ? 'text-white' : 'text-white/40 hover:text-white/75'
-                }`}
-              >
-                <span
-                  aria-hidden="true"
-                  className={`h-4 w-px transition-colors duration-300 ${
-                    active ? 'bg-[#ff4655]' : 'bg-white/10'
-                  }`}
-                />
-                <span className="font-mono text-[12px] text-white/25">
-                  0{index + 1}
-                </span>
-                <span className="font-medium">{module.label}</span>
-                <span
-                  aria-hidden="true"
-                  className={`ml-auto size-1 transition-all duration-300 ${
-                    active ? 'bg-[#ff4655] opacity-100' : 'bg-transparent opacity-0'
-                  }`}
-                />
-              </a>
-            );
-          })}
-        </nav>
+        <ModuleShowcaseNav
+          items={modules.map((module) => ({ id: module.id, label: module.label }))}
+        />
 
         <Link
           href="/docs/reference/"

@@ -33,17 +33,22 @@ export function CopyButton({
   }
 
   return (
-    <button
-      type="button"
-      onClick={copy}
-      aria-label={label}
-      className={`inline-flex size-8 shrink-0 items-center justify-center border border-white/10 bg-white/[0.03] text-white/50 transition-colors hover:border-white/20 hover:bg-white/[0.07] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${className}`}
-    >
-      {copied ? (
-        <Check className="size-3.5 text-emerald-400" aria-hidden="true" />
-      ) : (
-        <Copy className="size-3.5" aria-hidden="true" />
-      )}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={copy}
+        aria-label={label}
+        className={`inline-flex size-8 shrink-0 items-center justify-center border border-white/10 bg-white/[0.03] text-white/50 transition-colors hover:border-white/20 hover:bg-white/[0.07] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${className}`}
+      >
+        {copied ? (
+          <Check className="size-3.5 text-emerald-400" aria-hidden="true" />
+        ) : (
+          <Copy className="size-3.5" aria-hidden="true" />
+        )}
+      </button>
+      <span className="sr-only" role="status" aria-live="polite">
+        {copied ? 'Copied to clipboard' : ''}
+      </span>
+    </>
   );
 }

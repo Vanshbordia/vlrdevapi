@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { getGuides } from '@/lib/content';
+import { JsonLd } from '@/components/json-ld';
 import { canonicalUrl, siteUrl } from '@/lib/shared';
+import { createPageMetadata } from '@/lib/seo';
 import { project } from '@/lib/project';
 import {
   ContentCard,
@@ -10,11 +12,14 @@ import {
   RelatedLinks,
 } from '@/components/marketing/content-page';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: 'Guides',
-  description: 'Step-by-step walkthroughs for integrating VLRdevAPI into your Valorant esports projects.',
-  alternates: { canonical: canonicalUrl('/guides/') },
-};
+  description:
+    'Step-by-step walkthroughs for integrating VLRdevAPI into your Valorant esports projects.',
+  path: '/guides/',
+  openGraph: { title: 'VLRdevAPI Guides - Python SDK Walkthroughs' },
+  twitter: { title: 'VLRdevAPI Guides - Python SDK Walkthroughs' },
+});
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -39,13 +44,8 @@ export default function GuidesPage() {
   const guides = getGuides();
 
   return (
-    <main className="flex-1">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
-        }}
-      />
+    <main id="main" tabIndex={-1} className="flex-1">
+      <JsonLd data={jsonLd} />
 
       <ContentHero
         eyebrow="Resources / Guides"

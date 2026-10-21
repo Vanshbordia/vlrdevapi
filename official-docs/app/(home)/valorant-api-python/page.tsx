@@ -4,15 +4,15 @@ import { ArrowUpRight, BarChart3, Code2, Workflow } from 'lucide-react';
 import { CodeBlock } from '@/components/landing/code-block';
 import { CopyButton } from '@/components/landing/copy-button';
 import { LandingPage, LandingSection } from '@/components/landing/landing-page';
+import { createPageMetadata } from '@/lib/seo';
 import { SpotlightCard } from '@/components/landing/spotlight-card';
-import { canonicalUrl } from '@/lib/shared';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: 'Valorant API for Python (No API Key)',
   description:
     'Use VLR.gg Valorant data from Python with a typed client. Install from PyPI, skip the API key, and work with Pydantic models for matches, players, teams, and stats.',
-  alternates: { canonical: canonicalUrl('/valorant-api-python/') },
-};
+  path: '/valorant-api-python/',
+});
 
 const workflows = [
   {

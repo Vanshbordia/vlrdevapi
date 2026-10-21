@@ -5,14 +5,14 @@ import { CodeBlock } from '@/components/landing/code-block';
 import { CopyButton } from '@/components/landing/copy-button';
 import { LandingPage, LandingSection } from '@/components/landing/landing-page';
 import snapshot from '@/components/landing/landing-snapshot.json';
-import { canonicalUrl } from '@/lib/shared';
+import { createPageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: 'Valorant Stats API for Python',
   description:
     'Get Valorant player, team, and match statistics from VLR.gg in Python. VLRdevAPI returns typed stats models for notebooks, dashboards, and scouting tools.',
-  alternates: { canonical: canonicalUrl('/valorant-stats-api/') },
-};
+  path: '/valorant-stats-api/',
+});
 
 const dataframeCode = `import pandas as pd
 import vlrdevapi

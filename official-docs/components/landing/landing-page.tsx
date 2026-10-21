@@ -4,6 +4,7 @@ import { ArrowUpRight, ChevronDown } from 'lucide-react';
 import { CodeBlock } from '@/components/landing/code-block';
 import { CopyButton } from '@/components/landing/copy-button';
 import { CopyCommand } from '@/components/landing/copy-command';
+import { JsonLd } from '@/components/json-ld';
 import { canonicalUrl, siteUrl } from '@/lib/shared';
 import { projectAuthor } from '@/lib/project';
 
@@ -166,13 +167,8 @@ export function LandingPage({
   ];
 
   return (
-    <main className="flex-1">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
-        }}
-      />
+    <main id="main" tabIndex={-1} className="flex-1">
+      <JsonLd data={jsonLd} />
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-white/10">
@@ -441,7 +437,7 @@ export function LandingPage({
                           index === 1 ? 'text-[#ff8d97]' : 'text-white/30'
                         }`}
                       >
-                        {header}
+                        {header || <span className="sr-only">Feature</span>}
                       </th>
                     ))}
                   </tr>

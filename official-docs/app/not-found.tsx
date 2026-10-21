@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { useEffect, useSyncExternalStore } from 'react';
 import { Logo } from '@/components/logo';
+
+const subscribeToLocation = () => () => {};
 
 const REDIRECT_MAP: Record<string, string> = {
   // Teams
@@ -120,23 +122,20 @@ const popularLinks = [
 
 export default function NotFound() {
   const pathname = usePathname();
-  const [redirectTarget, setRedirectTarget] = useState<string | null>(null);
-  const [isRedirecting, setIsRedirecting] = useState(false);
+  const currentPath = useSyncExternalStore(
+    subscribeToLocation,
+    () => window.location.pathname,
+    () => pathname ?? '',
+  );
+  const redirectTarget = resolveRedirect(currentPath);
 
   useEffect(() => {
-    // Determine path from pathname or window.location for static servers
-    const currentPath = typeof window !== 'undefined' ? window.location.pathname : pathname || '';
-    const target = resolveRedirect(currentPath);
-
-    if (target) {
-      setRedirectTarget(target);
-      setIsRedirecting(true);
-      // Client-side automatic redirect
-      window.location.replace(target);
+    if (redirectTarget) {
+      window.location.replace(redirectTarget);
     }
-  }, [pathname]);
+  }, [redirectTarget]);
 
-  if (isRedirecting && redirectTarget) {
+  if (redirectTarget) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center text-foreground">
         <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-fd-primary border-t-transparent mb-4" />

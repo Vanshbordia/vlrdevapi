@@ -2,11 +2,13 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { blogSource } from '@/lib/source'
 import { getMDXComponents } from '@/components/mdx'
+import { JsonLd } from '@/components/json-ld'
 import { TocLayout } from '@/components/toc-layout'
 import { extractToc } from '@/components/toc'
 import { CtaSection } from '@/components/cta'
 import { ArticleHero } from '@/components/marketing/content-page'
 import { canonicalUrl, siteUrl } from '@/lib/shared'
+import { createPageMetadata } from '@/lib/seo'
 import { project, projectAuthor, projectUrls } from '@/lib/project'
 
 interface Props {
@@ -22,18 +24,24 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const page = blogSource.getPage([slug])
   if (!page) return {}
 
-  return {
+  const description = page.data.description ?? `Read ${page.data.title} on VLRdevAPI.`
+
+  return createPageMetadata({
     title: page.data.title,
-    description: page.data.description,
-    alternates: { canonical: canonicalUrl(`/blog/${slug}`) },
+    description,
+    path: `/blog/${slug}`,
+    type: 'article',
     openGraph: {
       title: `${page.data.title} - VLRdevAPI Blog`,
-      description: page.data.description,
-      url: canonicalUrl(`/blog/${slug}`),
-      type: 'article',
+      description,
       publishedTime: page.data.date,
+      authors: [page.data.author],
     },
-  }
+    twitter: {
+      title: `${page.data.title} - VLRdevAPI Blog`,
+      description,
+    },
+  })
 }
 
 export default async function BlogPostPage(props: Props) {
@@ -54,6 +62,7 @@ export default async function BlogPostPage(props: Props) {
     headline: page.data.title,
     description: page.data.description,
     datePublished: page.data.date,
+    dateModified: page.data.date,
     inLanguage: 'en',
     author: projectAuthor,
     publisher: { '@id': `${siteUrl}/#organization` },
@@ -80,19 +89,9 @@ export default async function BlogPostPage(props: Props) {
   }
 
   return (
-    <main className="flex-1">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLdBreadcrumb).replace(/</g, '\\u003c'),
-        }}
-      />
+    <main id="main" tabIndex={-1} className="flex-1">
+      <JsonLd data={jsonLd} />
+      <JsonLd data={jsonLdBreadcrumb} />
       <article>
         <ArticleHero
           backHref="/blog/"

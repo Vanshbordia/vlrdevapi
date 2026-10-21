@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { getBlogPosts } from '@/lib/content';
+import { JsonLd } from '@/components/json-ld';
 import { canonicalUrl, siteUrl } from '@/lib/shared';
+import { createPageMetadata } from '@/lib/seo';
 import { project } from '@/lib/project';
 import {
   ContentCard,
@@ -10,11 +12,14 @@ import {
   RelatedLinks,
 } from '@/components/marketing/content-page';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: 'Blog',
-  description: 'News, tutorials, and deep dives on building with the VLRdevAPI Python SDK for Valorant esports.',
-  alternates: { canonical: canonicalUrl('/blog/') },
-};
+  description:
+    'News, tutorials, and deep dives on building with the VLRdevAPI Python SDK for Valorant esports.',
+  path: '/blog/',
+  openGraph: { title: 'VLRdevAPI Blog - News, Tutorials, and Deep Dives' },
+  twitter: { title: 'VLRdevAPI Blog - News, Tutorials, and Deep Dives' },
+});
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -39,13 +44,8 @@ export default function BlogPage() {
   const posts = getBlogPosts();
 
   return (
-    <main className="flex-1">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
-        }}
-      />
+    <main id="main" tabIndex={-1} className="flex-1">
+      <JsonLd data={jsonLd} />
 
       <ContentHero
         eyebrow="Resources / Blog"

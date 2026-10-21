@@ -1,4 +1,5 @@
 import { Analytics } from '@/components/analytics';
+import { JsonLd } from '@/components/json-ld';
 import { Provider } from '@/components/provider';
 import type { Metadata } from 'next';
 import './global.css';
@@ -103,27 +104,12 @@ const jsonLdDataset = {
 export default function Layout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="en" className={geist.variable} suppressHydrationWarning>
-      <Analytics />
       <body className="flex flex-col min-h-screen">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(jsonLdOrganization).replace(/</g, '\\u003c'),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(jsonLdWebSite).replace(/</g, '\\u003c'),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(jsonLdDataset).replace(/</g, '\\u003c'),
-          }}
-        />
+        <JsonLd data={jsonLdOrganization} />
+        <JsonLd data={jsonLdWebSite} />
+        <JsonLd data={jsonLdDataset} />
         <Provider>{children}</Provider>
+        <Analytics />
       </body>
     </html>
   );

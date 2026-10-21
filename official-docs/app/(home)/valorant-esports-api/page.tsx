@@ -5,14 +5,14 @@ import { CodeBlock } from '@/components/landing/code-block';
 import { CopyButton } from '@/components/landing/copy-button';
 import { LandingPage, LandingSection } from '@/components/landing/landing-page';
 import snapshot from '@/components/landing/landing-snapshot.json';
-import { canonicalUrl } from '@/lib/shared';
+import { createPageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: 'Valorant Esports API for Python',
   description:
     'Query Valorant esports data from VLR.gg in Python. VLRdevAPI returns typed matches, event stages, standings, rosters, series, and round data. Free, with no API key.',
-  alternates: { canonical: canonicalUrl('/valorant-esports-api/') },
-};
+  path: '/valorant-esports-api/',
+});
 
 const flow = [
   {
