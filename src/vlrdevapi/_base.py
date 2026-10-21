@@ -1,6 +1,7 @@
 """Base class for sync namespaces with parallel fetch helpers."""
 
 import concurrent.futures
+import contextlib
 import threading
 from collections.abc import Callable
 from typing import Any
@@ -83,6 +84,8 @@ class SyncNamespace:
             verify=False,
         )
 
+    _thread_local = threading.local()
+
     def _parallel_fetch(
         self,
         paths: list[str],
@@ -90,8 +93,8 @@ class SyncNamespace:
     ) -> list[HTMLParser]:
         """Fetch multiple paths in parallel using a thread pool.
 
-        Each worker thread creates its own ``httpx.Client`` since clients
-        are not thread-safe.
+        Each worker thread reuses its own ``httpx.Client`` via thread-local
+        storage, and all clients are cleanly closed when finished.
 
         Args:
             paths: List of URL paths to fetch.
@@ -104,22 +107,42 @@ class SyncNamespace:
 
         """
         results: list[HTMLParser | None] = [None] * len(paths)
+        clients: list[httpx.Client] = []
+        clients_lock = threading.Lock()
+
+        def _init_worker() -> None:
+            client = self._make_client()
+            SyncNamespace._thread_local.client = client
+            with clients_lock:
+                clients.append(client)
 
         def _do_fetch(idx: int, path: str) -> tuple[int, HTMLParser]:
-            with self._make_client() as client:
-                return idx, fetch_sync(
-                    client, path, self._timeout,
-                    retry_config=self._retry_config,
-                    rate_limiter=self._rate_limiter,
-                )
+            client = getattr(SyncNamespace._thread_local, "client", None)
+            if client is None or client.is_closed:
+                client = self._make_client()
+                SyncNamespace._thread_local.client = client
+                with clients_lock:
+                    clients.append(client)
+            return idx, fetch_sync(
+                client, path, self._timeout,
+                retry_config=self._retry_config,
+                rate_limiter=self._rate_limiter,
+            )
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
-            for idx, html in pool.map(lambda x: _do_fetch(*x), enumerate(paths)):
-                results[idx] = html
+        try:
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=max_workers, initializer=_init_worker,
+            ) as pool:
+                for idx, html in pool.map(lambda x: _do_fetch(*x), enumerate(paths)):
+                    results[idx] = html
+        finally:
+            with clients_lock:
+                for client in clients:
+                    with contextlib.suppress(Exception):
+                        client.close()
+                clients.clear()
 
         return [r for r in results if r is not None]
-
-    _thread_local = threading.local()
 
     def _parallel_enrich(
         self,
@@ -130,7 +153,7 @@ class SyncNamespace:
         """Run an enrichment function on each item in parallel.
 
         Each worker thread gets its own ``httpx.Client`` via
-        thread-local storage.
+        thread-local storage. All clients are cleanly closed when finished.
 
         Args:
             items: List of items to enrich.
@@ -139,13 +162,32 @@ class SyncNamespace:
                 ``5``.
 
         """
+        clients: list[httpx.Client] = []
+        clients_lock = threading.Lock()
+
         def _init_worker() -> None:
-            SyncNamespace._thread_local.client = self._make_client()
+            client = self._make_client()
+            SyncNamespace._thread_local.client = client
+            with clients_lock:
+                clients.append(client)
 
         def _work(item: Any) -> None:
-            enrich_fn(item, SyncNamespace._thread_local.client)
+            client = getattr(SyncNamespace._thread_local, "client", None)
+            if client is None or client.is_closed:
+                client = self._make_client()
+                SyncNamespace._thread_local.client = client
+                with clients_lock:
+                    clients.append(client)
+            enrich_fn(item, client)
 
-        with concurrent.futures.ThreadPoolExecutor(
-            max_workers=max_workers, initializer=_init_worker,
-        ) as pool:
-            pool.map(_work, items)
+        try:
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=max_workers, initializer=_init_worker,
+            ) as pool:
+                list(pool.map(_work, items))
+        finally:
+            with clients_lock:
+                for client in clients:
+                    with contextlib.suppress(Exception):
+                        client.close()
+                clients.clear()

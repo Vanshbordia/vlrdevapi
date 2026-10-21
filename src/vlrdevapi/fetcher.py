@@ -23,7 +23,7 @@ __all__ = [
 import httpx
 from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
-from vlrdevapi.exceptions import HTTPError, NotFoundError, RateLimitError, RequestError
+from vlrdevapi.exceptions import ClientError, HTTPError, NotFoundError, RateLimitError, RequestError, RequestTimeoutError, ServerError
 
 BASE_URL = "https://www.vlr.gg"
 DEFAULT_TIMEOUT = 15
@@ -165,8 +165,17 @@ def _raise_mapped_exception(exc: Exception) -> Never:
             raise NotFoundError from exc
         if status == 429:
             raise RateLimitError from exc
+        if 400 <= status < 500:
+            msg = f"HTTP error {status}"
+            raise ClientError(msg, status) from exc
+        if status >= 500:
+            msg = f"HTTP error {status}"
+            raise ServerError(msg, status) from exc
         msg = f"HTTP error {status}"
         raise HTTPError(msg, status) from exc
+    if isinstance(exc, httpx.TimeoutException):
+        msg = f"request timed out: {exc}"
+        raise RequestTimeoutError(msg) from exc
     if isinstance(exc, httpx.RequestError):
         msg = f"request failed: {exc}"
         raise RequestError(msg) from exc

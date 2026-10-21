@@ -116,14 +116,22 @@ def _build_real_event(
     locs = event.get("locs") or []
     alive = _alive_snapshot(locs, players, team_names, atk)
 
-    actor = _actor(players.get(event.get("by")), team_names, atk)
+    try:
+        by_key = int(event["by"]) if "by" in event and event["by"] is not None else None
+    except (ValueError, TypeError):
+        by_key = None
+    actor = _actor(players.get(by_key) if by_key is not None else None, team_names, atk)
     victim = None
     pos = event.get("pos")
     from_pos = event.get("from")
     distance: float | None = None
 
     if event_type == "kill":
-        victim = _actor(players.get(event.get("vid")), team_names, atk)
+        try:
+            vid_key = int(event["vid"]) if "vid" in event and event["vid"] is not None else None
+        except (ValueError, TypeError):
+            vid_key = None
+        victim = _actor(players.get(vid_key) if vid_key is not None else None, team_names, atk)
         if (
             isinstance(from_pos, list)
             and len(from_pos) >= 2

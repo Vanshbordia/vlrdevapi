@@ -1,3 +1,6 @@
+from datetime import tzinfo
+from zoneinfo import ZoneInfo
+
 from vlrdevapi._series.economy.models import EconomyData
 from vlrdevapi._series.economy.namespace import SeriesEconomyNamespace
 from vlrdevapi._series.info.models import SeriesInfo
@@ -24,6 +27,7 @@ class SeriesMatchNamespace:
         performance: SeriesPerformanceNamespace,
         economy: SeriesEconomyNamespace,
         replay: SeriesReplayNamespace,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ) -> None: ...
 
     def info(self) -> SeriesInfo:
