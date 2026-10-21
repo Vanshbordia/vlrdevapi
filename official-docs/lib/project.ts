@@ -6,7 +6,7 @@ import { assetUrl, canonicalUrl } from './shared';
  */
 export const project = {
   name: 'VLRdevAPI',
-  version: '2.4.1',
+  version: '3.0.0',
   description:
     'A type-safe Python SDK for Valorant esports data from VLR.gg. Fetch match results, player stats, team rosters, and tournament brackets through a fully typed Python interface.',
   licenseUrl: 'https://opensource.org/license/mit',

@@ -5,63 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
-
-### Added
-
-- **Series head-to-head history** - `SeriesInfo.head_to_head` exposes previous
-  meetings between the two teams, parsed from the same overview page. Each
-  `SeriesHeadToHeadMatch` includes the series ID/URL, event, stage, date, both
-  team names/scores, and which side won.
-- **Series streams in `series.vods()`** - `SeriesVods.streams` now contains live
-  broadcasts and watch-party streams alongside the existing `vods` list. Each
-  `SeriesStream` exposes the platform, channel, URL, stream type, and country
-  code. `SeriesVod` also gains `platform`, `map_number`, and `start_seconds`.
-- **Player total winnings** - `PlayerInfo.total_winnings` and
-  `total_winnings_currency` now expose the total from the player's Event
-  Placements card.
-- **New `player.placements()` namespace** - returns `PlayerPlacements` with
-  individual `PlayerEventPlacement` rows (event, year, stage, placement, prize,
-  team) and the player's total winnings.
-
-### Fixed
-
-- **`team.upcoming_matches()` no longer returns completed matches** - the
-  parser now scopes its search to the heading's section wrapper instead of the
-  whole team-summary column, so "Recent Results" is excluded.
-- **`series.info()` on upcoming/live series** - `best_of` is now read from
-  whichever match-header note contains the format (vlr.gg renders the countdown
-  twice before `BoN`), and `TBD` map tabs are no longer marked `played`.
-- **`team.completed_matches()` pagination** - added `limit` (default `50`) and
-  `return_all`; extra pages are fetched only when the requested limit needs
-  them. `TeamCompletedMatches.has_next_page` reports whether more matches exist
-  beyond the returned results.
-- **Team match `stage`/`bracket`** - both fields are now parsed separately from
-  the team matches page (e.g. `stage="Playoffs"`, `bracket="LBF"`), and
-  enrichment no longer concatenates them into `"Playoffs - LBF"`.
-- **Parser whitespace** - shared `normalize_whitespace()` collapses raw tabs,
-  newlines, and repeated spaces in parsed event/stage/bracket/role values
-  instead of leaving values such as `"Playoffs ⋅\n\t\t\tLBF"`.
-- **`events.matches()` team countries** - `MatchTeam` now exposes
-  `country_name`, parsed from the team flag on the event matches page.
-
-### Changed
-
-- **`RoundData.win_type` is now a `RoundWinType` enum** instead of a
-  human-readable string. Use `round.win_type.full_name` for display text and
-  `round.win_type.value` (`"elimination"`, `"defuse"`, `"spike_detonation"`,
-  `"time_expired"`) for the raw value.
-
-### Documentation
-
-- Updated the `team.completed_matches`, `team.upcoming_matches`,
-  `events.matches`, and `series.rounds` references for `bracket`,
-  `country_name`, and the `RoundWinType` enum.
-- Updated `series.info`, `series.vods`, and `player.info`, and added a
-  `player.placements` reference for head-to-head history, streams, VOD metadata,
-  and event placements.
-
-## [3.0.0] - 2026-10-20
+## [3.0.0] - 2026-10-21
 
 ### Breaking
 
@@ -89,10 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `_team2` counterparts), `full_buy` / `half_buy` / `eco` aliases on
   `TeamBuyMatrix`, and a combined `total` on `BuyTierRecord` for the
   overall won/total on a tier regardless of the opponent's buy type.
-- **New grand-final fixtures** — series 130685 (LOUD vs OpTic, Champions
-  2022 GF) and 754737 (LOUD vs Vitality, Champions 2026 GF) are now
-  covered by tests across economy, info/pick-bans, players, rounds, and
-  performance parsers.
 - **Round economy in `series.rounds`** — `RoundData` now carries the
   per-round economy from the economy tab: `bank_team1`/`bank_team2`,
   `spent_team1`/`spent_team2`, `buy_type_team1`/`buy_type_team2`, and
@@ -115,6 +55,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   matched strictly within each player's team so duplicate names never
   cross teams; unplayed maps or maps without round data return an
   empty timeline gracefully.
+- **Series head-to-head history** — `SeriesInfo.head_to_head` exposes
+  previous meetings between the two teams, parsed from the same overview
+  page. Each `SeriesHeadToHeadMatch` includes the series ID/URL, event,
+  stage, date, both team names/scores, and which side won.
+- **Series streams in `series.vods()`** — `SeriesVods.streams` now contains
+  live broadcasts and watch-party streams alongside the existing `vods`
+  list. Each `SeriesStream` exposes the platform, channel, URL, stream
+  type, and country code. `SeriesVod` also gains `platform`, `map_number`,
+  and `start_seconds`.
+- **Player total winnings** — `PlayerInfo.total_winnings` and
+  `total_winnings_currency` now expose the total from the player's Event
+  Placements card.
+- **New `player.placements()` namespace** — returns `PlayerPlacements` with
+  individual `PlayerEventPlacement` rows (event, year, stage, placement,
+  prize, team) and the player's total winnings.
+- **New grand-final fixtures** — series 130685 (LOUD vs OpTic, Champions
+  2022 GF) and 754737 (LOUD vs Vitality, Champions 2026 GF) are now
+  covered by tests across economy, info/pick-bans, players, rounds, and
+  performance parsers.
+
+### Fixed
+
+- **`team.upcoming_matches()` no longer returns completed matches** — the
+  parser now scopes its search to the heading's section wrapper instead of
+  the whole team-summary column, so "Recent Results" is excluded.
+- **`series.info()` on upcoming/live series** — `best_of` is now read from
+  whichever match-header note contains the format (vlr.gg renders the
+  countdown twice before `BoN`), and `TBD` map tabs are no longer marked
+  `played`.
+- **`team.completed_matches()` pagination** — added `limit` (default `50`)
+  and `return_all`; extra pages are fetched only when the requested limit
+  needs them. `TeamCompletedMatches.has_next_page` reports whether more
+  matches exist beyond the returned results.
+- **Team match `stage`/`bracket`** — both fields are now parsed separately
+  from the team matches page (e.g. `stage="Playoffs"`, `bracket="LBF"`),
+  and enrichment no longer concatenates them into `"Playoffs - LBF"`.
+- **Parser whitespace** — shared `normalize_whitespace()` collapses raw tabs,
+  newlines, and repeated spaces in parsed event/stage/bracket/role values
+  instead of leaving values such as `"Playoffs ⋅\n\t\t\tLBF"`.
+- **`events.matches()` team countries** — `MatchTeam` now exposes
+  `country_name`, parsed from the team flag on the event matches page.
+- **Thread-local HTTP client lifecycle** — parallel requests now reuse
+  thread-local clients and close every client after fetching or enrichment,
+  reducing client-creation overhead and preventing resource leaks.
+
+### Changed
+
+- **`RoundData.win_type` is now a `RoundWinType` enum** instead of a
+  human-readable string. Use `round.win_type.full_name` for display text and
+  `round.win_type.value` (`"elimination"`, `"defuse"`, `"spike_detonation"`,
+  `"time_expired"`) for the raw value.
 
 ### Documentation
 
@@ -122,6 +113,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   buy-matrix fields, and nested models; series rounds reference updated
   for the merged per-round economy fields; new series replay reference
   page for the kill-feed timeline module.
+- Updated the `team.completed_matches`, `team.upcoming_matches`,
+  `events.matches`, and `series.rounds` references for `bracket`,
+  `country_name`, and the `RoundWinType` enum.
+- Updated `series.info`, `series.vods`, and `player.info`, and added a
+  `player.placements` reference for head-to-head history, streams, VOD
+  metadata, and event placements.
 
 ## [2.4.1] - 2026-10-17
 
@@ -434,6 +431,7 @@ The API surface, module structure, and type system are all new.
 - `aiohttp` and `asyncio` dependencies.
 - v1.x match/event/team parsing modules.
 
+[3.0.0]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.4.1...v3.0.0
 [2.4.1]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.2.0...v2.3.0
