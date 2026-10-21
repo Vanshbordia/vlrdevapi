@@ -35,6 +35,9 @@ class TestSyncModuleLevel:
         assert result.games[4].game_id == 233482
         assert result.games[4].order == 5
         assert result.games[4].map_name == "Sunset"
+        assert len(result.head_to_head) == 2
+        assert result.head_to_head[0].series_id == 542270
+        assert result.head_to_head[0].winner == "team1"
 
 
 class TestSyncWithClient:

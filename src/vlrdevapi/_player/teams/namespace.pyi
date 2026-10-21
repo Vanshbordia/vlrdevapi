@@ -1,5 +1,9 @@
-from vlrdevapi._player.teams.models import PlayerPastTeams, PlayerTeam, PlayerTeams
+from datetime import tzinfo
+from zoneinfo import ZoneInfo
+
 import httpx
+
+from vlrdevapi._player.teams.models import PlayerPastTeams, PlayerTeam, PlayerTeams
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
 
 class PlayerTeamsNamespace:
@@ -10,6 +14,7 @@ class PlayerTeamsNamespace:
         retry_config: RetryConfig = ...,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ) -> None: ...
 
     def current_team(self, player_id: int) -> PlayerTeam | None:

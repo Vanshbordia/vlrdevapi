@@ -44,8 +44,8 @@ with VLRClient(timeout=30, requests_per_second=8) as client:
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| [`series.info(series_id)`](./info) | `SeriesInfo` | Match overview - teams, scores, event, veto, games |
-| [`series.vods(series_id)`](./vods) | `SeriesVods` | VOD/video links for the match |
+| [`series.info(series_id)`](./info) | `SeriesInfo` | Match overview - teams, scores, event, head-to-head, veto, games |
+| [`series.vods(series_id)`](./vods) | `SeriesVods` | Live/watch-party streams and VOD links for the match |
 | [`series.players(series_id, game_id)`](./players) | `PlayersStats` | Per-game player statistics |
 | [`series.rounds(series_id, game_id)`](./rounds) | `RoundsData` | Round-by-round data incl. per-round economy |
 | [`series.performance(series_id, game_id)`](./performance) | `PerformanceData` | Kill matrices and advanced stats |

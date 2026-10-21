@@ -16,6 +16,8 @@ class TestSyncModuleLevel:
         assert result.twitch_link == "https://www.twitch.tv/ethancs"
         assert result.twitch_handle == "ethancs"
         assert result.aliases == []
+        assert result.total_winnings == 645700
+        assert result.total_winnings_currency == "$"
 
     def test_inspire_info(self, mock_vlr):
         mock_vlr.get("/player/53").respond(200, text=load_fixture("player", "53_inspire", "overview.html"))

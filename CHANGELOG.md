@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Series head-to-head history** - `SeriesInfo.head_to_head` exposes previous
+  meetings between the two teams, parsed from the same overview page. Each
+  `SeriesHeadToHeadMatch` includes the series ID/URL, event, stage, date, both
+  team names/scores, and which side won.
+- **Series streams in `series.vods()`** - `SeriesVods.streams` now contains live
+  broadcasts and watch-party streams alongside the existing `vods` list. Each
+  `SeriesStream` exposes the platform, channel, URL, stream type, and country
+  code. `SeriesVod` also gains `platform`, `map_number`, and `start_seconds`.
+- **Player total winnings** - `PlayerInfo.total_winnings` and
+  `total_winnings_currency` now expose the total from the player's Event
+  Placements card.
+- **New `player.placements()` namespace** - returns `PlayerPlacements` with
+  individual `PlayerEventPlacement` rows (event, year, stage, placement, prize,
+  team) and the player's total winnings.
+
 ### Fixed
 
 - **`team.upcoming_matches()` no longer returns completed matches** - the
@@ -40,6 +57,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Updated the `team.completed_matches`, `team.upcoming_matches`,
   `events.matches`, and `series.rounds` references for `bracket`,
   `country_name`, and the `RoundWinType` enum.
+- Updated `series.info`, `series.vods`, and `player.info`, and added a
+  `player.placements` reference for head-to-head history, streams, VOD metadata,
+  and event placements.
 
 ## [3.0.0] - 2026-10-20
 

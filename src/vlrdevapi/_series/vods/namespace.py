@@ -19,7 +19,7 @@ from vlrdevapi.validators import sanitize_and_validate
 
 
 class SeriesVodsNamespace:
-    """Access VOD/video links for a series/match from vlr.gg."""
+    """Access streams and VOD links for a series/match from vlr.gg."""
 
     def __init__(
         self,
@@ -35,15 +35,15 @@ class SeriesVodsNamespace:
 
     @sanitize_and_validate
     def __call__(self, series_id: int) -> SeriesVods:
-        """Get VOD/video links for a match/series on vlr.gg.
+        """Get streams and VOD/video links for a match/series on vlr.gg.
 
         Args:
             series_id: The unique series identifier on vlr.gg.
 
         Returns:
-            SeriesVods: VOD metadata including ``series_id``, ``games``
-            (list of ``GameVods`` with ``youtube`` and ``twitch`` URLs
-            per game), and ``event_name``.
+            SeriesVods: Stream and VOD metadata including ``series_id``,
+            ``streams`` (live broadcasts and watch parties), and ``vods``
+            (full-match and per-map videos).
 
         Raises:
             ValidationError: If ``series_id`` is not a valid positive integer.
@@ -53,11 +53,11 @@ class SeriesVodsNamespace:
             ParsingError: If the page structure is unrecognised.
 
         Examples:
-            >>> vods = vlrdevapi.series.vods(series_id=12345)
-            >>> vods.games[0].youtube
-            'https://www.youtube.com/watch?v=...'
-            >>> vods.games[0].twitch
-            'https://www.twitch.tv/videos/...'
+            >>> result = vlrdevapi.series.vods(series_id=12345)
+            >>> result.streams[0].platform
+            'twitch'
+            >>> result.vods[0].label
+            'Full match'
 
         """
         html = self._sync._fetch(series_path(series_id))

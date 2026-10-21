@@ -1,5 +1,6 @@
 import contextlib
 import re
+from typing import Literal
 
 from selectolax.lexbor import LexborHTMLParser as HTMLParser
 from selectolax.lexbor import LexborNode as Node
@@ -8,10 +9,12 @@ from vlrdevapi._series.info.models import (
     ForfeitInfo,
     MapVeto,
     SeriesGame,
+    SeriesHeadToHeadMatch,
     SeriesInfo,
     SeriesTeam,
 )
 from vlrdevapi._utils.text import normalize_whitespace
+from vlrdevapi.commons.datetime import parse_vlr_date
 from vlrdevapi.commons.timezone import parse_vlr_stored_datetime
 
 
@@ -240,8 +243,92 @@ def parse_series_info(html: HTMLParser) -> SeriesInfo:
             info.forfeit.team_id = info.team2.id
 
     info.games = _parse_games(html, info)
+    info.head_to_head = _parse_head_to_head(html, info)
 
     return info
+
+
+def _parse_head_to_head(
+    html: HTMLParser,
+    info: SeriesInfo,
+) -> list[SeriesHeadToHeadMatch]:
+    """Parse the previous-matches card from the series overview page.
+
+    Args:
+        html: The selectolax HTMLParser of the series page.
+        info: Parsed series info, used as a fallback for team names.
+
+    Returns:
+        list[SeriesHeadToHeadMatch]: Previous matches in the card's team order.
+
+    """
+    container = html.css_first(".match-h2h")
+    if not container:
+        return []
+
+    header_teams = container.css(".match-h2h-header-team")
+    team1_name = info.team1.name
+    team2_name = info.team2.name
+    if len(header_teams) >= 2:
+        name1_el = header_teams[0].css_first("div")
+        name2_el = header_teams[1].css_first("div")
+        if name1_el:
+            team1_name = normalize_whitespace(name1_el.text(strip=True))
+        if name2_el:
+            team2_name = normalize_whitespace(name2_el.text(strip=True))
+
+    matches: list[SeriesHeadToHeadMatch] = []
+    for link in container.css(".match-h2h-matches a"):
+        href = link.attributes.get("href", "") or ""
+        series_match = re.search(r"/(\d+)(?:/|$)", href)
+        if not series_match:
+            continue
+
+        event_el = link.css_first(".match-h2h-matches-event-name")
+        stage_el = link.css_first(".match-h2h-matches-event-series")
+        date_el = link.css_first(".match-h2h-matches-date")
+        score_spans = link.css(".match-h2h-matches-score span")
+
+        score1 = 0
+        score2 = 0
+        if len(score_spans) >= 2:
+            with contextlib.suppress(ValueError):
+                score1 = int(score_spans[0].text(strip=True))
+                score2 = int(score_spans[1].text(strip=True))
+
+        winner: Literal["team1", "team2", ""] = ""
+        for index, span in enumerate(score_spans[:2]):
+            classes = span.attributes.get("class", "") or ""
+            if "mod-win" in classes:
+                winner = "team1" if index == 0 else "team2"
+                break
+        if not winner and score1 != score2:
+            winner = "team1" if score1 > score2 else "team2"
+
+        matches.append(
+            SeriesHeadToHeadMatch(
+                series_id=int(series_match.group(1)),
+                url=f"https://www.vlr.gg{href}" if href.startswith("/") else href,
+                event_name=(
+                    normalize_whitespace(event_el.text(strip=True))
+                    if event_el
+                    else ""
+                ),
+                stage=(
+                    normalize_whitespace(stage_el.text(strip=True))
+                    if stage_el
+                    else ""
+                ),
+                date=parse_vlr_date(date_el.text(strip=True)) if date_el else None,
+                team1_name=team1_name,
+                team1_score=score1,
+                team2_name=team2_name,
+                team2_score=score2,
+                winner=winner,
+            ),
+        )
+
+    return matches
 
 
 def _parse_duration(duration_str: str) -> int | None:

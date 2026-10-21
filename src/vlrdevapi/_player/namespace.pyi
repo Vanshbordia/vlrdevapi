@@ -6,6 +6,8 @@ from vlrdevapi._player.info.models import PlayerInfo
 from vlrdevapi._player.info.namespace import PlayerInfoNamespace
 from vlrdevapi._player.matches.models import PlayerMatches
 from vlrdevapi._player.matches.namespace import MatchesNamespace
+from vlrdevapi._player.placements.models import PlayerPlacements
+from vlrdevapi._player.placements.namespace import PlayerPlacementsNamespace
 from vlrdevapi._player.profile.models import PlayerProfile
 from vlrdevapi._player.profile.namespace import ProfileNamespace
 from vlrdevapi._player.teams.models import PlayerTeams
@@ -23,6 +25,7 @@ class PlayerMatchNamespace:
         agents: AgentsNamespace,
         matches: MatchesNamespace,
         profile: ProfileNamespace,
+        placements: PlayerPlacementsNamespace,
     ) -> None: ...
 
     def info(self) -> PlayerInfo: ...
@@ -34,6 +37,8 @@ class PlayerMatchNamespace:
     def matches(self, limit: int = 20) -> PlayerMatches: ...
 
     def profile(self) -> PlayerProfile: ...
+
+    def placements(self) -> PlayerPlacements: ...
 
 
 class PlayerNamespace:
@@ -60,5 +65,8 @@ class PlayerNamespace:
 
     @property
     def profile(self) -> ProfileNamespace: ...
+
+    @property
+    def placements(self) -> PlayerPlacementsNamespace: ...
 
     def __call__(self, player_id: int) -> PlayerMatchNamespace: ...

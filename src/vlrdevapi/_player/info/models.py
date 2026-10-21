@@ -31,3 +31,9 @@ class PlayerInfo(BaseModel):
     aliases: list[str] = Field(
         default_factory=list, description="Player's known aliases / former names",
     )
+    total_winnings: int | None = Field(
+        default=None, description="Total prize money as a numeric value",
+    )
+    total_winnings_currency: str | None = Field(
+        default=None, description="Currency symbol for total winnings (e.g. '$')",
+    )

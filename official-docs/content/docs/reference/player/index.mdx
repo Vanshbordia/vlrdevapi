@@ -1,6 +1,6 @@
 ---
 title: Player API Overview
-description: The Player namespace provides access to individual player data from vlr.gg - info, teams, agent stats, match history, and consolidated profile.
+description: The Player namespace provides access to individual player data from vlr.gg - info, teams, agent stats, match history, event placements, and consolidated profile.
 icon: User
 ---
 
@@ -48,6 +48,7 @@ with VLRClient(timeout=30, requests_per_second=8) as client:
 | [`player.teams(player_id)`](./teams) | `PlayerTeams` | Current and past teams |
 | [`player.agents(player_id, timespan)`](./agents) | `AgentStatsPage` | Per-agent statistics over a time range |
 | [`player.matches(player_id, limit)`](./matches) | `PlayerMatches` | Match history for the player |
+| [`player.placements(player_id)`](./placements) | `PlayerPlacements` | Event placements and total prize winnings |
 | [`player.profile(player_id)`](./profile) | `PlayerProfile` | Consolidated profile - info + teams + top agents |
 
 ## Common Error Handling

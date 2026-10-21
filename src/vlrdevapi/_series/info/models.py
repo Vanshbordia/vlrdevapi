@@ -1,6 +1,8 @@
 
 
+from datetime import date as _date
 from datetime import datetime as _datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -99,6 +101,42 @@ class ForfeitInfo(BaseModel):
     )
 
 
+class SeriesHeadToHeadMatch(BaseModel):
+    """A previous match between the two teams in a series."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "description": "A previous match between the two teams in a series.",
+        },
+    )
+
+    series_id: int = Field(
+        default=0, description="Unique identifier of the previous series on vlr.gg",
+    )
+    url: str = Field(
+        default="", description="Full URL to the previous series on vlr.gg",
+    )
+    event_name: str = Field(default="", description="Event name")
+    stage: str = Field(
+        default="", description="Stage or round label (e.g. 'UBF', 'Group Stage')",
+    )
+    date: _date | None = Field(
+        default=None, description="Date the previous match was played",
+    )
+    team1_name: str = Field(
+        default="", description="First team name, in the head-to-head header order",
+    )
+    team1_score: int = Field(default=0, description="First team's series score")
+    team2_name: str = Field(
+        default="", description="Second team name, in the head-to-head header order",
+    )
+    team2_score: int = Field(default=0, description="Second team's series score")
+    winner: Literal["team1", "team2", ""] = Field(
+        default="",
+        description="Which side won, relative to the head-to-head team order",
+    )
+
+
 class SeriesInfo(BaseModel):
     """Overview information for a match/series on vlr.gg."""
 
@@ -139,4 +177,8 @@ class SeriesInfo(BaseModel):
     notes: list[str] = Field(
         default_factory=list,
         description="Non-veto match notes (e.g. technical pauses, lobby remakes)",
+    )
+    head_to_head: list[SeriesHeadToHeadMatch] = Field(
+        default_factory=list,
+        description="Previous matches between the two teams",
     )

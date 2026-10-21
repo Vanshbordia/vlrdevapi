@@ -91,6 +91,18 @@ player.info(player_id: int) -> PlayerInfo
     typeDescription: "list[str]",
     default: "[]",
   },
+  "total_winnings": {
+    description: "Total career prize money as a numeric value, or None when unavailable.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "total_winnings_currency": {
+    description: "Currency symbol for total winnings (e.g. '$').",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
 }} />
 
 ## Examples
@@ -119,6 +131,20 @@ import vlrdevapi
 info = vlrdevapi.player.info(player_id=438)
 aliases = info.aliases if info.aliases else ["(none)"]
 print(f"{info.name} has also been known as: {', '.join(aliases)}")
+```
+
+### Check total winnings
+
+`total_winnings` is parsed from the Event Placements card and paired with its currency symbol.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.player.info(player_id=46051)
+if info.total_winnings is not None:
+    print(f"{info.name}: {info.total_winnings_currency}{info.total_winnings:,}")
+else:
+    print(f"{info.name}: winnings not available")
 ```
 
 ### Curried access

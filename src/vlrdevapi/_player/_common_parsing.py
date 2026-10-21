@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import re
-from datetime import date, datetime, timezone
-
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
+from selectolax.lexbor import LexborHTMLParser as HTMLParser
 from selectolax.lexbor import LexborNode as Node
+
+from vlrdevapi.commons.prizes import parse_prize_amount
 
 if TYPE_CHECKING:
     from vlrdevapi._player.agents.models import AgentStats
@@ -42,10 +44,10 @@ def _parse_month_year(text: str) -> datetime | None:
         return None
     month = _MONTH_MAP[m.group(1).lower()]
     year = int(m.group(2))
-    return datetime(year, month, 1, tzinfo=timezone.utc)
+    return datetime(year, month, 1, tzinfo=UTC)
 
 
-def _parse_team_dates(text: str) -> tuple[date | None, date | None]:
+def _parse_team_dates(text: str) -> tuple[datetime | None, datetime | None]:
     text = text.strip()
     if not text:
         return None, None
@@ -60,11 +62,27 @@ def _parse_team_dates(text: str) -> tuple[date | None, date | None]:
     return None, None
 
 
-def _parse_inactive_date(text: str) -> date | None:
+def _parse_inactive_date(text: str) -> datetime | None:
     lower = text.lower()
     if lower.startswith("inactive from "):
         return _parse_month_year(text)
     return None
+
+
+def _parse_total_winnings(
+    html: HTMLParser,
+) -> tuple[int | None, str | None]:
+    """Parse the player's total winnings from the Event Placements card."""
+    for label in html.css(".wf-module-label"):
+        if "Total Winnings" not in label.text(strip=True):
+            continue
+        container = label.parent
+        if container is None:
+            continue
+        value_el = container.css_first("span[style*='font-size']")
+        if value_el:
+            return parse_prize_amount(value_el.text(strip=True))
+    return None, None
 
 
 def _next_sibling_card(node: Node) -> Node | None:
@@ -97,9 +115,9 @@ def _parse_team_entry(a: Node) -> PlayerTeam:
             src = "https:" + src
         team.logo_url = src
     light_divs = a.css("div.ge-text-light")
-    joined: date | None = None
-    left: date | None = None
-    inactive: date | None = None
+    joined: datetime | None = None
+    left: datetime | None = None
+    inactive: datetime | None = None
     for div in light_divs:
         style = div.attributes.get("style", "") or ""
         raw = div.text(strip=True)
