@@ -1,5 +1,6 @@
-from vlrdevapi._series.economy.models import EconomyData
 import httpx
+
+from vlrdevapi._series.economy.models import EconomyData
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
 
 class SeriesEconomyNamespace:

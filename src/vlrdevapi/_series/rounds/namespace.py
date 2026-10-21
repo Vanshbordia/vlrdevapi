@@ -102,14 +102,10 @@ def _enrich_rounds(result: RoundsData, html_series: HTMLParser) -> RoundsData:
     series_info = parse_series_info(html_series)
     team1_abbr, team2_abbr = _extract_team_abbreviations(html_series)
 
-    if team1_abbr == result.team1:
-        result.team1_id = series_info.team1.id
-    elif result.team1 and series_info.team1.name == result.team1:
+    if team1_abbr == result.team1 or result.team1 and series_info.team1.name == result.team1:
         result.team1_id = series_info.team1.id
 
-    if team2_abbr == result.team2:
-        result.team2_id = series_info.team2.id
-    elif result.team2 and series_info.team2.name == result.team2:
+    if team2_abbr == result.team2 or result.team2 and series_info.team2.name == result.team2:
         result.team2_id = series_info.team2.id
 
     for round_data in result.rounds:

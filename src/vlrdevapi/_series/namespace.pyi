@@ -1,3 +1,8 @@
+from datetime import tzinfo
+from zoneinfo import ZoneInfo
+
+import httpx
+
 from vlrdevapi._series.economy.namespace import SeriesEconomyNamespace
 from vlrdevapi._series.info.namespace import SeriesInfoNamespace
 from vlrdevapi._series.match_namespace import SeriesMatchNamespace
@@ -6,7 +11,6 @@ from vlrdevapi._series.players.namespace import SeriesPlayersNamespace
 from vlrdevapi._series.replay.namespace import SeriesReplayNamespace
 from vlrdevapi._series.rounds.namespace import SeriesRoundsNamespace
 from vlrdevapi._series.vods.namespace import SeriesVodsNamespace
-import httpx
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
 
 class SeriesNamespace:
@@ -17,6 +21,7 @@ class SeriesNamespace:
         retry_config: RetryConfig = ...,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ) -> None: ...
 
     @property

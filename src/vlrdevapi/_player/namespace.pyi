@@ -1,4 +1,8 @@
+from datetime import tzinfo
 from typing import Literal
+from zoneinfo import ZoneInfo
+
+import httpx
 
 from vlrdevapi._player.agents.models import AgentStatsPage
 from vlrdevapi._player.agents.namespace import AgentsNamespace
@@ -13,8 +17,6 @@ from vlrdevapi._player.profile.namespace import ProfileNamespace
 from vlrdevapi._player.teams.models import PlayerTeams
 from vlrdevapi._player.teams.namespace import PlayerTeamsNamespace
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
-import httpx
-
 
 class PlayerMatchNamespace:
     def __init__(
@@ -49,6 +51,7 @@ class PlayerNamespace:
         retry_config: RetryConfig = ...,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ) -> None: ...
 
     @property

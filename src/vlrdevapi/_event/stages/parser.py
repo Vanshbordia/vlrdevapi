@@ -128,7 +128,7 @@ def _parse_subnav_date_range(text: str, html: HTMLParser) -> tuple[date | None, 
 
     year = _extract_year_from_header(html)
 
-    separator = "–" if "–" in text else ("-" if "-" in text else None)  # noqa: RUF001
+    separator = "–" if "–" in text else ("-" if "-" in text else None)
     if separator is None:
         d = _parse_subnav_single_date(text, year)
         return d, d

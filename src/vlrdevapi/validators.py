@@ -37,16 +37,22 @@ def _validate_bound_args(sig: inspect.Signature, args: tuple, kwargs: dict) -> i
     for name, value in bound.arguments.items():
         # Positive-integer validation for known ID / pagination params
         # Skip None — these params are optional in some namespaces (e.g. event_id on team stats)
-        if name in _ID_PARAMS and value is not None:
-            if not isinstance(value, int) or value <= 0:
-                msg = f"{name} must be a positive integer, got {value}"
-                raise ValidationError(msg)
+        if (
+            name in _ID_PARAMS
+            and value is not None
+            and (not isinstance(value, int) or value <= 0)
+        ):
+            msg = f"{name} must be a positive integer, got {value}"
+            raise ValidationError(msg)
 
         # max_page allows 0 (meaning unlimited), but not negative
-        if name in _MAX_PAGE_PARAMS and value is not None:
-            if not isinstance(value, int) or value < 0:
-                msg = f"{name} must be a non-negative integer, got {value}"
-                raise ValidationError(msg)
+        if (
+            name in _MAX_PAGE_PARAMS
+            and value is not None
+            and (not isinstance(value, int) or value < 0)
+        ):
+            msg = f"{name} must be a non-negative integer, got {value}"
+            raise ValidationError(msg)
 
         # game_id may be int or "all"
         if name == "game_id" and value != "all":

@@ -1,9 +1,12 @@
+from datetime import tzinfo
+from zoneinfo import ZoneInfo
+
+import httpx
+
 from vlrdevapi._matches.completed.namespace import CompletedMatchesNamespace
 from vlrdevapi._matches.live.namespace import LiveMatchesNamespace
 from vlrdevapi._matches.upcoming.namespace import UpcomingMatchesNamespace
-import httpx
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
-
 
 class MatchesNamespace:
     def __init__(
@@ -13,6 +16,7 @@ class MatchesNamespace:
         retry_config: RetryConfig = ...,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ) -> None: ...
 
     @property

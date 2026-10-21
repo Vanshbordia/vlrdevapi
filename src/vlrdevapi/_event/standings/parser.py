@@ -1,11 +1,12 @@
 """Event standings parser."""
 
+import contextlib
+
 from selectolax.lexbor import LexborHTMLParser as HTMLParser
 from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._event.standings.models import StandingEntry, TeamStanding
 from vlrdevapi.commons.prizes import parse_prize_amount
-import contextlib
 
 
 def parse_subnav(html: HTMLParser) -> list[tuple[str, str]]:
@@ -91,7 +92,7 @@ def _parse_standing_row(
     if not team:
         return None
 
-    # Points (optional)  # noqa: ERA001
+    # Points (optional)
     points = None
     if points_idx is not None and len(cells) > points_idx:
         points_text = cells[points_idx].text(strip=True)
@@ -103,7 +104,7 @@ def _parse_standing_row(
                 with contextlib.suppress(ValueError):
                     points = int(points_text)
 
-    # Note (optional)  # noqa: ERA001
+    # Note (optional)
     note = None
     if note_idx is not None and len(cells) > note_idx:
         note_cell = cells[note_idx]

@@ -158,7 +158,7 @@ def _direct_children(node: Node) -> list[Node]:
 
 def _render_block(node: Node) -> str:
     """Render a single block-level element (or inline element at block level)."""
-    tag = node.tag.lower()
+    tag = (node.tag or "").lower()
 
     if tag in {"p", "div", "section", "article", "span", "figure"}:
         return _render_flow(node)
@@ -228,7 +228,7 @@ def _render_list_item(node: Node, marker: str) -> str:
             if text:
                 inline.append(_escape_markdown(text))
             continue
-        tag = child.tag.lower()
+        tag = (child.tag or "").lower()
         if tag == "ul":
             sublists.append(_render_list(child, ordered=False))
         elif tag == "ol":
@@ -304,7 +304,7 @@ def _render_inline(node: Node) -> str:
 
 def _render_inline_child(node: Node) -> str:
     """Render a single inline child element, or ``""`` when it is dropped."""
-    tag = node.tag.lower()
+    tag = (node.tag or "").lower()
     classes = _classes(node)
 
     if tag in {"style", "script"} or "article-ref-card" in classes:

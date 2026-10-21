@@ -1,5 +1,6 @@
-from vlrdevapi._series.rounds.models import RoundsData
 import httpx
+
+from vlrdevapi._series.rounds.models import RoundsData
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
 
 class SeriesRoundsNamespace:

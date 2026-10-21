@@ -126,8 +126,8 @@ def _parse_series_span(span: Node) -> EventPlacement | None:
 
     placement = EventPlacement()
 
-    if "–" in text:  # noqa: RUF001
-        parts = text.split("–", 1)  # noqa: RUF001
+    if "–" in text:
+        parts = text.split("–", 1)
         placement.stage = parts[0].strip()
         placement.placement = parts[1].strip()
     elif "-" in text:

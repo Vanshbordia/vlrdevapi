@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import date, tzinfo
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -67,6 +68,7 @@ class TeamNamespace:
         retry_config: RetryConfig = ...,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ) -> None: ...
 
     @property

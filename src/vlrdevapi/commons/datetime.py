@@ -3,8 +3,6 @@
 from datetime import UTC, date, datetime, time, tzinfo
 from zoneinfo import ZoneInfo
 
-UTC = UTC
-
 # Sentinel year used when a vlr.gg page omits the year from a date
 # (e.g. ``"Sep 14"``). Any parsed date with ``year < 2020`` means the
 # source did not specify a year; Valorant launched in 2020, so no real
@@ -162,7 +160,7 @@ def parse_vlr_date_range(text: str) -> tuple[date | None, date | None]:
     if not text:
         return None, None
 
-    separators = ["—", "–", "-"]  # noqa: RUF001
+    separators = ["—", "–", "-"]
     sep = None
     for s in separators:
         if s in text:
