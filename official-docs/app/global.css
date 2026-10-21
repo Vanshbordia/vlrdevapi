@@ -358,3 +358,245 @@ html > body[data-scroll-locked] {
     @apply font-sans;
   }
 }
+
+/* Landing page motion */
+@keyframes landing-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes landing-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+@keyframes landing-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes landing-grid-drift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 84px 84px;
+  }
+}
+
+@keyframes landing-glow {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes landing-line-in {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes landing-edge-run {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(410%);
+  }
+}
+
+@keyframes landing-field-focus {
+  0%,
+  100% {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 0 transparent;
+  }
+  5%,
+  16% {
+    background-color: rgba(255, 70, 85, 0.07);
+    box-shadow: inset 2px 0 0 #ff4655;
+  }
+}
+
+@keyframes landing-check-pop {
+  0%,
+  100% {
+    opacity: 0.16;
+    transform: scale(0.85);
+  }
+  5%,
+  16% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes landing-lane-fill {
+  0% {
+    transform: scaleX(0);
+  }
+  10%,
+  72% {
+    transform: scaleX(1);
+  }
+  86%,
+  100% {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes landing-tz-dot {
+  0%,
+  8% {
+    left: 0.75rem;
+    opacity: 0.25;
+  }
+  12% {
+    opacity: 1;
+  }
+  52%,
+  62% {
+    left: calc(100% - 0.75rem);
+    opacity: 1;
+  }
+  78%,
+  100% {
+    left: calc(100% - 0.75rem);
+    opacity: 0.2;
+  }
+}
+
+.landing-field-focus {
+  animation: landing-field-focus 8s ease-in-out infinite;
+}
+
+.landing-check-pop {
+  animation: landing-check-pop 8s ease-in-out infinite;
+}
+
+.landing-lane-fill {
+  transform-origin: left;
+  animation: landing-lane-fill 2.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.landing-tz-dot {
+  left: calc(100% - 0.75rem);
+  animation: landing-tz-dot 3.6s ease-in-out infinite;
+}
+
+@keyframes landing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.landing-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.landing-reveal[data-revealed='true'] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.landing-line {
+  opacity: 0;
+  animation: landing-line-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.landing-enter {
+  opacity: 0;
+  animation: landing-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/*
+ * Article headings are wrapped in anchor links by the MDX pipeline. Keep the
+ * heading text free of link underlines and use a marker-highlight sweep on
+ * hover/focus instead.
+ */
+.article-prose :is(h1, h2, h3, h4) > a {
+  text-decoration: none !important;
+  background-image: linear-gradient(
+    transparent 58%,
+    rgba(255, 70, 85, 0.18) 58%
+  );
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 0% 100%;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  transition: background-size 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.article-prose :is(h1, h2, h3, h4):hover > a,
+.article-prose :is(h1, h2, h3, h4) > a:hover,
+.article-prose :is(h1, h2, h3, h4) > a:focus-visible {
+  background-size: 100% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-reveal,
+  .landing-line,
+  .landing-enter {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    animation: none;
+  }
+
+  .article-prose :is(h1, h2, h3, h4) > a {
+    transition: none;
+  }
+
+  .landing-field-focus,
+  .landing-check-pop,
+  .landing-lane-fill,
+  .landing-tz-dot {
+    animation: none;
+  }
+
+  .landing-check-pop {
+    opacity: 1;
+    transform: none;
+  }
+
+  .landing-lane-fill {
+    transform: scaleX(1);
+  }
+}

@@ -1,33 +1,95 @@
 import type { Metadata } from 'next';
-import { LandingPage } from '@/components/landing/landing-page';
+import Link from 'next/link';
+import { ArrowUpRight, BarChart3, Code2, Workflow } from 'lucide-react';
+import { CodeBlock } from '@/components/landing/code-block';
+import { CopyButton } from '@/components/landing/copy-button';
+import { LandingPage, LandingSection } from '@/components/landing/landing-page';
+import { SpotlightCard } from '@/components/landing/spotlight-card';
 import { canonicalUrl } from '@/lib/shared';
 
 export const metadata: Metadata = {
   title: 'Valorant API for Python (No API Key)',
   description:
-    'Use the VLR.gg Valorant API from Python. VLRdevAPI installs from PyPI, needs no API key, and returns typed Pydantic models for matches, players, and teams.',
+    'Use VLR.gg Valorant data from Python with a typed client. Install from PyPI, skip the API key, and work with Pydantic models for matches, players, teams, and stats.',
   alternates: { canonical: canonicalUrl('/valorant-api-python/') },
 };
+
+const workflows = [
+  {
+    label: 'Script or service',
+    title: 'Typed calls, no parsing',
+    file: 'service.py',
+    icon: Code2,
+    note: 'Use the client as a context manager. The underlying HTTP session closes when you leave the block.',
+    code: `from vlrdevapi import VLRClient
+
+with VLRClient() as client:
+    team = client.team(1034)
+
+    for member in team.roster().players:
+        print(member.ign, member.roles)`,
+  },
+  {
+    label: 'Notebook',
+    title: 'Models become rows',
+    file: 'analysis.ipynb',
+    icon: BarChart3,
+    note: 'Pydantic models expose model_dump(), so pandas and Polars are one line away.',
+    code: `import pandas as pd
+import vlrdevapi
+
+agents = vlrdevapi.player(11225).agents(timespan="90d")
+rows = [agent.model_dump() for agent in agents.agents]
+
+df = pd.DataFrame(rows)
+df[["agent", "rounds", "rating", "acs"]].head()`,
+  },
+  {
+    label: 'Async app',
+    title: 'Offload the blocking call',
+    file: 'app.py',
+    icon: Workflow,
+    note: 'The SDK is synchronous by design. Move calls to a worker with asyncio.to_thread.',
+    code: `import asyncio
+import vlrdevapi
+
+async def load_series():
+    return await asyncio.to_thread(
+        vlrdevapi.series(542272).info
+    )
+
+info = asyncio.run(load_series())
+print(info.team1.name, info.score1)`,
+  },
+];
 
 export default function ValorantApiPythonPage() {
   return (
     <LandingPage
       path="/valorant-api-python"
-      eyebrow="Python"
+      eyebrow="Python SDK"
       headline="Valorant API for Python"
       h1={
         <>
-          A Valorant API for <span className="text-fd-primary">Python</span>
+          A Valorant API for <span className="text-[#ff4655]">Python</span>
         </>
       }
-      subtitle="A typed Python client for Valorant esports data from VLR.gg. Install it, import it, and work with matches, players, teams, and events as Pydantic models."
-      answer="VLRdevAPI is the Python client for Valorant esports data on VLR.gg. It installs from PyPI with pip, needs no API key, and returns typed models with full editor support."
-      capabilitiesTitle="What makes it Python-native"
+      subtitle="A typed Python client for Valorant esports data on VLR.gg. Install it from PyPI, call a namespace, and use validated Pydantic models — no API key, no parser, no glue code."
+      answer="VLRdevAPI is a Python SDK for VLR.gg. It installs with pip, needs no API key, and returns Pydantic models for matches, players, teams, events, series, and news. If you want Valorant data in Python, start here."
+      useCases={[
+        'FastAPI services',
+        'Data notebooks',
+        'Discord bots',
+        'Cron jobs',
+        'Internal tools',
+        'Analytics pipelines',
+      ]}
+      capabilitiesTitle="Why it feels Python-native"
       capabilities={[
         {
           label: 'Install',
           bold: 'Two commands, no setup',
-          text: 'pip install vlrdevapi or uv add vlrdevapi. There are no native dependencies and no key to configure.',
+          text: 'pip install vlrdevapi or uv add vlrdevapi. There is no key to configure and no separate service to run.',
         },
         {
           label: 'Types',
@@ -56,12 +118,38 @@ export default function ValorantApiPythonPage() {
         },
       ]}
       quickstart={{
+        title: 'Your first typed response in a few lines.',
+        file: 'player_profile.py',
         intro:
-          'Install the package and fetch a player profile. Every field is typed, so the data is ready to use without manual parsing.',
+          'Install the package and open a player profile. The curried player object keeps the ID attached, and every field is available in your editor.',
+        steps: [
+          {
+            title: 'Install from PyPI.',
+            text: 'pip install vlrdevapi. Python 3.11+ and an internet connection.',
+          },
+          {
+            title: 'Open a player.',
+            text: 'vlrdevapi.player(11225) binds the player ID for related calls.',
+          },
+          {
+            title: 'Read typed fields.',
+            text: 'profile.name, profile.country, and agent.rating are validated values, not strings from HTML.',
+          },
+        ],
         code: `import vlrdevapi
 
-profile = vlrdevapi.player(438).profile()
-print(f"{profile.name}: {', '.join(a.agent for a in profile.top_agents[:3])}")`,
+player = vlrdevapi.player(11225)
+profile = player.profile()
+agents = player.agents(timespan="90d")
+
+print(profile.name, "·", profile.country)
+for agent in agents.agents[:3]:
+    print(agent.agent, agent.rating, agent.acs)`,
+        outputLabel: 'Example output',
+        output: `Ethan · United States
+Kayo 1.11 199.4
+Phoenix 0.89 186.9
+Omen 0.89 151.9`,
       }}
       comparison={{
         title: 'Python options for Valorant data',
@@ -93,14 +181,15 @@ print(f"{profile.name}: {', '.join(a.agent for a in profile.top_agents[:3])}")`,
           a: 'Yes. Convert models to dictionaries or DataFrames with model_dump() and build your own analysis, or follow the pandas and Polars guides.',
         },
         {
-          q: 'Is it synchronous?',
-          a: 'Yes. Each method is a blocking call. For concurrency, run independent calls in a thread pool, or use asyncio.to_thread from an async framework.',
+          q: 'Can I use it in an async app?',
+          a: 'The client itself is synchronous. In FastAPI or another async framework, call it with asyncio.to_thread or run independent calls in a thread pool.',
         },
         {
           q: 'Do I need an API key?',
           a: 'No. There is no key, token, or account. Install the package and start calling methods.',
         },
       ]}
+      faqIntro="Installation, typing, async use, and the practical questions Python developers ask first."
       related={[
         {
           href: '/docs/installation/',
@@ -133,6 +222,62 @@ print(f"{profile.name}: {', '.join(a.agent for a in profile.top_agents[:3])}")`,
           desc: 'Why an unofficial client exists.',
         },
       ]}
-    />
+    >
+      <LandingSection
+        eyebrow="In practice"
+        title="One client, three Python workflows."
+        description="The same typed response works in a script, a notebook, or an async service. These are the three patterns most projects start with."
+        action={
+          <Link
+            href="/guides/"
+            className="group inline-flex items-center gap-1.5 text-[12.5px] font-medium text-white/50 transition-colors hover:text-white"
+          >
+            Browse Python guides
+            <ArrowUpRight
+              className="size-3.5 text-[#ff8d97] transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </Link>
+        }
+      >
+        <div className="grid gap-3 lg:grid-cols-3">
+          {workflows.map((workflow) => {
+            const Icon = workflow.icon;
+
+            return (
+              <SpotlightCard key={workflow.file} className="flex h-full flex-col p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-white/30">
+                      {workflow.label}
+                    </p>
+                    <h3 className="mt-2 text-[15px] font-medium tracking-tight text-white">
+                      {workflow.title}
+                    </h3>
+                  </div>
+                  <Icon className="size-5 shrink-0 text-white/20" aria-hidden="true" />
+                </div>
+
+                <div className="mt-5 overflow-hidden border border-white/10 bg-black">
+                  <div className="flex items-center justify-between gap-3 border-b border-white/10 px-3 py-2">
+                    <span className="font-mono text-[12px] text-white/30">{workflow.file}</span>
+                    <CopyButton
+                      value={workflow.code}
+                      label={`Copy ${workflow.file}`}
+                      className="border-white/10 bg-transparent"
+                    />
+                  </div>
+                  <CodeBlock code={workflow.code} lineNumbers={false} />
+                </div>
+
+                <p className="mt-4 text-[12.5px] leading-relaxed text-white/40">
+                  {workflow.note}
+                </p>
+              </SpotlightCard>
+            );
+          })}
+        </div>
+      </LandingSection>
+    </LandingPage>
   );
 }

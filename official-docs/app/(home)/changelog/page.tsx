@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import ChangelogTimeline from './changelog-timeline'
 import { canonicalUrl, siteUrl } from '@/lib/shared'
 import { project, projectAuthor, projectUrls } from '@/lib/project'
+import { ContentHero, IndexPanel, formatDate } from '@/components/marketing/content-page'
 
 export const metadata: Metadata = {
   title: 'Changelog',
@@ -332,6 +333,8 @@ const jsonLdWebPage = {
 }
 
 export default function ChangelogPage() {
+  const latest = versions[0]
+
   return (
     <main className="flex-1">
       <script
@@ -346,19 +349,32 @@ export default function ChangelogPage() {
           __html: JSON.stringify(jsonLdWebPage).replace(/</g, '\\u003c'),
         }}
       />
-      <section className="border-b border-border">
-        <div className="mx-auto max-w-7xl px-6 pt-28 pb-16 md:pt-36 md:pb-20">
-          <h1 className="font-heading text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl md:text-[3rem]">
-            Changelog
-          </h1>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Track every release, feature, and fix in VLRdevAPI.
-          </p>
-        </div>
-      </section>
+      <ContentHero
+        eyebrow="Project / Changelog"
+        title={
+          <>
+            Every release.
+            <br />
+            <span className="text-[#ff4655]">Every fix.</span>
+          </>
+        }
+        description="Track the full release history of VLRdevAPI. New namespaces, model changes, parser fixes, and everything that moves the SDK forward."
+        aside={
+          <IndexPanel
+            label="Release index"
+            rows={[
+              { label: 'Releases', value: String(versions.length).padStart(2, '0') },
+              { label: 'Latest', value: `v${latest.version}` },
+              { label: 'Published', value: latest ? formatDate(latest.date) : '—' },
+              { label: 'Channel', value: 'PyPI / GitHub' },
+            ]}
+            note="Version notes are ordered newest first."
+          />
+        }
+      />
 
       <section>
-        <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+        <div className="mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
           <ChangelogTimeline versions={versions} />
         </div>
       </section>

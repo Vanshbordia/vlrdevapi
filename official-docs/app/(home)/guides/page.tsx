@@ -1,14 +1,20 @@
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import { getGuides } from '@/lib/content'
-import { canonicalUrl, siteUrl } from '@/lib/shared'
-import { project } from '@/lib/project'
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { ArrowUpRight } from 'lucide-react';
+import { getGuides } from '@/lib/content';
+import { canonicalUrl, siteUrl } from '@/lib/shared';
+import { project } from '@/lib/project';
+import {
+  ContentCard,
+  ContentHero,
+  RelatedLinks,
+} from '@/components/marketing/content-page';
 
 export const metadata: Metadata = {
   title: 'Guides',
   description: 'Step-by-step walkthroughs for integrating VLRdevAPI into your Valorant esports projects.',
   alternates: { canonical: canonicalUrl('/guides/') },
-}
+};
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -18,10 +24,19 @@ const jsonLd = {
   url: canonicalUrl('/guides/'),
   inLanguage: 'en',
   publisher: { '@id': `${siteUrl}/#organization` },
-}
+};
+
+const relatedLinks = [
+  { href: '/vlr-gg-api/', label: 'VLR.gg API for Python' },
+  { href: '/valorant-esports-api/', label: 'Valorant esports API' },
+  { href: '/valorant-stats-api/', label: 'Valorant stats API' },
+  { href: '/docs/', label: 'Documentation' },
+  { href: '/blog/', label: 'Blog' },
+  { href: '/faq/', label: 'FAQ' },
+];
 
 export default function GuidesPage() {
-  const guides = getGuides()
+  const guides = getGuides();
 
   return (
     <main className="flex-1">
@@ -31,69 +46,79 @@ export default function GuidesPage() {
           __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
         }}
       />
-      <section className="border-b border-border">
-        <div className="mx-auto max-w-7xl px-6 pt-28 pb-16 md:pt-36 md:pb-20">
-          <h1 className="font-heading text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl md:text-[3rem]">
-            Guides
-          </h1>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Step-by-step walkthroughs for integrating VLRdevAPI into your Valorant esports projects.
-          </p>
-        </div>
-      </section>
+
+      <ContentHero
+        eyebrow="Resources / Guides"
+        title={
+          <>
+            Guides for the
+            <br />
+            <span className="text-[#ff4655]">data layer.</span>
+          </>
+        }
+        description="Step-by-step walkthroughs for integrating VLRdevAPI into your Valorant esports projects. Every guide is built around real VLR.gg data and typed Python output."
+      >
+        <Link
+          href="/docs/"
+          className="group inline-flex h-11 items-center gap-1.5 border border-white bg-white px-5 text-[13px] font-medium text-black transition-colors hover:border-[#ff4655] hover:bg-[#ff4655] hover:text-white"
+        >
+          Read the docs
+          <ArrowUpRight
+            className="size-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+            aria-hidden="true"
+          />
+        </Link>
+        <Link
+          href="/blog/"
+          className="group inline-flex h-11 items-center gap-1.5 border border-white/15 px-5 text-[13px] font-medium text-white/65 transition-colors hover:border-white/30 hover:text-white"
+        >
+          Browse the blog
+          <ArrowUpRight
+            className="size-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+            aria-hidden="true"
+          />
+        </Link>
+      </ContentHero>
 
       <section>
-        <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+        <div className="mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
+          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-4">
+            <div>
+              <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-white/30">
+                The index
+              </p>
+              <h2 className="mt-2 text-2xl font-medium tracking-[-0.03em] text-white sm:text-3xl">
+                All guides
+              </h2>
+            </div>
+            <span className="font-mono text-[12px] uppercase tracking-[0.14em] text-white/25">
+              {guides.length} {guides.length === 1 ? 'entry' : 'entries'}
+            </span>
+          </div>
+
           {guides.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No guides yet.</p>
+            <p className="mt-8 border border-white/10 bg-white/[0.02] p-5 text-[13px] text-white/40">
+              No guides yet.
+            </p>
           ) : (
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {guides.map((guide) => (
-                <Link
+            <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {guides.map((guide, index) => (
+                <ContentCard
                   key={guide.slug}
-                  href={`/guides/${guide.slug}`}
-                  className="group flex flex-col border border-border bg-background p-6 transition-all hover:border-fd-primary/50"
-                >
-                  <time className="text-xs text-muted-foreground">{guide.date}</time>
-                  <h2 className="mt-2 text-base font-bold tracking-tight text-foreground group-hover:text-fd-primary transition-colors">
-                    {guide.title}
-                  </h2>
-                  <p className="mt-2 text-sm leading-snug text-muted-foreground line-clamp-3">
-                    {guide.description}
-                  </p>
-                </Link>
+                  href={`/guides/${guide.slug}/`}
+                  index={String(index + 1).padStart(2, '0')}
+                  date={guide.date}
+                  title={guide.title}
+                  description={guide.description}
+                  actionLabel="Read guide"
+                />
               ))}
             </div>
           )}
         </div>
       </section>
 
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-          <h2 className="font-heading text-xl font-bold tracking-tight text-foreground md:text-2xl">
-            Related
-          </h2>
-          <ul className="mt-6 flex flex-wrap gap-3">
-            {[
-              { href: '/vlr-gg-api/', label: 'VLR.gg API for Python' },
-              { href: '/valorant-esports-api/', label: 'Valorant esports API' },
-              { href: '/valorant-stats-api/', label: 'Valorant stats API' },
-              { href: '/docs/', label: 'Documentation' },
-              { href: '/blog/', label: 'Blog' },
-              { href: '/faq/', label: 'FAQ' },
-            ].map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="inline-flex items-center border border-border bg-background px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-fd-primary/50 hover:text-foreground"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      <RelatedLinks links={relatedLinks} />
     </main>
-  )
+  );
 }

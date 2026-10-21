@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { guidesSource } from '@/lib/source'
 import { getMDXComponents } from '@/components/mdx'
 import { TocLayout } from '@/components/toc-layout'
 import { extractToc } from '@/components/toc'
 import { CtaSection } from '@/components/cta'
+import { ArticleHero } from '@/components/marketing/content-page'
 import { canonicalUrl, siteUrl } from '@/lib/shared'
 import { project, projectAuthor, projectUrls } from '@/lib/project'
 
@@ -94,29 +94,18 @@ export default async function GuidePage(props: Props) {
         }}
       />
       <article>
-        <div className="border-b border-border">
-          <div className="mx-auto max-w-7xl px-6 pt-28 pb-12 md:pt-36 md:pb-16">
-            <Link
-              href="/guides/"
-              className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-              Back to Guides
-            </Link>
-            <time className="mt-6 block text-xs text-muted-foreground">{page.data.date}</time>
-            <h1 className="font-heading mt-2 text-3xl font-bold leading-[1.08] tracking-tight sm:text-4xl md:text-[2.75rem]">
-              {page.data.title}
-            </h1>
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
-              {page.data.description}
-            </p>
+        <ArticleHero
+          backHref="/guides/"
+          backLabel="All guides"
+          kind="Guide"
+          date={page.data.date}
+          title={page.data.title}
+          description={page.data.description}
+        />
 
-          </div>
-        </div>
-
-        <div className="mx-auto max-w-7xl px-6 py-12 md:py-16">
+        <div className="mx-auto w-full max-w-5xl px-5 py-12 sm:px-8 md:py-16">
           <TocLayout items={tocItems}>
-            <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none prose-code:before:content-none prose-code:after:content-none prose-pre:!p-0 prose-pre:!bg-transparent prose-pre:!border-none prose-a:!font-normal prose-a:!no-underline [&_pre]:!bg-transparent [&_pre]:!p-0">
+            <div className="article-prose prose prose-invert max-w-none prose-headings:scroll-mt-24 prose-headings:font-medium prose-headings:tracking-tight prose-h2:mt-12 prose-h2:text-2xl prose-h2:text-white prose-h3:text-lg prose-h3:text-white/90 prose-p:text-white/55 prose-p:leading-relaxed prose-li:text-white/55 prose-li:leading-relaxed prose-strong:text-white/85 prose-a:text-[#ff8d97] prose-a:font-normal [&_h2_a]:!text-inherit [&_h3_a]:!text-inherit [&_h4_a]:!text-inherit prose-a:no-underline hover:prose-a:underline prose-code:text-[#ffb3ba] prose-code:before:content-none prose-code:after:content-none prose-pre:!border prose-pre:!border-white/10 prose-pre:!bg-[#070707] prose-pre:!p-0 prose-blockquote:border-[#ff4655]/50 prose-blockquote:text-white/45 prose-hr:border-white/10 prose-table:text-white/55 prose-th:text-white/70 prose-td:border-white/10 [&_pre]:!bg-[#070707] [&_figure.shiki]:!my-6 [&_figure.shiki]:!rounded-none [&_figure.shiki]:!border-white/10 [&_figure.shiki]:!bg-[#070707] [&_figure.shiki]:!shadow-none">
               <MDX components={getMDXComponents()} />
             </div>
             <CtaSection />
