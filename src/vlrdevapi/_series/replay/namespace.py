@@ -200,6 +200,8 @@ def _apply_id_resolution(
     for round_data in result.rounds:
         for ref in round_data.players:
             ref.player_id = resolve(ref.team, ref.name)
+        for ld in round_data.loadouts:
+            ld.player_id = resolve(ld.team, ld.name)
         for event in round_data.events:
             for person in (event.actor, event.victim, *event.alive):
                 if person is not None:

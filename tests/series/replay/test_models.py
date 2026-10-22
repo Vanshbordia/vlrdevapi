@@ -69,7 +69,7 @@ class TestEnrichment:
         assert result.team1_id == 6961  # LOUD
         assert result.team2_id == 2059  # Team Vitality
         players = result.round(1).players
-        assert {p.name: p.player_id for p in players} == {
+        expected_ids = {
             "erde": 29242,
             "tkzin": 41224,
             "Darker": 10557,
@@ -81,6 +81,10 @@ class TestEnrichment:
             "Derke": 5022,
             "Jamppi": 9780,
         }
+        assert {p.name: p.player_id for p in players} == expected_ids
+        loadouts = result.round(1).loadouts
+        assert {ld.name: ld.player_id for ld in loadouts} == expected_ids
+        assert result.round(1).loadout_for(5022).name == "Derke"
 
     def test_actor_victim_alive_ids(self, mock_vlr):
         _mock_logs(mock_vlr)

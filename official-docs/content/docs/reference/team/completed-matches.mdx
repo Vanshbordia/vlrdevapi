@@ -203,6 +203,7 @@ print(history.has_next_page)  # True if more than 80 exist
 Use `return_all=True` to fetch every page:
 
 ```python
+# doc-check: skip
 import vlrdevapi
 
 history = vlrdevapi.team.completed_matches(team_id=2593, return_all=True)

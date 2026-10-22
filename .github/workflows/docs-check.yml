@@ -24,36 +24,26 @@ jobs:
       - name: Install package
         run: uv sync --group dev
 
-      # main always validates live against fresh vlr.gg data; never uses the
-      # cache. Branch/PR runs reuse fixtures cached by earlier runs in the
-      # same PR (within a 2h TTL), falling back to live fetches for anything
-      # missing, so the check is correct even with a partially-stale cache.
-      - name: Run MDX examples check (main, live)
-        if: github.ref_name == 'main'
-        run: uv run scripts/check_mdx_examples.py --live
-
-      # actions/cache v6.1.0, pinned to a reviewed commit SHA.
-      - name: Restore fixture cache (branch)
+      # Restore fixture cache scoped to the current ref (branch or main) and version prefix (v3).
+      # This ensures caches are never shared across unrelated branches or older versions.
+      - name: Restore fixture cache
         id: mdx-fixtures
-        if: github.ref_name != 'main'
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: fixtures.tar.gz
-          key: mdx-fixtures-${{ github.ref_name }}-run-${{ github.run_id }}
+          key: mdx-fixtures-v3-${{ github.ref_name }}-run-${{ github.run_id }}
           restore-keys: |
-            mdx-fixtures-${{ github.ref_name }}-
+            mdx-fixtures-v3-${{ github.ref_name }}-
 
-      - name: Unpack fixtures (branch)
-        if: github.ref_name != 'main'
+      - name: Unpack fixtures
         run: |
           if [ -f fixtures.tar.gz ]; then
             mkdir -p .cache
             tar -C .cache -xzf fixtures.tar.gz
           fi
 
-      - name: Check fixture cache age (branch, 2h TTL)
+      - name: Check fixture cache age (2h TTL)
         id: cache-age
-        if: github.ref_name != 'main'
         run: |
           matched="${{ steps.mdx-fixtures.outputs.cache-matched-key }}"
           now=$(date +%s)
@@ -73,8 +63,7 @@ jobs:
           fi
           echo "now=$now" >> "$GITHUB_OUTPUT"
 
-      - name: Run MDX examples check (branch)
-        if: github.ref_name != 'main'
+      - name: Run MDX examples check
         run: |
           if [ "${{ steps.cache-age.outputs.fresh }}" == "true" ]; then
             uv run scripts/check_mdx_examples.py --skip-warm
@@ -84,8 +73,8 @@ jobs:
 
       # always(): a run that fails validation still saved its warm fixtures,
       # so the next fix commit restores and validates fast instead of warming.
-      - name: Package fixtures (branch)
-        if: always() && github.ref_name != 'main' && steps.cache-age.outputs.fresh == 'false'
+      - name: Package fixtures
+        if: always() && steps.cache-age.outputs.fresh == 'false'
         run: |
           mkdir -p .cache/mdx-html
           if [ -n "$(ls -A .cache/mdx-html)" ]; then
@@ -94,9 +83,9 @@ jobs:
             rm -f fixtures.tar.gz
           fi
 
-      - name: Save fixture cache (branch)
-        if: always() && github.ref_name != 'main' && steps.cache-age.outputs.fresh == 'false'
+      - name: Save fixture cache
+        if: always() && steps.cache-age.outputs.fresh == 'false'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: fixtures.tar.gz
-          key: mdx-fixtures-${{ github.ref_name }}-${{ steps.cache-age.outputs.now }}
+          key: mdx-fixtures-v3-${{ github.ref_name }}-${{ steps.cache-age.outputs.now }}

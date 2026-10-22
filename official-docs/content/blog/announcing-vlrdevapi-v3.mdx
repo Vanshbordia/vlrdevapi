@@ -21,9 +21,11 @@ pip install -U vlrdevapi
 
 ## What's New in v3.0
 
-### 1. Kill-Feed Replay Timelines (`series.replay`)
+### 1. Kill-Feed Replay Timelines & Player Loadouts (`series.replay`)
 
 Until now, extracting spatial or sequence data required parsing raw logs. In v3.0, the new `series.replay(series_id, game_id)` method provides a structured, chronologically ordered timeline of every in-round event (`KILL`, `PLANT`, `DEFUSE`, `BOOM`, and `RESURRECT`).
+
+Along with kill-feed events, each round provides `loadouts` detailing every player's equipped weapon, armor (`No armor`, `Light armor`, `Heavy armor`, and `Regen Shield`), and credits spent/remaining in the buy phase (with helper `round.loadout_for(player)`):
 
 Each event is enriched with player positions, kill distances, plant sites, round clocks, and alive snapshots:
 

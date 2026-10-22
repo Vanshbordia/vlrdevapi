@@ -94,7 +94,7 @@ vlrdevapi.series(series_id).replay(game_id: int) -> ReplayData
 
 `ReplayData.round(n)` returns the `ReplayRound` for one 1-based round number, or `None` when that round has no replay data.
 
-## ∇ `ReplayRound`
+## `ReplayRound`
 
 <TypeTable type={{
   "round_number": {
@@ -108,6 +108,12 @@ vlrdevapi.series(series_id).replay(game_id: int) -> ReplayData
     type: "str",
     typeDescription: "str",
     default: '""',
+  },
+  "loadouts": {
+    description: "Buy-phase loadouts for all ten players in this round (equipped weapon, armor, and credits).",
+    type: "list[PlayerRoundLoadout]",
+    typeDescription: "list[PlayerRoundLoadout] - see nested fields below",
+    default: "[]",
   },
   "players": {
     description: "The ten players with real player ID, agent, team, and side.",
@@ -128,7 +134,72 @@ vlrdevapi.series(series_id).replay(game_id: int) -> ReplayData
   },
 }} />
 
-## ∇ `ReplayEvent`
+### `loadout_for(player)` helper
+
+`ReplayRound.loadout_for(player)` accepts a case-insensitive player name (e.g. `'Derke'`) or an integer `player_id`, returning the player's `PlayerRoundLoadout` for that round, or `None`.
+
+## `PlayerRoundLoadout`
+
+Buy-phase loadout and economy snapshot for one player at the start of a round.
+
+<TypeTable type={{
+  "player_id": {
+    description: "Unique player ID on vlr.gg (matched from the overview tab; 0 when unresolvable).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Player name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team": {
+    description: "Team tag or name.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "Agent name (e.g. 'Sage', 'Neon', 'Chamber').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "side": {
+    description: "Side the player played in this round.",
+    type: "str",
+    typeDescription: '"Attack" | "Defense"',
+    default: '""',
+  },
+  "weapon": {
+    description: "Equipped weapon at round start (e.g. 'Ghost', 'Vandal', 'Operator').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "armor": {
+    description: "Equipped armor ('No armor', 'Light armor', 'Heavy armor', or 'Regen Shield').",
+    type: "ArmorType | str",
+    typeDescription: '"No armor" | "Light armor" | "Heavy armor" | "Regen Shield"',
+    default: '"No armor"',
+  },
+  "credits_left": {
+    description: "Credits remaining after the buy phase.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "spent": {
+    description: "Credits spent in the buy phase.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+}} />
+
+## `ReplayEvent`
 
 One event in the round timeline. `type` is a `ReplayEventType` enum (`KILL`, `PLANT`, `DEFUSE`, `BOOM`, or `RESURRECT`; `.value` gives the lowercase string and `.full_name` a human-readable label); `derived: True` marks the two kinds vlr.gg does not log as feed rows (the spike detonation and resurrections).
 
@@ -217,7 +288,7 @@ One event in the round timeline. `type` is a `ReplayEventType` enum (`KILL`, `PL
   },
 }} />
 
-## ∇ `ReplayActor` / `ReplayAlivePlayer`
+## `ReplayActor` / `ReplayAlivePlayer`
 
 <TypeTable type={{
   "player_id": {
@@ -270,7 +341,7 @@ One event in the round timeline. `type` is a `ReplayEventType` enum (`KILL`, `PL
   },
 }} />
 
-## ∇ `ReplayPlayerRef`
+## `ReplayPlayerRef`
 
 <TypeTable type={{
   "player_id": {
@@ -306,6 +377,20 @@ One event in the round timeline. `type` is a `ReplayEventType` enum (`KILL`, `PL
 }} />
 
 ## Examples
+
+### Round buy loadouts
+
+Inspect starting weapons, armor, and spending for each player in round 1:
+
+```python
+import vlrdevapi
+
+replay = vlrdevapi.series.replay(series_id=754737, game_id=283288)
+round_1 = replay.round(1)
+
+for ld in round_1.loadouts[:4]:
+    print(f"{ld.name} ({ld.agent}): {ld.weapon} + {ld.armor} (${ld.spent} spent, ${ld.credits_left} left)")
+```
 
 ### Round 1 kill feed
 
@@ -398,5 +483,11 @@ for p in first_blood.alive:
 
 - Player and team IDs are real vlr.gg IDs, resolved from the game's overview tab (one extra request). Players are matched by name strictly within their own team; a name is used as a fallback only when it maps to exactly one ID across the match, so duplicate names can never take another player's ID - unmatched players keep 0.
 - If a map is unplayed or vlr.gg carries no round data for it, the result comes back empty (`rounds == []`, `num_rounds == 0`) with team/player IDs left at 0 - no errors, and no enrichment requests are made.
-- Coordinates, angles, and distances are all raw minimap units; vlr.gg renders markers directly on a fixed 1024x1024 minimap image with no per-map conversion factor.
+- **Minimap Coordinate System & Mapping:** All positions (`pos_x`, `pos_y`, `from_x`, `from_y`, and `alive[i].x`, `y`) are based on VLR.gg's fixed **1024 × 1024** minimap grid (`viewBox="0 0 1024 1024"`):
+  - `(0, 0)` is the **top-left** corner; `(1024, 1024)` is the **bottom-right** corner.
+  - To project coordinates onto any custom canvas or image of dimensions `width` × `height`:
+    - `canvas_x = (x / 1024.0) * width`
+    - `canvas_y = (y / 1024.0) * height`
+  - `view_angle` is in degrees from `0` to `360` clockwise, where `0°` points East (+X), `90°` points South (+Y), `180°` points West (-X), and `270°` points North (-Y).
+  - Kill trajectories can be drawn as a line from `(from_x, from_y)` to `(pos_x, pos_y)`.
 - Ultimate and ability kills are logged as the kill `cause` (e.g. `Overdrive`, `Tour de Force`, `Not Dead Yet`); the cast itself is not an event.
