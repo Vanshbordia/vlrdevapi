@@ -271,6 +271,11 @@ ROUTES += [
         {},
     ),
     (
+        "/team/14137/titan-esports-club",
+        "team/14137/overview_light.html",
+        {},
+    ),
+    (
         "/team/matches/120/?core_id=all&group=completed&page=2",
         "team/120/completed_matches_page2.html",
         {},
@@ -482,8 +487,8 @@ for _gid in GAMES_BO5_2026:
     ]
 
 # ── Upcoming series (best_of + TBD map tabs) ─────────────────
-SERIES_ID_UPCOMING = 777944
-SERIES_SLUG_UPCOMING = "wolves-esports-vs-a-team-vct-china-2026-threshold-week-1-ro12"
+SERIES_ID_UPCOMING = 777946
+SERIES_SLUG_UPCOMING = "titan-esports-club-vs-unsettled-resentment-vct-china-2026-threshold-week-1-qf"
 
 ROUTES.append(
     (

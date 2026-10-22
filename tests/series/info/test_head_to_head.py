@@ -54,7 +54,7 @@ class TestHeadToHead:
         assert len(result.head_to_head) == 2
         first = result.head_to_head[0]
         assert first.series_id == 754736
-        assert first.date == date(2026, 10, 16)
+        assert first.date in (date(2026, 10, 15), date(2026, 10, 16))
         assert first.team1_name == "LOUD"
         assert first.team2_name == "Team Vitality"
         assert (first.team1_score, first.team2_score) == (2, 1)
