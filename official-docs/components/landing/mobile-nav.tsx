@@ -18,34 +18,34 @@ import { useEffect, useRef, useState } from 'react';
 import { GithubIcon } from './github-icon';
 
 const links = [
-  { href: '/docs', label: 'Docs' },
-  { href: '/guides', label: 'Guides' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/changelog', label: 'Changelog' },
+  { href: '/docs/', label: 'Docs' },
+  { href: '/guides/', label: 'Guides' },
+  { href: '/blog/', label: 'Blog' },
+  { href: '/faq/', label: 'FAQ' },
+  { href: '/changelog/', label: 'Changelog' },
 ];
 
 const whyPages = [
   {
-    href: '/valorant-api-python',
+    href: '/valorant-api-python/',
     label: 'Valorant API for Python',
     description: 'Typed models, no API key, straight from PyPI.',
     icon: Code2,
   },
   {
-    href: '/vlr-gg-api',
+    href: '/vlr-gg-api/',
     label: 'VLR.gg API',
     description: 'An unofficial data layer for VLR.gg pages.',
     icon: Database,
   },
   {
-    href: '/valorant-esports-api',
+    href: '/valorant-esports-api/',
     label: 'Valorant esports API',
     description: 'VCT matches, events, stages, and standings.',
     icon: Trophy,
   },
   {
-    href: '/valorant-stats-api',
+    href: '/valorant-stats-api/',
     label: 'Valorant stats API',
     description: 'Player, team, and match stats ready to analyze.',
     icon: BarChart3,
@@ -54,13 +54,13 @@ const whyPages = [
 
 const whyComparisons = [
   {
-    href: '/blog/vlrdevapi-vs-other-valorant-apis',
+    href: '/blog/vlrdevapi-vs-other-valorant-apis/',
     label: 'Other APIs',
     description: 'See how the SDK compares.',
     icon: ArrowLeftRight,
   },
   {
-    href: '/blog/vlrdevapi-vs-web-scraping',
+    href: '/blog/vlrdevapi-vs-web-scraping/',
     label: 'Web scraping',
     description: 'Why typed data beats a parser.',
     icon: Globe,

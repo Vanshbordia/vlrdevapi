@@ -195,32 +195,32 @@ Omen 0.89 151.9`,
       faqIntro="Installation, typing, async use, and the practical questions Python developers ask first."
       related={[
         {
-          href: '/docs/installation',
+          href: '/docs/installation/',
           label: 'Installation',
           desc: 'Install with pip, uv, or from source.',
         },
         {
-          href: '/docs/quickstart',
+          href: '/docs/quickstart/',
           label: 'Quickstart',
           desc: 'A hands-on tour of the main namespaces.',
         },
         {
-          href: '/guides/getting-started-with-vlrdevapi',
+          href: '/guides/getting-started-with-vlrdevapi/',
           label: 'Getting started guide',
           desc: 'From an empty project to your first request.',
         },
         {
-          href: '/guides/player-analytics-with-pandas',
+          href: '/guides/player-analytics-with-pandas/',
           label: 'Player analytics with pandas',
           desc: 'Turn typed models into a DataFrame.',
         },
         {
-          href: '/valorant-stats-api',
+          href: '/valorant-stats-api/',
           label: 'Valorant stats API',
           desc: 'Player, team, and match statistics in Python.',
         },
         {
-          href: '/vlr-gg-api',
+          href: '/vlr-gg-api/',
           label: 'VLR.gg API for Python',
           desc: 'Why an unofficial client exists.',
         },

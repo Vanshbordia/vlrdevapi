@@ -90,7 +90,7 @@ export default async function GuidePage(props: PageProps<'/guides/[slug]'>) {
   const relatedLinks = getGuideEntries()
     .filter((guide) => guide.slug !== slug)
     .slice(0, 3)
-    .map((guide) => ({ href: guide.url, label: guide.title }))
+    .map((guide) => ({ href: `${guide.url}/`, label: guide.title }))
 
   return (
     <main id="main" tabIndex={-1} className="flex-1">
@@ -98,7 +98,7 @@ export default async function GuidePage(props: PageProps<'/guides/[slug]'>) {
       <JsonLd data={jsonLdBreadcrumb} />
       <article>
         <ArticleHero
-          backHref="/guides"
+          backHref="/guides/"
           backLabel="All guides"
           kind="Guide"
           date={page.data.date}

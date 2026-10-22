@@ -190,32 +190,32 @@ Group Stage`,
       faqIntro="Coverage, live scores, VCT, and the difference between esports results and Riot match data."
       related={[
         {
-          href: '/vlr-gg-api',
+          href: '/vlr-gg-api/',
           label: 'VLR.gg API for Python',
           desc: 'Why an unofficial client exists and what it covers.',
         },
         {
-          href: '/valorant-api-python',
+          href: '/valorant-api-python/',
           label: 'Valorant API for Python',
           desc: 'Install the SDK and work with typed models.',
         },
         {
-          href: '/valorant-stats-api',
+          href: '/valorant-stats-api/',
           label: 'Valorant stats API',
           desc: 'Player, team, and match statistics in Python.',
         },
         {
-          href: '/docs',
+          href: '/docs/',
           label: 'Documentation',
           desc: 'Guides and the full API reference.',
         },
         {
-          href: '/guides/building-a-real-time-match-monitor',
+          href: '/guides/building-a-real-time-match-monitor/',
           label: 'Build a match monitor',
           desc: 'Track live Valorant matches with Python.',
         },
         {
-          href: '/blog/vlrdevapi-vs-other-valorant-apis',
+          href: '/blog/vlrdevapi-vs-other-valorant-apis/',
           label: 'How the options compare',
           desc: 'VLRdevAPI against other Valorant data sources.',
         },

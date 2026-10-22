@@ -20,12 +20,12 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 const relatedLinks = [
-  { href: '/vlr-gg-api', label: 'VLR.gg API for Python' },
-  { href: '/valorant-api-python', label: 'Valorant API for Python' },
-  { href: '/valorant-esports-api', label: 'Valorant esports API' },
-  { href: '/valorant-stats-api', label: 'Valorant stats API' },
-  { href: '/guides', label: 'Guides' },
-  { href: '/docs', label: 'Documentation' },
+  { href: '/vlr-gg-api/', label: 'VLR.gg API for Python' },
+  { href: '/valorant-api-python/', label: 'Valorant API for Python' },
+  { href: '/valorant-esports-api/', label: 'Valorant esports API' },
+  { href: '/valorant-stats-api/', label: 'Valorant stats API' },
+  { href: '/guides/', label: 'Guides' },
+  { href: '/docs/', label: 'Documentation' },
 ];
 
 export default function BlogPage() {

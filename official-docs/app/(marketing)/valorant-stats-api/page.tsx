@@ -151,32 +151,32 @@ Omen: 103 rounds, 0.89 rating, 151.9 ACS`,
       faqIntro="Player, team, and match stats, plus how to move the data into pandas or a dashboard."
       related={[
         {
-          href: '/guides/player-analytics-with-pandas',
+          href: '/guides/player-analytics-with-pandas/',
           label: 'Player analytics with pandas',
           desc: 'Load stats into a DataFrame and analyze them.',
         },
         {
-          href: '/guides/event-analytics-with-polars',
+          href: '/guides/event-analytics-with-polars/',
           label: 'Event analytics with Polars',
           desc: 'Analyze event and match data with Polars.',
         },
         {
-          href: '/docs/reference/player/agents',
+          href: '/docs/reference/player/agents/',
           label: 'Player agent stats',
           desc: 'Timespans, agent fields, and rating data.',
         },
         {
-          href: '/docs/reference/team/stats',
+          href: '/docs/reference/team/stats/',
           label: 'Team stats reference',
           desc: 'Methods and models for team map statistics.',
         },
         {
-          href: '/valorant-esports-api',
+          href: '/valorant-esports-api/',
           label: 'Valorant esports API',
           desc: 'The full set of esports data in Python.',
         },
         {
-          href: '/valorant-api-python',
+          href: '/valorant-api-python/',
           label: 'Valorant API for Python',
           desc: 'Install and work with typed models.',
         },

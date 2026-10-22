@@ -67,8 +67,13 @@ function withDocMarkdownLinks(index: string) {
     .split('\n')
     .map((line) => {
       const match = line.match(/\]\((\/[^)]*)\)/);
-      const markdown = match ? markdownByUrl.get(match[1]) : undefined;
-      return markdown ? `${line} ([markdown](${markdown}))` : line;
+      if (!match) return line;
+      const rawPath = match[1];
+      const normalizedPath = rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath;
+      const markdown = markdownByUrl.get(normalizedPath) ?? markdownByUrl.get(rawPath);
+      const canonicalTarget = `${BASE_URL}${normalizedPath}/`;
+      const withAbsolute = line.replace(`](${rawPath})`, `](${canonicalTarget})`);
+      return markdown ? `${withAbsolute} ([markdown](${markdown}))` : withAbsolute;
     })
     .join('\n')
     .replace(/^# /, '## ');

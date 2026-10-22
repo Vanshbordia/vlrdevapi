@@ -7,19 +7,19 @@ const columns = [
   {
     title: 'Documentation',
     links: [
-      { label: 'Introduction', href: '/docs' },
-      { label: 'Getting started', href: '/docs/getting-started' },
-      { label: 'Quickstart', href: '/docs/quickstart' },
-      { label: 'API reference', href: '/docs/reference' },
+      { label: 'Introduction', href: '/docs/' },
+      { label: 'Getting started', href: '/docs/getting-started/' },
+      { label: 'Quickstart', href: '/docs/quickstart/' },
+      { label: 'API reference', href: '/docs/reference/' },
     ],
   },
   {
     title: 'Explore',
     links: [
-      { label: 'Guides', href: '/guides' },
-      { label: 'Blog', href: '/blog' },
-      { label: 'Changelog', href: '/changelog' },
-      { label: 'FAQ', href: '/faq' },
+      { label: 'Guides', href: '/guides/' },
+      { label: 'Blog', href: '/blog/' },
+      { label: 'Changelog', href: '/changelog/' },
+      { label: 'FAQ', href: '/faq/' },
     ],
   },
   {

@@ -30,7 +30,7 @@ vlrdevapi.series(series_id).replay(game_id: int) -> ReplayData
     required: true,
   },
   "game_id": {
-    description: "Game number within the series (int, 1-based).",
+    description: "Game number within the series (1-based), or its real VLR game ID.",
     type: "int",
     typeDescription: "int",
     required: true,
@@ -355,6 +355,7 @@ Every spike event carries the site letter and the minimap position. Spike detona
 
 ```python
 import vlrdevapi
+from vlrdevapi._series.replay.models import ReplayEventType
 
 replay = vlrdevapi.series.replay(series_id=754737, game_id=283288)
 

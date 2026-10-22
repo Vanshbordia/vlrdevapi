@@ -87,7 +87,7 @@ export default async function BlogPostPage(props: PageProps<'/blog/[slug]'>) {
   const relatedLinks = getBlogEntries()
     .filter((post) => post.slug !== slug)
     .slice(0, 3)
-    .map((post) => ({ href: post.url, label: post.title }))
+    .map((post) => ({ href: `${post.url}/`, label: post.title }))
 
   return (
     <main id="main" tabIndex={-1} className="flex-1">
@@ -95,7 +95,7 @@ export default async function BlogPostPage(props: PageProps<'/blog/[slug]'>) {
       <JsonLd data={jsonLdBreadcrumb} />
       <article>
         <ArticleHero
-          backHref="/blog"
+          backHref="/blog/"
           backLabel="All posts"
           kind="Blog"
           date={page.data.date}

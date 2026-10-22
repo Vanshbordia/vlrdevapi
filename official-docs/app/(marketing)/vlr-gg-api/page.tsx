@@ -175,32 +175,32 @@ FUT Esports vs Karmine Corp
       faqIntro="Straight answers about VLR.gg coverage, the unofficial status, rate limits, and what the client actually returns."
       related={[
         {
-          href: '/valorant-esports-api',
+          href: '/valorant-esports-api/',
           label: 'Valorant esports API',
           desc: 'A wider look at the esports data VLRdevAPI exposes in Python.',
         },
         {
-          href: '/docs/getting-started',
+          href: '/docs/getting-started/',
           label: 'Getting started',
           desc: 'Install the SDK and make your first request.',
         },
         {
-          href: '/docs/reference',
+          href: '/docs/reference/',
           label: 'API reference',
           desc: 'Every namespace, method, and model in the library.',
         },
         {
-          href: '/guides',
+          href: '/guides/',
           label: 'Tutorial guides',
           desc: 'Build a match monitor, a stats dashboard, and more.',
         },
         {
-          href: '/blog/vlrdevapi-vs-web-scraping',
+          href: '/blog/vlrdevapi-vs-web-scraping/',
           label: 'VLRdevAPI vs web scraping',
           desc: 'How the SDK compares to parsing VLR.gg yourself.',
         },
         {
-          href: '/faq',
+          href: '/faq/',
           label: 'FAQ',
           desc: 'Answers about rate limits, caching, and data coverage.',
         },

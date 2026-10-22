@@ -5,11 +5,11 @@ import { usePathname } from 'next/navigation';
 import { ArrowUpRight } from 'lucide-react';
 
 const links = [
-  { href: '/docs', label: 'Docs' },
-  { href: '/guides', label: 'Guides' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/changelog', label: 'Changelog' },
+  { href: '/docs/', label: 'Docs' },
+  { href: '/guides/', label: 'Guides' },
+  { href: '/blog/', label: 'Blog' },
+  { href: '/faq/', label: 'FAQ' },
+  { href: '/changelog/', label: 'Changelog' },
 ];
 
 /**

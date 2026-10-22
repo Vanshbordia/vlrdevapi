@@ -13,7 +13,8 @@ export const metadata: Metadata = createPageMetadata({
   title: 'FAQ',
   description:
     'Frequently asked questions about VLRdevAPI, the type-safe Python SDK for Valorant esports data from VLR.gg.',
-  path: '/faq/',})
+  path: '/faq/',
+})
 
 interface FaqItem {
   q: string
@@ -80,7 +81,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'How do I paginate through results?',
-        a: <>List endpoints return paginated responses with <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">.page</code>, <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">.total_pages</code>, and <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">.matches</code> properties. Use <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">page=2</code>, <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">return_all=True</code> to fetch all pages automatically.</>,
+        a: <>List endpoints return paginated responses containing a list of entries and a <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">has_next_page</code> boolean. Pass <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">page=2</code> to request subsequent pages, or pass <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">return_all=True</code> to automatically fetch and combine all pages.</>,
       },
       {
         q: 'Can I filter data by date or region?',
@@ -134,7 +135,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'VLRdevAPI is running slowly',
-        a: <>Slow responses are usually due to rate limiting or network latency. Increase the rate limit on your VLRClient if you have permission, or reduce the frequency of your requests. The library includes retry logic and caching -- enable caching to avoid redundant calls. See the <Link href="/guides/" className="text-fd-primary underline underline-offset-2 decoration-fd-primary/30 transition-colors hover:decoration-fd-primary">guides</Link> for performance tips.</>,
+        a: <>Slow responses are usually due to rate limiting, network latency, or multi-page enrichment. You can configure <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">requests_per_second</code> and <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">timeout</code> on your <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">VLRClient</code>. For endpoints supporting pagination, request only the records you need with <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">limit</code> instead of fetching all pages. See the <Link href="/guides/" className="text-fd-primary underline underline-offset-2 decoration-fd-primary/30 transition-colors hover:decoration-fd-primary">guides</Link> for performance tips.</>,
       },
       {
         q: 'I get a RateLimitError. What should I do?',
@@ -146,7 +147,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'The data I get does not match what I see on VLR.gg',
-        a: <>Data is fetched and cached at different times. There may be a brief delay between when data appears on VLR.gg and when it is available through the API. Clear your client cache or wait a few minutes and try again. If the discrepancy persists, open an issue on <Link href="https://github.com/vanshbordia/vlrdevapi" target="_blank" rel="noopener noreferrer" className="text-fd-primary underline underline-offset-2 decoration-fd-primary/30 transition-colors hover:decoration-fd-primary">GitHub</Link>.</>,
+        a: <>VLR.gg frequently updates match statistics, rosters, and live scores. In-memory client instances cache team details during match enrichment for the lifetime of that client. If you suspect data has changed on VLR.gg, create a fresh <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">VLRClient</code> or wait a few minutes and try again. If a parser discrepancy persists, open an issue on <Link href="https://github.com/vanshbordia/vlrdevapi" target="_blank" rel="noopener noreferrer" className="text-fd-primary underline underline-offset-2 decoration-fd-primary/30 transition-colors hover:decoration-fd-primary">GitHub</Link>.</>,
       },
     ],
   },

@@ -326,9 +326,9 @@ for team, m in ((econ.team1, econ.buy_matrix_team1), (econ.team2, econ.buy_matri
         if record is None:
             continue
         cells = [
-            f"vs eco {r.vs_eco.won}/{r.vs_eco.total}" if r.vs_eco else "vs eco -",
-            f"vs half {r.vs_half.won}/{r.vs_half.total}" if r.vs_half else "vs half -",
-            f"vs full {r.vs_full.won}/{r.vs_full.total}" if r.vs_full else "vs full -",
+            f"vs eco {record.vs_eco.won}/{record.vs_eco.total}" if record.vs_eco else "vs eco -",
+            f"vs half {record.vs_half.won}/{record.vs_half.total}" if record.vs_half else "vs half -",
+            f"vs full {record.vs_full.won}/{record.vs_full.total}" if record.vs_full else "vs full -",
         ]
         print(f"  {label}: " + " | ".join(cells))
 ```

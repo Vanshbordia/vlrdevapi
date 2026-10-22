@@ -27,8 +27,8 @@ export type ChangelogVersion = {
 export const versions = [
   {
     version: '3.0.0',
-    date: '21 October 2026',
-    isoDate: '2026-10-21',
+    date: '23 October 2026',
+    isoDate: '2026-10-23',
     github: 'https://github.com/vanshbordia/vlrdevapi/releases/tag/3.0.0',
     pypi: 'https://pypi.org/project/vlrdevapi/3.0.0/',
     summary: 'Major economy and data release: re-tiered buy types, buy-type matrices, per-round economy, a kill-feed replay timeline, series head-to-head history and streams, player placements, a RoundWinType enum, and fixes across team, series, event, and HTTP-client handling.',
