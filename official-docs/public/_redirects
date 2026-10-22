@@ -1,15 +1,113 @@
-# Cloudflare Pages redirects (static export compatible).
-# Legacy /docs/api/* URLs from the old site structure are still indexed by
-# Google but now 404. Send them to their current /docs/reference/* homes.
-# Specific rules first, then a catch-all for anything unmapped.
+# Cloudflare Pages redirects.
+#
+# Hand-maintained: edit this file directly.
+#
+# The legacy /docs/api/* paths come from the pre-v2 (betterdocs) structure
+# and are still indexed by Google, so each one answers a 301. Old links
+# carried both forms, so every path is listed with and without a trailing
+# slash.
+#
+# Most mappings are a mechanical rename:
+#
+#   /docs/api/teams/<page>    ->  /docs/reference/team/<page>
+#   /docs/api/players/<page>  ->  /docs/reference/player/<page>
+#   /docs/api/events/<page>   ->  /docs/reference/events/<page>
+#   /docs/api/matches/<page>  ->  /docs/reference/matches/<page>
+#   /docs/api/series/<page>   ->  /docs/reference/series/<page>
+#   /docs/api/news/<page>     ->  /docs/reference/news/<page>
+#
+# The exceptions are the paths that were renamed rather than moved. These
+# are the ones to check when a docs reference page is renamed:
+#
+#   /docs/api/teams/previous-players  ->  /docs/reference/team/roster
+#   /docs/api/players/agent-stats     ->  /docs/reference/player/agents
+#   /docs/api/events/list-events      ->  /docs/reference/events/list
+#   /docs/api/events/match-summary    ->  /docs/reference/events/matches
+#
+# Cloudflare Pages validates this file at deploy time, so a malformed rule
+# fails the Pages build rather than shipping.
 
 /docs/api/teams/completed-matches  /docs/reference/team/completed-matches/  301
-/docs/api/teams/info               /docs/reference/team/info/               301
-/docs/api/players/agent-stats      /docs/reference/player/agents/           301
-/docs/api/events/standings         /docs/reference/events/standings/        301
-/docs/api/events/matches           /docs/reference/events/matches/          301
-/docs/api/series/info              /docs/reference/series/info/             301
-/docs/api/series/matches           /docs/reference/series/                  301
-/docs/api/matches/upcoming         /docs/reference/matches/upcoming/        301
-/docs/api/matches                  /docs/reference/matches/                 301
-/docs/api/*                        /docs/reference/                         301
+/docs/api/teams/completed-matches/  /docs/reference/team/completed-matches/  301
+/docs/api/teams/upcoming-matches  /docs/reference/team/upcoming-matches/  301
+/docs/api/teams/upcoming-matches/  /docs/reference/team/upcoming-matches/  301
+/docs/api/teams/info  /docs/reference/team/info/  301
+/docs/api/teams/info/  /docs/reference/team/info/  301
+/docs/api/teams/roster  /docs/reference/team/roster/  301
+/docs/api/teams/roster/  /docs/reference/team/roster/  301
+/docs/api/teams/previous-players  /docs/reference/team/roster/  301
+/docs/api/teams/previous-players/  /docs/reference/team/roster/  301
+/docs/api/teams/placements  /docs/reference/team/placements/  301
+/docs/api/teams/placements/  /docs/reference/team/placements/  301
+/docs/api/teams/transactions  /docs/reference/team/transactions/  301
+/docs/api/teams/transactions/  /docs/reference/team/transactions/  301
+/docs/api/teams/stats  /docs/reference/team/stats/  301
+/docs/api/teams/stats/  /docs/reference/team/stats/  301
+/docs/api/teams  /docs/reference/team/  301
+/docs/api/teams/  /docs/reference/team/  301
+/docs/api/players/agent-stats  /docs/reference/player/agents/  301
+/docs/api/players/agent-stats/  /docs/reference/player/agents/  301
+/docs/api/players/matches  /docs/reference/player/matches/  301
+/docs/api/players/matches/  /docs/reference/player/matches/  301
+/docs/api/players/profile  /docs/reference/player/profile/  301
+/docs/api/players/profile/  /docs/reference/player/profile/  301
+/docs/api/players/info  /docs/reference/player/info/  301
+/docs/api/players/info/  /docs/reference/player/info/  301
+/docs/api/players  /docs/reference/player/  301
+/docs/api/players/  /docs/reference/player/  301
+/docs/api/events/standings  /docs/reference/events/standings/  301
+/docs/api/events/standings/  /docs/reference/events/standings/  301
+/docs/api/events/matches  /docs/reference/events/matches/  301
+/docs/api/events/matches/  /docs/reference/events/matches/  301
+/docs/api/events/info  /docs/reference/events/info/  301
+/docs/api/events/info/  /docs/reference/events/info/  301
+/docs/api/events/stages  /docs/reference/events/stages/  301
+/docs/api/events/stages/  /docs/reference/events/stages/  301
+/docs/api/events/teams  /docs/reference/events/teams/  301
+/docs/api/events/teams/  /docs/reference/events/teams/  301
+/docs/api/events/list-events  /docs/reference/events/list/  301
+/docs/api/events/list-events/  /docs/reference/events/list/  301
+/docs/api/events/list  /docs/reference/events/list/  301
+/docs/api/events/list/  /docs/reference/events/list/  301
+/docs/api/events/match-summary  /docs/reference/events/matches/  301
+/docs/api/events/match-summary/  /docs/reference/events/matches/  301
+/docs/api/events  /docs/reference/events/  301
+/docs/api/events/  /docs/reference/events/  301
+/docs/api/matches/upcoming  /docs/reference/matches/upcoming/  301
+/docs/api/matches/upcoming/  /docs/reference/matches/upcoming/  301
+/docs/api/matches/live  /docs/reference/matches/live/  301
+/docs/api/matches/live/  /docs/reference/matches/live/  301
+/docs/api/matches/completed  /docs/reference/matches/completed/  301
+/docs/api/matches/completed/  /docs/reference/matches/completed/  301
+/docs/api/matches  /docs/reference/matches/  301
+/docs/api/matches/  /docs/reference/matches/  301
+/docs/api/series/info  /docs/reference/series/info/  301
+/docs/api/series/info/  /docs/reference/series/info/  301
+/docs/api/series/matches  /docs/reference/series/  301
+/docs/api/series/matches/  /docs/reference/series/  301
+/docs/api/series/rounds  /docs/reference/series/rounds/  301
+/docs/api/series/rounds/  /docs/reference/series/rounds/  301
+/docs/api/series/economy  /docs/reference/series/economy/  301
+/docs/api/series/economy/  /docs/reference/series/economy/  301
+/docs/api/series/performance  /docs/reference/series/performance/  301
+/docs/api/series/performance/  /docs/reference/series/performance/  301
+/docs/api/series/vods  /docs/reference/series/vods/  301
+/docs/api/series/vods/  /docs/reference/series/vods/  301
+/docs/api/series  /docs/reference/series/  301
+/docs/api/series/  /docs/reference/series/  301
+/docs/api/news  /docs/reference/news/  301
+/docs/api/news/  /docs/reference/news/  301
+/docs/api/news/list  /docs/reference/news/list/  301
+/docs/api/news/list/  /docs/reference/news/list/  301
+/docs/api/news/article  /docs/reference/news/article/  301
+/docs/api/news/article/  /docs/reference/news/article/  301
+/docs/api/search  /docs/reference/  301
+/docs/api/search/  /docs/reference/  301
+/docs/api/status  /docs/reference/  301
+/docs/api/status/  /docs/reference/  301
+/docs/config  /docs/  301
+/docs/config/  /docs/  301
+/docs/rate-limiting  /docs/  301
+/docs/rate-limiting/  /docs/  301
+/docs/api/*  /docs/reference/  301
+/docs/api  /docs/reference/  301

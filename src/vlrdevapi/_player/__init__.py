@@ -1,4 +1,4 @@
-"""Player data: info, teams, agents, match history, profile."""
+"""Player data: info, teams, agents, match history, placements, profile."""
 
 from vlrdevapi._player.namespace import PlayerNamespace
 

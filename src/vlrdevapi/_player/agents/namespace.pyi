@@ -1,7 +1,10 @@
+from datetime import tzinfo
 from typing import Literal
+from zoneinfo import ZoneInfo
+
+import httpx
 
 from vlrdevapi._player.agents.models import AgentStatsPage
-import httpx
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
 
 class AgentsNamespace:
@@ -12,6 +15,7 @@ class AgentsNamespace:
         retry_config: RetryConfig = ...,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ) -> None: ...
 
     def __call__(

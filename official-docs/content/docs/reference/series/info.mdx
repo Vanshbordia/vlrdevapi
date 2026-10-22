@@ -1,6 +1,6 @@
 ---
 title: Series Info
-description: Fetch match overview data - teams, scores, event details, map veto, and per-game breakdown.
+description: Fetch match overview data - teams, scores, event details, head-to-head history, map veto, and per-game breakdown.
 ---
 
 `series.info(series_id)` returns the overview information for a match on vlr.gg, including team details, scores, event context, map veto history, and per-game statistics.
@@ -128,6 +128,12 @@ vlrdevapi.series(series_id).info() -> SeriesInfo
     description: "Non-veto match notes (e.g. technical pauses, lobby remakes).",
     type: "list[str]",
     typeDescription: "list[str]",
+    default: "[]",
+  },
+  "head_to_head": {
+    description: "Previous matches between the two teams, from the page's head-to-head card.",
+    type: "list[SeriesHeadToHeadMatch]",
+    typeDescription: "list[SeriesHeadToHeadMatch] - see nested fields below",
     default: "[]",
   },
 }} />
@@ -302,6 +308,71 @@ vlrdevapi.series(series_id).info() -> SeriesInfo
   },
 }} />
 
+### `SeriesHeadToHeadMatch` Fields
+
+<TypeTable type={{
+  "series_id": {
+    description: "Unique identifier of the previous series on vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "Full URL to the previous series on vlr.gg.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event_name": {
+    description: "Event name shown in the head-to-head card.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: "Stage or round label (e.g. 'UBF', 'Group Stage').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "date": {
+    description: "Date the previous match was played.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "team1_name": {
+    description: "First team name, in the head-to-head header order.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1_score": {
+    description: "First team's series score.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2_name": {
+    description: "Second team name, in the head-to-head header order.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2_score": {
+    description: "Second team's series score.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "winner": {
+    description: "Which side won, relative to the head-to-head team order.",
+    type: "str",
+    typeDescription: '"team1" | "team2" | ""',
+    default: '""',
+  },
+}} />
+
 ## Examples
 
 ### Basic series info
@@ -331,6 +402,24 @@ print(f"Stage: {info.stage}")
 print(f"Bracket: {info.bracket}")
 print(f"Patch: {info.patch}")
 print(f"UTC: {info.datetime}")
+```
+
+### Head-to-head history
+
+The `head_to_head` list contains previous matches between the two teams. The team order follows the head-to-head card, so `winner="team1"` refers to `team1_name`.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.series.info(series_id=542272)
+
+for match in info.head_to_head:
+    winner = match.team1_name if match.winner == "team1" else match.team2_name
+    print(
+        f"{match.date} | {match.team1_name} "
+        f"{match.team1_score}-{match.team2_score} {match.team2_name} "
+        f"({match.event_name} - {match.stage}) -> {winner}"
+    )
 ```
 
 ### Map veto and games

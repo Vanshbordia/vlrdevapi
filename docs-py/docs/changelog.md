@@ -5,6 +5,121 @@ All notable changes to this project will be documented in this page.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [3.0.0] - 2026-10-23
+
+### Breaking
+
+- **`BuyType` re-tiered to match vlr.gg** — the economy tab no longer uses
+  its old four spend tiers. `SEMI_ECO` and `SEMI_BUY` are removed and the
+  remaining tiers follow VLR's current categories based on total team
+  spend: `ECO` (under 10k), `HALF_BUY` (10k–18k), and `FULL_BUY` (18k+).
+  A new `PISTOL` member marks pistol-round buys (previously reported as
+  `ECO`). Code switching on `BuyType.SEMI_ECO` / `BuyType.SEMI_BUY` needs
+  updating; string values are `"Pistol"`, `"Eco"`, `"Half-buy"`,
+  `"Full-buy"`.
+
+### Added
+
+- **Buy-type matrix** — `EconomyData` now carries the economy tab's
+  buy-type matrix as `buy_matrix_team1` / `buy_matrix_team2`
+  (`TeamBuyMatrix`): the Pistol / Conv. / Bonus summary and the
+  `On Eco` / `On Half buy` / `On Full buy` records
+  (`BuyTierRecord.vs_eco` / `vs_half` / `vs_full`), each a
+  `won`/`total` `EconScore`. Unplayed matchups are `None`.
+  `series.economy(game_id="all")` on the parser also now returns the
+  all-maps aggregate matrix instead of an empty result.
+- **Convenience accessors** — flat summary shortcuts
+  (`pistol_team1` / `converted_team1` / `bonus_team1` and the
+  `_team2` counterparts), `full_buy` / `half_buy` / `eco` aliases on
+  `TeamBuyMatrix`, and a combined `total` on `BuyTierRecord` for the
+  overall won/total on a tier regardless of the opponent's buy type.
+- **Round economy in `series.rounds`** — `RoundData` now carries the
+  per-round economy from the economy tab: `bank_team1`/`bank_team2`,
+  `spent_team1`/`spent_team2`, `buy_type_team1`/`buy_type_team2`, and
+  `is_pistol_round`. `series.rounds` fetches and merges the economy tab
+  automatically (economy fields stay `None`/empty when that page is
+  unavailable), making it the single round-by-round source alongside
+  `win_type` and the winner's `side`.
+- **Series replay (logs tab)** — new `series.replay(series_id, game_id)`
+  returning the per-round kill-feed timeline (`ReplayData` /
+  `ReplayRound` / `ReplayEvent`): events typed by the `ReplayEventType`
+  enum (`KILL`, `PLANT`, `DEFUSE`, plus derived `BOOM` detonation and
+  `RESURRECT` events with `derived=True`, since vlr.gg logs neither as
+  feed rows), round clocks in both display (`clock`) and numeric
+  (`seconds`) form, kill cause (weapon or ability, e.g. `Sheriff`,
+  `Overdrive`, `Tour de Force`, `Spike`), killer/victim positions with
+  distance in minimap units, spike sites, and per-event alive snapshots
+  (name, agent, team, side, minimap coordinates, facing angle). Real
+  vlr.gg team and player IDs are resolved from the game's overview tab
+  (one extra request, `team1_id`/`team2_id` and `player_id` fields) and
+  matched strictly within each player's team so duplicate names never
+  cross teams; unplayed maps or maps without round data return an
+  empty timeline gracefully.
+- **Series head-to-head history** — `SeriesInfo.head_to_head` exposes
+  previous meetings between the two teams, parsed from the same overview
+  page. Each `SeriesHeadToHeadMatch` includes the series ID/URL, event,
+  stage, date, both team names/scores, and which side won.
+- **Series streams in `series.vods()`** — `SeriesVods.streams` now contains
+  live broadcasts and watch-party streams alongside the existing `vods`
+  list. Each `SeriesStream` exposes the platform, channel, URL, stream
+  type, and country code. `SeriesVod` also gains `platform`, `map_number`,
+  and `start_seconds`.
+- **Player total winnings** — `PlayerInfo.total_winnings` and
+  `total_winnings_currency` now expose the total from the player's Event
+  Placements card.
+- **New `player.placements()` namespace** — returns `PlayerPlacements` with
+  individual `PlayerEventPlacement` rows (event, year, stage, placement,
+  prize, team) and the player's total winnings.
+- **New grand-final fixtures** — series 130685 (LOUD vs OpTic, Champions
+  2022 GF) and 754737 (LOUD vs Vitality, Champions 2026 GF) are now
+  covered by tests across economy, info/pick-bans, players, rounds, and
+  performance parsers.
+
+### Fixed
+
+- **`team.upcoming_matches()` no longer returns completed matches** — the
+  parser now scopes its search to the heading's section wrapper instead of
+  the whole team-summary column, so "Recent Results" is excluded.
+- **`series.info()` on upcoming/live series** — `best_of` is now read from
+  whichever match-header note contains the format (vlr.gg renders the
+  countdown twice before `BoN`), and `TBD` map tabs are no longer marked
+  `played`.
+- **`team.completed_matches()` pagination** — added `limit` (default `50`)
+  and `return_all`; extra pages are fetched only when the requested limit
+  needs them. `TeamCompletedMatches.has_next_page` reports whether more
+  matches exist beyond the returned results.
+- **Team match `stage`/`bracket`** — both fields are now parsed separately
+  from the team matches page (e.g. `stage="Playoffs"`, `bracket="LBF"`),
+  and enrichment no longer concatenates them into `"Playoffs - LBF"`.
+- **Parser whitespace** — shared `normalize_whitespace()` collapses raw tabs,
+  newlines, and repeated spaces in parsed event/stage/bracket/role values
+  instead of leaving values such as `"Playoffs ⋅\n\t\t\tLBF"`.
+- **`events.matches()` team countries** — `MatchTeam` now exposes
+  `country_name`, parsed from the team flag on the event matches page.
+- **Thread-local HTTP client lifecycle** — parallel requests now reuse
+  thread-local clients and close every client after fetching or enrichment,
+  reducing client-creation overhead and preventing resource leaks.
+
+### Changed
+
+- **`RoundData.win_type` is now a `RoundWinType` enum** instead of a
+  human-readable string. Use `round.win_type.full_name` for display text and
+  `round.win_type.value` (`"elimination"`, `"defuse"`, `"spike_detonation"`,
+  `"time_expired"`) for the raw value.
+
+### Documentation
+
+- Series economy reference updated for the new `BuyType` values,
+  buy-matrix fields, and nested models; series rounds reference updated
+  for the merged per-round economy fields; new series replay reference
+  page for the kill-feed timeline module.
+- Updated the `team.completed_matches`, `team.upcoming_matches`,
+  `events.matches`, and `series.rounds` references for `bracket`,
+  `country_name`, and the `RoundWinType` enum.
+- Updated `series.info`, `series.vods`, and `player.info`, and added a
+  `player.placements` reference for head-to-head history, streams, VOD
+  metadata, and event placements.
+
 ## [2.4.1] - 2026-10-17
 
 ### Fixed

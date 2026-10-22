@@ -10,6 +10,7 @@ from vlrdevapi._series.info.namespace import SeriesInfoNamespace
 from vlrdevapi._series.match_namespace import SeriesMatchNamespace
 from vlrdevapi._series.performance.namespace import SeriesPerformanceNamespace
 from vlrdevapi._series.players.namespace import SeriesPlayersNamespace
+from vlrdevapi._series.replay.namespace import SeriesReplayNamespace
 from vlrdevapi._series.rounds.namespace import SeriesRoundsNamespace
 from vlrdevapi._series.vods.namespace import SeriesVodsNamespace
 from vlrdevapi.fetcher import (
@@ -25,7 +26,7 @@ class SeriesNamespace:
     """Top-level namespace for series/match data.
 
     Access sub-namespaces for info, vods, players, rounds, performance,
-    and economy data. Use ``vlrdevapi.series(series_id)`` for curried access.
+    economy, and replay data. Use ``vlrdevapi.series(series_id)`` for curried access.
 
     Attributes:
         info: Sub-namespace for series info.
@@ -34,6 +35,7 @@ class SeriesNamespace:
         rounds: Sub-namespace for round-by-round data.
         performance: Sub-namespace for performance metrics.
         economy: Sub-namespace for economy stats.
+        replay: Sub-namespace for the kill-feed replay timeline.
 
     Examples:
         >>> info = vlrdevapi.series.info(series_id=1)
@@ -59,6 +61,7 @@ class SeriesNamespace:
         self._rounds = SeriesRoundsNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
         self._performance = SeriesPerformanceNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
         self._economy = SeriesEconomyNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._replay = SeriesReplayNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
 
     @property
     def info(self) -> SeriesInfoNamespace:
@@ -146,6 +149,21 @@ class SeriesNamespace:
         """
         return self._economy
 
+    @property
+    def replay(self) -> SeriesReplayNamespace:
+        """Access the kill-feed replay timeline sub-namespace.
+
+        Returns:
+            SeriesReplayNamespace: Sub-namespace for the logs-tab replay
+            timeline. Call with ``series_id`` and ``game_id`` to return a
+            ``ReplayData`` model.
+
+        Example:
+            >>> replay = vlrdevapi.series.replay(series_id=12345, game_id=1)
+
+        """
+        return self._replay
+
     @sanitize_and_validate
     def __call__(self, series_id: int) -> SeriesMatchNamespace:
         """Create a curried namespace bound to a specific series.
@@ -159,7 +177,8 @@ class SeriesNamespace:
         Returns:
             SeriesMatchNamespace: A namespace object with methods ``.info()``,
             ``.vods()``, ``.players()``, ``.rounds()``, ``.performance()``,
-            and ``.economy()`` — all pre-bound to the given ``series_id``.
+            ``.economy()``, and ``.replay()`` — all pre-bound to the given
+            ``series_id``.
 
         Raises:
             ValidationError: If ``series_id`` is not a valid positive integer.
@@ -180,6 +199,7 @@ class SeriesNamespace:
             rounds=self._rounds,
             performance=self._performance,
             economy=self._economy,
+            replay=self._replay,
         )
 
 

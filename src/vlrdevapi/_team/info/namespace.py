@@ -79,18 +79,12 @@ class TeamInfoNamespace:
         """
         path = team_path(team_id)
 
-        light_html_tree = self._sync._fetch(path)
-        light_html = str(light_html_tree.html)
-
-        dark_html_tree = fetch_sync(
+        light_parsed = self._sync._fetch(path)
+        dark_parsed = fetch_sync(
             self._sync._client, path, self._sync._timeout,
             retry_config=self._sync._retry_config, rate_limiter=self._sync._rate_limiter,
             headers=_DARK_MODE_COOKIE_HEADER,
         )
-        dark_html = str(dark_html_tree.html)
-
-        light_parsed = HTMLParser(light_html)
-        dark_parsed = HTMLParser(dark_html)
         result = parse_team_info(light_parsed, dark_parsed)
         result.id = team_id
         return result

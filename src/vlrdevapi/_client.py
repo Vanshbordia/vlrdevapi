@@ -2,20 +2,20 @@
 
 import logging
 from datetime import tzinfo
-from typing import Any
+from typing import Any, Self
 from zoneinfo import ZoneInfo
 
 __all__ = ["VLRClient"]
 
 import httpx
 
-from vlrdevapi.commons.timezone import REFERENCE_MATCH_PATH, detect_vlr_timezone
 from vlrdevapi._event.namespace import EventNamespace
 from vlrdevapi._matches.namespace import MatchesNamespace
 from vlrdevapi._news.namespace import NewsNamespace
 from vlrdevapi._player.namespace import PlayerNamespace
 from vlrdevapi._series.namespace import SeriesNamespace
 from vlrdevapi._team.namespace import TeamNamespace
+from vlrdevapi.commons.timezone import REFERENCE_MATCH_PATH, detect_vlr_timezone
 from vlrdevapi.exceptions import HTTPError, NotFoundError, RateLimitError, RequestError
 from vlrdevapi.fetcher import (
     BASE_URL,
@@ -133,8 +133,8 @@ class VLRClient:
         """Close the underlying HTTP client and release resources."""
         self._client.close()
 
-    def __enter__(self) -> "VLRClient":
+    def __enter__(self) -> Self:
         return self
 
-    def __exit__(self, *exc: Any) -> None:
+    def __exit__(self, *exc: object) -> None:
         self.close()

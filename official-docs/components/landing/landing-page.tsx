@@ -1,6 +1,11 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { CopyCommand } from '@/components/ui/copy-command';
+import { ArrowUpRight } from 'lucide-react';
+import { CodeBlock } from '@/components/landing/code-block';
+import { CopyButton } from '@/components/landing/copy-button';
+import { CopyCommand } from '@/components/landing/copy-command';
+import { JsonLd } from '@/components/json-ld';
+import { FaqAccordion } from '@/components/marketing/faq-accordion';
 import { canonicalUrl, siteUrl } from '@/lib/shared';
 import { projectAuthor } from '@/lib/project';
 
@@ -27,6 +32,16 @@ export interface LandingComparison {
   rows: string[][];
 }
 
+export interface LandingQuickstart {
+  intro: ReactNode;
+  code: string;
+  title?: string;
+  file?: string;
+  output?: string;
+  outputLabel?: string;
+  steps?: Array<{ title: string; text: string }>;
+}
+
 export interface LandingPageProps {
   /** Route path, for example `/vlr-gg-api`. Used for canonical and breadcrumb URLs. */
   path: string;
@@ -36,12 +51,68 @@ export interface LandingPageProps {
   h1: ReactNode;
   subtitle: string;
   answer: ReactNode;
+  useCases?: string[];
   capabilities: LandingCapability[];
   capabilitiesTitle?: string;
-  quickstart: { intro: ReactNode; code: string };
+  quickstart: LandingQuickstart;
   comparison?: LandingComparison;
   faqs: LandingFaq[];
+  faqIntro?: string;
   related: LandingRelated[];
+  children?: ReactNode;
+}
+
+const defaultQuickstartSteps = [
+  {
+    title: 'Install the package from PyPI.',
+    text: 'No API key and no separate service to configure.',
+  },
+  {
+    title: 'Call a namespace and fetch data.',
+    text: 'Each method returns a typed response instead of raw HTML.',
+  },
+  {
+    title: 'Use the models in your app.',
+    text: 'Autocomplete, validation, and serialization are included.',
+  },
+];
+
+export function LandingSection({
+  eyebrow,
+  title,
+  description,
+  action,
+  children,
+}: {
+  eyebrow: string;
+  title: ReactNode;
+  description?: ReactNode;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="border-b border-white/10">
+      <div className="mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
+              {eyebrow}
+            </p>
+            <h2 className="mt-3 text-2xl font-medium tracking-[-0.03em] text-white sm:text-3xl">
+              {title}
+            </h2>
+            {description ? (
+              <p className="mt-4 max-w-xl text-[14px] leading-relaxed text-fd-subtle">
+                {description}
+              </p>
+            ) : null}
+          </div>
+          {action}
+        </div>
+        <div className="mt-8">{children}</div>
+      </div>
+    </section>
+  );
 }
 
 export function LandingPage({
@@ -51,12 +122,15 @@ export function LandingPage({
   h1,
   subtitle,
   answer,
+  useCases,
   capabilities,
   capabilitiesTitle = 'What you can fetch',
   quickstart,
   comparison,
   faqs,
+  faqIntro = 'Installation, data coverage, and how the SDK behaves under load.',
   related,
+  children,
 }: LandingPageProps) {
   const url = canonicalUrl(path);
 
@@ -94,62 +168,129 @@ export function LandingPage({
   ];
 
   return (
-    <main className="flex-1">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
-        }}
-      />
+    <main id="main" tabIndex={-1} className="flex-1">
+      <JsonLd data={jsonLd} />
 
       {/* Hero */}
-      <section className="border-b border-border">
-        <div className="mx-auto max-w-7xl px-6 pt-28 pb-14 md:pt-36 md:pb-16">
-          <p className="text-xs font-semibold uppercase tracking-widest text-fd-primary">{eyebrow}</p>
-          <h1 className="mt-4 max-w-3xl font-heading text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl md:text-[3rem]">
-            {h1}
-          </h1>
-          <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            {subtitle}
-          </p>
-          <div className="mt-6 max-w-2xl border-l-2 border-fd-primary/40 pl-4">
-            <p className="text-base leading-relaxed text-foreground sm:text-lg">{answer}</p>
+      <section className="relative border-b border-white/10">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-fd-primary/70 to-transparent"
+        />
+
+        <div className="relative mx-auto grid w-full max-w-7xl gap-12 px-5 pb-14 pt-16 sm:px-8 sm:pb-16 sm:pt-20 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-16 lg:pb-20 lg:pt-24">
+          <div className="min-w-0">
+            <p className="flex items-center gap-2.5 font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
+              <span aria-hidden="true" className="size-1.5 bg-fd-primary" />
+              {eyebrow}
+            </p>
+
+            <h1 className="mt-6 max-w-4xl text-[2.7rem] font-medium leading-[0.98] tracking-[-0.045em] text-white sm:text-[3.6rem] lg:text-[4.2rem]">
+              {h1}
+            </h1>
+
+            <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-fd-subtle sm:text-base">
+              {subtitle}
+            </p>
+
+            <p className="mt-5 max-w-2xl text-[14.5px] leading-relaxed text-fd-muted">{answer}</p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link
+                href="/docs/"
+                className="group inline-flex h-11 items-center gap-1.5 border border-white bg-white px-5 text-[13px] font-medium text-black transition-colors hover:border-fd-primary hover:bg-fd-primary hover:text-white"
+              >
+                Read the docs
+                <ArrowUpRight
+                  className="size-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </Link>
+              <Link
+                href="/guides/"
+                className="group inline-flex h-11 items-center gap-1.5 border border-white/15 px-5 text-[13px] font-medium text-white/65 transition-colors hover:border-white/30 hover:text-white"
+              >
+                Tutorial guides
+                <ArrowUpRight
+                  className="size-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </Link>
+            </div>
+
+            {useCases?.length ? (
+              <p className="mt-10 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-white/10 pt-6 text-[13.5px] leading-relaxed text-fd-subtle">
+                <span className="mr-1 font-mono text-[12px] uppercase tracking-[0.16em] text-fd-muted">
+                  Built for
+                </span>
+                {useCases.map((item, index) => (
+                  <span key={item}>
+                    {index > 0 ? (
+                      <span aria-hidden="true" className="px-1.5 text-white/20">
+                        /
+                      </span>
+                    ) : null}
+                    {item}
+                  </span>
+                ))}
+              </p>
+            ) : null}
           </div>
-          <div className="mt-7 flex flex-wrap items-center gap-2">
-            <CopyCommand command="pip install vlrdevapi" />
-            <CopyCommand command="uv add vlrdevapi" />
-          </div>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Link
-              href="/docs/"
-              className="inline-flex h-11 items-center justify-center bg-foreground px-6 text-sm font-medium tracking-tight text-background transition-all hover:brightness-110 hover:scale-[1.02] active:scale-[0.98]"
-            >
-              Read the docs
-            </Link>
-            <Link
-              href="/guides/"
-              className="inline-flex h-11 items-center justify-center border border-border bg-background/50 px-6 text-sm font-medium tracking-tight text-foreground transition-all hover:bg-muted hover:scale-[1.02] active:scale-[0.98]"
-            >
-              Tutorial guides
-            </Link>
-          </div>
+
+          <aside className="border border-white/10 bg-fd-panel">
+            <div className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3">
+              <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-fd-muted">
+                Install
+              </span>
+              <span aria-hidden="true" className="size-1.5 bg-fd-primary" />
+            </div>
+            <div className="p-4">
+              <div className="space-y-2">
+                <CopyCommand command="pip install vlrdevapi" className="w-full" />
+                <CopyCommand command="uv add vlrdevapi" className="w-full" />
+              </div>
+              <dl className="mt-5 space-y-2 border-t border-white/10 pt-4 font-mono text-[12px]">
+                {[
+                  ['Package', 'vlrdevapi'],
+                  ['Python', '3.11+'],
+                  ['API key', 'Not required'],
+                  ['License', 'MIT'],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex items-center justify-between gap-4">
+                    <dt className="uppercase tracking-[0.12em] text-fd-muted">{label}</dt>
+                    <dd className="text-white/65">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </aside>
         </div>
       </section>
 
       {/* Capabilities */}
-      <section>
-        <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-          <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-            {capabilitiesTitle}
-          </h2>
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+      <section className="border-b border-white/10">
+        <div className="mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
+          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-4">
+            <div>
+              <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
+                Capabilities
+              </p>
+              <h2 className="mt-2 text-2xl font-medium tracking-[-0.03em] text-white sm:text-3xl">
+                {capabilitiesTitle}
+              </h2>
+            </div>
+          </div>
+
+          <ul className="grid gap-x-10 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
             {capabilities.map((capability) => (
-              <li key={capability.label} className="border border-border bg-background p-5">
-                <h3 className="font-mono text-[0.9375rem] leading-tight text-muted-foreground">
+              <li key={capability.label} className="border-t border-white/10 pt-5">
+                <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-fd-muted">
                   {capability.label}
+                </span>
+                <h3 className="mt-3 text-[15px] font-medium leading-snug tracking-tight text-white/85">
+                  {capability.bold}
                 </h3>
-                <p className="mt-3 text-[15px] leading-snug text-muted-foreground sm:text-base">
-                  <strong className="font-medium text-foreground">{capability.bold}.</strong>{' '}
+                <p className="mt-2 text-[13.5px] leading-relaxed text-fd-subtle">
                   {capability.text}
                 </p>
               </li>
@@ -158,68 +299,136 @@ export function LandingPage({
         </div>
       </section>
 
+      {children}
+
       {/* Quickstart */}
-      <section className="border-t border-border bg-muted/20">
-        <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-          <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-            Quickstart
-          </h2>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">{quickstart.intro}</p>
-          <div className="mt-6 max-w-2xl">
-            <pre className="overflow-x-auto border border-border bg-background p-4 font-mono text-xs leading-relaxed text-muted-foreground">
-              <code>{quickstart.code}</code>
-            </pre>
-          </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            More detail in the{' '}
+      <section className="border-b border-white/10 bg-fd-panel">
+        <div className="mx-auto grid w-full max-w-7xl gap-10 px-5 py-14 sm:px-8 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:items-start lg:gap-16">
+          <div>
+            <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
+              Quickstart
+            </p>
+            <h2 className="mt-3 text-2xl font-medium tracking-[-0.03em] text-white sm:text-3xl">
+              {quickstart.title ?? 'From install to data in one file.'}
+            </h2>
+            <p className="mt-4 max-w-xl text-[14px] leading-relaxed text-fd-subtle">
+              {quickstart.intro}
+            </p>
+            <ol className="mt-7 space-y-4">
+              {(quickstart.steps ?? defaultQuickstartSteps).map((step, index) => (
+                <li key={step.title} className="flex items-start gap-3">
+                  <span className="mt-0.5 font-mono text-[12px] text-fd-primary">
+                    0{index + 1}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[13px] font-medium text-white/70">
+                      {step.title}
+                    </span>
+                    <span className="mt-0.5 block text-[12.5px] leading-relaxed text-fd-muted">
+                      {step.text}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ol>
             <Link
               href="/docs/quickstart/"
-              className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary"
+              className="group mt-7 inline-flex items-center gap-1.5 text-[13px] font-medium text-white/60 transition-colors hover:text-white"
             >
-              quickstart docs
+              Full quickstart
+              <ArrowUpRight
+                className="size-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
             </Link>
-            .
-          </p>
+          </div>
+
+          <div className="overflow-hidden border border-white/10 bg-fd-canvas">
+            <div className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <span aria-hidden="true" className="size-1.5 bg-fd-primary" />
+                <span className="font-mono text-[12px] uppercase tracking-[0.14em] text-fd-muted">
+                  {quickstart.file ?? 'example.py'}
+                </span>
+              </div>
+              <CopyButton
+                value={quickstart.code}
+                label="Copy example code"
+                className="border-white/10 bg-transparent"
+              />
+            </div>
+            <CodeBlock code={quickstart.code} />
+            {quickstart.output ? (
+              <div className="border-t border-white/10">
+                <div className="flex items-center justify-between gap-4 px-4 py-2.5">
+                  <span className="font-mono text-[12px] uppercase tracking-[0.14em] text-fd-muted">
+                    {quickstart.outputLabel ?? 'Output'}
+                  </span>
+                  <span className="font-mono text-[12px] text-fd-primary">typed result</span>
+                </div>
+                <CodeBlock code={quickstart.output} lineNumbers={false} />
+              </div>
+            ) : null}
+          </div>
         </div>
       </section>
 
       {/* Comparison */}
       {comparison && (
-        <section className="border-t border-border">
-          <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-            <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-              {comparison.title}
-            </h2>
-            <div className="mt-6 overflow-x-auto">
-              <table className="w-full min-w-[40rem] border-collapse text-left text-sm">
+        <section className="border-b border-white/10">
+          <div className="mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
+            <div className="flex items-end justify-between gap-4 border-b border-white/10 pb-4">
+              <div>
+                <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
+                  Compare
+                </p>
+                <h2 className="mt-2 text-2xl font-medium tracking-[-0.03em] text-white sm:text-3xl">
+                  {comparison.title}
+                </h2>
+              </div>
+            </div>
+            <div className="mt-8 overflow-x-auto border border-white/10 bg-fd-panel">
+              <table className="w-full min-w-[46rem] border-collapse text-left text-[13px]">
                 <thead>
-                  <tr className="border-b border-border">
-                    {comparison.headers.map((header, i) => (
+                  <tr className="border-b border-white/10 bg-white/[0.02]">
+                    {comparison.headers.map((header, index) => (
                       <th
-                        key={header || i}
+                        key={header || index}
                         scope="col"
-                        className={`px-4 py-3 font-semibold ${i === 1 ? 'text-foreground' : 'text-muted-foreground'}`}
+                        className={`px-4 py-3 font-mono text-[12px] font-normal uppercase tracking-[0.12em] ${
+                          index === 1 ? 'text-fd-primary' : 'text-fd-muted'
+                        }`}
                       >
-                        {header}
+                        {header || <span className="sr-only">Feature</span>}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {comparison.rows.map((row, rowIndex) => (
-                    <tr key={rowIndex} className="border-b border-border">
-                      {row.map((cell, cellIndex) => (
-                        <td
-                          key={cellIndex}
-                          className={`px-4 py-3 align-top ${
-                            cellIndex === 1
-                              ? 'bg-fd-primary/5 font-medium text-foreground'
-                              : 'text-muted-foreground'
-                          }`}
-                        >
-                          {cell}
-                        </td>
-                      ))}
+                    <tr key={rowIndex} className="border-b border-white/10 last:border-b-0">
+                      {row.map((cell, cellIndex) =>
+                        cellIndex === 0 ? (
+                          <th
+                            key={cellIndex}
+                            scope="row"
+                            className="px-4 py-3 text-left align-top font-mono text-[12px] font-normal uppercase tracking-[0.1em] text-fd-muted"
+                          >
+                            {cell}
+                          </th>
+                        ) : (
+                          <td
+                            key={cellIndex}
+                            className={`px-4 py-3 align-top ${
+                              cellIndex === 1
+                                ? 'border-l border-fd-primary/20 bg-fd-primary/[0.04] text-white/85'
+                                : 'text-white/55'
+                            }`}
+                          >
+                            {cell}
+                          </td>
+                        ),
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -230,51 +439,92 @@ export function LandingPage({
       )}
 
       {/* FAQ */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-          <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-            Frequently asked questions
-          </h2>
-          <dl className="mt-8 max-w-3xl divide-y divide-border">
-            {faqs.map((faq) => (
-              <div key={faq.q} className="py-5 first:pt-0">
-                <dt className="text-base font-semibold text-foreground md:text-[1.0625rem]">{faq.q}</dt>
-                <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{faq.a}</dd>
-              </div>
-            ))}
-          </dl>
-          <p className="mt-6 text-sm text-muted-foreground">
-            More answers in the{' '}
+      <section className="border-b border-white/10">
+        <div className="mx-auto grid w-full max-w-7xl gap-10 px-5 py-14 sm:px-8 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+          <div>
+            <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
+              FAQ
+            </p>
+            <h2 className="mt-2 text-2xl font-medium tracking-[-0.03em] text-white sm:text-3xl">
+              Frequently asked questions
+            </h2>
+            <p className="mt-4 max-w-sm text-[14px] leading-relaxed text-fd-muted">
+              {faqIntro}
+            </p>
             <Link
               href="/faq/"
-              className="text-fd-primary underline underline-offset-2 decoration-1 decoration-fd-primary/30 hover:decoration-fd-primary"
+              className="group mt-6 inline-flex items-center gap-1.5 text-[13px] font-medium text-white/60 transition-colors hover:text-white"
             >
-              full FAQ
+              Full FAQ
+              <ArrowUpRight
+                className="size-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
             </Link>
-            .
-          </p>
+          </div>
+
+          <FaqAccordion
+            items={faqs.map((faq) => ({ q: faq.q, a: faq.a }))}
+            questionClassName="max-w-2xl text-[15px] font-medium leading-relaxed text-white/85 transition-colors group-hover:text-white"
+            answerClassName="max-w-2xl pb-5 pr-10 text-[14px] leading-relaxed text-white/55"
+          />
         </div>
       </section>
 
       {/* Related */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-          <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-            Related
-          </h2>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="border-b border-white/10">
+        <div className="mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
+          <div className="flex items-center gap-4">
+            <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
+              Related
+            </h2>
+            <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
+          </div>
+          <ul className="mt-6 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="group flex flex-col border border-border bg-background p-6 transition-all hover:border-fd-primary/50"
-              >
-                <h3 className="text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-fd-primary">
-                  {item.label}
-                </h3>
-                <p className="mt-2 text-sm leading-snug text-muted-foreground">{item.desc}</p>
-              </Link>
+              <li key={item.href} className="border-t border-white/10 pt-5">
+                <Link
+                  href={item.href}
+                  className="group flex items-center justify-between gap-4 text-[15px] font-medium tracking-tight text-white/85 transition-colors hover:text-white"
+                >
+                  <span>{item.label}</span>
+                  <ArrowUpRight
+                    className="size-3.5 shrink-0 text-white/20 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-fd-primary"
+                    aria-hidden="true"
+                  />
+                </Link>
+                <p className="mt-2 text-[13px] leading-relaxed text-fd-muted">{item.desc}</p>
+              </li>
             ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="bg-fd-panel">
+        <div className="relative mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
+          <div className="relative flex flex-col gap-7 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
+                Start building
+              </p>
+              <h2 className="mt-3 max-w-2xl text-3xl font-medium leading-tight tracking-[-0.03em] text-white sm:text-4xl">
+                Install the SDK and query the data.
+              </h2>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <CopyCommand />
+              <Link
+                href="/docs/"
+                className="group inline-flex h-11 items-center gap-1.5 border border-white bg-white px-5 text-[13px] font-medium text-black transition-colors hover:border-fd-primary hover:bg-fd-primary hover:text-white"
+              >
+                Read the docs
+                <ArrowUpRight
+                  className="size-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </Link>
+            </div>
           </div>
         </div>
       </section>

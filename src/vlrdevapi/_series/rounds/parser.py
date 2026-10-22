@@ -5,6 +5,15 @@ from selectolax.lexbor import LexborHTMLParser as HTMLParser
 from vlrdevapi._series._utils import resolve_game_id
 from vlrdevapi._series.rounds.models import RoundData, RoundsData, RoundWinType
 
+# VLR encodes the win condition in the round icon filename. Map the site's
+# short codes to the public, full enum values.
+_WIN_TYPE_BY_ICON = {
+    "elim": RoundWinType.ELIMINATION,
+    "defuse": RoundWinType.DEFUSE,
+    "boom": RoundWinType.SPIKE_DETONATION,
+    "time": RoundWinType.TIME_EXPIRED,
+}
+
 
 def parse_rounds_data(html: HTMLParser, game_id: int | str = "all") -> RoundsData:
     """Parse round-by-round data from the series page HTML.
@@ -16,8 +25,8 @@ def parse_rounds_data(html: HTMLParser, game_id: int | str = "all") -> RoundsDat
 
     Returns:
         RoundsData: Parsed round data with team names and per-round
-        results.
-
+        results. Economy fields (bank, spend, buy types) are ``None``
+        here; the rounds namespace merges them from the economy tab.
     """
     gid = resolve_game_id(html, game_id)
     game_div = html.css_first(f'.vm-stats-game[data-game-id="{gid}"]')
@@ -91,17 +100,16 @@ def parse_rounds_data(html: HTMLParser, game_id: int | str = "all") -> RoundsDat
                 side = "Defense" if winner_index == 0 else "Attack"
 
             img = win_sq.css_first("img")
-            win_type_str = "elim"  # default
+            win_type_icon = "elim"  # default
             if img:
                 src = (img.attributes.get("src", "") or "")
                 if "/img/vlr/game/round/" in src and src.endswith(".webp"):
-                    win_type_str = src.split("/")[-1].replace(".webp", "")
+                    win_type_icon = src.split("/")[-1].replace(".webp", "")
 
-            try:
-                win_type_enum = RoundWinType(win_type_str)
-                win_type = win_type_enum.full_name
-            except ValueError:
-                win_type = "Elimination"  # fallback
+            win_type = _WIN_TYPE_BY_ICON.get(
+                win_type_icon,
+                RoundWinType.ELIMINATION,
+            )
 
             round_data = RoundData(
                 round_number=round_number,
@@ -111,6 +119,7 @@ def parse_rounds_data(html: HTMLParser, game_id: int | str = "all") -> RoundsDat
                 side=side,
                 team1_score=team1_score,
                 team2_score=team2_score,
+                is_pistol_round=round_number in (1, 13),
             )
 
             rounds_data.rounds.append(round_data)

@@ -22,7 +22,14 @@ class TeamUpcomingMatchEntry(BaseModel):
     match_id: int = Field(default=0, description="Match ID")
     url: str = Field(default="", description="Match URL")
     event: str = Field(default="", description="Event name")
-    stage: str = Field(default="", description="Stage within event")
+    stage: str = Field(
+        default="",
+        description="Stage within the event (e.g. 'Playoffs', 'Group Stage')",
+    )
+    bracket: str = Field(
+        default="",
+        description="Bracket/round within the stage (e.g. 'LBF', 'Ro16')",
+    )
     opponent: OpponentInUpcomingMatch | None = Field(
         default=None, description="Opponent team",
     )

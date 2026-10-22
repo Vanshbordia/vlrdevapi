@@ -1,0 +1,177 @@
+---
+title: Announcing VLRdevAPI v3.0
+description: Major economy and data release introducing kill-feed series replays, buy-type matrices, per-round economy, head-to-head history, and player tournament placements.
+date: 2026-10-23
+author: VLRdevAPI
+---
+
+We're thrilled to release **VLRdevAPI v3.0**, our biggest functional expansion since v2.0. 
+
+Version 3.0 delivers deep esports analytics capabilities: round-by-round kill-feed timelines, full economy buy matrices matching modern VLR.gg tiering, head-to-head series histories, broadcast streams, and dedicated player tournament placements.
+
+```bash
+# with uv (recommended)
+uv add vlrdevapi
+
+# or with pip
+pip install -U vlrdevapi
+```
+
+---
+
+## What's New in v3.0
+
+### 1. Kill-Feed Replay Timelines (`series.replay`)
+
+Until now, extracting spatial or sequence data required parsing raw logs. In v3.0, the new `series.replay(series_id, game_id)` method provides a structured, chronologically ordered timeline of every in-round event (`KILL`, `PLANT`, `DEFUSE`, `BOOM`, and `RESURRECT`).
+
+Each event is enriched with player positions, kill distances, plant sites, round clocks, and alive snapshots:
+
+```python
+import vlrdevapi
+from vlrdevapi._series.replay.models import ReplayEventType
+
+replay = vlrdevapi.series.replay(series_id=754737, game_id=283288)
+
+for round_replay in replay.rounds[:3]:
+    print(f"--- Round {round_replay.round_number} ---")
+    for event in round_replay.events:
+        if event.type == ReplayEventType.KILL:
+            killer = event.actor.name if event.actor else "World"
+            victim = event.victim.name if event.victim else "Unknown"
+            weapon = event.cause or "ability"
+            print(f"[{event.clock}] {killer} eliminated {victim} ({weapon})")
+```
+
+The `game_id` parameter accepts the native numeric VLR.gg game ID (such as `283288` for Sunset).
+
+---
+
+### 2. Modern Buy-Type Matrix & Re-Tiered Economy (`series.economy`)
+
+VLR.gg updated its economy classification from legacy four-tier spend buckets to three team-spend categories plus a dedicated pistol tier. VLRdevAPI v3.0 aligns directly with this architecture:
+
+* **`PISTOL`**: Opening rounds of each half.
+* **`ECO`**: Team spend under \$10,000.
+* **`HALF_BUY`**: Team spend between \$10,000 and \$18,000.
+* **`FULL_BUY`**: Team spend exceeding \$18,000.
+
+`EconomyData` now exposes the complete head-to-head buy matrix for both teams:
+
+```python
+import vlrdevapi
+
+econ = vlrdevapi.series.economy(series_id=754737, game_id=1)
+
+print("Team 1 Pistol Performance:", econ.pistol_team1)
+print("Team 1 Bonus Conversion:", econ.bonus_team1)
+
+# Inspect conversion rates vs opponent buy tiers
+matrix = econ.buy_matrix_team1
+if matrix and matrix.full_buy:
+    record = matrix.full_buy
+    if record.vs_full:
+        print(f"Full-buy vs Full-buy wins: {record.vs_full.won}/{record.vs_full.total}")
+    if record.vs_eco:
+        print(f"Full-buy vs Eco wins: {record.vs_eco.won}/{record.vs_eco.total}")
+```
+
+Passing `game_id="all"` returns an aggregated matrix across all played maps in the series.
+
+---
+
+### 3. Integrated Round Economy (`series.rounds`)
+
+`series.rounds()` now automatically fetches and merges bank balances and equipment spending directly into each round's data model:
+
+```python
+import vlrdevapi
+
+rounds = vlrdevapi.series.rounds(series_id=754737, game_id=1)
+
+for r in rounds.rounds[:5]:
+    print(
+        f"R{r.round_number} | Winner: {r.winner_team_name} ({r.win_type}) | "
+        f"T1 Bank: ${r.bank_team1} (Spent: ${r.spent_team1}, {r.buy_type_team1}) | "
+        f"T2 Bank: ${r.bank_team2} (Spent: ${r.spent_team2}, {r.buy_type_team2})"
+    )
+```
+
+---
+
+### 4. Head-to-Head Match History & Live Streams
+
+Series overviews and VOD listings now capture richer tournament context:
+
+* **`series.info(series_id).head_to_head`**: Retrospective history between the two competing organizations, including past match URLs, stage names, scores, and winning teams.
+* **`series.vods(series_id).streams`**: Discover live broadcasts and co-stream channels (Twitch, YouTube, AfreecaTV) with platform, language, country flags, and stream URLs.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.series.info(series_id=754737)
+
+if info.head_to_head:
+    print(f"Found {len(info.head_to_head)} previous head-to-head clashes:")
+    for match in info.head_to_head:
+        print(f"  {match.date} | {match.team1_name} {match.team1_score}-{match.team2_score} {match.team2_name}")
+```
+
+---
+
+### 5. Player Tournament Placements & Prize Earnings
+
+The new `player.placements()` namespace extracts a player's historical tournament record, placements, and prize pool earnings:
+
+```python
+import vlrdevapi
+
+placements = vlrdevapi.player.placements(player_id=11225)
+print(f"Total Career Winnings: ${placements.total_winnings:,.2f}")
+
+for p in placements.placements[:5]:
+    prize = (
+        f"{p.prize_currency}{p.prize_amount:,.2f}"
+        if p.prize_amount is not None
+        else "no prize"
+    )
+    print(f"{p.year} {p.event_name} ({p.stage}): Finish #{p.placement} - Prize: {prize}")
+```
+
+---
+
+## Breaking Changes & Migration Guide
+
+### Updating `BuyType` Enum References
+
+If your code inspected round or team buy types with the legacy `SEMI_ECO` or `SEMI_BUY` members, update them to use the new tiers:
+
+```python
+# doc-check: skip
+# Before (v2.x)
+from vlrdevapi._series.economy.models import BuyType
+
+if round_info.buy_type == BuyType.SEMI_BUY:
+    ...
+
+# Now (v3.0)
+from vlrdevapi._series.economy.models import BuyType
+
+if round_info.buy_type == BuyType.HALF_BUY:
+    ...
+elif round_info.buy_type == BuyType.PISTOL:
+    ...
+```
+
+String values for serialization are `"Pistol"`, `"Eco"`, `"Half-buy"`, and `"Full-buy"`.
+
+---
+
+## Getting Started
+
+To explore the new features, update to v3.0 and check out the updated reference guides:
+
+* [Series Replay Documentation](/docs/reference/series/replay/)
+* [Economy & Buy Matrix Reference](/docs/reference/series/economy/)
+* [Player Placements Reference](/docs/reference/player/placements/)
+* [Full Changelog](/changelog/)

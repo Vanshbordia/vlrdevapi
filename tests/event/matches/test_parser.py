@@ -3,9 +3,9 @@ from pathlib import Path
 import pytest
 from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
-from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
-from vlrdevapi._event.matches.parser import parse_event_matches
+from tests.conftest import _LIVE, FIXTURES_DIR, live_fetch
 from vlrdevapi._event.matches.models import MatchStatus
+from vlrdevapi._event.matches.parser import parse_event_matches
 
 _FIXTURES_2863 = (
     FIXTURES_DIR
@@ -62,8 +62,10 @@ class TestParseEventMatchesCompleted:
         assert len(m.teams) == 2
         if not _LIVE:
             assert m.teams[0].name == "Team Vitality"
+            assert m.teams[0].country_name == "European Union"
             assert m.teams[0].score == 2
             assert m.teams[1].name == "Team Heretics"
+            assert m.teams[1].country_name == "European Union"
             assert m.teams[1].score == 3
 
     def test_winner_detected(self):
@@ -156,9 +158,11 @@ class TestParseEventMatchesCompleted2760:
             assert m.stage == "Swiss Stage"
             assert m.phase == "Round 1"
             assert m.teams[0].name == "Gentle Mates"
+            assert m.teams[0].country_name == "European Union"
             assert m.teams[0].score == 2
             assert m.teams[0].winner is True
             assert m.teams[1].name == "EDward Gaming"
+            assert m.teams[1].country_name == "China"
             assert m.teams[1].score == 0
             assert m.teams[1].winner is False
 

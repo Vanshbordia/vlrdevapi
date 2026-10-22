@@ -42,8 +42,8 @@ class PlayerInfoNamespace:
 
         Returns:
             PlayerInfo: Player details including ``name``, ``real_name``,
-            ``country``, ``country_code``, ``player_id``, and social media
-            links (``twitter``, ``twitch``, ``youtube``).
+            ``country``, ``country_code``, ``player_id``, social media
+            links, and ``total_winnings``.
 
         Raises:
             ValidationError: If ``player_id`` is not a valid positive integer.

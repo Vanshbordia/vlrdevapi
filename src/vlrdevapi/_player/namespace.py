@@ -12,6 +12,8 @@ from vlrdevapi._player.info.models import PlayerInfo
 from vlrdevapi._player.info.namespace import PlayerInfoNamespace
 from vlrdevapi._player.matches.models import PlayerMatches
 from vlrdevapi._player.matches.namespace import MatchesNamespace
+from vlrdevapi._player.placements.models import PlayerPlacements
+from vlrdevapi._player.placements.namespace import PlayerPlacementsNamespace
 from vlrdevapi._player.profile.models import PlayerProfile
 from vlrdevapi._player.profile.namespace import ProfileNamespace
 from vlrdevapi._player.teams.models import PlayerTeams
@@ -41,6 +43,7 @@ class PlayerMatchNamespace:
         agents: AgentsNamespace,
         matches: MatchesNamespace,
         profile: ProfileNamespace,
+        placements: PlayerPlacementsNamespace,
     ):
         self._player_id = player_id
         self._info = info
@@ -48,6 +51,7 @@ class PlayerMatchNamespace:
         self._agents = agents
         self._matches = matches
         self._profile = profile
+        self._placements = placements
 
     @sanitize_and_validate
     def info(self) -> PlayerInfo:
@@ -160,13 +164,32 @@ class PlayerMatchNamespace:
         """
         return self._profile(self._player_id)
 
+    @sanitize_and_validate
+    def placements(self) -> PlayerPlacements:
+        """Get event placements and total winnings for this player.
+
+        Returns:
+            PlayerPlacements: An object with ``total_winnings`` and
+            ``placements`` (list of ``PlayerEventPlacement``).
+
+        Raises:
+            ValidationError: If the pre-bound ``player_id`` is not a valid
+                positive integer.
+            NotFoundError: If the player page does not exist (HTTP 404).
+            RequestError: If the HTTP request fails.
+            RateLimitError: If the rate limit is exceeded.
+            ParsingError: If the page structure is unrecognised.
+
+        """
+        return self._placements(self._player_id)
+
 
 class PlayerNamespace:
     """Top-level namespace for player data.
 
-    Access sub-namespaces for info, teams, agents, match history, and
-    consolidated profiles. Use ``vlrdevapi.player(player_id)`` for
-    curried access.
+    Access sub-namespaces for info, teams, agents, match history,
+    placements, and consolidated profiles. Use
+    ``vlrdevapi.player(player_id)`` for curried access.
 
     Quick start::
 
@@ -174,6 +197,7 @@ class PlayerNamespace:
         matches = vlrdevapi.player(11225).matches(limit=20)
         agents = vlrdevapi.player(11225).agents(timespan="60d")
         profile = vlrdevapi.player(11225).profile()
+        placements = vlrdevapi.player(11225).placements()
     """
 
     def __init__(
@@ -191,6 +215,7 @@ class PlayerNamespace:
         self._agents = AgentsNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
         self._matches = MatchesNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
         self._profile = ProfileNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
+        self._placements = PlayerPlacementsNamespace(client, timeout, retry_config, rate_limiter, extra_headers, source_tz=source_tz)
 
     @property
     def info(self) -> PlayerInfoNamespace:
@@ -267,6 +292,21 @@ class PlayerNamespace:
         """
         return self._profile
 
+    @property
+    def placements(self) -> PlayerPlacementsNamespace:
+        """Access event placements and total winnings for a player.
+
+        Usage::
+
+            placements = vlrdevapi.player.placements(player_id=46051)
+
+        Returns:
+            PlayerPlacementsNamespace: A namespace instance. Call with a
+            ``player_id`` to fetch and return a ``PlayerPlacements`` model.
+
+        """
+        return self._placements
+
     @sanitize_and_validate
     def __call__(self, player_id: int) -> PlayerMatchNamespace:
         """Create a curried namespace bound to a specific player.
@@ -279,8 +319,8 @@ class PlayerNamespace:
 
         Returns:
             PlayerMatchNamespace: A namespace object with methods ``.info()``,
-            ``.teams()``, ``.agents()``, ``.matches()``, and
-            ``.profile()`` — all pre-bound to the given ``player_id``.
+            ``.teams()``, ``.agents()``, ``.matches()``, ``.profile()``,
+            and ``.placements()`` — all pre-bound to the given ``player_id``.
 
         Raises:
             ValidationError: If ``player_id`` is not a valid positive integer.
@@ -300,6 +340,7 @@ class PlayerNamespace:
             agents=self._agents,
             matches=self._matches,
             profile=self._profile,
+            placements=self._placements,
         )
 
 

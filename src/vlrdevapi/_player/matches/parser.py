@@ -1,4 +1,5 @@
 
+import contextlib
 from datetime import tzinfo
 from zoneinfo import ZoneInfo
 
@@ -6,24 +7,12 @@ from selectolax.lexbor import LexborHTMLParser as HTMLParser
 from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._player.matches.models import MatchEntry, MatchHistoryPage, TeamInMatch
+from vlrdevapi._utils.text import split_stage_bracket as _split_stage_bracket
 from vlrdevapi.commons.datetime import (
     parse_vlr_date,
     parse_vlr_datetime,
     parse_vlr_time,
 )
-import contextlib
-
-_SDOT = "\u22c5"
-
-
-def _split_stage_bracket(text: str) -> tuple[str, str]:
-    text = text.strip()
-    if _SDOT in text:
-        parts = text.split(_SDOT, 1)
-        stage = parts[0].strip()
-        bracket = parts[1].strip() if len(parts) > 1 else ""
-        return stage, bracket
-    return "", text
 
 
 def _parse_team(team_el: Node | None) -> TeamInMatch:

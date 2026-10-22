@@ -1,5 +1,6 @@
-from vlrdevapi._series.rounds.models import RoundsData
 import httpx
+
+from vlrdevapi._series.rounds.models import RoundsData
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
 
 class SeriesRoundsNamespace:
@@ -10,6 +11,7 @@ class SeriesRoundsNamespace:
         retry_config: RetryConfig = ...,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: object = ...,
     ) -> None: ...
 
     def __call__(self, series_id: int, game_id: int) -> RoundsData:

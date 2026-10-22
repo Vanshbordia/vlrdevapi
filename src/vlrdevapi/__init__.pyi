@@ -1,4 +1,4 @@
-from vlrdevapi._client import VLRClient
+from vlrdevapi._client import VLRClient as VLRClient
 from vlrdevapi._event.namespace import EventNamespace
 from vlrdevapi._matches.namespace import MatchesNamespace
 from vlrdevapi._news.namespace import NewsNamespace
@@ -99,3 +99,15 @@ Examples:
     >>> with vlrdevapi.client() as c:
     ...     result = c.series.vods(123)
 """
+
+__all__ = [
+    "VLRClient",
+    "__version__",
+    "client",
+    "event",
+    "matches",
+    "news",
+    "player",
+    "series",
+    "team",
+]

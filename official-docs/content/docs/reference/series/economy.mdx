@@ -1,6 +1,6 @@
 ---
 title: Series Economy
-description: Fetch economy data per round for a game - team bank, spend, buy type, and round winner.
+description: Fetch economy data per round for a game - team bank, spend, buy type, round winner, plus the buy-type matrix.
 ---
 
 `series.economy(series_id, game_id)` returns economy data for each round of a specific game within a series.
@@ -82,6 +82,46 @@ vlrdevapi.series(series_id).economy(game_id: int) -> EconomyData
     typeDescription: "list[RoundEconomyData] - see nested fields below",
     default: "[]",
   },
+  "buy_matrix_team1": {
+    description: "Buy-type matrix for team 1 (economy tab pistol/conv/bonus summary + per-buy-tier records).",
+    type: "TeamBuyMatrix",
+    typeDescription: "TeamBuyMatrix - see nested fields below",
+  },
+  "buy_matrix_team2": {
+    description: "Buy-type matrix for team 2.",
+    type: "TeamBuyMatrix",
+    typeDescription: "TeamBuyMatrix - see nested fields below",
+  },
+  "pistol_team1": {
+    description: "Shortcut to buy_matrix_team1.pistol - pistol rounds won/total for team 1.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "converted_team1": {
+    description: "Shortcut to buy_matrix_team1.converted - conversion rounds won/total for team 1.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "bonus_team1": {
+    description: "Shortcut to buy_matrix_team1.bonus - bonus rounds won/total for team 1.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "pistol_team2": {
+    description: "Shortcut to buy_matrix_team2.pistol - pistol rounds won/total for team 2.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "converted_team2": {
+    description: "Shortcut to buy_matrix_team2.converted - conversion rounds won/total for team 2.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "bonus_team2": {
+    description: "Shortcut to buy_matrix_team2.bonus - bonus rounds won/total for team 2.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
 }} />
 
 ### `RoundEconomyData` Fields
@@ -123,7 +163,7 @@ vlrdevapi.series(series_id).economy(game_id: int) -> EconomyData
     typeDescription: "RoundWinner",
   },
   "buy_type_team1": {
-    description: "Buy type classification for team 1 (Eco, Semi-eco, Semi-buy, Full-buy).",
+    description: "Buy type classification for team 1 (Pistol, Eco, Half-buy, Full-buy).",
     type: "BuyType",
     typeDescription: "BuyType enum",
   },
@@ -159,12 +199,52 @@ vlrdevapi.series(series_id).economy(game_id: int) -> EconomyData
 
 ### `BuyType` Values
 
+Mirrors the buy tiers vlr.gg uses on the economy tab (based on total team spend):
+
 | Value | Description | Total Team Spend |
 |-------|-------------|-----------------|
-| `BuyType.ECO` | Eco buy | 0 - 5,000 |
-| `BuyType.SEMI_ECO` | Semi-eco | 5,000 - 10,000 |
-| `BuyType.SEMI_BUY` | Semi-buy | 10,000 - 20,000 |
-| `BuyType.FULL_BUY` | Full-buy | 20,000+ |
+| `BuyType.PISTOL` | Pistol round buy (rounds 1 and 13) | - |
+| `BuyType.ECO` | Eco buy | under 10,000 |
+| `BuyType.HALF_BUY` | Half-buy | 10,000 - 18,000 |
+| `BuyType.FULL_BUY` | Full-buy | 18,000+ |
+
+### `TeamBuyMatrix` Fields
+
+The economy tab's buy-type matrix, per team.
+
+- `pistol` / `converted` / `bonus` come from the Pistol / Conv. / Bonus
+  summary table: pistol rounds played, the round after a pistol win
+  (conversion), and the round after a conversion (bonus).
+- `on_eco` / `on_half_buy` / `on_full_buy` carry each tier's record,
+  split by the opponent's buy tier.
+
+| Value | Description |
+|-------|-------------|
+| `pistol` | Pistol rounds won/total (`EconScore` or `None`) |
+| `converted` | Rounds after pistol won/total (`EconScore` or `None`) |
+| `bonus` | Rounds after conversion won/total (`EconScore` or `None`) |
+| `on_eco` | Record while on eco (`BuyTierRecord` or `None`) |
+| `on_half_buy` | Record while on half buy (`BuyTierRecord` or `None`) |
+| `on_full_buy` | Record while on full buy (`BuyTierRecord` or `None`) |
+| `eco` | Alias for `on_eco` (read-only property) |
+| `half_buy` | Alias for `on_half_buy` (read-only property) |
+| `full_buy` | Alias for `on_full_buy` (read-only property) |
+
+### `BuyTierRecord` Fields
+
+| Value | Description |
+|-------|-------------|
+| `vs_eco` | Rounds vs opponents on eco (`EconScore` or `None`) |
+| `vs_half` | Rounds vs opponents on half buy (`EconScore` or `None`) |
+| `vs_full` | Rounds vs opponents on full buy (`EconScore` or `None`) |
+| `total` | Combined won/total across all opponent tiers; `None` when no matchup was recorded (read-only property) |
+
+### `EconScore` Fields
+
+| Value | Description | Type | Default |
+|-------|-------------|------|---------|
+| `won` | Rounds won | `int` | `0` |
+| `total` | Total rounds played | `int` | `0` |
 
 ## Examples
 
@@ -213,9 +293,68 @@ for team_name in [econ.team1, econ.team2]:
         print(f"  {buy_type}: {wins}/{total} wins ({pct:.0f}%)")
 ```
 
+### Buy matrix from the economy tab
+
+The buy-type matrix is the same data vlr.gg renders on the economy tab: the pistol/conversion/bonus summary and how each team's buys fared against each opponent buy type. Use the flat `pistol_team1`-style shortcuts for quick reads, the `total` property for combined per-tier records, and the `vs_*` cells for detailed breakdowns.
+
+```python
+import vlrdevapi
+
+econ = vlrdevapi.series.economy(series_id=670471, game_id=1)
+
+# Shortcut: pistol/conversion/bonus summary straight off the result.
+print(f"Team 1 pistol rounds: {econ.pistol_team1.won}/{econ.pistol_team1.total}")
+
+full = econ.buy_matrix_team1.full_buy
+if full:
+    # Combined record on full buy across all opponent tiers.
+    print(f"Full buy overall: {full.total.won}/{full.total.total}")
+    # Detailed: split by what the opponent was on.
+    if full.vs_eco:
+        print(f"  vs eco: {full.vs_eco.won}/{full.vs_eco.total}")
+    if full.vs_half:
+        print(f"  vs half: {full.vs_half.won}/{full.vs_half.total}")
+    if full.vs_full:
+        print(f"  vs full: {full.vs_full.won}/{full.vs_full.total}")
+
+for team, m in ((econ.team1, econ.buy_matrix_team1), (econ.team2, econ.buy_matrix_team2)):
+    print(f"--- {team} ---")
+    for label, score in (("Pistol", m.pistol), ("Conversion", m.converted), ("Bonus", m.bonus)):
+        if score:
+            print(f"  {label}: {score.won}/{score.total}")
+    for label, record in (("On eco", m.on_eco), ("On half buy", m.on_half_buy), ("On full buy", m.on_full_buy)):
+        if record is None:
+            continue
+        cells = [
+            f"vs eco {record.vs_eco.won}/{record.vs_eco.total}" if record.vs_eco else "vs eco -",
+            f"vs half {record.vs_half.won}/{record.vs_half.total}" if record.vs_half else "vs half -",
+            f"vs full {record.vs_full.won}/{record.vs_full.total}" if record.vs_full else "vs full -",
+        ]
+        print(f"  {label}: " + " | ".join(cells))
+```
+
+### Attacker / defender round wins
+
+The round timeline (win type and each winner's side) lives in `series.rounds`, together with the per-round economy, so use it directly:
+
+```python
+import vlrdevapi
+from collections import Counter
+
+rounds = vlrdevapi.series.rounds(series_id=670471, game_id=1)
+
+for team_name in [rounds.team1, rounds.team2]:
+    wins = Counter(
+        rd.side
+        for rd in rounds.rounds
+        if rd.winner_team_name == team_name and rd.side
+    )
+    print(f"{team_name}: Attack {wins.get('Attack', 0)} - Defense {wins.get('Defense', 0)}")
+```
+
 ### Force buy and eco round detection
 
-Identify eco rounds, force buys (semi-buy with low bank), and full-buy rounds. These are often key turning points in a match.
+Identify eco rounds, half-buys, and full-buy rounds. These are often key turning points in a match.
 
 ```python
 import vlrdevapi

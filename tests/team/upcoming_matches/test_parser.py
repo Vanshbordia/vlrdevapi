@@ -1,9 +1,13 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 import pytest
 from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
-from tests.conftest import FIXTURES_DIR, _LIVE, live_fetch
-from vlrdevapi._team.upcoming_matches.parser import _parse_match_item, parse_team_upcoming_matches
+from tests.conftest import _LIVE, FIXTURES_DIR, live_fetch
+from vlrdevapi._team.upcoming_matches.parser import (
+    _parse_match_item,
+    parse_team_upcoming_matches,
+)
 
 _FIXTURES = FIXTURES_DIR / "team"
 
@@ -40,7 +44,7 @@ class TestParseMatchItem:
         assert match is not None
         if match.datetime is not None:
             assert isinstance(match.datetime, datetime)
-            assert match.datetime.tzinfo == timezone.utc
+            assert match.datetime.tzinfo == UTC
 
     def test_parse_all_match_items(self):
         html = _load_html(1034, "completed_matches.html")
@@ -78,4 +82,23 @@ class TestParseTeamUpcomingMatches:
             for m in result.matches:
                 assert m.match_id > 0
                 assert m.url.startswith("https://")
+
+    def test_stage_and_bracket_are_parsed_separately(self):
+        html = _load_html(14137)
+        result = parse_team_upcoming_matches(html, 14137)
+
+        assert len(result.matches) == 1
+        match = result.matches[0]
+        assert match.event == "VCT 26: CN Threshold"
+        assert match.stage == "Week 1"
+        assert match.bracket == "QF"
+
+    def test_parse_only_upcoming_section(self):
+        """Regression: the section after the heading must not include Recent Results."""
+        html = _load_html(14137)
+        result = parse_team_upcoming_matches(html, 14137)
+
+        assert [m.match_id for m in result.matches] == [777946]
+        # The page contains recent results (738335, 736474, ...).
+        assert all(m.match_id != 738335 for m in result.matches)
 

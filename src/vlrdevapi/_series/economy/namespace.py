@@ -37,19 +37,25 @@ class SeriesEconomyNamespace:
         self._sync = SyncNamespace(client, timeout, retry_config, rate_limiter, extra_headers)
 
     @sanitize_and_validate
-    def __call__(self, series_id: int, game_id: int) -> EconomyData:
+    def __call__(self, series_id: int, game_id: int | str = "all") -> EconomyData:
         """Get economy data for a series game on vlr.gg.
 
         Args:
             series_id: The unique series identifier on vlr.gg.
-            game_id: The game number within the series (1-based), or its
-                real VLR game ID.
+            game_id: The game number within the series (1-based), a real
+                VLR game ID, or "all" for combined series economy.
 
         Returns:
             EconomyData: Economy data including ``rounds`` (list of
-            ``RoundEconomyData`` with purchases, remaining credits, and
-            team spending per round), ``team1`` and ``team2`` names,
-            and enriched team IDs.
+            ``RoundEconomyData`` with purchases, remaining credits,
+            spending, buy tier, and winner per round; the winning side
+            comes from ``series.rounds``),
+            ``buy_matrix_team1``/``buy_matrix_team2`` (the economy tab's
+            pistol/conv/bonus summary and per-buy-tier records), the flat
+            ``pistol_team1``/``converted_team1``/``bonus_team1`` and
+            ``pistol_team2``/``converted_team2``/``bonus_team2``
+            shortcuts, ``team1`` and ``team2`` names, and enriched team
+            IDs.
 
         Raises:
             ValidationError: If ``series_id`` or ``game_id`` is not a valid

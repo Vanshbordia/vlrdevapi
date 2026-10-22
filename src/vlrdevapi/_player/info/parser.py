@@ -1,11 +1,14 @@
 from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
+from vlrdevapi._player._common_parsing import _parse_total_winnings
 from vlrdevapi._player.info.models import PlayerInfo
 from vlrdevapi.commons.countries import get_country_name
 
 
 def parse_player_info(html: HTMLParser) -> PlayerInfo:
     info = PlayerInfo()
+    info.total_winnings, info.total_winnings_currency = _parse_total_winnings(html)
+
     header = html.css_first(".player-header")
     if not header:
         return info

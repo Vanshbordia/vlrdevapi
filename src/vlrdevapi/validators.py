@@ -7,7 +7,7 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
-from pydantic import validate_call
+from pydantic import ValidationError as PydanticValidationError, validate_call
 
 from vlrdevapi.exceptions import ValidationError
 
@@ -37,21 +37,27 @@ def _validate_bound_args(sig: inspect.Signature, args: tuple, kwargs: dict) -> i
     for name, value in bound.arguments.items():
         # Positive-integer validation for known ID / pagination params
         # Skip None — these params are optional in some namespaces (e.g. event_id on team stats)
-        if name in _ID_PARAMS and value is not None:
-            if not isinstance(value, int) or value <= 0:
-                msg = f"{name} must be a positive integer, got {value}"
-                raise ValidationError(msg)
+        if (
+            name in _ID_PARAMS
+            and value is not None
+            and (isinstance(value, bool) or not isinstance(value, int) or value <= 0)
+        ):
+            msg = f"{name} must be a positive integer, got {value}"
+            raise ValidationError(msg)
 
         # max_page allows 0 (meaning unlimited), but not negative
-        if name in _MAX_PAGE_PARAMS and value is not None:
-            if not isinstance(value, int) or value < 0:
-                msg = f"{name} must be a non-negative integer, got {value}"
-                raise ValidationError(msg)
+        if (
+            name in _MAX_PAGE_PARAMS
+            and value is not None
+            and (isinstance(value, bool) or not isinstance(value, int) or value < 0)
+        ):
+            msg = f"{name} must be a non-negative integer, got {value}"
+            raise ValidationError(msg)
 
         # game_id may be int or "all"
         if name == "game_id" and value != "all":
-            if value is None:
-                msg = "game_id cannot be None"
+            if value is None or isinstance(value, bool):
+                msg = f"game_id must be a positive integer or 'all', got {value}"
                 raise ValidationError(msg)
             try:
                 val = int(value)
@@ -89,7 +95,10 @@ def sanitize_and_validate(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
     def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
         bound = _validate_bound_args(sig, args, kwargs)
-        return pydantic_validated(*bound.args, **bound.kwargs)
+        try:
+            return pydantic_validated(*bound.args, **bound.kwargs)
+        except PydanticValidationError as exc:
+            raise ValidationError(str(exc)) from exc
 
     sync_wrapper.__signature__ = sig  # type: ignore
     return sync_wrapper

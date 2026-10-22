@@ -1,29 +1,29 @@
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class RoundWinType(Enum):
+class RoundWinType(StrEnum):
     """How a round was won in a Valorant match."""
 
-    ELIMINATION = "elim"
+    ELIMINATION = "elimination"
     """Round won by eliminating all opponents."""
     DEFUSE = "defuse"
     """Round won by defusing the spike."""
-    BOOM = "boom"
-    """Round won by spike detonation."""
-    TIME = "time"
-    """Round won by timeout (clock expired)."""
+    SPIKE_DETONATION = "spike_detonation"
+    """Round won by detonating the spike."""
+    TIME_EXPIRED = "time_expired"
+    """Round won because the round clock expired."""
 
     @property
     def full_name(self) -> str:
         """Return the human-readable name for this win type."""
         return {
-            "elim": "Elimination",
+            "elimination": "Elimination",
             "defuse": "Defuse",
-            "boom": "Spike detonation",
-            "time": "Time out",
+            "spike_detonation": "Spike detonation",
+            "time_expired": "Time expired",
         }.get(self.value, self.value)
 
 
@@ -37,7 +37,10 @@ class RoundData(BaseModel):
     round_number: int = Field(default=0, description="Round number in the game")
     winner_team_name: str = Field(default="", description="Winning team name")
     winner_team_id: int = Field(default=0, description="Winning team ID")
-    win_type: str = Field(default="", description="Type of win")
+    win_type: RoundWinType = Field(
+        default=RoundWinType.ELIMINATION,
+        description="How the round was won (elimination, defuse, boom, or time)",
+    )
     side: str = Field(
         default="",
         description="Actual side the winning team played: Defense (CT) or Attack (T)",
@@ -47,6 +50,34 @@ class RoundData(BaseModel):
     )
     team2_score: int = Field(
         default=0, description="Team 2's total score after this round",
+    )
+    bank_team1: float | None = Field(
+        default=None,
+        description="Team 1's bank at round start; None when economy data was not merged",
+    )
+    bank_team2: float | None = Field(
+        default=None,
+        description="Team 2's bank at round start; None when economy data was not merged",
+    )
+    spent_team1: int | None = Field(
+        default=None,
+        description="Money spent by team 1 this round; None when economy data was not merged",
+    )
+    spent_team2: int | None = Field(
+        default=None,
+        description="Money spent by team 2 this round; None when economy data was not merged",
+    )
+    buy_type_team1: str = Field(
+        default="",
+        description="Team 1 buy tier: 'Pistol', 'Eco', 'Half-buy', or 'Full-buy' (empty when economy data was not merged)",
+    )
+    buy_type_team2: str = Field(
+        default="",
+        description="Team 2 buy tier: 'Pistol', 'Eco', 'Half-buy', or 'Full-buy' (empty when economy data was not merged)",
+    )
+    is_pistol_round: bool = Field(
+        default=False,
+        description="Whether this is a pistol round (rounds 1 and 13)",
     )
 
 

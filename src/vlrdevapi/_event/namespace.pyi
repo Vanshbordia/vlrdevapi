@@ -1,4 +1,8 @@
+from datetime import tzinfo
 from typing import Literal
+from zoneinfo import ZoneInfo
+
+import httpx
 
 from vlrdevapi._event.info.models import EventInfo
 from vlrdevapi._event.info.namespace import EventInfoNamespace
@@ -12,8 +16,6 @@ from vlrdevapi._event.standings.namespace import EventStandingsNamespace
 from vlrdevapi._event.teams.models import EventTeams
 from vlrdevapi._event.teams.namespace import EventTeamsNamespace
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
-import httpx
-
 
 class EventMatchNamespace:
     def __init__(
@@ -49,6 +51,7 @@ class EventNamespace:
         retry_config: RetryConfig = ...,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ) -> None: ...
 
     @property

@@ -1,3 +1,4 @@
+import contextlib
 import re
 from typing import Literal
 
@@ -14,7 +15,6 @@ from vlrdevapi._event.list.models import (
 from vlrdevapi.commons.countries import get_country_name
 from vlrdevapi.commons.datetime import parse_vlr_date_range
 from vlrdevapi.commons.prizes import parse_prize_amount
-import contextlib
 
 _StatusLiteral = Literal["ongoing", "upcoming", "completed", "paused"]
 _VALID_STATUSES: frozenset[str] = frozenset({"ongoing", "upcoming", "completed", "paused"})

@@ -61,7 +61,13 @@ team.upcoming_matches(team_id: int) -> TeamUpcomingMatches
     default: '""',
   },
   "stage": {
-    description: "Stage within event.",
+    description: 'Stage within the event (e.g. "Playoffs", "Group Stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "bracket": {
+    description: 'Bracket or round within the stage (e.g. "LBF", "Ro16").',
     type: "str",
     typeDescription: "str",
     default: '""',
@@ -117,7 +123,8 @@ if not upcoming.matches:
     print("No upcoming matches for this team")
 for m in upcoming.matches:
     opp = m.opponent.name if m.opponent else "TBD"
-    print(f"vs {opp} ({m.event} - {m.stage}) at {m.datetime}")
+    round_label = " ".join(part for part in (m.stage, m.bracket) if part)
+    print(f"vs {opp} ({m.event} - {round_label}) at {m.datetime}")
 ```
 
 ### Check for upcoming matches in a specific event

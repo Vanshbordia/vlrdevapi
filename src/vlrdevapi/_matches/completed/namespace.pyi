@@ -1,5 +1,9 @@
-from vlrdevapi._matches.completed.models import CompletedMatchesPage
+from datetime import tzinfo
+from zoneinfo import ZoneInfo
+
 import httpx
+
+from vlrdevapi._matches.completed.models import CompletedMatchesPage
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
 
 class CompletedMatchesNamespace:
@@ -10,6 +14,7 @@ class CompletedMatchesNamespace:
         retry_config: RetryConfig = ...,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ) -> None: ...
 
     def __call__(

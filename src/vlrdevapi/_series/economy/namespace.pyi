@@ -1,5 +1,6 @@
-from vlrdevapi._series.economy.models import EconomyData
 import httpx
+
+from vlrdevapi._series.economy.models import EconomyData
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
 
 class SeriesEconomyNamespace:
@@ -10,7 +11,8 @@ class SeriesEconomyNamespace:
         retry_config: RetryConfig = ...,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: object = ...,
     ) -> None: ...
 
-    def __call__(self, series_id: int, game_id: int) -> EconomyData:
+    def __call__(self, series_id: int, game_id: int | str = "all") -> EconomyData:
         ...

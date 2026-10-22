@@ -1,9 +1,9 @@
 ---
-title: Series VODs
-description: Fetch VOD/video links for a match - YouTube and Twitch URLs per game.
+title: Series Streams & VODs
+description: Fetch live/watch-party streams and VOD/video links for a match - Twitch, YouTube, Kick, regional platforms, and per-map videos.
 ---
 
-`series.vods(series_id)` returns VOD (Video on Demand) links for a match on vlr.gg.
+`series.vods(series_id)` returns the streams and VOD (Video on Demand) links shown on a match page. Live broadcasts and watch parties are available even for upcoming matches; full-match and per-map videos are available after the match.
 
 ## Signature
 
@@ -37,11 +37,52 @@ vlrdevapi.series(series_id).vods() -> SeriesVods
     typeDescription: "int",
     default: "0",
   },
+  "streams": {
+    description: "Live broadcasts and watch-party streams for this match.",
+    type: "list[SeriesStream]",
+    typeDescription: "list[SeriesStream] - see nested fields below",
+    default: "[]",
+  },
   "vods": {
-    description: "List of VOD entries for this match.",
+    description: "Full-match and per-map VOD entries for this match.",
     type: "list[SeriesVod]",
     typeDescription: "list[SeriesVod] - see nested fields below",
     default: "[]",
+  },
+}} />
+
+### `SeriesStream` Fields
+
+<TypeTable type={{
+  "platform": {
+    description: "Streaming platform code. Twitch, YouTube, and Kick use their site name; other platforms use their label lowercased (e.g. 'bilibili', 'douyu', 'huya', 'soop').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "channel": {
+    description: "Channel or display name (e.g. 'Valorant', 'VCT CN', 'FNS').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "url": {
+    description: "Full URL to the stream.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stream_type": {
+    description: "Stream kind from vlr.gg: 'broadcast' for official streams or 'watchparty' for co-streams.",
+    type: "str",
+    typeDescription: '"broadcast" | "watchparty"',
+    default: '"broadcast"',
+  },
+  "country_code": {
+    description: "Country/language hint from the flag (e.g. 'us', 'cn', 'br'). 'un' means unknown.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
   },
 }} />
 
@@ -49,59 +90,107 @@ vlrdevapi.series(series_id).vods() -> SeriesVods
 
 <TypeTable type={{
   "url": {
-    description: "Full URL to the VOD (YouTube or Twitch).",
+    description: "Full URL to the VOD (YouTube, Twitch, etc.).",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
   "label": {
-    description: 'Display label (e.g. "Full Match", "Map 1", "Map 2").',
+    description: 'Display label (e.g. "Full match", "Corrode", "Lotus").',
     type: "str",
     typeDescription: "str",
     default: '""',
+  },
+  "platform": {
+    description: "Platform code (e.g. 'twitch', 'youtube').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "map_number": {
+    description: "Map number for map-specific VODs; None for the full-match video.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "start_seconds": {
+    description: "Start offset into the video in seconds.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
   },
 }} />
 
 ## Examples
 
-### List all VODs
+### List official streams and watch parties
 
-Fetch all available VOD links for a match. Each entry has a label indicating which part of the match it covers and a URL pointing to the video platform.
+Filter by `stream_type` to show only official broadcasts or include co-streams.
 
 ```python
 import vlrdevapi
 
-vods = vlrdevapi.series.vods(series_id=670471)
-for vod in vods.vods:
-    print(f"{vod.label}: {vod.url}")
+media = vlrdevapi.series.vods(series_id=754737)
+
+for stream in media.streams:
+    if stream.stream_type == "broadcast":
+        print(f"[{stream.platform}] {stream.channel}: {stream.url}")
 ```
 
-### Categorize VODs by label
+### Filter by platform and country
 
-Use the label field to organize VODs into different categories - full match replays versus individual map VODs.
+`country_code` is useful when a match has regional broadcasts on many platforms.
 
 ```python
 import vlrdevapi
 
-vods = vlrdevapi.series.vods(series_id=670471)
-for vod in vods.vods:
-    if "Full" in vod.label:
-        print(f"Full match: {vod.url}")
-    else:
-        print(f"Individual VOD ({vod.label}): {vod.url}")
+media = vlrdevapi.series.vods(series_id=777944)
+
+for stream in media.streams:
+    if stream.country_code == "cn":
+        print(f"{stream.platform}: {stream.channel} ({stream.url})")
+```
+
+### List all VODs
+
+Each VOD entry has a label, platform, and optional map number and start offset.
+
+```python
+import vlrdevapi
+
+media = vlrdevapi.series.vods(series_id=542272)
+
+for vod in media.vods:
+    map_label = f"Map {vod.map_number}" if vod.map_number else "Full match"
+    print(f"{map_label}: {vod.label} [{vod.platform}] {vod.url}")
+```
+
+### Split full-match and per-map VODs
+
+```python
+import vlrdevapi
+
+media = vlrdevapi.series.vods(series_id=542272)
+
+full_match = [vod for vod in media.vods if vod.map_number is None]
+map_vods = [vod for vod in media.vods if vod.map_number is not None]
+
+print(f"Full match: {full_match[0].url if full_match else 'not available'}")
+for vod in map_vods:
+    print(f"Map {vod.map_number} ({vod.label}): {vod.url}")
 ```
 
 ### Curried access
 
-Use the curried pattern to access VOD data without passing the series ID repeatedly.
+Use the curried pattern to access streams and VODs without passing the series ID repeatedly.
 
 ```python
 import vlrdevapi
 
-series = vlrdevapi.series(670471)
-vods = series.vods()
-print(f"Found {len(vods.vods)} VODs")
+series = vlrdevapi.series(754737)
+media = series.vods()
 
-for vod in vods.vods:
-    print(f"[{vod.label}] {vod.url}")
+print(f"{len(media.streams)} streams, {len(media.vods)} VODs")
+for stream in media.streams:
+    print(f"[{stream.stream_type}] {stream.channel} - {stream.url}")
 ```

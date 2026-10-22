@@ -263,6 +263,25 @@ for TEAM_ID, TEAM_SLUG in TEAMS:
         ),
     ]
 
+# ── Team with upcoming matches + paginated completed matches ───
+ROUTES += [
+    (
+        "/team/13790/wolves-esports",
+        "team/13790/overview_light.html",
+        {},
+    ),
+    (
+        "/team/14137/titan-esports-club",
+        "team/14137/overview_light.html",
+        {},
+    ),
+    (
+        "/team/matches/120/?core_id=all&group=completed&page=2",
+        "team/120/completed_matches_page2.html",
+        {},
+    ),
+]
+
 STATS_EVENT_ID = 2860
 STATS_SERIES_ID = 5556
 STATS_SUBSERIES_ID = 37169
@@ -404,6 +423,117 @@ ROUTES += [
         {},
     ),
 ]
+
+# ── Series 130685 Bo5 (pistol/conv/bonus economy matrix, OT maps) ─
+SERIES_ID_BO5_2022 = 130685
+SERIES_SLUG_BO5_2022 = "loud-vs-optic-gaming-valorant-champions-2022-gf"
+GAMES_BO5_2022 = [95131, 95132, 95133, 95134]
+
+ROUTES += [
+    (
+        f"/{SERIES_ID_BO5_2022}/{SERIES_SLUG_BO5_2022}",
+        f"series/{SERIES_ID_BO5_2022}_{SERIES_SLUG_BO5_2022}/overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO5_2022}/{SERIES_SLUG_BO5_2022}/?game={GAMES_BO5_2022[0]}&tab=economy",
+        f"series/{SERIES_ID_BO5_2022}_{SERIES_SLUG_BO5_2022}/game_{GAMES_BO5_2022[0]}_economy.html",
+        {},
+    ),
+]
+for _gid in GAMES_BO5_2022:
+    ROUTES += [
+        (
+            f"/{SERIES_ID_BO5_2022}/{SERIES_SLUG_BO5_2022}/?game={_gid}&tab=overview",
+            f"series/{SERIES_ID_BO5_2022}_{SERIES_SLUG_BO5_2022}/game_{_gid}_overview.html",
+            {},
+        ),
+        (
+            f"/{SERIES_ID_BO5_2022}/{SERIES_SLUG_BO5_2022}/?game={_gid}&tab=performance",
+            f"series/{SERIES_ID_BO5_2022}_{SERIES_SLUG_BO5_2022}/game_{_gid}_performance.html",
+            {},
+        ),
+    ]
+
+# ── Series 754737 Bo5 (Champions 2026 GF; round grids + economy matrix) ─
+SERIES_ID_BO5_2026 = 754737
+SERIES_SLUG_BO5_2026 = "loud-vs-team-vitality-valorant-champions-2026-gf"
+GAMES_BO5_2026 = [283286, 283287, 283288, 283289]
+
+ROUTES += [
+    (
+        f"/{SERIES_ID_BO5_2026}/{SERIES_SLUG_BO5_2026}",
+        f"series/{SERIES_ID_BO5_2026}_{SERIES_SLUG_BO5_2026}/overview.html",
+        {},
+    ),
+    (
+        f"/{SERIES_ID_BO5_2026}/{SERIES_SLUG_BO5_2026}/?game={GAMES_BO5_2026[0]}&tab=economy",
+        f"series/{SERIES_ID_BO5_2026}_{SERIES_SLUG_BO5_2026}/game_{GAMES_BO5_2026[0]}_economy.html",
+        {},
+    ),
+]
+for _gid in GAMES_BO5_2026:
+    ROUTES += [
+        (
+            f"/{SERIES_ID_BO5_2026}/{SERIES_SLUG_BO5_2026}/?game={_gid}&tab=overview",
+            f"series/{SERIES_ID_BO5_2026}_{SERIES_SLUG_BO5_2026}/game_{_gid}_overview.html",
+            {},
+        ),
+        (
+            f"/{SERIES_ID_BO5_2026}/{SERIES_SLUG_BO5_2026}/?game={_gid}&tab=performance",
+            f"series/{SERIES_ID_BO5_2026}_{SERIES_SLUG_BO5_2026}/game_{_gid}_performance.html",
+            {},
+        ),
+    ]
+
+# ── Upcoming series (best_of + TBD map tabs) ─────────────────
+SERIES_ID_UPCOMING = 777946
+SERIES_SLUG_UPCOMING = "titan-esports-club-vs-unsettled-resentment-vct-china-2026-threshold-week-1-qf"
+
+ROUTES.append(
+    (
+        f"/{SERIES_ID_UPCOMING}/{SERIES_SLUG_UPCOMING}",
+        f"series/{SERIES_ID_UPCOMING}/overview.html",
+        {},
+    ),
+)
+
+# ── Replay/logs tab fixtures (series.replay) ──────────────────
+SERIES_LOG_SAMPLES = [
+    (754737, "loud-vs-team-vitality-valorant-champions-2026-gf", 283288),
+    (754742, "100-thieves-vs-g2-esports-valorant-champions-2026-lr3", 283305),
+    (754743, "team-vitality-vs-100-thieves-valorant-champions-2026-lbf", 286701),
+    (378829, "edward-gaming-vs-team-heretics-valorant-champions-2024-gf", 180437),
+]
+
+for _sid, _sslug, _gid in SERIES_LOG_SAMPLES:
+    ROUTES.append(
+        (
+            f"/{_sid}/{_sslug}/?game={_gid}&tab=logs",
+            f"series/{_sid}_{_sslug}/game_{_gid}_logs.html",
+            {},
+        ),
+    )
+
+# Game overview tabs for replay player/team ID enrichment tests
+# (`?game={gid}&tab=overview` carries real VLR team + player IDs).
+for _sid, _sslug, _gid in SERIES_LOG_SAMPLES:
+    ROUTES.append(
+        (
+            f"/{_sid}/{_sslug}/?game={_gid}&tab=overview",
+            f"series/{_sid}_{_sslug}/game_{_gid}_overview.html",
+            {},
+        ),
+    )
+
+# Unplayed map (Abyss, game 4 of the 2026 GF): graceful empty replay data.
+ROUTES.append(
+    (
+        f"/754737/loud-vs-team-vitality-valorant-champions-2026-gf/?game=283290&tab=logs",
+        "series/754737_loud-vs-team-vitality-valorant-champions-2026-gf/game_283290_logs.html",
+        {},
+    ),
+)
 
 # ── Series: forfeit and notes parsing ───────────────────────
 SERIES_FORFEIT_NOTES = [

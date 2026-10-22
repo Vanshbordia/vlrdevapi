@@ -100,7 +100,7 @@ class EventMatchesNamespace:
         params = []
         series_id = stage_id or "all"
         params.append(f"series_id={series_id}")
-        if state and state != "all":
+        if state != "all":
             params.append(f"group={state}")
 
         query_string = "&".join(params)

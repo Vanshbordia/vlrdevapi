@@ -4,6 +4,6 @@ from vlrdevapi._event.teams.namespace import EventTeamsNamespace
 __all__ = [
     "EventStageTeams",
     "EventTeams",
-    "TeamPlayer",
     "EventTeamsNamespace",
+    "TeamPlayer",
 ]

@@ -1,5 +1,9 @@
-from vlrdevapi._matches.upcoming.models import UpcomingMatchesPage
+from datetime import tzinfo
+from zoneinfo import ZoneInfo
+
 import httpx
+
+from vlrdevapi._matches.upcoming.models import UpcomingMatchesPage
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
 
 class UpcomingMatchesNamespace:
@@ -10,6 +14,7 @@ class UpcomingMatchesNamespace:
         retry_config: RetryConfig = ...,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ) -> None: ...
 
     def __call__(

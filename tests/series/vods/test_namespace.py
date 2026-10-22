@@ -34,6 +34,62 @@ class TestSyncModuleLevel:
         for vod in result.vods:
             assert vod.url.startswith("http")
 
+    def test_streams_are_parsed(self, mock_vlr):
+        mock_vlr.get(f"/{SERIES_ID}").respond(200, text=load_fixture("series", _SERIES_DIR, "overview.html"))
+
+        result = vlrdevapi.series.vods(SERIES_ID)
+        assert len(result.streams) == 38
+
+        first = result.streams[0]
+        assert first.platform == "twitch"
+        assert first.channel == "Valorant"
+        assert first.url == "https://www.twitch.tv/valorant"
+        assert first.stream_type == "broadcast"
+        assert first.country_code == "un"
+
+    def test_vod_metadata(self, mock_vlr):
+        mock_vlr.get(f"/{SERIES_ID}").respond(200, text=load_fixture("series", _SERIES_DIR, "overview.html"))
+
+        result = vlrdevapi.series.vods(SERIES_ID)
+        full_match = result.vods[0]
+        assert full_match.label == "Full match"
+        assert full_match.platform == "twitch"
+        assert full_match.map_number is None
+        assert full_match.start_seconds == 8057
+
+        first_map = result.vods[1]
+        assert first_map.label == "Corrode"
+        assert first_map.platform == "youtube"
+        assert first_map.map_number == 1
+        assert first_map.start_seconds == 132
+
+    def test_upcoming_series_streams_without_vods(self, mock_vlr):
+        mock_vlr.get("/777946").respond(
+            200, text=load_fixture("series", "777946", "overview.html"),
+        )
+
+        result = vlrdevapi.series.vods(777946)
+        assert len(result.streams) == 7
+        assert result.vods == []
+
+        platforms = {stream.platform for stream in result.streams}
+        assert {"twitch", "youtube", "bilibili", "douyu", "huya"} <= platforms
+
+    def test_watch_parties_are_kept_separate_from_broadcasts(self, mock_vlr):
+        mock_vlr.get("/754737").respond(
+            200,
+            text=load_fixture(
+                "series",
+                "754737_loud-vs-team-vitality-valorant-champions-2026-gf",
+                "overview.html",
+            ),
+        )
+
+        result = vlrdevapi.series.vods(754737)
+        assert any(stream.stream_type == "broadcast" for stream in result.streams)
+        assert any(stream.stream_type == "watchparty" for stream in result.streams)
+        assert any(stream.platform == "kick" for stream in result.streams)
+
 
 class TestSyncWithClient:
     def test_series_vods(self, mock_vlr):

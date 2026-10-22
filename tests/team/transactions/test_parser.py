@@ -42,35 +42,35 @@ class TestParseTransactionRow:
         txn = _parse_transaction_row(rows[0])
         assert txn is not None
         assert txn.date == expected
+        assert txn.action == TransactionAction.Leave
+        assert txn.player.id == 11494
+        assert txn.player.ign == "keiko"
+        assert txn.player.real_name == "Georgio Sanassy"
+        assert txn.player.country == "United Kingdom"
+        assert txn.position == "Player"
+        assert txn.source_url.startswith("https://x.com/")
+
+    def test_parse_join_transaction(self):
+        html = _load_html(1034, "transactions.html")
+        rows = _get_table_rows(html)
+        expected = transaction_date_label(transaction_date_text(rows[1]))
+        assert expected is not None
+
+        txn = _parse_transaction_row(rows[1])
+        assert txn is not None
+        assert txn.date == expected
         assert txn.action == TransactionAction.Join
         assert txn.player.id == 612
         assert txn.player.ign == "mitch"
         assert txn.player.real_name == "Mitch Semago"
         assert txn.player.country == "United States"
         assert txn.position == "Assistant coach"
-        assert "x.com/NRGgg" in txn.source_url
-
-    def test_parse_join_transaction(self):
-        html = _load_html(1034, "transactions.html")
-        rows = _get_table_rows(html)
-        expected = transaction_date_label(transaction_date_text(rows[2]))
-        assert expected is not None
-
-        txn = _parse_transaction_row(rows[2])
-        assert txn is not None
-        assert txn.date == expected
-        assert txn.action == TransactionAction.Join
-        assert txn.player.id == 11494
-        assert txn.player.ign == "keiko"
-        assert txn.player.real_name == "Georgio Sanassy"
-        assert txn.player.country == "United Kingdom"
-        assert txn.position == "Player"
 
     def test_parse_us_player(self):
         html = _load_html(1034, "transactions.html")
         rows = _get_table_rows(html)
 
-        txn = _parse_transaction_row(rows[3])
+        txn = _parse_transaction_row(rows[4])
         assert txn is not None
         assert txn.player.id == 4164
         assert txn.player.ign == "s0m"
@@ -81,7 +81,7 @@ class TestParseTransactionRow:
         html = _load_html(1034, "transactions.html")
         rows = _get_table_rows(html)
 
-        txn = _parse_transaction_row(rows[4])
+        txn = _parse_transaction_row(rows[5])
         assert txn is not None
         assert txn.player.id == 817
         assert txn.player.ign == "FiNESSE"
@@ -124,17 +124,17 @@ class TestParseTeamTransactions:
         result = parse_team_transactions(html, 1034)
 
         assert result.team_id == 1034
-        assert len(result.transactions) == 85
+        assert len(result.transactions) == 86
 
         first = result.transactions[0]
         expected = transaction_date_label(transaction_date_text(rows[0]))
         assert first.date == expected
-        assert first.action == TransactionAction.Join
-        assert first.player.id == 612
-        assert first.player.ign == "mitch"
-        assert first.player.real_name == "Mitch Semago"
-        assert first.player.country == "United States"
-        assert first.position == "Assistant coach"
+        assert first.action == TransactionAction.Leave
+        assert first.player.id == 11494
+        assert first.player.ign == "keiko"
+        assert first.player.real_name == "Georgio Sanassy"
+        assert first.player.country == "United Kingdom"
+        assert first.position == "Player"
 
     def test_parse_empty_table(self):
         html = HTMLParser("<table class='wf-faux-table'></table>")

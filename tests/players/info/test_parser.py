@@ -50,6 +50,10 @@ class TestParseEthan:
     def test_aliases_empty(self):
         assert self.result.aliases == []
 
+    def test_total_winnings(self):
+        assert self.result.total_winnings == 645700
+        assert self.result.total_winnings_currency == "$"
+
     def test_player_id(self):
         assert self.result.player_id == 11225
 
@@ -89,6 +93,24 @@ class TestParseInspire:
     def test_aliases(self):
         assert self.result.aliases == ["BxbyJ", "BabyJ"]
 
+    def test_total_winnings(self):
+        assert self.result.total_winnings == 28450
+        assert self.result.total_winnings_currency == "$"
+
     def test_player_id(self):
         assert self.result.player_id == 53
+
+
+class TestParseYuvi:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.result = parse_player_info(_load_html("46051_yuvi", "overview.html"))
+        self.result.player_id = 46051
+
+    def test_name(self):
+        assert self.result.name == "Yuvi"
+
+    def test_total_winnings(self):
+        assert self.result.total_winnings == 5082
+        assert self.result.total_winnings_currency == "$"
 

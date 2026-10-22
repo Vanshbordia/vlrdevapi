@@ -1,7 +1,9 @@
-from datetime import date
+from datetime import date, tzinfo
+from zoneinfo import ZoneInfo
+
+import httpx
 
 from vlrdevapi._team.stats.models import AgentCompositionLevel, TeamStats
-import httpx
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
 
 class TeamStatsNamespace:
@@ -12,6 +14,7 @@ class TeamStatsNamespace:
         retry_config: RetryConfig = ...,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ) -> None: ...
 
     def __call__(

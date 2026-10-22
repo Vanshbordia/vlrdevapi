@@ -1,9 +1,9 @@
 ---
 title: Series Rounds
-description: Fetch round-by-round data for a specific game within a series - winner, win type, side, and score progression.
+description: Fetch round-by-round data for a specific game within a series - winner, win type, side, score progression, and per-round economy (bank, spend, buy tiers).
 ---
 
-`series.rounds(series_id, game_id)` returns round-by-round data for a specific game within a series.
+`series.rounds(series_id, game_id)` returns round-by-round data for a specific game within a series, including the per-round economy (bank, spend, buy tier) merged from the economy tab.
 
 ## Signature
 
@@ -106,10 +106,10 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     default: "0",
   },
   "win_type": {
-    description: 'Method of round win: "elim", "defuse", "boom", or "time".',
-    type: "str",
-    typeDescription: '"elim" | "defuse" | "boom" | "time"',
-    default: '""',
+    description: 'How the round was won. Use `.full_name` for a display label.',
+    type: "RoundWinType",
+    typeDescription: 'RoundWinType - "elimination" | "defuse" | "spike_detonation" | "time_expired"',
+    default: "RoundWinType.ELIMINATION",
   },
   "side": {
     description: 'Side the winning team played: "Defense" (CT) or "Attack" (T).',
@@ -129,13 +129,51 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     typeDescription: "int",
     default: "0",
   },
+  "bank_team1": {
+    description: "Team 1's bank at round start.",
+    type: "float | None",
+    typeDescription: "float or None - None when economy data was not merged",
+  },
+  "bank_team2": {
+    description: "Team 2's bank at round start.",
+    type: "float | None",
+    typeDescription: "float or None - None when economy data was not merged",
+  },
+  "spent_team1": {
+    description: "Money spent by team 1 this round.",
+    type: "int | None",
+    typeDescription: "int or None - None when economy data was not merged",
+  },
+  "spent_team2": {
+    description: "Money spent by team 2 this round.",
+    type: "int | None",
+    typeDescription: "int or None - None when economy data was not merged",
+  },
+  "buy_type_team1": {
+    description: "Team 1 buy tier.",
+    type: "str",
+    typeDescription: '"Pistol" | "Eco" | "Half-buy" | "Full-buy" | ""',
+    default: '""',
+  },
+  "buy_type_team2": {
+    description: "Team 2 buy tier.",
+    type: "str",
+    typeDescription: '"Pistol" | "Eco" | "Half-buy" | "Full-buy" | ""',
+    default: '""',
+  },
+  "is_pistol_round": {
+    description: "Whether this is a pistol round (rounds 1 and 13).",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
 }} />
 
 ## Examples
 
 ### Basic round data
 
-Fetch every round in a game, showing the winner, win type, and the side they were playing. This is useful for building score progression charts or understanding how the game swung.
+Fetch every round in a game, showing the winner, win type, the side they were playing, and how much money each team had. This is useful for building score progression charts or understanding how the game swung.
 
 ```python
 import vlrdevapi
@@ -145,13 +183,27 @@ print(f"{rounds.team1} vs {rounds.team2}")
 print(f"Total rounds: {len(rounds.rounds)}")
 
 for rd in rounds.rounds[:5]:
-    print(f"R{rd.round_number}: {rd.winner_team_name} won ({rd.win_type}) on {rd.side}")
+    print(f"R{rd.round_number}: {rd.winner_team_name} won ({rd.win_type.full_name}) on {rd.side}")
     print(f"  Score: {rd.team1_score} - {rd.team2_score}")
+    print(f"  Buy: {rd.buy_type_team1} vs {rd.buy_type_team2} - bank {rd.bank_team1}/{rd.bank_team2}")
+```
+
+### Round economy timeline
+
+The economy tab's per-round money data (bank, spend, buy tier) is merged into the same round records, so the round timeline is the single source for round-by-round analysis.
+
+```python
+import vlrdevapi
+
+rounds = vlrdevapi.series.rounds(series_id=670471, game_id=1)
+print("Round | Buy 1 vs Buy 2        | Spent 1 vs Spent 2 | Winner")
+for rd in rounds.rounds:
+    print(f"R{rd.round_number:>2}   | {rd.buy_type_team1} vs {rd.buy_type_team2:<8} | {rd.spent_team1} vs {rd.spent_team2} | {rd.winner_team_name}")
 ```
 
 ### Win type breakdown
 
-Analyse how each team won their rounds - by elimination, spike detonation, defuse, or timeout.
+Analyse how each team won their rounds - by elimination, spike detonation, defuse, or time expiry.
 
 ```python
 import vlrdevapi
@@ -162,8 +214,8 @@ rounds = vlrdevapi.series.rounds(series_id=670471, game_id=1)
 team1_wins = [r for r in rounds.rounds if r.winner_team_name == rounds.team1]
 team2_wins = [r for r in rounds.rounds if r.winner_team_name == rounds.team2]
 
-print(f"{rounds.team1}: {Counter(r.win_type for r in team1_wins)}")
-print(f"{rounds.team2}: {Counter(r.win_type for r in team2_wins)}")
+print(f"{rounds.team1}: {Counter(r.win_type.full_name for r in team1_wins)}")
+print(f"{rounds.team2}: {Counter(r.win_type.full_name for r in team2_wins)}")
 ```
 
 ### Score progression
@@ -181,14 +233,14 @@ for rd in rounds.rounds:
 
 ### Curried access
 
-Use the curried pattern to inspect specific rounds such as pistol rounds.
+Use the curried pattern to inspect specific pistol rounds.
 
 ```python
 import vlrdevapi
 
 series = vlrdevapi.series(670471)
 rounds = series.rounds(game_id=1)
-pistol_rounds = [r for r in rounds.rounds if r.round_number in (1, 13)]
+pistol_rounds = [r for r in rounds.rounds if r.is_pistol_round]
 for rd in pistol_rounds:
     print(f"Pistol R{rd.round_number}: won by {rd.winner_team_name}")
 ```

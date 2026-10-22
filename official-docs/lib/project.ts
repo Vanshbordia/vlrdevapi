@@ -6,9 +6,9 @@ import { assetUrl, canonicalUrl } from './shared';
  */
 export const project = {
   name: 'VLRdevAPI',
-  version: '2.4.1',
+  version: '3.0.0',
   description:
-    'A type-safe Python SDK for Valorant esports data from VLR.gg. Fetch match results, player stats, team rosters, and tournament brackets through a fully typed Python interface.',
+    'A type-safe Python SDK for Valorant esports data from VLR.gg. Fetch match results, player stats, team rosters, and tournament brackets through a fully typed Python interface with no API key.',
   licenseUrl: 'https://opensource.org/license/mit',
   programmingLanguage: 'Python',
   runtimePlatform: 'Python 3.11+',
@@ -21,7 +21,7 @@ export const project = {
 /** Canonical URLs reused across structured data. */
 export const projectUrls = {
   home: canonicalUrl('/'),
-  docs: canonicalUrl('/docs/'),
+  docs: canonicalUrl('/docs'),
   logo: assetUrl('/logo.png'),
 } as const;
 
@@ -50,20 +50,28 @@ export const projectPublisher = {
 } as const;
 
 /**
- * Package keywords, mirrored from the `keywords` field in `pyproject.toml`
- * and used for page metadata.
+ * High-value package keywords derived from Google Search Console queries and pyproject.toml
  */
 export const projectKeywords = [
+  'vlr api',
+  'vlr.gg api',
+  'vlr gg api',
+  'vlrgg',
+  'vlrdevapi',
   'Valorant esports API',
-  'VLR.gg API',
-  'vlrgg API',
-  'Python SDK',
+  'vct api',
+  'valorant champions tour api',
+  'valorant api python',
+  'python valorant',
+  'valorant stats api',
+  'esports match api',
+  'live esports api',
+  'vod fetch',
   'Valorant match data',
   'Valorant player statistics',
-  'Python Valorant API',
   'Valorant API without key',
   'free Valorant API',
   'esports data API',
-  'VCT data',
+  'Python SDK for VLR.gg',
   'esports web scraping alternative',
 ];

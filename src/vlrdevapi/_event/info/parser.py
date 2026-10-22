@@ -1,8 +1,7 @@
 
+import contextlib
 import re
 from datetime import date, datetime
-
-from vlrdevapi.commons.datetime import date_to_utc_datetime
 
 from selectolax.lexbor import LexborHTMLParser as HTMLParser
 from selectolax.lexbor import LexborNode as Node
@@ -16,9 +15,12 @@ from vlrdevapi._event.info.models import (
     EventStageTag,
 )
 from vlrdevapi.commons.countries import get_country_name
+from vlrdevapi.commons.datetime import date_to_utc_datetime
 from vlrdevapi.commons.prizes import parse_prize_amount
-from vlrdevapi.commons.regions import resolve_country_to_region, resolve_subregion_to_region
-import contextlib
+from vlrdevapi.commons.regions import (
+    resolve_country_to_region,
+    resolve_subregion_to_region,
+)
 
 
 def parse_event_info(html: HTMLParser, event_id: int) -> EventInfo:
@@ -58,9 +60,7 @@ def parse_event_info(html: HTMLParser, event_id: int) -> EventInfo:
 
     seen: dict[str, EventRegion] = {}
     for r in event.regions:
-        if r.name not in seen:
-            seen[r.name] = r
-        elif r.subregion and not seen[r.name].subregion:
+        if r.name not in seen or r.subregion and not seen[r.name].subregion:
             seen[r.name] = r
     event.regions = list(seen.values())
 
@@ -212,7 +212,7 @@ def _parse_date_range(text: str) -> tuple[datetime | None, datetime | None]:
         return None, None
 
     separator = None
-    for sep in [" – ", " - ", "–", "-"]:  # noqa: RUF001
+    for sep in [" – ", " - ", "–", "-"]:
         if sep in text:
             separator = sep
             break

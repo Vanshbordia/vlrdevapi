@@ -1,10 +1,10 @@
-import { getPageMarkdownUrl, source } from '@/lib/source';
-import { getBlogPosts, getGuides } from '@/lib/content';
+import { getPageMarkdownUrl, getBlogEntries, getGuideEntries, source } from '@/lib/source';
 import { llms } from 'fumadocs-core/source';
+import { siteUrl } from '@/lib/shared';
 
-export const revalidate = false;
+export const dynamic = 'force-static';
 
-const BASE_URL = 'https://vlrdevapi.pages.dev';
+const BASE_URL = siteUrl;
 
 const summary = `# VLRdevAPI
 
@@ -42,7 +42,7 @@ const faq = `## FAQ
 
 **How is it installed?** \`pip install vlrdevapi\` or \`uv add vlrdevapi\`.
 
-**Where is the full reference?** ${BASE_URL}/docs`;
+**Where is the full reference?** ${BASE_URL}/docs/`;
 
 const useCases = `## Use cases
 
@@ -67,8 +67,13 @@ function withDocMarkdownLinks(index: string) {
     .split('\n')
     .map((line) => {
       const match = line.match(/\]\((\/[^)]*)\)/);
-      const markdown = match ? markdownByUrl.get(match[1]) : undefined;
-      return markdown ? `${line} ([markdown](${markdown}))` : line;
+      if (!match) return line;
+      const rawPath = match[1];
+      const normalizedPath = rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath;
+      const markdown = markdownByUrl.get(normalizedPath) ?? markdownByUrl.get(rawPath);
+      const canonicalTarget = `${BASE_URL}${normalizedPath}/`;
+      const withAbsolute = line.replace(`](${rawPath})`, `](${canonicalTarget})`);
+      return markdown ? `${withAbsolute} ([markdown](${markdown}))` : withAbsolute;
     })
     .join('\n')
     .replace(/^# /, '## ');
@@ -77,12 +82,12 @@ function withDocMarkdownLinks(index: string) {
 export function GET() {
   // Blog and guides are separate MDX collections, so they are not part of the
   // docs page tree that llms(source).index() walks. Add them explicitly.
-  const blog = getBlogPosts().map((post) => ({
+  const blog = getBlogEntries().map((post) => ({
     slug: post.slug,
     title: post.title,
     description: post.description,
   }));
-  const guides = getGuides().map((guide) => ({
+  const guides = getGuideEntries().map((guide) => ({
     slug: guide.slug,
     title: guide.title,
     description: guide.description,

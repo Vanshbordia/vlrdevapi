@@ -30,6 +30,13 @@ class MatchTeam(BaseModel):
         default="",
         description="Team name (e.g., 'FNATIC', 'TBD')",
     )
+    country_name: str = Field(
+        default="",
+        description=(
+            "Full country name from the team's flag (e.g., 'United States'); "
+            "empty for TBD or an unknown flag"
+        ),
+    )
     score: int | None = Field(
         default=None,
         description="Team score, None if not available (upcoming/TBD)",

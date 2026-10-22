@@ -64,9 +64,15 @@ class RateLimitError(HTTPError):
 class ClientError(HTTPError):
     """Raised for 4xx HTTP errors other than 404 and 429."""
 
+    def __init__(self, message: str = "Client error", status_code: int = 400) -> None:
+        super().__init__(message, status_code)
+
 
 class ServerError(HTTPError):
     """Raised for 5xx HTTP errors."""
+
+    def __init__(self, message: str = "Server error", status_code: int = 500) -> None:
+        super().__init__(message, status_code)
 
 
 class ParsingError(VlrdevapiError):

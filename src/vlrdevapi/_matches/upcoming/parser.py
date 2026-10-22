@@ -10,7 +10,6 @@ from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._cache import LRUCache
 from vlrdevapi._matches.common import (
-    check_pagination,
     parse_common_match_item_fields,
     parse_date_header,
     parse_match_card_sync,
@@ -21,6 +20,7 @@ from vlrdevapi._matches.upcoming.models import (
     UpcomingMatchesPage,
 )
 from vlrdevapi._series.info.namespace import SeriesInfoNamespace
+from vlrdevapi._utils.pagination import check_pagination
 from vlrdevapi.commons.countries import get_country_name
 from vlrdevapi.fetcher import RetryConfig
 

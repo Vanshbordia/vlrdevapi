@@ -55,7 +55,7 @@ def _build_stats_url(
 class TeamStatsNamespace:
     """Access team map statistics from vlr.gg."""
 
-    __slots__ = ("_series_info", "_sync", "_source_tz")
+    __slots__ = ("_series_info", "_source_tz", "_sync")
 
     def __init__(
         self,

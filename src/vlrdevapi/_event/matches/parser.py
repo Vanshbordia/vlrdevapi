@@ -1,4 +1,5 @@
 
+import contextlib
 from datetime import date, tzinfo
 from zoneinfo import ZoneInfo
 
@@ -11,12 +12,13 @@ from vlrdevapi._event.matches.models import (
     MatchStatus,
     MatchTeam,
 )
+from vlrdevapi._utils.text import normalize_whitespace
+from vlrdevapi.commons.countries import get_country_name
 from vlrdevapi.commons.datetime import (
     parse_vlr_date,
     parse_vlr_datetime,
     parse_vlr_time,
 )
-import contextlib
 
 
 def parse_event_matches(
@@ -165,7 +167,15 @@ def _parse_match_team(team_el: Node) -> MatchTeam | None:
     winner = "mod-winner" in class_attr
 
     name_el = team_el.css_first(".match-item-vs-team-name .text-of")
-    name = name_el.text(strip=True) if name_el else ""
+    name = normalize_whitespace(name_el.text(strip=True)) if name_el else ""
+
+    country_name = ""
+    flag_el = team_el.css_first(".match-item-vs-team-name .text-of .flag")
+    if flag_el:
+        class_attr = flag_el.attributes.get("class") or ""
+        if "flag mod-" in class_attr:
+            code = class_attr.split("mod-")[-1].split()[0]
+            country_name = get_country_name(code)
 
     if name.upper() == "TBD":
         return MatchTeam(id=None, name="TBD", score=None, winner=False)
@@ -178,7 +188,13 @@ def _parse_match_team(team_el: Node) -> MatchTeam | None:
             with contextlib.suppress(ValueError):
                 score = int(score_text)
 
-    return MatchTeam(id=None, name=name, score=score, winner=winner)
+    return MatchTeam(
+        id=None,
+        name=name,
+        country_name=country_name,
+        score=score,
+        winner=winner,
+    )
 
 
 def _parse_match_status(match_link: Node) -> MatchStatus:
@@ -231,11 +247,11 @@ def _parse_match_stage_phase(match_link: Node) -> tuple[str, str]:
         return "", ""
 
     phase_el = event_el.css_first(".match-item-event-series")
-    phase = phase_el.text(strip=True) if phase_el else ""
+    phase = normalize_whitespace(phase_el.text(strip=True)) if phase_el else ""
 
-    full_text = event_el.text(strip=True)
+    full_text = normalize_whitespace(event_el.text(strip=True))
     stage = full_text
     if phase and phase in full_text:
         stage = full_text.replace(phase, "").strip()
 
-    return stage, phase
+    return normalize_whitespace(stage), phase

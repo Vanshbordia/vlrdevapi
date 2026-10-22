@@ -22,7 +22,14 @@ class TeamCompletedMatchEntry(BaseModel):
     match_id: int = Field(default=0, description="Match ID")
     url: str = Field(default="", description="Match URL")
     event: str = Field(default="", description="Event name")
-    stage: str = Field(default="", description="Stage within event")
+    stage: str = Field(
+        default="",
+        description="Stage within the event (e.g. 'Playoffs', 'Group Stage')",
+    )
+    bracket: str = Field(
+        default="",
+        description="Bracket/round within the stage (e.g. 'LBF', 'Ro16')",
+    )
     opponent: OpponentInCompletedMatch | None = Field(
         default=None, description="Opponent team",
     )
@@ -40,4 +47,8 @@ class TeamCompletedMatches(BaseModel):
     team_id: int = Field(default=0, description="Team ID")
     matches: list[TeamCompletedMatchEntry] = Field(
         default_factory=list, description="Completed matches",
+    )
+    has_next_page: bool = Field(
+        default=False,
+        description="Whether more completed matches exist beyond the returned results",
     )

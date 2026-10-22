@@ -35,6 +35,9 @@ class TestSyncModuleLevel:
         assert result.games[4].game_id == 233482
         assert result.games[4].order == 5
         assert result.games[4].map_name == "Sunset"
+        assert len(result.head_to_head) == 2
+        assert result.head_to_head[0].series_id == 542270
+        assert result.head_to_head[0].winner == "team1"
 
 
 class TestSyncWithClient:
@@ -49,4 +52,18 @@ class TestSyncWithClient:
         assert result.team2.id == 2593
         assert result.score1 == 3
         assert result.score2 == 2
+
+
+class TestUpcoming:
+    def test_series_info_upcoming(self, mock_vlr):
+        mock_vlr.get("/777946").respond(
+            200, text=load_fixture("series", "777946", "overview.html"),
+        )
+
+        result = vlrdevapi.series.info(777946)
+        assert result.series_id == 777946
+        assert result.status == "upcoming"
+        assert result.best_of == 3
+        assert len(result.games) == 3
+        assert all(game.map_name == "TBD" and game.played is False for game in result.games)
 

@@ -8,3 +8,9 @@
   Link: </llms.txt>; rel="describedby"; type="text/plain"
   Link: </sitemap.xml>; rel="sitemap"; type="application/xml"
   X-Content-Type-Options: nosniff
+
+# Search / AI-input / AI-training signal for crawlers. `app/robots.ts`
+# generates robots.txt from the configured site origin; this block carries the
+# per-file policy headers it cannot express.
+/robots.txt
+  Content-Signal: search=yes, ai-input=yes, ai-train=yes

@@ -1,21 +1,19 @@
 """Shared utilities for match enrichment and parsing across live/upcoming/completed modules."""
 
-import contextlib
 import logging
-import re
 from collections.abc import Callable
 from datetime import date, datetime, tzinfo
 from typing import Any, Protocol
 from zoneinfo import ZoneInfo
 
 import httpx
-from selectolax.lexbor import LexborHTMLParser as HTMLParser
 from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._cache import LRUCache
 from vlrdevapi._series.info.namespace import SeriesInfoNamespace
 from vlrdevapi._utils.paths import team as team_path
 from vlrdevapi._utils.team_parsing import _parse_team_basic
+from vlrdevapi._utils.text import normalize_whitespace
 from vlrdevapi.commons.datetime import parse_vlr_datetime
 from vlrdevapi.exceptions import VlrdevapiException
 from vlrdevapi.fetcher import RetryConfig, fetch_sync
@@ -55,45 +53,6 @@ def parse_date_header(text: str) -> date | None:
         except ValueError:
             pass
     return None
-
-
-def check_pagination(html: HTMLParser) -> bool:
-    """Check whether a page after the current one exists.
-
-    The active page is rendered as a ``mod-active`` span while other pages
-    are anchor links. A terminal page still links back to earlier pages, so
-    the mere presence of page links does not imply a next page. Compare the
-    active page number against the highest page number offered instead.
-
-    Args:
-        html: Parsed HTML document.
-
-    Returns:
-        ``True`` if a page after the active one exists, ``False`` otherwise.
-
-    """
-    pagination_el = html.css_first("div.action-container-pages")
-    if pagination_el is None:
-        return False
-
-    current_page = 1
-    active = pagination_el.css_first(".btn.mod-page.mod-active")
-    if active:
-        with contextlib.suppress(ValueError):
-            current_page = int(active.text(strip=True))
-
-    max_page = current_page
-    for btn in pagination_el.css(".btn.mod-page"):
-        text = btn.text(strip=True)
-        try:
-            max_page = max(max_page, int(text))
-        except ValueError:
-            href = btn.attributes.get("href") or ""
-            page_match = re.search(r"page=(\d+)", href)
-            if page_match:
-                max_page = max(max_page, int(page_match.group(1)))
-
-    return current_page < max_page
 
 
 # ---------------------------------------------------------------------------
@@ -185,11 +144,13 @@ def parse_common_match_item_fields(
 
     event_el = item.css_first("div.match-item-event")
     if event_el:
-        event_text = event_el.text(strip=True)
+        event_text = normalize_whitespace(event_el.text(strip=True))
         series_el = event_el.css_first("div.match-item-event-series")
         if series_el:
-            match.stage = series_el.text(strip=True)
-            match.event = event_text.replace(match.stage, "").strip()
+            match.stage = normalize_whitespace(series_el.text(strip=True))
+            match.event = normalize_whitespace(
+                event_text.replace(match.stage, ""),
+            )
 
     if time_text:
         match.datetime = parse_vlr_datetime(match_date.strftime("%Y/%m/%d"), time_text, source_tz=source_tz)

@@ -1,10 +1,20 @@
 import contextlib
 import re
+from typing import Literal
 
 from selectolax.lexbor import LexborHTMLParser as HTMLParser
 from selectolax.lexbor import LexborNode as Node
 
-from vlrdevapi._series.info.models import ForfeitInfo, MapVeto, SeriesGame, SeriesInfo, SeriesTeam
+from vlrdevapi._series.info.models import (
+    ForfeitInfo,
+    MapVeto,
+    SeriesGame,
+    SeriesHeadToHeadMatch,
+    SeriesInfo,
+    SeriesTeam,
+)
+from vlrdevapi._utils.text import normalize_whitespace
+from vlrdevapi.commons.datetime import parse_vlr_date
 from vlrdevapi.commons.timezone import parse_vlr_stored_datetime
 
 
@@ -98,15 +108,15 @@ def parse_series_info(html: HTMLParser) -> SeriesInfo:
 
         bold_el = event_link.css_first("div[style*='font-weight: 700']")
         if bold_el:
-            info.event_name = bold_el.text(strip=True)
+            info.event_name = normalize_whitespace(bold_el.text(strip=True))
 
         series_el = event_link.css_first(".match-header-event-series")
         if series_el:
-            series_text = series_el.text(strip=True)
+            series_text = normalize_whitespace(series_el.text(strip=True))
             if ": " in series_text:
                 parts = series_text.split(": ", 1)
-                info.stage = parts[0].strip()
-                info.bracket = parts[1].strip()
+                info.stage = normalize_whitespace(parts[0])
+                info.bracket = normalize_whitespace(parts[1])
             else:
                 info.stage = series_text
 
@@ -156,11 +166,14 @@ def parse_series_info(html: HTMLParser) -> SeriesInfo:
             else:
                 info.status = "upcoming"
 
-        if len(notes) >= 2:
-            bo_text = notes[1].text(strip=True)
-            if bo_text.lower().startswith("bo"):
+        # Upcoming matches render the countdown twice before the format note
+        # (e.g. ["14h 43m", "14h 43m", "Bo3"]), so never assume a fixed index.
+        for note in notes:
+            bo_match = re.fullmatch(r"bo(\d+)", note.text(strip=True), re.IGNORECASE)
+            if bo_match:
                 with contextlib.suppress(ValueError):
-                    info.best_of = int(bo_text[2:])
+                    info.best_of = int(bo_match.group(1))
+                break
 
         score_spans = [
             s for s in vs_section.css("span[class*='match-header-vs-score-']")
@@ -230,8 +243,92 @@ def parse_series_info(html: HTMLParser) -> SeriesInfo:
             info.forfeit.team_id = info.team2.id
 
     info.games = _parse_games(html, info)
+    info.head_to_head = _parse_head_to_head(html, info)
 
     return info
+
+
+def _parse_head_to_head(
+    html: HTMLParser,
+    info: SeriesInfo,
+) -> list[SeriesHeadToHeadMatch]:
+    """Parse the previous-matches card from the series overview page.
+
+    Args:
+        html: The selectolax HTMLParser of the series page.
+        info: Parsed series info, used as a fallback for team names.
+
+    Returns:
+        list[SeriesHeadToHeadMatch]: Previous matches in the card's team order.
+
+    """
+    container = html.css_first(".match-h2h")
+    if not container:
+        return []
+
+    header_teams = container.css(".match-h2h-header-team")
+    team1_name = info.team1.name
+    team2_name = info.team2.name
+    if len(header_teams) >= 2:
+        name1_el = header_teams[0].css_first("div")
+        name2_el = header_teams[1].css_first("div")
+        if name1_el:
+            team1_name = normalize_whitespace(name1_el.text(strip=True))
+        if name2_el:
+            team2_name = normalize_whitespace(name2_el.text(strip=True))
+
+    matches: list[SeriesHeadToHeadMatch] = []
+    for link in container.css(".match-h2h-matches a"):
+        href = link.attributes.get("href", "") or ""
+        series_match = re.search(r"/(\d+)(?:/|$)", href)
+        if not series_match:
+            continue
+
+        event_el = link.css_first(".match-h2h-matches-event-name")
+        stage_el = link.css_first(".match-h2h-matches-event-series")
+        date_el = link.css_first(".match-h2h-matches-date")
+        score_spans = link.css(".match-h2h-matches-score span")
+
+        score1 = 0
+        score2 = 0
+        if len(score_spans) >= 2:
+            with contextlib.suppress(ValueError):
+                score1 = int(score_spans[0].text(strip=True))
+                score2 = int(score_spans[1].text(strip=True))
+
+        winner: Literal["team1", "team2", ""] = ""
+        for index, span in enumerate(score_spans[:2]):
+            classes = span.attributes.get("class", "") or ""
+            if "mod-win" in classes:
+                winner = "team1" if index == 0 else "team2"
+                break
+        if not winner and score1 != score2:
+            winner = "team1" if score1 > score2 else "team2"
+
+        matches.append(
+            SeriesHeadToHeadMatch(
+                series_id=int(series_match.group(1)),
+                url=f"https://www.vlr.gg{href}" if href.startswith("/") else href,
+                event_name=(
+                    normalize_whitespace(event_el.text(strip=True))
+                    if event_el
+                    else ""
+                ),
+                stage=(
+                    normalize_whitespace(stage_el.text(strip=True))
+                    if stage_el
+                    else ""
+                ),
+                date=parse_vlr_date(date_el.text(strip=True)) if date_el else None,
+                team1_name=team1_name,
+                team1_score=score1,
+                team2_name=team2_name,
+                team2_score=score2,
+                winner=winner,
+            ),
+        )
+
+    return matches
 
 
 def _parse_duration(duration_str: str) -> int | None:
@@ -364,7 +461,6 @@ def _parse_games(html: HTMLParser, info: SeriesInfo) -> list[SeriesGame]:
                     game.game_id = int(game_id_str)
 
             disabled_str = el.attributes.get("data-disabled", "") or "0"
-            game.played = disabled_str != "1"
 
             map_div = el.css_first("div[style*='text-align: center']")
             if map_div:
@@ -377,6 +473,15 @@ def _parse_games(html: HTMLParser, info: SeriesInfo) -> list[SeriesGame]:
                     order_str = span_el.text(strip=True)
                     map_text = map_text[len(order_str) :].strip()
                 game.map_name = map_text
+
+            # Upcoming matches expose placeholder tabs (data-disabled="0",
+            # map "TBD") that are not played maps. A map that has a real name
+            # on an upcoming series is still unplayed (only the veto is known).
+            game.played = (
+                disabled_str != "1"
+                and info.status != "upcoming"
+                and game.map_name.strip().upper() != "TBD"
+            )
 
             raw_html = el.html or ""
             pick_match = re.search(r"Pick:\s*(\S+)", raw_html)
@@ -431,6 +536,12 @@ def _parse_games(html: HTMLParser, info: SeriesInfo) -> list[SeriesGame]:
                     if v.veto_type == "decider":
                         game.map_name = v.map_name
                         break
+
+            game.played = (
+                info.status != "upcoming"
+                and bool(game.map_name)
+                and game.map_name.strip().upper() != "TBD"
+            )
 
             games.append(game)
 

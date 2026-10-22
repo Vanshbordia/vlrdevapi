@@ -1,4 +1,8 @@
+from datetime import tzinfo
 from typing import Literal
+from zoneinfo import ZoneInfo
+
+import httpx
 
 from vlrdevapi._player.agents.models import AgentStatsPage
 from vlrdevapi._player.agents.namespace import AgentsNamespace
@@ -6,13 +10,13 @@ from vlrdevapi._player.info.models import PlayerInfo
 from vlrdevapi._player.info.namespace import PlayerInfoNamespace
 from vlrdevapi._player.matches.models import PlayerMatches
 from vlrdevapi._player.matches.namespace import MatchesNamespace
+from vlrdevapi._player.placements.models import PlayerPlacements
+from vlrdevapi._player.placements.namespace import PlayerPlacementsNamespace
 from vlrdevapi._player.profile.models import PlayerProfile
 from vlrdevapi._player.profile.namespace import ProfileNamespace
 from vlrdevapi._player.teams.models import PlayerTeams
 from vlrdevapi._player.teams.namespace import PlayerTeamsNamespace
 from vlrdevapi.fetcher import RateLimiter, RetryConfig
-import httpx
-
 
 class PlayerMatchNamespace:
     def __init__(
@@ -23,6 +27,7 @@ class PlayerMatchNamespace:
         agents: AgentsNamespace,
         matches: MatchesNamespace,
         profile: ProfileNamespace,
+        placements: PlayerPlacementsNamespace,
     ) -> None: ...
 
     def info(self) -> PlayerInfo: ...
@@ -35,6 +40,8 @@ class PlayerMatchNamespace:
 
     def profile(self) -> PlayerProfile: ...
 
+    def placements(self) -> PlayerPlacements: ...
+
 
 class PlayerNamespace:
     def __init__(
@@ -44,6 +51,7 @@ class PlayerNamespace:
         retry_config: RetryConfig = ...,
         rate_limiter: RateLimiter | None = None,
         extra_headers: dict[str, str] | None = None,
+        source_tz: ZoneInfo | tzinfo | None = None,
     ) -> None: ...
 
     @property
@@ -60,5 +68,8 @@ class PlayerNamespace:
 
     @property
     def profile(self) -> ProfileNamespace: ...
+
+    @property
+    def placements(self) -> PlayerPlacementsNamespace: ...
 
     def __call__(self, player_id: int) -> PlayerMatchNamespace: ...

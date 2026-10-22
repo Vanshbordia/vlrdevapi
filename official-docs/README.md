@@ -1,6 +1,6 @@
 # VLRdevAPI Official Docs
 
-Next.js static site for the [VLRdevAPI](https://vlrdevapi.pages.dev) Python SDK documentation — built with [Fumadocs](https://fumadocs.dev) and [Next.js](https://nextjs.org) (static export).
+Next.js static site for the [VLRdevAPI](https://vlrdevapi.pages.dev/) Python SDK documentation - built with [Fumadocs](https://fumadocs.dev) and [Next.js](https://nextjs.org) (static export).
 
 ## Getting Started
 
