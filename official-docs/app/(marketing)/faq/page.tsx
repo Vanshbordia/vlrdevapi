@@ -36,7 +36,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'Do I need an API key?',
-        a: <>No. VLRdevAPI works without any API key or authentication. Just <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">pip install vlrdevapi</code> and start making calls.</>,
+        a: <>No. VLRdevAPI works without any API key or authentication. Just <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">uv add vlrdevapi</code> or <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">pip install vlrdevapi</code> and start making calls.</>,
       },
       {
         q: 'What Python version is required?',
@@ -44,7 +44,7 @@ const sections: FaqSection[] = [
       },
       {
         q: 'How do I install VLRdevAPI?',
-        a: <>Install with pip: <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">pip install vlrdevapi</code>. Or with uv (recommended): <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">uv add vlrdevapi</code>. See the <Link href="/docs/installation/" className="text-fd-primary underline underline-offset-2 decoration-fd-primary/30 transition-colors hover:decoration-fd-primary">installation guide</Link> for more options.</>,
+        a: <>Install with uv (recommended): <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">uv add vlrdevapi</code>. Or with pip: <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">pip install vlrdevapi</code>. See the <Link href="/docs/installation/" className="text-fd-primary underline underline-offset-2 decoration-fd-primary/30 transition-colors hover:decoration-fd-primary">installation guide</Link> for more options.</>,
       },
       {
         q: 'Can I try VLRdevAPI without installing it?',
@@ -127,7 +127,7 @@ const sections: FaqSection[] = [
     items: [
       {
         q: 'I get an import error when trying to use VLRdevAPI',
-        a: <>Make sure you installed the package: <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">pip list | findstr vlrdevapi</code> (Windows) or <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">pip list | grep vlrdevapi</code> (macOS/Linux). If missing, run <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">pip install --upgrade vlrdevapi</code>. Check that you are using Python 3.11+.</>,
+        a: <>Make sure you installed the package: <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">pip list | findstr vlrdevapi</code> (Windows) or <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">pip list | grep vlrdevapi</code> (macOS/Linux). If missing, run <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">uv add vlrdevapi</code> or <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">pip install --upgrade vlrdevapi</code>. Check that you are using Python 3.11+.</>,
       },
       {
         q: 'My API calls return no data',

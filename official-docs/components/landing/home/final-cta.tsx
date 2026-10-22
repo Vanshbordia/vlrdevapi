@@ -44,7 +44,7 @@ export function FinalCta() {
         </Reveal>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <CopyCommand command="pip install vlrdevapi" />
+          <CopyCommand />
           <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-fd-muted">
             MIT · Python 3.11+ · no API key
           </p>

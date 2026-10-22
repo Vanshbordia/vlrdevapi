@@ -513,7 +513,7 @@ export function LandingPage({
               </h2>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <CopyCommand command="pip install vlrdevapi" />
+              <CopyCommand />
               <Link
                 href="/docs/"
                 className="group inline-flex h-11 items-center gap-1.5 border border-white bg-white px-5 text-[13px] font-medium text-black transition-colors hover:border-fd-primary hover:bg-fd-primary hover:text-white"

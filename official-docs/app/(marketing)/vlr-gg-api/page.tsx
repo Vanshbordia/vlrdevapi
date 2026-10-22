@@ -106,7 +106,7 @@ export default function VlrGgApiPage() {
         steps: [
           {
             title: 'Install the client.',
-            text: 'pip install vlrdevapi. No key, account, or separate service.',
+            text: 'uv add vlrdevapi or pip install vlrdevapi. No key, account, or separate service.',
           },
           {
             title: 'Request the page.',
@@ -138,7 +138,7 @@ FUT Esports vs Karmine Corp
         title: 'How do you get VLR.gg data in Python?',
         headers: ['', 'VLRdevAPI', 'Scraping VLR.gg', 'Riot official API'],
         rows: [
-          ['Setup', 'pip install vlrdevapi', 'Write and maintain parsers', 'Register an app and key'],
+          ['Setup', 'uv add vlrdevapi (or pip install)', 'Write and maintain parsers', 'Register an app and key'],
           ['Data source', 'VLR.gg esports pages', 'VLR.gg esports pages', 'Riot account and match endpoints'],
           ['Output', 'Typed Pydantic models', 'Raw HTML', 'Riot JSON'],
           ['Rate limiting', 'Built in', 'Your responsibility', 'Per-key limits'],

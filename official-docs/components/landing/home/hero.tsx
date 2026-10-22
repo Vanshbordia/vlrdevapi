@@ -67,7 +67,7 @@ export function Hero() {
                   aria-hidden="true"
                 />
               </Link>
-              <CopyCommand command="pip install vlrdevapi" />
+              <CopyCommand />
             </Reveal>
 
             <Reveal delay={260}>

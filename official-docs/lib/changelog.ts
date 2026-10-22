@@ -14,9 +14,9 @@ export type ChangelogSection = {
 
 export type ChangelogVersion = {
   version: string
-  /** Human-readable release date, e.g. `21 October 2026`. */
+  /** Human-readable release date, e.g. `23 October 2026`. */
   date: string
-  /** Machine-readable release date, e.g. `2026-10-21`. */
+  /** Machine-readable release date, e.g. `2026-10-23`. */
   isoDate: string
   github: string
   pypi: string

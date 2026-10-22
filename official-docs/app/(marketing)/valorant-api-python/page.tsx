@@ -92,7 +92,7 @@ export default function ValorantApiPythonPage() {
         {
           label: 'Install',
           bold: 'Two commands, no setup',
-          text: 'pip install vlrdevapi or uv add vlrdevapi. There is no key to configure and no separate service to run.',
+          text: 'uv add vlrdevapi or pip install vlrdevapi. There is no key to configure and no separate service to run.',
         },
         {
           label: 'Types',
@@ -128,7 +128,7 @@ export default function ValorantApiPythonPage() {
         steps: [
           {
             title: 'Install from PyPI.',
-            text: 'pip install vlrdevapi. Python 3.11+ and an internet connection.',
+            text: 'uv add vlrdevapi (or pip install vlrdevapi). Python 3.11+ and an internet connection.',
           },
           {
             title: 'Open a player.',
@@ -158,7 +158,7 @@ Omen 0.89 151.9`,
         title: 'Python options for Valorant data',
         headers: ['', 'VLRdevAPI', 'requests + BeautifulSoup', 'Raw HTTP requests'],
         rows: [
-          ['Setup', 'pip install vlrdevapi', 'Install and write selectors', 'Install and write everything'],
+          ['Setup', 'uv add vlrdevapi (or pip install)', 'Install and write selectors', 'Install and write everything'],
           ['Parsing', 'Included', 'You write CSS selectors', 'You parse by hand'],
           ['Output', 'Typed Pydantic models', 'Raw HTML', 'Raw HTML'],
           ['Rate limiting', 'Built in', 'Your responsibility', 'Your responsibility'],
@@ -169,7 +169,7 @@ Omen 0.89 151.9`,
       faqs={[
         {
           q: 'How do I install VLRdevAPI?',
-          a: 'Run pip install vlrdevapi or uv add vlrdevapi. Python 3.11 or newer is required.',
+          a: 'Run uv add vlrdevapi (recommended) or pip install vlrdevapi. Python 3.11 or newer is required.',
         },
         {
           q: 'Is there a Python wrapper for VLR.gg?',
