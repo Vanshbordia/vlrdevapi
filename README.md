@@ -6,7 +6,7 @@
 
 **The modern, type-safe Python library for VLR.gg Valorant esports data**
 
-[![PyPI version](https://img.shields.io/pypi/v/vlrdevapi.svg?color=fd4556)](https://pypi.org/project/vlrdevapi/)
+[![PyPI version](https://img.shields.io/pypi/v/vlrdevapi.svg)](https://pypi.org/project/vlrdevapi/)
 [![Python Version](https://img.shields.io/pypi/pyversions/vlrdevapi.svg)](https://pypi.org/project/vlrdevapi/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/badge/docs-vlrdevapi.pages.dev-blue.svg)](https://vlrdevapi.pages.dev/docs/)
