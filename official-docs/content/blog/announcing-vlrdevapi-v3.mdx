@@ -34,12 +34,12 @@ from vlrdevapi._series.replay.models import ReplayEventType
 replay = vlrdevapi.series.replay(series_id=754737, game_id=1)
 
 for round_replay in replay.rounds[:3]:
-    print(f"--- Round {round_replay.round_num} ---")
+    print(f"--- Round {round_replay.round_number} ---")
     for event in round_replay.events:
-        if event.event_type == ReplayEventType.KILL:
-            killer = event.killer.name if event.killer else "World"
+        if event.type == ReplayEventType.KILL:
+            killer = event.actor.name if event.actor else "World"
             victim = event.victim.name if event.victim else "Unknown"
-            weapon = event.kill_cause or "ability"
+            weapon = event.cause or "ability"
             print(f"[{event.clock}] {killer} eliminated {victim} ({weapon})")
 ```
 
@@ -91,7 +91,7 @@ rounds = vlrdevapi.series.rounds(series_id=754737, game_id=1)
 
 for r in rounds.rounds[:5]:
     print(
-        f"R{r.round_num} | Winner: {r.winner.name} ({r.win_type}) | "
+        f"R{r.round_number} | Winner: {r.winner_team_name} ({r.win_type}) | "
         f"T1 Bank: ${r.bank_team1} (Spent: ${r.spent_team1}, {r.buy_type_team1}) | "
         f"T2 Bank: ${r.bank_team2} (Spent: ${r.spent_team2}, {r.buy_type_team2})"
     )
@@ -114,7 +114,7 @@ info = vlrdevapi.series.info(series_id=754737)
 if info.head_to_head:
     print(f"Found {len(info.head_to_head)} previous head-to-head clashes:")
     for match in info.head_to_head:
-        print(f"  {match.date} | {match.team1_name} {match.score} {match.team2_name}")
+        print(f"  {match.date} | {match.team1_name} {match.team1_score}-{match.team2_score} {match.team2_name}")
 ```
 
 ---
@@ -130,7 +130,7 @@ placements = vlrdevapi.player.placements(player_id=11225)
 print(f"Total Career Winnings: ${placements.total_winnings:,.2f}")
 
 for p in placements.placements[:5]:
-    print(f"{p.year} {p.event_name} ({p.stage_name}): Finish #{p.placement} - Prize: {p.prize}")
+    print(f"{p.year} {p.event_name} ({p.stage}): Finish #{p.placement} - Prize: {p.prize_currency}{p.prize_amount:,.2f}")
 ```
 
 ---

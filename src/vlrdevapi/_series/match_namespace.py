@@ -192,7 +192,7 @@ class SeriesMatchNamespace:
         return self._performance(self._series_id, game_id)
 
     @sanitize_and_validate
-    def economy(self, game_id: int) -> EconomyData:
+    def economy(self, game_id: int | str = "all") -> EconomyData:
         """Get economy data for a game in this series.
 
         Args:

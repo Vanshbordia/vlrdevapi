@@ -184,7 +184,7 @@ class EconomyData(BaseModel):
     )
 
     series_id: int = Field(default=0, description="Unique series identifier on vlr.gg")
-    game_id: int = Field(default=0, description="Unique game identifier on vlr.gg")
+    game_id: int | str = Field(default=0, description="Unique game identifier on vlr.gg")
     team1: str = Field(default="", description="Team 1 name (defense in first half)")
     team1_id: int = Field(default=0, description="Team 1 ID")
     team2: str = Field(default="", description="Team 2 name (attack in first half)")

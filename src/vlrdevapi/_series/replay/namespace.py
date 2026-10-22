@@ -168,13 +168,6 @@ def _apply_id_resolution(
             if header_name and header_name.casefold() == key:
                 return header_id
         return 0
-        if not team_name:
-            return 0
-        key = team_name.casefold()
-        for team in (stats.team1, stats.team2):
-            if team.team_name and team.team_name.casefold() == key:
-                return team.team_id
-        return 0
 
     result.team1_id = team_id_for(result.team1)
     result.team2_id = team_id_for(result.team2)

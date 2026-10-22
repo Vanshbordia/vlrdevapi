@@ -25,10 +25,15 @@ SERIES = {
 
 def _load(series_id: int, filename: str) -> HTMLParser:
     if _LIVE:
-        stem = filename.split("_")
-        tab = stem[-1].replace(".html", "") if "economy" in filename else "overview"
-        game_id = stem[1] if len(stem) > 3 else None
-        url = f"/{series_id}/?game={game_id}&tab={tab}" if game_id else f"/{series_id}/"
+        stem = filename.removesuffix(".html").split("_")
+        tab = stem[-1] if stem[-1] in ("economy", "performance", "overview") else "overview"
+        game_id = stem[1] if stem[0] == "game" and len(stem) >= 3 else None
+        if game_id:
+            url = f"/{series_id}/?game={game_id}&tab={tab}"
+        elif tab != "overview":
+            url = f"/{series_id}/?tab={tab}"
+        else:
+            url = f"/{series_id}/"
         return HTMLParser(live_fetch(url))
     path = FIXTURES_DIR / "series" / SERIES[series_id] / filename
     if path.exists():

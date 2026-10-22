@@ -45,7 +45,7 @@ class SeriesMatchNamespace:
     def performance(self, game_id: int | str = "all") -> PerformanceData:
         ...
 
-    def economy(self, game_id: int) -> EconomyData:
+    def economy(self, game_id: int | str = "all") -> EconomyData:
         ...
 
     def replay(self, game_id: int) -> ReplayData:

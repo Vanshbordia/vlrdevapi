@@ -51,7 +51,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // The changelog carries a real release date; every other marketing page is
     // static, so it deliberately has no `lastModified` (a build timestamp
     // would make the sitemap churn on every deploy).
-    lastModified: route.path === '/changelog' ? latestChangelogDate : undefined,
+    lastModified: route.path === '/changelog/' || route.path === '/changelog' ? latestChangelogDate : undefined,
     changeFrequency: route.changeFrequency,
     priority: route.priority,
   }))

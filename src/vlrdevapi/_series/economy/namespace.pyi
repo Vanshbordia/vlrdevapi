@@ -14,5 +14,5 @@ class SeriesEconomyNamespace:
         source_tz: object = ...,
     ) -> None: ...
 
-    def __call__(self, series_id: int, game_id: int) -> EconomyData:
+    def __call__(self, series_id: int, game_id: int | str = "all") -> EconomyData:
         ...
