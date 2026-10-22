@@ -21,7 +21,7 @@ export const project = {
 /** Canonical URLs reused across structured data. */
 export const projectUrls = {
   home: canonicalUrl('/'),
-  docs: canonicalUrl('/docs/'),
+  docs: canonicalUrl('/docs'),
   logo: assetUrl('/logo.png'),
 } as const;
 

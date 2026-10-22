@@ -8,7 +8,7 @@ import { SiteHeader } from '@/components/landing/site-header';
  */
 export function MarketingShell({ children }: { children: ReactNode }) {
   return (
-    <div className="dark flex min-h-dvh flex-col bg-black text-white selection:bg-[#ff4655]/30 selection:text-white">
+    <div className="dark flex min-h-dvh flex-col bg-fd-canvas text-white selection:bg-fd-primary/30 selection:text-white">
       <SiteHeader />
       {children}
       <SiteFooter />

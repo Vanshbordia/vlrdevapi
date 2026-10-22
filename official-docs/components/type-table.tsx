@@ -3,7 +3,7 @@
 import { ChevronDown } from 'lucide-react';
 import Link from 'fumadocs-core/link';
 import { cva } from 'class-variance-authority';
-import { cn } from '../lib/cn';
+import { cn } from '@/lib/cn';
 import { type ComponentProps, type ReactNode, useEffect, useState } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { useTranslations } from '@fuma-translate/react';

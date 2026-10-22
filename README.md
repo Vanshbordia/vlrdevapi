@@ -10,7 +10,7 @@
 [![PyPI](https://img.shields.io/pypi/v/vlrdevapi.svg)](https://pypi.org/project/vlrdevapi/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[Documentation](https://vlrdevapi.pages.dev/docs) · [ReadTheDocs](https://vlrdevapi.readthedocs.io/) · [PyPI](https://pypi.org/project/vlrdevapi/) · [GitHub](https://github.com/Vanshbordia/vlrdevapi)
+[Documentation](https://vlrdevapi.pages.dev/docs/) · [ReadTheDocs](https://vlrdevapi.readthedocs.io/) · [PyPI](https://pypi.org/project/vlrdevapi/) · [GitHub](https://github.com/Vanshbordia/vlrdevapi)
 
 </div>
 
@@ -146,7 +146,7 @@ print(article.content_md)                # Article body as Markdown
 
 ## Documentation
 
-- **Official Docs** - [vlrdevapi.pages.dev/docs](https://vlrdevapi.pages.dev/docs)
+- **Official Docs** - [vlrdevapi.pages.dev/docs](https://vlrdevapi.pages.dev/docs/)
 - **ReadTheDocs** - [vlrdevapi.readthedocs.io](https://vlrdevapi.readthedocs.io/)
 
 ## Development

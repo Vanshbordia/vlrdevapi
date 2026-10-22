@@ -1,92 +1,68 @@
 import type { MetadataRoute } from 'next'
-import { source } from '@/lib/source'
-import { getBlogPosts, getGuides } from '@/lib/content'
-import { siteUrl } from '@/lib/shared'
+import { getBlogEntries, getGuideEntries, source } from '@/lib/source'
+import { canonicalUrl } from '@/lib/shared'
+import { latestChangelogDate } from '@/lib/changelog'
 
 export const dynamic = 'force-static'
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const pages = source.getPages()
+/**
+ * Marketing routes that are not part of a content collection. Kept as a single
+ * list so the sitemap, the header and the footer cannot drift apart.
+ */
+export const MARKETING_ROUTES: Array<{
+  path: string
+  changeFrequency: 'daily' | 'weekly' | 'monthly' | 'yearly'
+  priority: number
+}> = [
+  { path: '/blog/', changeFrequency: 'weekly', priority: 0.8 },
+  { path: '/guides/', changeFrequency: 'weekly', priority: 0.8 },
+  { path: '/vlr-gg-api/', changeFrequency: 'monthly', priority: 0.9 },
+  { path: '/valorant-esports-api/', changeFrequency: 'monthly', priority: 0.9 },
+  { path: '/valorant-api-python/', changeFrequency: 'monthly', priority: 0.9 },
+  { path: '/valorant-stats-api/', changeFrequency: 'monthly', priority: 0.9 },
+  { path: '/changelog/', changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/faq/', changeFrequency: 'monthly', priority: 0.6 },
+]
 
-  const docUrls = pages.map((page) => ({
-    url: `${siteUrl}${page.url}${page.url.endsWith('/') ? '' : '/'}`,
-    lastModified: page.data.lastModified ?? new Date(),
+export default function sitemap(): MetadataRoute.Sitemap {
+  const docUrls = source.getPages().map((page) => ({
+    url: canonicalUrl(page.url),
+    lastModified: page.data.lastModified,
     changeFrequency: 'weekly' as const,
     priority: page.url === '/docs' ? 1 : 0.8,
   }))
 
-  const blogPosts = getBlogPosts()
-  const guideItems = getGuides()
-
-  const blogUrls = blogPosts.map((post) => ({
-    url: `${siteUrl}/blog/${post.slug}/`,
-    lastModified: new Date(post.date),
+  const blogUrls = getBlogEntries().map((post) => ({
+    url: canonicalUrl(post.url),
+    lastModified: post.lastModified ?? new Date(post.date),
     changeFrequency: 'weekly' as const,
     priority: 0.7,
   }))
 
-  const guideUrls = guideItems.map((guide) => ({
-    url: `${siteUrl}/guides/${guide.slug}/`,
-    lastModified: new Date(guide.date),
+  const guideUrls = getGuideEntries().map((guide) => ({
+    url: canonicalUrl(guide.url),
+    lastModified: guide.lastModified ?? new Date(guide.date),
     changeFrequency: 'weekly' as const,
     priority: 0.7,
+  }))
+
+  const marketingUrls = MARKETING_ROUTES.map((route) => ({
+    url: canonicalUrl(route.path),
+    // The changelog carries a real release date; every other marketing page is
+    // static, so it deliberately has no `lastModified` (a build timestamp
+    // would make the sitemap churn on every deploy).
+    lastModified: route.path === '/changelog' ? latestChangelogDate : undefined,
+    changeFrequency: route.changeFrequency,
+    priority: route.priority,
   }))
 
   return [
     {
-      url: siteUrl,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
+      url: canonicalUrl('/'),
+      changeFrequency: 'weekly' as const,
       priority: 1,
     },
-    {
-      url: `${siteUrl}/blog/`,
-      lastModified: blogPosts.length > 0 ? new Date(blogPosts[0].date) : new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${siteUrl}/guides/`,
-      lastModified: guideItems.length > 0 ? new Date(guideItems[0].date) : new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${siteUrl}/vlr-gg-api/`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-    {
-      url: `${siteUrl}/valorant-esports-api/`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-    {
-      url: `${siteUrl}/valorant-api-python/`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-    {
-      url: `${siteUrl}/valorant-stats-api/`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-    {
-      url: `${siteUrl}/changelog/`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${siteUrl}/faq/`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
+    ...marketingUrls,
     ...blogUrls,
     ...guideUrls,
     ...docUrls,

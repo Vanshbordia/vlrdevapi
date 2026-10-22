@@ -18,7 +18,7 @@ function highlight(line: string): ReactNode[] {
     const className = str
       ? 'text-[#a7d8a9]'
       : comment
-        ? 'text-white/25'
+        ? 'text-fd-muted'
         : keyword
           ? 'text-[#ff8fab]'
           : number
@@ -58,26 +58,33 @@ export function CodeBlock({
 
   return (
     <pre
-      className={`overflow-x-auto p-4 font-mono text-[12.5px] leading-[1.8] text-white/75 ${className}`}
+      className={`overflow-x-auto p-4 font-mono text-[12.5px] leading-[1.8] text-white/75 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${className}`}
     >
-      <code className="table w-full min-w-max border-collapse">
-        {lines.map((line, i) => (
-          <span
-            key={i}
-            className={`table-row ${animate ? 'landing-line' : ''}`}
-            style={animate ? { animationDelay: `${i * 24}ms` } : undefined}
-          >
-            {lineNumbers ? (
-              <span className="table-cell select-none pr-5 text-right text-white/20">
-                {i + 1}
-              </span>
-            ) : null}
-            <span className="table-cell whitespace-pre">
-              {line.length > 0 ? highlight(line) : ' '}
-            </span>
-          </span>
-        ))}
-      </code>
+      {/*
+        A real table rather than `display: table` spans inside `<code>`.
+        `<code>` may only contain phrasing content, and the layout hack breaks
+        in forced-colours / high-contrast mode.
+      */}
+      <table className="w-full min-w-max border-collapse">
+        <tbody>
+          {lines.map((line, i) => (
+            <tr
+              key={i}
+              className={animate ? 'landing-line' : undefined}
+              style={animate ? { animationDelay: `${i * 24}ms` } : undefined}
+            >
+              {lineNumbers ? (
+                <td className="select-none pr-5 text-right align-top text-fd-muted">
+                  <span aria-hidden="true">{i + 1}</span>
+                </td>
+              ) : null}
+              <td className="whitespace-pre align-top">
+                <code>{line.length > 0 ? highlight(line) : ' '}</code>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </pre>
   );
 }

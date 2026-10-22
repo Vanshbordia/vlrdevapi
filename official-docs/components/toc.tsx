@@ -1,50 +1,46 @@
+import { isValidElement, type ReactNode } from 'react';
+import type { TOCItemType } from 'fumadocs-core/toc';
+
 export interface TocItem {
-  id: string
-  text: string
-  level: number
+  id: string;
+  text: string;
+  level: number;
 }
 
-export function extractToc(markdown: string): TocItem[] {
-  const headingRegex = /^(#{2,3})\s+(.+?)(?:\s*[\[{]#([\w-]+)[\]}])?$/gm
-  const items: TocItem[] = []
-  let match: RegExpExecArray | null
+/**
+ * Flatten a heading title into plain text.
+ *
+ * fumadocs' `rehypeToc` exports every heading as a React node rather than a
+ * string (`{ props: { children: 'Installation' } }`), because a heading may mix
+ * inline markdown such as code or emphasis. Reading `title` as a string
+ * therefore silently emptied the whole TOC.
+ */
+function toPlainText(node: ReactNode): string {
+  if (node === null || node === undefined || typeof node === 'boolean') return '';
+  if (typeof node === 'string') return node;
+  if (typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(toPlainText).join('');
+  if (isValidElement<{ children?: ReactNode }>(node)) return toPlainText(node.props.children);
 
-  while ((match = headingRegex.exec(markdown)) !== null) {
-    const level = match[1].length
-    const text = match[2].trim()
-    const id = match[3] ?? text
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '')
-
-    items.push({ id, text, level })
-  }
-
-  return items
+  return '';
 }
 
-export function TableOfContents({ items }: { items: TocItem[] }) {
-  if (items.length === 0) return null
+/**
+ * Convert the TOC fumadocs produces (via the `rehypeToc` plugin that
+ * fumadocs-mdx applies to every collection) into the flat shape the
+ * marketing TOC nav renders.
+ *
+ * Only `h2`/`h3` are surfaced, matching the depth the nav indents for.
+ */
+export function toTocItems(toc: TOCItemType[] | undefined): TocItem[] {
+  if (!toc) return [];
 
-  return (
-    <nav className="lg:sticky lg:top-28 lg:self-start">
-      <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
-        On this page
-      </h2>
-      <ul className="space-y-2.5">
-        {items.map((item) => (
-          <li key={item.id}>
-            <a
-              href={`#${item.id}`}
-              className={`block text-xs leading-snug text-muted-foreground hover:text-foreground transition-colors ${
-                item.level === 3 ? 'pl-3' : ''
-              }`}
-            >
-              {item.text}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  )
+  return toc
+    .filter((item) => item.depth >= 2 && item.depth <= 3)
+    .map((item) => ({
+      id: item.url.replace(/^#/, ''),
+      text: toPlainText(item.title).trim(),
+      level: item.depth,
+    }))
+    .filter((item) => item.text.length > 0);
 }

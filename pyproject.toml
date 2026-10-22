@@ -41,7 +41,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://vlrdevapi.pages.dev/"
 Repository = "https://github.com/Vanshbordia/vlrdevapi"
-Documentation = "https://vlrdevapi.pages.dev/docs"
+Documentation = "https://vlrdevapi.pages.dev/docs/"
 
 [project.optional-dependencies]
 test = [

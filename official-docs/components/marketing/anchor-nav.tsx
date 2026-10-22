@@ -33,7 +33,7 @@ export function AnchorNav({
 
   return (
     <>
-      <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-white/30">
+      <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
         {label}
       </p>
       <nav aria-label={ariaLabel} className="mt-4">
@@ -50,16 +50,16 @@ export function AnchorNav({
                     stacked ? 'flex-col gap-1' : 'items-center gap-3'
                   } ${
                     isActive
-                      ? 'border-[#ff4655] text-white'
-                      : 'border-transparent text-white/40 hover:text-white/75'
+                      ? 'border-fd-primary text-white'
+                      : 'border-transparent text-fd-muted hover:text-white/75'
                   }`}
                 >
                   {item.meta ? (
                     <span
                       className={
                         stacked
-                          ? 'font-mono text-[12px] uppercase tracking-[0.12em] text-[#ff8d97]'
-                          : 'font-mono text-[12px] text-white/25'
+                          ? 'font-mono text-[12px] uppercase tracking-[0.12em] text-fd-primary'
+                          : 'font-mono text-[12px] text-fd-muted'
                       }
                     >
                       {item.meta}
@@ -75,7 +75,7 @@ export function AnchorNav({
         </ol>
       </nav>
       {note ? (
-        <div className="mt-6 border-t border-white/10 pt-4 font-mono text-[12px] uppercase tracking-[0.14em] text-white/25">
+        <div className="mt-6 border-t border-white/10 pt-4 font-mono text-[12px] uppercase tracking-[0.14em] text-fd-muted">
           {note}
         </div>
       ) : null}

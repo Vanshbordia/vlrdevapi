@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useInView } from '@/components/use-in-view';
 import snapshot from './landing-snapshot.json';
 
 const methods = [
@@ -14,9 +15,12 @@ const methods = [
 export function CurriedDemo() {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  // Only animate while the card is on screen.
+  const { ref, visible } = useInView<HTMLDivElement>();
 
   useEffect(() => {
-    if (paused) return;
+    if (paused || !visible) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const timer = window.setTimeout(
       () => setActive((current) => (current >= methods.length ? 0 : current + 1)),
@@ -24,23 +28,24 @@ export function CurriedDemo() {
     );
 
     return () => window.clearTimeout(timer);
-  }, [active, paused]);
+  }, [active, paused, visible]);
 
   return (
     <div
-      className="mt-6 overflow-hidden border border-white/10 bg-black"
+      ref={ref}
+      className="mt-6 overflow-hidden border border-white/10 bg-fd-canvas"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
       <div className="flex items-center justify-between border-b border-white/10 px-3.5 py-2">
-        <span className="font-mono text-[12px] text-white/35">player.py</span>
-        <span className="font-mono text-[12px] uppercase tracking-[0.12em] text-white/25">
+        <span className="font-mono text-[12px] text-fd-muted">player.py</span>
+        <span className="font-mono text-[12px] uppercase tracking-[0.12em] text-fd-muted">
           id bound once
         </span>
       </div>
 
       <div className="p-4 font-mono text-[12px]">
-        <p className="whitespace-nowrap text-white/45">
+        <p className="whitespace-nowrap text-fd-subtle">
           player = <span className="text-white/75">client.player({snapshot.player.id})</span>
         </p>
 
@@ -61,15 +66,15 @@ export function CurriedDemo() {
                   aria-hidden="true"
                   className={`absolute -left-[17px] top-1/2 size-1 -translate-y-1/2 transition-colors duration-200 ${
                     done
-                      ? 'bg-[#ff4655]'
+                      ? 'bg-fd-primary'
                       : current
-                        ? 'bg-[#ff4655]'
+                        ? 'bg-fd-primary'
                         : 'bg-white/15'
                   }`}
                 />
                 <span
                   className={`transition-colors duration-200 ${
-                    current ? 'text-[#ff8d97]' : done ? 'text-white/60' : 'text-white/25'
+                    current ? 'text-fd-primary' : done ? 'text-white/60' : 'text-fd-muted'
                   }`}
                 >
                   player{method.call}
@@ -77,7 +82,7 @@ export function CurriedDemo() {
                 <span
                   className={`truncate text-right transition-all duration-200 ${
                     revealed ? 'translate-x-0 opacity-100' : 'translate-x-1 opacity-0'
-                  } ${current ? 'text-white/80' : 'text-white/35'}`}
+                  } ${current ? 'text-white/80' : 'text-fd-muted'}`}
                 >
                   {method.result}
                 </span>
@@ -87,7 +92,7 @@ export function CurriedDemo() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-white/10 bg-white/[0.02] px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.1em] text-white/25">
+      <div className="flex items-center justify-between border-t border-white/10 bg-white/[0.02] px-3.5 py-2 font-mono text-[12px] uppercase tracking-[0.1em] text-fd-muted">
         <span>{active >= methods.length ? 'all resolved' : 'resolving'}</span>
         <span>{Math.min(active, methods.length)} / {methods.length} methods</span>
       </div>

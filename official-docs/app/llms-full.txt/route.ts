@@ -1,6 +1,6 @@
 import { blogSource, getLLMTextFor, guidesSource, source } from '@/lib/source';
 
-export const revalidate = false;
+export const dynamic = 'force-static';
 
 export async function GET() {
   // Docs, blog, and guides are separate collections. getLLMTextFor renders each

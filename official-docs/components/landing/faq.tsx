@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { ArrowUpRight, Plus } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
+import { FaqAccordion } from '@/components/marketing/faq-accordion';
 
 const faqs = [
   {
@@ -38,15 +39,14 @@ export function Faq() {
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] lg:gap-20">
       <div>
-        <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-white/35">FAQ</p>
+        <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-fd-muted">FAQ</p>
         <h2 className="mt-4 text-3xl font-medium leading-[1.05] tracking-[-0.035em] text-white sm:text-4xl">
           Questions,
           <br />
-          <span className="text-white/35">answered.</span>
+          <span className="text-fd-muted">answered.</span>
         </h2>
-        <p className="mt-4 max-w-sm text-[14px] leading-relaxed text-white/40">
-          Everything about keys, coverage, limits, and licensing. Still curious? The full FAQ goes
-          deeper.
+        <p className="mt-4 max-w-sm text-[14px] leading-relaxed text-fd-muted">
+          Keys, coverage, rate limits, and licensing. The full FAQ goes deeper on each of them.
         </p>
         <Link
           href="/faq/"
@@ -60,24 +60,11 @@ export function Faq() {
         </Link>
       </div>
 
-      <div className="border-t border-white/10">
-        {faqs.map((faq) => (
-          <details key={faq.question} className="group border-b border-white/10">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 [&::-webkit-details-marker]:hidden">
-              <span className="text-[14.5px] font-medium text-white/80 transition-colors group-hover:text-white">
-                {faq.question}
-              </span>
-              <Plus
-                className="size-4 shrink-0 text-white/30 transition-transform duration-300 group-open:rotate-45 group-open:text-white/60"
-                aria-hidden="true"
-              />
-            </summary>
-            <p className="max-w-2xl pb-5 pr-8 text-[13.5px] leading-relaxed text-white/40">
-              {faq.answer}
-            </p>
-          </details>
-        ))}
-      </div>
+      <FaqAccordion
+        items={faqs.map((faq) => ({ q: faq.question, a: faq.answer }))}
+        questionClassName="text-[14.5px] font-medium text-white/80 transition-colors group-hover:text-white"
+        answerClassName="max-w-2xl pb-5 pr-8 text-[13.5px] leading-relaxed text-white/50"
+      />
     </div>
   );
 }

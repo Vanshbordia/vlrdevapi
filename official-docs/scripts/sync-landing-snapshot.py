@@ -4,22 +4,43 @@ Run from the repository root:
 
     .\.venv\Scripts\python.exe official-docs\scripts\sync-landing-snapshot.py
 
+or, from `official-docs/`:
+
+    npm run snapshot
+
 The landing page is a static export, so this keeps its previews grounded in
 real VLR.gg data without making the docs build depend on Python or the network.
+
+Why this stays Python
+---------------------
+
+The script calls `vlrdevapi` itself - the library the landing page advertises.
+The data on the page is therefore produced by the exact code path a visitor
+would run, which is the strongest form of dogfooding available. A JavaScript
+rewrite would have to re-implement the VLR.gg parser to produce the same
+numbers.
+
+Staleness
+---------
+
+The snapshot is a point-in-time capture: agent pick rates, rosters, results and
+the news headline all move. The `capturedAt` date is rendered on the page, and
+`--check` fails when the capture is older than `--max-age-days` (default 14), so
+a stale snapshot cannot quietly ship.
+
+    python official-docs/scripts/sync-landing-snapshot.py --check
 """
 
 from __future__ import annotations
 
+import argparse
 import json
-from datetime import UTC, datetime
+import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-import httpx
-
-from vlrdevapi import VLRClient
-from vlrdevapi.fetcher import DEFAULT_HEADERS
-
 OUTPUT = Path(__file__).resolve().parents[1] / "components" / "landing" / "landing-snapshot.json"
+DEFAULT_MAX_AGE_DAYS = 14
 
 
 def first_paragraph(text: str) -> str:
@@ -30,7 +51,57 @@ def first_paragraph(text: str) -> str:
     return ""
 
 
-def main() -> None:
+def check_age(max_age_days: int) -> int:
+    """Fail if the snapshot on disk is older than `max_age_days`."""
+    if not OUTPUT.exists():
+        print(f"{OUTPUT} does not exist - run the script without --check first.")
+        return 1
+
+    data = json.loads(OUTPUT.read_text(encoding="utf-8"))
+    captured = data.get("capturedAt")
+
+    try:
+        captured_on = datetime.strptime(captured, "%Y-%m-%d").replace(tzinfo=UTC)
+    except (TypeError, ValueError):
+        print(f"{OUTPUT} has no usable 'capturedAt' date ({captured!r}).")
+        return 1
+
+    age = datetime.now(UTC) - captured_on
+
+    if age > timedelta(days=max_age_days):
+        print(
+            f"Landing snapshot is stale: captured {captured}, "
+            f"{age.days} days old (limit {max_age_days}). Run `npm run snapshot`."
+        )
+        return 1
+
+    print(f"Landing snapshot is fresh: captured {captured} ({age.days} days old).")
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="only check the age of the existing snapshot; do not fetch anything",
+    )
+    parser.add_argument(
+        "--max-age-days",
+        type=int,
+        default=DEFAULT_MAX_AGE_DAYS,
+        help=f"maximum accepted snapshot age in days (default {DEFAULT_MAX_AGE_DAYS})",
+    )
+    args = parser.parse_args()
+
+    if args.check:
+        return check_age(args.max_age_days)
+
+    import httpx
+
+    from vlrdevapi import VLRClient
+    from vlrdevapi.fetcher import DEFAULT_HEADERS
+
     with VLRClient() as client:
         player = client.player(11225)
         player_info = player.info()
@@ -202,8 +273,9 @@ def main() -> None:
     }
 
     OUTPUT.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"Wrote {OUTPUT}")
+    print(f"Wrote {OUTPUT} (captured {data['capturedAt']})")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

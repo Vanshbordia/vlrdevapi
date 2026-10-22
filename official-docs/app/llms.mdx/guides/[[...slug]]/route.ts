@@ -1,11 +1,11 @@
 import { getLLMTextFor, guidesSource } from '@/lib/source';
 import { notFound } from 'next/navigation';
 
-export const revalidate = false;
+export const dynamic = 'force-static';
 
 export async function GET(
   _req: Request,
-  { params }: { params: Promise<{ slug?: string[] }> },
+  { params }: RouteContext<'/llms.mdx/guides/[[...slug]]'>,
 ) {
   const { slug } = await params;
   // The last segment is always "content.md" (see generateStaticParams).

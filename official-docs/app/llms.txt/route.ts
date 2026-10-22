@@ -1,10 +1,10 @@
-import { getPageMarkdownUrl, source } from '@/lib/source';
-import { getBlogPosts, getGuides } from '@/lib/content';
+import { getPageMarkdownUrl, getBlogEntries, getGuideEntries, source } from '@/lib/source';
 import { llms } from 'fumadocs-core/source';
+import { siteUrl } from '@/lib/shared';
 
-export const revalidate = false;
+export const dynamic = 'force-static';
 
-const BASE_URL = 'https://vlrdevapi.pages.dev';
+const BASE_URL = siteUrl;
 
 const summary = `# VLRdevAPI
 
@@ -42,7 +42,7 @@ const faq = `## FAQ
 
 **How is it installed?** \`pip install vlrdevapi\` or \`uv add vlrdevapi\`.
 
-**Where is the full reference?** ${BASE_URL}/docs`;
+**Where is the full reference?** ${BASE_URL}/docs/`;
 
 const useCases = `## Use cases
 
@@ -77,12 +77,12 @@ function withDocMarkdownLinks(index: string) {
 export function GET() {
   // Blog and guides are separate MDX collections, so they are not part of the
   // docs page tree that llms(source).index() walks. Add them explicitly.
-  const blog = getBlogPosts().map((post) => ({
+  const blog = getBlogEntries().map((post) => ({
     slug: post.slug,
     title: post.title,
     description: post.description,
   }));
-  const guides = getGuides().map((guide) => ({
+  const guides = getGuideEntries().map((guide) => ({
     slug: guide.slug,
     title: guide.title,
     description: guide.description,

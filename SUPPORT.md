@@ -2,7 +2,7 @@
 
 ## Documentation
 
-- **Python API docs**: https://vlrdevapi.pages.dev/docs
+- **Python API docs**: https://vlrdevapi.pages.dev/docs/
 - **Official website**: https://vlrdevapi.pages.dev/
 
 ## Getting Help

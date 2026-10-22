@@ -63,23 +63,23 @@ export function ModuleShowcaseNav({ items }: { items: ModuleNavItem[] }) {
             onClick={(event) => scrollToModule(event, item.id)}
             aria-current={active ? 'location' : undefined}
             className={`group flex items-center gap-3 border-b border-white/10 py-3.5 text-[13px] transition-colors ${
-              active ? 'text-white' : 'text-white/40 hover:text-white/75'
+              active ? 'text-white' : 'text-fd-muted hover:text-white/75'
             }`}
           >
             <span
               aria-hidden="true"
               className={`h-4 w-px transition-colors duration-300 ${
-                active ? 'bg-[#ff4655]' : 'bg-white/10'
+                active ? 'bg-fd-primary' : 'bg-white/10'
               }`}
             />
-            <span className="font-mono text-[12px] text-white/25">
+            <span className="font-mono text-[12px] text-fd-muted">
               {String(index + 1).padStart(2, '0')}
             </span>
             <span className="font-medium">{item.label}</span>
             <span
               aria-hidden="true"
               className={`ml-auto size-1 transition-all duration-300 ${
-                active ? 'bg-[#ff4655] opacity-100' : 'bg-transparent opacity-0'
+                active ? 'bg-fd-primary opacity-100' : 'bg-transparent opacity-0'
               }`}
             />
           </a>

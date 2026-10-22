@@ -1,4 +1,4 @@
-import { getPageImage, getPageMarkdownUrl, source } from '@/lib/source';
+import { getPageMarkdownUrl, source } from '@/lib/source';
 import {
   DocsBody,
   DocsDescription,
@@ -10,10 +10,11 @@ import {
 } from 'fumadocs-ui/layouts/docs/page';
 import { notFound } from 'next/navigation';
 import { getMDXComponents } from '@/components/mdx';
-import type { Metadata } from 'next';
+import type { Metadata, ResolvingMetadata } from 'next';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
 import { canonicalUrl, gitConfig, siteUrl } from '@/lib/shared';
-import { projectAuthor, projectUrls } from '@/lib/project';
+import { getOgImage, resolveOgImage } from '@/lib/seo';
+import { project, projectAuthor, projectUrls } from '@/lib/project';
 
 
 export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
@@ -27,20 +28,27 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
 
   const pageUrl = canonicalUrl(page.url);
 
+  // The Open Graph image comes from the `opengraph-image` file convention in
+  // the `/docs` segment. Next has already generated its URL, so it is picked
+  // up from the resolved metadata and reused for the JSON-LD.
+  const ogImage = await getOgImage(page.url);
+
   const jsonLdArticle = {
     '@context': 'https://schema.org',
     '@type': 'TechArticle',
+    '@id': `${pageUrl}#article`,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl },
     headline: page.data.title,
     description: page.data.description,
+    // `image` is recommended for Google to grant article rich results. It is
+    // the Open Graph image the `opengraph-image` file convention generated
+    // for the documentation section.
+    ...(ogImage ? { image: [ogImage] } : {}),
     url: pageUrl,
     dateModified: page.data.lastModified?.toISOString() ?? new Date().toISOString(),
     author: projectAuthor,
     publisher: { '@id': `${siteUrl}/#organization` },
     inLanguage: 'en',
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': pageUrl,
-    },
   };
 
   const segmentLabel = (segment: string) =>
@@ -102,20 +110,41 @@ export async function generateStaticParams() {
   return source.generateParams();
 }
 
-export async function generateMetadata(props: PageProps<'/docs/[[...slug]]'>): Promise<Metadata> {
+export async function generateMetadata(props: PageProps<'/docs/[[...slug]]'>, parent: ResolvingMetadata): Promise<Metadata> {
   const params = await props.params;
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
+  // The Open Graph image comes from the `opengraph-image` file convention in
+  // the `/docs` segment. Next has already generated its URL, so it is picked
+  // up from the resolved metadata and reused for the JSON-LD.
+  await resolveOgImage(page.url, parent);
+
+  // Defining `openGraph` replaces the one inherited from the layout, images
+  // included, so the section card is carried over explicitly.
+  const parentMetadata = await parent;
+  const images = parentMetadata.openGraph?.images;
+
   const ogUrl = canonicalUrl(page.url);
+  const title = page.data.title;
 
   return {
-    title: page.data.title,
+    title,
     description: page.data.description,
     alternates: { canonical: ogUrl },
     openGraph: {
+      type: 'article',
+      siteName: project.name,
+      locale: 'en_US',
       url: ogUrl,
-      images: getPageImage(page).url,
+      title: `${title} | ${project.name}`,
+      description: page.data.description,
+      ...(images ? { images } : {}),
     },
-  }
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | ${project.name}`,
+      description: page.data.description,
+    },
+  };
 }

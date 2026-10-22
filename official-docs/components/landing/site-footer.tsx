@@ -7,19 +7,19 @@ const columns = [
   {
     title: 'Documentation',
     links: [
-      { label: 'Introduction', href: '/docs/' },
-      { label: 'Getting started', href: '/docs/getting-started/' },
-      { label: 'Quickstart', href: '/docs/quickstart/' },
-      { label: 'API reference', href: '/docs/reference/' },
+      { label: 'Introduction', href: '/docs' },
+      { label: 'Getting started', href: '/docs/getting-started' },
+      { label: 'Quickstart', href: '/docs/quickstart' },
+      { label: 'API reference', href: '/docs/reference' },
     ],
   },
   {
     title: 'Explore',
     links: [
-      { label: 'Guides', href: '/guides/' },
-      { label: 'Blog', href: '/blog/' },
-      { label: 'Changelog', href: '/changelog/' },
-      { label: 'FAQ', href: '/faq/' },
+      { label: 'Guides', href: '/guides' },
+      { label: 'Blog', href: '/blog' },
+      { label: 'Changelog', href: '/changelog' },
+      { label: 'FAQ', href: '/faq' },
     ],
   },
   {
@@ -35,12 +35,12 @@ const columns = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-white/10 bg-black">
+    <footer className="border-t border-white/10 bg-fd-canvas">
       <div className="mx-auto w-full max-w-7xl px-5 sm:px-8">
         <div className="grid gap-12 py-14 sm:grid-cols-2 lg:grid-cols-[1.6fr_repeat(3,1fr)] lg:gap-8 lg:py-16">
           <div className="max-w-sm">
             <Brand />
-            <p className="mt-4 text-[13.5px] leading-relaxed text-white/40">
+            <p className="mt-4 text-[13.5px] leading-relaxed text-fd-muted">
               A type-safe Python client for Valorant esports data on VLR.gg. Built for the people
               who watch, analyze, and ship around the game.
             </p>
@@ -50,7 +50,7 @@ export function SiteFooter() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
-                className="inline-flex size-8 items-center justify-center border border-white/10 text-white/45 transition-colors hover:border-white/25 hover:text-white"
+                className="inline-flex size-8 items-center justify-center border border-white/10 text-fd-subtle transition-colors hover:border-white/25 hover:text-white"
               >
                 <GithubIcon className="size-3.5" />
               </Link>
@@ -58,7 +58,7 @@ export function SiteFooter() {
                 href="https://pypi.org/project/vlrdevapi/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-8 items-center border border-white/10 px-3 font-mono text-[12px] text-white/45 transition-colors hover:border-white/25 hover:text-white"
+                className="inline-flex h-8 items-center border border-white/10 px-3 font-mono text-[12px] text-fd-subtle transition-colors hover:border-white/25 hover:text-white"
               >
                 pypi.org/project/vlrdevapi
               </Link>
@@ -67,7 +67,7 @@ export function SiteFooter() {
 
           {columns.map((column) => (
             <div key={column.title}>
-              <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-white/30">
+              <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
                 {column.title}
               </h2>
               <ul className="mt-4 flex flex-col gap-2.5">
@@ -95,7 +95,7 @@ export function SiteFooter() {
           ))}
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-white/10 py-6 text-[12px] text-white/30 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-t border-white/10 py-6 text-[12px] text-fd-muted sm:flex-row sm:items-center sm:justify-between">
           <p>
             &copy; {new Date().getFullYear()} VLRdevAPI. Not affiliated with Riot Games or VLR.gg.
           </p>

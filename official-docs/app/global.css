@@ -5,133 +5,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-Thin.otf') format('opentype');
-  font-weight: 100;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-ThinOblique.otf') format('opentype');
-  font-weight: 100;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-ExtraLight.otf') format('opentype');
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-ExtraLightOblique.otf') format('opentype');
-  font-weight: 200;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-Light.otf') format('opentype');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-LightOblique.otf') format('opentype');
-  font-weight: 300;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-Normal.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-NormalOblique.otf') format('opentype');
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-Medium.otf') format('opentype');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-MediumOblique.otf') format('opentype');
-  font-weight: 500;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-DemiBold.otf') format('opentype');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-DemiBoldOblique.otf') format('opentype');
-  font-weight: 600;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-Bold.otf') format('opentype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-BoldOblique.otf') format('opentype');
-  font-weight: 700;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-ExtraBold.otf') format('opentype');
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-ExtraBoldOblique.otf') format('opentype');
-  font-weight: 800;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-Heavy.otf') format('opentype');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Articulat CF';
-  src: url('/fonts/ArticulatCF-HeavyOblique.otf') format('opentype');
-  font-weight: 900;
-  font-style: italic;
-  font-display: swap;
-}
-
 html {
   scrollbar-gutter: stable;
 }
@@ -202,9 +75,10 @@ html > body[data-scroll-locked] {
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --font-sans: 'Articulat CF', ui-sans-serif, sans-serif, system-ui;
-  --font-serif: Georgia, "Times New Roman", serif;
-  --font-mono: JetBrains Mono, ui-monospace, monospace;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Consolas,
+    monospace;
   --radius: 0.625rem;
   --shadow-x: 0px;
   --shadow-y: 1px;
@@ -260,9 +134,10 @@ html > body[data-scroll-locked] {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-  --font-sans: 'Articulat CF', ui-sans-serif, sans-serif, system-ui;
-  --font-serif: Georgia, "Times New Roman", serif;
-  --font-mono: JetBrains Mono, ui-monospace, monospace;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Consolas,
+    monospace;
   --radius: 0.125rem;
   --shadow-x: 0px;
   --shadow-y: 2px;
@@ -283,6 +158,33 @@ html > body[data-scroll-locked] {
 
 @theme inline {
   --color-fd-primary:var(--valorant-red-color);
+  /*
+   * Semantic text ramp for the dark marketing surface.
+   *
+   * On a near-black background every `text-white/N` below 50% fails WCAG AA
+   * (4.5:1) for body text: white/30 is only ~2.5:1. These two steps are the
+   * verified replacements.
+   *
+   *   --color-fd-muted   #7e7e88  ~5.2:1  labels, metadata, captions
+   *   --color-fd-subtle  #9a9aa4  ~7.4:1  body copy, descriptions
+   */
+  --color-fd-muted:#7e7e88;
+  --color-fd-subtle:#9a9aa4;
+
+  /*
+   * Marketing canvas.
+   *
+   * The marketing shell always renders on a black canvas, so these three
+   * steps replace the ad-hoc hex values that used to be spread across the
+   * landing components.
+   *
+   *   --color-fd-canvas  page background
+   *   --color-fd-panel   card / code surface
+   *   --color-fd-raised  inset rows, chips, hover surfaces
+   */
+  --color-fd-canvas: oklch(0 0 0);
+  --color-fd-panel: oklch(0.145 0 0);
+  --color-fd-raised: oklch(0.205 0 0);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -340,7 +242,7 @@ html > body[data-scroll-locked] {
   --tracking-wide: calc(var(--tracking-normal) + 0.025em);
   --tracking-wider: calc(var(--tracking-normal) + 0.05em);
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
-  --font-heading: 'Articulat CF', ui-sans-serif, sans-serif;
+  --font-heading: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
@@ -392,10 +294,10 @@ html > body[data-scroll-locked] {
 
 @keyframes landing-grid-drift {
   from {
-    background-position: 0 0;
+    transform: translate3d(0, 0, 0);
   }
   to {
-    background-position: 84px 84px;
+    transform: translate3d(84px, 84px, 0);
   }
 }
 
@@ -521,6 +423,34 @@ html > body[data-scroll-locked] {
   }
 }
 
+/*
+ * Focus visibility.
+ *
+ * Scoped to the dark marketing shell so the fumadocs docs chrome keeps its
+ * own focus treatment.
+ */
+.dark :focus-visible {
+  outline: 2px solid var(--valorant-red-color);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/*
+ * Native disclosure markers.
+ *
+ * `list-none` is only applied where the WebKit marker can be hidden, so
+ * Firefox keeps its triangle.
+ */
+.faq-summary {
+  list-style: none;
+}
+
+@supports selector(::-webkit-details-marker) {
+  .faq-summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
 .landing-reveal {
   opacity: 0;
   transform: translateY(22px);
@@ -597,6 +527,20 @@ html > body[data-scroll-locked] {
   .landing-lane-fill,
   .landing-tz-dot {
     animation: none;
+  }
+
+  /*
+   * Every remaining infinite animation. Without this the marquee, the grid
+   * drift, the hero glow, the pulse and the progress bar keep running for
+   * visitors who asked for less motion.
+   */
+  .landing-marquee,
+  .landing-glow,
+  .landing-grid-drift,
+  .landing-pulse,
+  .landing-progress,
+  .landing-edge-run {
+    animation: none !important;
   }
 
   .landing-check-pop {

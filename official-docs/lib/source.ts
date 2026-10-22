@@ -1,6 +1,6 @@
 import { docs, blog, guides } from 'collections/server';
 import { loader } from 'fumadocs-core/source';
-import { docsContentRoute, docsImageRoute, docsRoute } from './shared';
+import { docsContentRoute, docsRoute } from './shared';
 import { icons } from 'lucide-react';
 import { createElement } from 'react';
 
@@ -28,13 +28,60 @@ export const guidesSource = loader({
   source: guides.toFumadocsSource(),
 });
 
-export function getPageImage(page: (typeof source)['$inferPage']) {
-  const segments = [...page.slugs, 'image.png'];
+/**
+ * Normalised view of a blog post or guide, built from the fumadocs source
+ * rather than a second frontmatter parser.
+ */
+export interface ContentEntry {
+  /** Route slug, e.g. `getting-started-with-vlrdevapi`. */
+  slug: string;
+  /** Absolute site path, e.g. `/guides/getting-started-with-vlrdevapi`. */
+  url: string;
+  title: string;
+  description: string;
+  /** ISO date string (`YYYY-MM-DD`) from the frontmatter. */
+  date: string;
+  author: string;
+  /** Last modification time reported by the `lastModified()` plugin. */
+  lastModified?: Date;
+}
 
-  return {
-    segments,
-    url: `${docsImageRoute}/${segments.join('/')}`,
+function toContentEntry(page: {
+  slugs: string[];
+  url: string;
+  data: {
+    title: string;
+    description?: string;
+    date: string;
+    author: string;
+    lastModified?: Date;
   };
+}): ContentEntry {
+  return {
+    slug: page.slugs[0] ?? page.url.replace(/^\//, ''),
+    url: page.url,
+    title: page.data.title,
+    description: page.data.description ?? '',
+    date: page.data.date,
+    author: page.data.author,
+    lastModified: page.data.lastModified,
+  };
+}
+
+/** Blog posts, newest first. */
+export function getBlogEntries(): ContentEntry[] {
+  return blogSource
+    .getPages()
+    .map(toContentEntry)
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+/** Guides, newest first. */
+export function getGuideEntries(): ContentEntry[] {
+  return guidesSource
+    .getPages()
+    .map(toContentEntry)
+    .sort((a, b) => b.date.localeCompare(a.date));
 }
 
 export function getPageMarkdownUrl(page: (typeof source)['$inferPage']) {

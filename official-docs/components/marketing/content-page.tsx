@@ -42,7 +42,7 @@ export function ContentHero({
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-0 h-px w-[min(92vw,72rem)] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#ff4655]/60 to-transparent"
+        className="pointer-events-none absolute left-1/2 top-0 h-px w-[min(92vw,72rem)] -translate-x-1/2 bg-gradient-to-r from-transparent via-fd-primary/60 to-transparent"
       />
       <div
         className={`relative mx-auto w-full px-5 pb-16 pt-14 sm:px-8 sm:pb-20 sm:pt-20 ${
@@ -52,7 +52,7 @@ export function ContentHero({
         }`}
       >
         <div className="min-w-0">
-          <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-[#ff8d97]">
+          <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-fd-muted">
             {eyebrow}
           </p>
           <h1 className="mt-5 max-w-4xl text-[2.7rem] font-medium leading-[0.98] tracking-[-0.045em] text-white sm:text-[3.8rem] lg:text-[4.4rem]">
@@ -96,22 +96,22 @@ export function ArticleHero({
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-0 h-px w-[min(92vw,72rem)] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#ff4655]/60 to-transparent"
+        className="pointer-events-none absolute left-1/2 top-0 h-px w-[min(92vw,72rem)] -translate-x-1/2 bg-gradient-to-r from-transparent via-fd-primary/60 to-transparent"
       />
       <div className="relative mx-auto w-full max-w-5xl px-5 pb-14 pt-14 sm:px-8 sm:pb-16 sm:pt-20">
         <Link
           href={backHref}
-          className="inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.14em] text-white/35 transition-colors hover:text-white"
+          className="inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.14em] text-fd-muted transition-colors hover:text-white"
         >
-          <span aria-hidden="true" className="h-px w-4 bg-[#ff4655]/70" />
+          <span aria-hidden="true" className="h-px w-4 bg-fd-primary/70" />
           {backLabel}
         </Link>
         <div className="mt-8 flex flex-wrap items-center gap-3 font-mono text-[12px] uppercase tracking-[0.14em]">
-          <span className="text-[#ff8d97]">{kind}</span>
+          <span className="text-fd-primary">{kind}</span>
           <span aria-hidden="true" className="text-white/20">
             /
           </span>
-          <time dateTime={date} className="text-white/30">
+          <time dateTime={date} className="text-fd-muted">
             {formatDate(date)}
           </time>
         </div>
@@ -138,17 +138,17 @@ export function IndexPanel({
   note?: ReactNode;
 }) {
   return (
-    <div className="border border-white/10 bg-[#070707]">
+    <div className="border border-white/10 bg-fd-panel">
       <div className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3">
-        <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-white/35">
+        <span className="font-mono text-[12px] uppercase tracking-[0.16em] text-fd-muted">
           {label}
         </span>
-        <span aria-hidden="true" className="size-1.5 bg-[#ff4655]" />
+        <span aria-hidden="true" className="size-1.5 bg-fd-primary" />
       </div>
       <dl className="divide-y divide-white/10">
         {rows.map((row) => (
           <div key={row.label} className="flex items-center justify-between gap-5 px-4 py-3">
-            <dt className="font-mono text-[12px] uppercase tracking-[0.12em] text-white/25">
+            <dt className="font-mono text-[12px] uppercase tracking-[0.12em] text-fd-muted">
               {row.label}
             </dt>
             <dd className="truncate text-right font-mono text-[12.5px] text-white/65">
@@ -158,7 +158,7 @@ export function IndexPanel({
         ))}
       </dl>
       {note ? (
-        <div className="border-t border-white/10 px-4 py-3 text-[12px] leading-relaxed text-white/30">
+        <div className="border-t border-white/10 px-4 py-3 text-[12px] leading-relaxed text-fd-muted">
           {note}
         </div>
       ) : null}
@@ -184,25 +184,25 @@ export function ContentCard({
   return (
     <Link
       href={href}
-      className="group relative flex h-full flex-col overflow-hidden border border-white/10 bg-[#070707] p-5 transition-colors hover:border-[#ff4655]/40"
+      className="group relative flex h-full flex-col overflow-hidden border border-white/10 bg-fd-panel p-5 transition-colors hover:border-white/20"
     >
       <span
         aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-[#ff4655] transition-transform duration-300 group-hover:scale-x-100"
+        className="absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-fd-primary transition-transform duration-300 group-hover:scale-x-100"
       />
       <div className="flex items-center justify-between gap-4 font-mono text-[12px] uppercase tracking-[0.14em]">
-        <span className="text-[#ff4655]">{index}</span>
-        <time dateTime={date} className="text-white/25">
+        <span className="text-fd-primary">{index}</span>
+        <time dateTime={date} className="text-fd-muted">
           {formatDate(date)}
         </time>
       </div>
       <h3 className="mt-6 text-lg font-medium leading-snug tracking-tight text-white/85 transition-colors group-hover:text-white">
         {title}
       </h3>
-      <p className="mt-3 line-clamp-3 text-[13.5px] leading-relaxed text-white/40">
+      <p className="mt-3 line-clamp-3 text-[13.5px] leading-relaxed text-fd-muted">
         {description}
       </p>
-      <span className="mt-auto inline-flex items-center gap-1.5 pt-6 text-[12px] font-medium text-white/35 transition-colors group-hover:text-[#ff8d97]">
+      <span className="mt-auto inline-flex items-center gap-1.5 pt-6 text-[12px] font-medium text-fd-muted transition-colors group-hover:text-fd-primary">
         {actionLabel}
         <ArrowUpRight
           className="size-3 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
@@ -224,7 +224,7 @@ export function RelatedLinks({
     <section className="border-t border-white/10">
       <div className="mx-auto w-full max-w-7xl px-5 py-14 sm:px-8">
         <div className="flex items-center gap-4">
-          <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-white/30">
+          <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
             {title}
           </h2>
           <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
@@ -234,11 +234,11 @@ export function RelatedLinks({
             <li key={link.href}>
               <Link
                 href={link.href}
-                className="group inline-flex items-center gap-2 border border-white/10 px-4 py-2.5 text-[13px] text-white/50 transition-colors hover:border-[#ff4655]/50 hover:text-white"
+                className="group inline-flex items-center gap-2 border border-white/10 px-4 py-2.5 text-[13px] text-white/50 transition-colors hover:border-fd-primary/50 hover:text-white"
               >
                 {link.label}
                 <ArrowUpRight
-                  className="size-3 text-white/20 transition-colors group-hover:text-[#ff8d97]"
+                  className="size-3 text-white/20 transition-colors group-hover:text-fd-primary"
                   aria-hidden="true"
                 />
               </Link>

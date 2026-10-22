@@ -1,267 +1,184 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useEffect, useSyncExternalStore } from 'react';
-import { Logo } from '@/components/logo';
+import { ArrowUpRight } from 'lucide-react';
+import { MarketingShell } from '@/components/marketing/marketing-shell';
 
-const subscribeToLocation = () => () => {};
-
-const REDIRECT_MAP: Record<string, string> = {
-  // Teams
-  '/docs/api/teams/completed-matches': '/docs/reference/team/completed-matches/',
-  '/docs/api/teams/upcoming-matches': '/docs/reference/team/upcoming-matches/',
-  '/docs/api/teams/info': '/docs/reference/team/info/',
-  '/docs/api/teams/roster': '/docs/reference/team/roster/',
-  '/docs/api/teams/previous-players': '/docs/reference/team/roster/',
-  '/docs/api/teams/placements': '/docs/reference/team/placements/',
-  '/docs/api/teams/transactions': '/docs/reference/team/transactions/',
-  '/docs/api/teams/stats': '/docs/reference/team/stats/',
-  '/docs/api/teams': '/docs/reference/team/',
-
-  // Players
-  '/docs/api/players/agent-stats': '/docs/reference/player/agents/',
-  '/docs/api/players/matches': '/docs/reference/player/matches/',
-  '/docs/api/players/profile': '/docs/reference/player/profile/',
-  '/docs/api/players/info': '/docs/reference/player/info/',
-  '/docs/api/players': '/docs/reference/player/',
-
-  // Events
-  '/docs/api/events/standings': '/docs/reference/events/standings/',
-  '/docs/api/events/matches': '/docs/reference/events/matches/',
-  '/docs/api/events/info': '/docs/reference/events/info/',
-  '/docs/api/events/stages': '/docs/reference/events/stages/',
-  '/docs/api/events/teams': '/docs/reference/events/teams/',
-  '/docs/api/events/list-events': '/docs/reference/events/list/',
-  '/docs/api/events/list': '/docs/reference/events/list/',
-  '/docs/api/events/match-summary': '/docs/reference/events/matches/',
-  '/docs/api/events': '/docs/reference/events/',
-
-  // Matches
-  '/docs/api/matches/upcoming': '/docs/reference/matches/upcoming/',
-  '/docs/api/matches/live': '/docs/reference/matches/live/',
-  '/docs/api/matches/completed': '/docs/reference/matches/completed/',
-  '/docs/api/matches': '/docs/reference/matches/',
-
-  // Series
-  '/docs/api/series/info': '/docs/reference/series/info/',
-  '/docs/api/series/matches': '/docs/reference/series/',
-  '/docs/api/series/rounds': '/docs/reference/series/rounds/',
-  '/docs/api/series/economy': '/docs/reference/series/economy/',
-  '/docs/api/series/performance': '/docs/reference/series/performance/',
-  '/docs/api/series/vods': '/docs/reference/series/vods/',
-  '/docs/api/series': '/docs/reference/series/',
-
-  // News
-  '/docs/api/news': '/docs/reference/news/',
-  '/docs/api/news/list': '/docs/reference/news/list/',
-  '/docs/api/news/article': '/docs/reference/news/article/',
-
-  // Search & Config
-  '/docs/api/search': '/docs/reference/',
-  '/docs/api/status': '/docs/reference/',
-  '/docs/config': '/docs/',
-  '/docs/rate-limiting': '/docs/',
+/**
+ * The 404 page needs its own title. Without it the page inherits the
+ * homepage title and 404 traffic becomes indistinguishable from the homepage
+ * in analytics.
+ *
+ * Next already emits `<meta name="robots" content="noindex">` for the
+ * not-found route. `robots` is restated here so the inherited
+ * `index, follow` from the root layout does not produce a second, conflicting
+ * tag - both tags then agree that the page is not indexable.
+ *
+ * `openGraph` is replaced rather than merged by Next, so `siteName`, `type`
+ * and `locale` are restated here.
+ */
+export const metadata: Metadata = {
+  title: '404 - Page not found',
+  robots: { index: false, follow: false },
+  openGraph: {
+    type: 'website',
+    siteName: 'VLRdevAPI',
+    locale: 'en_US',
+    title: '404 - Page not found | VLRdevAPI',
+    description: 'That page does not exist. Find the documentation, guides, and blog instead.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '404 - Page not found | VLRdevAPI',
+    description: 'That page does not exist. Find the documentation, guides, and blog instead.',
+  },
 };
-
-function resolveRedirect(rawPath: string): string | null {
-  const clean = rawPath.replace(/\/+$/, '');
-  if (REDIRECT_MAP[clean]) {
-    return REDIRECT_MAP[clean];
-  }
-  if (clean.startsWith('/docs/api/search')) {
-    return '/docs/reference/';
-  }
-  if (clean.startsWith('/docs/api/status')) {
-    return '/docs/reference/';
-  }
-  if (clean.startsWith('/docs/api')) {
-    return '/docs/reference/';
-  }
-  return null;
-}
 
 const popularLinks = [
   {
     title: 'Getting Started',
     desc: 'Install vlrdevapi with pip and make your first query in seconds.',
-    href: '/docs/getting-started/',
+    href: '/docs/getting-started',
     tag: 'Guide',
   },
   {
     title: 'API Reference',
     desc: 'Complete documentation for Matches, Players, Teams, Events, and Series.',
-    href: '/docs/reference/',
+    href: '/docs/reference',
     tag: 'Docs',
   },
   {
     title: 'VLR.gg API for Python',
     desc: 'Why an unofficial Python SDK exists for VLR.gg and what data it returns.',
-    href: '/vlr-gg-api/',
+    href: '/vlr-gg-api',
     tag: 'Overview',
   },
   {
     title: 'Guides & Tutorials',
     desc: 'Learn how to build Discord bots, real-time monitors, and Pandas analytics.',
-    href: '/guides/',
+    href: '/guides',
     tag: 'Tutorials',
   },
   {
     title: 'Installation Guide',
     desc: 'System requirements, Python 3.11+ setup, and troubleshooting.',
-    href: '/docs/installation/',
+    href: '/docs/installation',
     tag: 'Docs',
   },
   {
     title: 'FAQ',
     desc: 'Frequently asked questions about rate limits, data freshness, and VLR.gg.',
-    href: '/faq/',
+    href: '/faq',
     tag: 'Help',
   },
 ];
 
+/**
+ * The 404 page.
+ *
+ * This is a Server Component on purpose. Legacy URLs are redirected at the
+ * edge with a real 301 (see `public/_redirects`), so nothing needs to run in
+ * the browser to resolve them — an earlier version of this page kept a
+ * client-side redirect table, which produced a hydration mismatch and was
+ * invisible to crawlers that do not execute JavaScript.
+ *
+ * Cloudflare Pages serves the generated `404.html` with a 404 status.
+ */
 export default function NotFound() {
-  const pathname = usePathname();
-  const currentPath = useSyncExternalStore(
-    subscribeToLocation,
-    () => window.location.pathname,
-    () => pathname ?? '',
-  );
-  const redirectTarget = resolveRedirect(currentPath);
-
-  useEffect(() => {
-    if (redirectTarget) {
-      window.location.replace(redirectTarget);
-    }
-  }, [redirectTarget]);
-
-  if (redirectTarget) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center text-foreground">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-fd-primary border-t-transparent mb-4" />
-        <h1 className="text-xl font-bold">Redirecting...</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          This page has moved to{' '}
-          <Link href={redirectTarget} className="text-fd-primary underline">
-            {redirectTarget}
-          </Link>
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* Top Navigation */}
-      <header className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
-          <Link href="/" className="inline-flex items-center gap-2 font-bold tracking-tight text-foreground hover:opacity-90">
-            <Logo className="size-5" />
-            <span>VLRdevAPI</span>
-          </Link>
-          <div className="flex items-center gap-4 text-sm">
-            <Link href="/docs/" className="text-muted-foreground hover:text-foreground transition-colors">
-              Documentation
-            </Link>
-            <Link href="/guides/" className="text-muted-foreground hover:text-foreground transition-colors">
-              Guides
-            </Link>
-            <Link
-              href="/"
-              className="inline-flex h-8 items-center justify-center bg-foreground px-3.5 text-xs font-medium text-background transition-all hover:brightness-110"
-            >
-              Home
-            </Link>
-          </div>
-        </div>
-      </header>
+    <MarketingShell>
+      <main id="main" tabIndex={-1} className="flex-1">
+        <section className="relative overflow-hidden border-b border-white/10">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_55%_at_82%_-10%,rgba(255,70,85,0.14),transparent_70%)]"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-50 [background-image:linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:84px_84px] [mask-image:radial-gradient(ellipse_85%_65%_at_50%_0%,black,transparent_78%)]"
+          />
 
-      {/* Main Content */}
-      <main className="flex-1 mx-auto w-full max-w-5xl px-6 py-16 md:py-24">
-        <div className="flex flex-col items-center text-center">
-          <div className="inline-flex items-center gap-2 rounded border border-border bg-muted/30 px-3 py-1 font-mono text-xs uppercase tracking-wider text-muted-foreground mb-6">
-            <span>HTTP 404</span>
-            <span>&middot;</span>
-            <span>Page Not Found</span>
-          </div>
+          <div className="relative mx-auto w-full max-w-7xl px-5 pb-16 pt-14 sm:px-8 sm:pb-20 sm:pt-20">
+            <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-fd-primary">
+              HTTP 404 · Page not found
+            </p>
+            <h1 className="mt-5 max-w-3xl text-[2.7rem] font-medium leading-[0.98] tracking-[-0.045em] text-white sm:text-[3.8rem]">
+              We couldn&apos;t find
+              <br />
+              <span className="text-fd-primary">that page.</span>
+            </h1>
+            <p className="mt-6 max-w-2xl text-[15px] leading-relaxed text-white/50 sm:text-base">
+              The link you followed may be outdated, moved, or mistyped. Use the links below to
+              find what you need in the VLRdevAPI Python SDK docs.
+            </p>
 
-          <h1 className="font-heading text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl text-foreground">
-            We couldn&apos;t find that page
-          </h1>
-
-          <p className="mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
-            The link you followed may be outdated, moved, or mistyped. Use the links below to find what you need in the VLRdevAPI Python SDK docs.
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/"
-              className="inline-flex h-10 items-center justify-center bg-foreground px-5 text-sm font-medium tracking-tight text-background transition-all hover:brightness-110"
-            >
-              Back to Home
-            </Link>
-            <Link
-              href="/docs/"
-              className="inline-flex h-10 items-center justify-center border border-border bg-background px-5 text-sm font-medium tracking-tight text-foreground transition-all hover:bg-muted"
-            >
-              Browse Docs
-            </Link>
-          </div>
-        </div>
-
-        {/* Popular Destinations Grid */}
-        <div className="mt-16 border-t border-border pt-12">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground text-center sm:text-left mb-6">
-            Popular Documentation &amp; Resources
-          </h2>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {popularLinks.map((item) => (
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
-                key={item.href}
-                href={item.href}
-                className="group flex flex-col justify-between border border-border bg-background/50 p-5 transition-all hover:border-fd-primary/50 hover:bg-muted/20"
+                href="/"
+                className="group inline-flex h-11 items-center gap-1.5 border border-white bg-white px-6 text-sm font-medium text-black transition-colors hover:border-fd-primary hover:bg-fd-primary hover:text-white"
               >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium text-foreground transition-colors group-hover:text-fd-primary">
-                      {item.title}
-                    </h3>
-                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded border border-border text-muted-foreground">
+                Back to home
+                <ArrowUpRight
+                  className="size-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </Link>
+              <Link
+                href="/docs/"
+                className="group inline-flex h-11 items-center gap-1.5 border border-white/15 px-6 text-sm font-medium text-white/70 transition-colors hover:border-white/30 hover:text-white"
+              >
+                Browse the docs
+                <ArrowUpRight
+                  className="size-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div className="mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-16">
+            <div className="flex items-center gap-4">
+              <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
+                Popular destinations
+              </h2>
+              <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
+            </div>
+
+            <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {popularLinks.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="group relative flex h-full flex-col overflow-hidden border border-white/10 bg-fd-panel p-5 transition-colors hover:border-fd-primary/40"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-fd-primary transition-transform duration-300 group-hover:scale-x-100"
+                    />
+                    <span className="font-mono text-[12px] uppercase tracking-[0.14em] text-fd-muted">
                       {item.tag}
                     </span>
-                  </div>
-                  <p className="text-xs leading-relaxed text-muted-foreground">
-                    {item.desc}
-                  </p>
-                </div>
-                <div className="mt-4 flex items-center gap-1 text-xs text-fd-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span>Read more</span>
-                  <span>&rarr;</span>
-                </div>
-              </Link>
-            ))}
+                    <span className="mt-4 text-lg font-medium tracking-tight text-white/85 transition-colors group-hover:text-white">
+                      {item.title}
+                    </span>
+                    <span className="mt-2 text-[13.5px] leading-relaxed text-fd-subtle">
+                      {item.desc}
+                    </span>
+                    <span className="mt-auto inline-flex items-center gap-1.5 pt-6 text-[12px] font-medium text-fd-muted transition-colors group-hover:text-fd-primary">
+                      Read more
+                      <ArrowUpRight
+                        className="size-3 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
+        </section>
       </main>
-
-      {/* Footer */}
-      <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
-        <div className="mx-auto max-w-7xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>&copy; {new Date().getFullYear()} VLRdevAPI &middot; Open source Python SDK</p>
-          <div className="flex items-center gap-4">
-            <Link href="https://github.com/vanshbordia/vlrdevapi" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">
-              GitHub
-            </Link>
-            <Link href="https://pypi.org/project/vlrdevapi/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">
-              PyPI
-            </Link>
-            <Link href="/faq/" className="hover:text-foreground">
-              FAQ
-            </Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </MarketingShell>
   );
 }

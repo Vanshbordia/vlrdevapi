@@ -23,7 +23,7 @@ const modules: Array<{
     blurb: 'Profiles, career teams, agent stats, placements, and match history.',
     file: 'player.py',
     returns: 'PlayerProfile',
-    href: '/docs/reference/player/',
+    href: '/docs/reference/player',
     code: `from vlrdevapi import VLRClient
 
 with VLRClient() as client:
@@ -44,7 +44,7 @@ with VLRClient() as client:
     blurb: 'Rosters, staff, placements, prize money, and full match history.',
     file: 'team.py',
     returns: 'TeamPlacements',
-    href: '/docs/reference/team/',
+    href: '/docs/reference/team',
     code: `from vlrdevapi import VLRClient
 
 with VLRClient() as client:
@@ -66,7 +66,7 @@ with VLRClient() as client:
     blurb: 'Scores, map vetoes, round data, player stats, economy, and VODs.',
     file: 'series.py',
     returns: 'EconomyData',
-    href: '/docs/reference/series/',
+    href: '/docs/reference/series',
     code: `from vlrdevapi import VLRClient
 
 with VLRClient() as client:
@@ -87,7 +87,7 @@ with VLRClient() as client:
     blurb: 'Event metadata, stages, brackets, matches, and final standings.',
     file: 'event.py',
     returns: 'EventStandings',
-    href: '/docs/reference/events/',
+    href: '/docs/reference/events',
     code: `from vlrdevapi import VLRClient
 
 with VLRClient() as client:
@@ -109,7 +109,7 @@ with VLRClient() as client:
     blurb: 'The latest headlines and full articles, converted to clean Markdown.',
     file: 'news.py',
     returns: 'NewsArticle',
-    href: '/docs/reference/news/',
+    href: '/docs/reference/news',
     code: `from vlrdevapi import VLRClient
 
 with VLRClient() as client:
@@ -152,7 +152,7 @@ function displayModelName(value: string) {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="border border-white/10 bg-white/[0.02] px-3 py-2.5">
-      <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-white/35">{label}</p>
+      <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-fd-muted">{label}</p>
       <p className="mt-1 font-mono text-lg text-white">{value}</p>
     </div>
   );
@@ -175,16 +175,16 @@ function PreviewShell({
     <div className="flex h-full flex-col p-4 sm:p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-white/30">{eyebrow}</p>
+          <p className="font-mono text-[12px] uppercase tracking-[0.16em] text-fd-muted">{eyebrow}</p>
           <h4 className="mt-1.5 truncate text-lg font-medium tracking-tight text-white">{title}</h4>
-          <p className="mt-0.5 text-[12.5px] text-white/45">{meta}</p>
+          <p className="mt-0.5 text-[12.5px] text-fd-subtle">{meta}</p>
         </div>
-        <span className="shrink-0 border border-[#ff4655]/30 bg-[#ff4655]/10 px-2.5 py-1 font-mono text-[12px] text-[#ff8d97]">
+        <span className="shrink-0 border border-fd-primary/30 bg-fd-primary/10 px-2.5 py-1 font-mono text-[12px] text-fd-primary">
           {displayModelName(badge)}
         </span>
       </div>
       <div className="mt-5 flex-1">{children}</div>
-      <p className="mt-5 border-t border-white/10 pt-3 font-mono text-[12px] uppercase tracking-[0.14em] text-white/25">
+      <p className="mt-5 border-t border-white/10 pt-3 font-mono text-[12px] uppercase tracking-[0.14em] text-fd-muted">
         Live VLR.gg snapshot · {snapshot.capturedAt}
       </p>
     </div>
@@ -203,10 +203,10 @@ function Preview({ id }: { id: ModuleId }) {
         badge="PlayerInfo"
       >
         <div className="flex items-center justify-between gap-3">
-          <p className="font-mono text-[12px] uppercase tracking-[0.12em] text-white/30">
+          <p className="font-mono text-[12px] uppercase tracking-[0.12em] text-fd-muted">
             Top agent · 90d
           </p>
-          <p className="font-mono text-[12px] text-white/35">
+          <p className="font-mono text-[12px] text-fd-muted">
             {topAgent.name} · {topAgent.rounds} rounds
           </p>
         </div>
@@ -220,7 +220,7 @@ function Preview({ id }: { id: ModuleId }) {
             <div key={agent.name}>
               <div className="flex items-center justify-between text-[12px]">
                 <span className="text-white/65">{agent.name}</span>
-                <span className="font-mono text-white/35">{agent.share}</span>
+                <span className="font-mono text-fd-muted">{agent.share}</span>
               </div>
               <div className="mt-1 h-1 overflow-hidden bg-white/[0.06]">
                 <div className="h-full bg-white/35" style={{ width: agent.share }} />
@@ -229,7 +229,7 @@ function Preview({ id }: { id: ModuleId }) {
           ))}
         </div>
         <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
-          <span className="text-[12px] text-white/40">Career winnings</span>
+          <span className="text-[12px] text-fd-muted">Career winnings</span>
           <span className="font-mono text-[12px] text-white/70">
             {formatMoney(snapshot.player.totalWinnings, snapshot.player.currency)}
           </span>
@@ -260,7 +260,7 @@ function Preview({ id }: { id: ModuleId }) {
               </div>
               <span
                 className={`text-[12px] ${
-                  player.role === 'Captain' ? 'text-[#ff9aa2]' : 'text-white/35'
+                  player.role === 'Captain' ? 'text-fd-primary' : 'text-fd-muted'
                 }`}
               >
                 {player.role}
@@ -270,7 +270,7 @@ function Preview({ id }: { id: ModuleId }) {
         </div>
         <div className="mt-4 grid grid-cols-2 gap-3 border-t border-white/10 pt-3">
           <div>
-            <p className="font-mono text-[12px] uppercase tracking-[0.1em] text-white/25">
+            <p className="font-mono text-[12px] uppercase tracking-[0.1em] text-fd-muted">
               Winnings
             </p>
             <p className="mt-0.5 font-mono text-[12px] text-white/65">
@@ -278,7 +278,7 @@ function Preview({ id }: { id: ModuleId }) {
             </p>
           </div>
           <div className="min-w-0 text-right">
-            <p className="font-mono text-[12px] uppercase tracking-[0.1em] text-white/25">
+            <p className="font-mono text-[12px] uppercase tracking-[0.1em] text-fd-muted">
               Best result
             </p>
             <p className="mt-0.5 truncate font-mono text-[12px] text-white/65">
@@ -306,8 +306,8 @@ function Preview({ id }: { id: ModuleId }) {
             <span className="font-mono text-2xl tracking-tight text-white">{series.score1}</span>
           </div>
           <div className="mt-2 flex items-center justify-between">
-            <span className="text-sm text-white/45">{series.team2}</span>
-            <span className="font-mono text-2xl tracking-tight text-white/45">
+            <span className="text-sm text-fd-subtle">{series.team2}</span>
+            <span className="font-mono text-2xl tracking-tight text-fd-subtle">
               {series.score2}
             </span>
           </div>
@@ -318,16 +318,16 @@ function Preview({ id }: { id: ModuleId }) {
               <span className="w-16 text-white/65">{map.map}</span>
               <span
                 className={`font-mono ${
-                  map.score1 > map.score2 ? 'text-white/70' : 'text-white/35'
+                  map.score1 > map.score2 ? 'text-white/70' : 'text-fd-muted'
                 }`}
               >
                 {map.score1}–{map.score2}
               </span>
-              <span className="w-14 text-right text-white/25">{map.pickedBy}</span>
+              <span className="w-14 text-right text-fd-muted">{map.pickedBy}</span>
             </div>
           ))}
         </div>
-        <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 font-mono text-[12px] text-white/35">
+        <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 font-mono text-[12px] text-fd-muted">
           <span>{series.maps.length} maps</span>
           <span>{series.rounds} rounds</span>
           <span>{series.vods} VODs</span>
@@ -353,22 +353,22 @@ function Preview({ id }: { id: ModuleId }) {
               className="flex items-center justify-between border border-white/[0.07] bg-white/[0.02] px-3 py-2"
             >
               <span className="text-[12px] text-white/65">{stage.name}</span>
-              <span className="font-mono text-[12px] text-white/30">
+              <span className="font-mono text-[12px] text-fd-muted">
                 {dateRange(stage.startDate, stage.endDate)}
               </span>
             </div>
           ))}
         </div>
         <div className="mt-4 border-t border-white/10 pt-3">
-          <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-white/30">
+          <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-fd-muted">
             Playoffs standings
           </p>
           <div className="mt-2 space-y-1.5">
             {event.standings.map((row) => (
               <div key={row.team} className="flex items-center gap-3 text-[12px]">
-                <span className="w-7 font-mono text-white/35">{row.place}</span>
+                <span className="w-7 font-mono text-fd-muted">{row.place}</span>
                 <span className="truncate text-white/65">{row.team}</span>
-                <span className="ml-auto font-mono text-[12px] text-white/25">
+                <span className="ml-auto font-mono text-[12px] text-fd-muted">
                   {row.points} pts
                 </span>
               </div>
@@ -390,12 +390,12 @@ function Preview({ id }: { id: ModuleId }) {
     >
       <p className="text-[12px] leading-relaxed text-white/50">{news.subtitle}</p>
       <div className="mt-3 border border-white/10 bg-white/[0.02] p-3.5">
-        <p className="font-mono text-[12px] text-white/30">content_md</p>
+        <p className="font-mono text-[12px] text-fd-muted">content_md</p>
         <p className="mt-2 text-[12px] leading-relaxed text-white/55 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:4] overflow-hidden">
           {news.excerpt}
         </p>
       </div>
-      <div className="mt-3 flex items-center justify-between font-mono text-[12px] text-white/30">
+      <div className="mt-3 flex items-center justify-between font-mono text-[12px] text-fd-muted">
         <span>{news.country}</span>
         <span>{news.links} links · Markdown preserved</span>
       </div>
@@ -405,27 +405,27 @@ function Preview({ id }: { id: ModuleId }) {
 
 function CodePanel({ module }: { module: (typeof modules)[number] }) {
   return (
-    <div className="flex h-full min-w-0 flex-col overflow-hidden border border-white/10 bg-[#070707]">
+    <div className="flex h-full min-w-0 flex-col overflow-hidden border border-white/10 bg-fd-panel">
       <div className="flex items-center justify-between gap-3 border-b border-white/10 px-3.5 py-2.5">
         <div className="flex items-center gap-2">
-          <span aria-hidden="true" className="size-1.5 bg-[#ff4655]" />
-          <span className="font-mono text-[12px] text-white/40">{module.file}</span>
+          <span aria-hidden="true" className="size-1.5 bg-fd-primary" />
+          <span className="font-mono text-[12px] text-fd-muted">{module.file}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="hidden font-mono text-[12px] uppercase tracking-[0.12em] text-white/25 sm:inline">
+          <span className="hidden font-mono text-[12px] uppercase tracking-[0.12em] text-fd-muted sm:inline">
             {displayModelName(module.returns)}
           </span>
           <CopyButton value={module.code} label={`Copy ${module.file}`} />
         </div>
       </div>
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <CodeBlock code={module.code} />
       </div>
       <div className="flex flex-wrap gap-1.5 border-t border-white/10 bg-white/[0.02] px-3.5 py-3">
         {module.methods.map((method) => (
           <code
             key={method}
-            className="border border-white/10 px-1.5 py-0.5 font-mono text-[12px] text-white/40"
+            className="border border-white/10 px-1.5 py-0.5 font-mono text-[12px] text-fd-muted"
           >
             {method}
           </code>
@@ -439,15 +439,15 @@ export function ModuleShowcase() {
   return (
     <div className="grid min-w-0 grid-cols-1 gap-10 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-14 xl:grid-cols-[280px_minmax(0,1fr)] xl:gap-16">
       <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-        <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-white/35">
+        <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-fd-muted">
           The namespaces
         </p>
         <h2 className="mt-4 text-2xl font-medium leading-[1.06] tracking-[-0.03em] text-white sm:text-3xl">
           Every surface.
           <br />
-          <span className="text-white/35">One import.</span>
+          <span className="text-fd-muted">One import.</span>
         </h2>
-        <p className="mt-4 max-w-sm text-[13px] leading-relaxed text-white/40">
+        <p className="mt-4 max-w-sm text-[13px] leading-relaxed text-fd-muted">
           Bind an ID once, then query everything attached to it. Scroll through the full surface,
           or jump straight to a namespace.
         </p>
@@ -458,7 +458,7 @@ export function ModuleShowcase() {
 
         <Link
           href="/docs/reference/"
-          className="group mt-6 inline-flex items-center gap-1.5 text-[12px] font-medium text-white/40 transition-colors hover:text-white"
+          className="group mt-6 inline-flex items-center gap-1.5 text-[12px] font-medium text-fd-muted transition-colors hover:text-white"
         >
           Browse the full reference
           <ArrowUpRight
@@ -474,19 +474,19 @@ export function ModuleShowcase() {
             <section id={module.id} data-module={module.id} className="min-w-0 scroll-mt-24">
               <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-4">
                 <div className="flex items-start gap-3">
-                  <span className="mt-1 font-mono text-[12px] text-[#ff4655]">
+                  <span className="mt-1 font-mono text-[12px] text-fd-primary">
                     0{index + 1}
                   </span>
                   <div>
                     <h3 className="text-xl font-medium tracking-tight text-white">{module.label}</h3>
-                    <p className="mt-1 max-w-lg text-[13px] leading-relaxed text-white/40">
+                    <p className="mt-1 max-w-lg text-[13px] leading-relaxed text-fd-muted">
                       {module.blurb}
                     </p>
                   </div>
                 </div>
                 <Link
                   href={module.href}
-                  className="group inline-flex items-center gap-1 pb-0.5 font-mono text-[12px] uppercase tracking-[0.12em] text-white/30 transition-colors hover:text-white/70"
+                  className="group inline-flex items-center gap-1 pb-0.5 font-mono text-[12px] uppercase tracking-[0.12em] text-fd-muted transition-colors hover:text-white/70"
                 >
                   {displayModelName(module.returns)}
                   <ArrowUpRight
@@ -498,7 +498,7 @@ export function ModuleShowcase() {
 
               <div className="mt-4 grid min-w-0 grid-cols-1 items-stretch gap-3 xl:grid-cols-[1.12fr_0.88fr]">
                 <CodePanel module={module} />
-                <div className="min-w-0 border border-white/10 bg-[#080808]">
+                <div className="min-w-0 border border-white/10 bg-fd-panel">
                   <Preview id={module.id} />
                 </div>
               </div>
