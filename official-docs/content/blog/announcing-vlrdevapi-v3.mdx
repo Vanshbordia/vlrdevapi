@@ -31,7 +31,7 @@ Each event is enriched with player positions, kill distances, plant sites, round
 import vlrdevapi
 from vlrdevapi._series.replay.models import ReplayEventType
 
-replay = vlrdevapi.series.replay(series_id=754737, game_id=1)
+replay = vlrdevapi.series.replay(series_id=754737, game_id=283288)
 
 for round_replay in replay.rounds[:3]:
     print(f"--- Round {round_replay.round_number} ---")
@@ -43,7 +43,7 @@ for round_replay in replay.rounds[:3]:
             print(f"[{event.clock}] {killer} eliminated {victim} ({weapon})")
 ```
 
-The `game_id` parameter flexibly accepts either the 1-based game index (`1, 2, ...`) or the native numeric VLR.gg game ID.
+The `game_id` parameter accepts the native numeric VLR.gg game ID (such as `283288` for Sunset).
 
 ---
 
@@ -130,7 +130,12 @@ placements = vlrdevapi.player.placements(player_id=11225)
 print(f"Total Career Winnings: ${placements.total_winnings:,.2f}")
 
 for p in placements.placements[:5]:
-    print(f"{p.year} {p.event_name} ({p.stage}): Finish #{p.placement} - Prize: {p.prize_currency}{p.prize_amount:,.2f}")
+    prize = (
+        f"{p.prize_currency}{p.prize_amount:,.2f}"
+        if p.prize_amount is not None
+        else "no prize"
+    )
+    print(f"{p.year} {p.event_name} ({p.stage}): Finish #{p.placement} - Prize: {prize}")
 ```
 
 ---
@@ -142,6 +147,7 @@ for p in placements.placements[:5]:
 If your code inspected round or team buy types with the legacy `SEMI_ECO` or `SEMI_BUY` members, update them to use the new tiers:
 
 ```python
+# doc-check: skip
 # Before (v2.x)
 from vlrdevapi._series.economy.models import BuyType
 

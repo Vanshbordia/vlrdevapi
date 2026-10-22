@@ -48,7 +48,7 @@ class TestParseTransactionRow:
         assert txn.player.real_name == "Georgio Sanassy"
         assert txn.player.country == "United Kingdom"
         assert txn.position == "Player"
-        assert "x.com" in txn.source_url
+        assert txn.source_url.startswith("https://x.com/")
 
     def test_parse_join_transaction(self):
         html = _load_html(1034, "transactions.html")
