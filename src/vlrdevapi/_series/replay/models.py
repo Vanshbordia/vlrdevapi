@@ -1,8 +1,60 @@
 """Data models for the series replay (kill-feed timeline) module."""
 
-from enum import Enum
+from enum import Enum, StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
+
+
+class ArmorType(StrEnum):
+    """Armor purchased or equipped by a player for a round."""
+
+    NO_ARMOR = "No armor"
+    """Player has no armor equipped (0 HP shield)."""
+    LIGHT = "Light armor"
+    """Light shields (25 HP shield, 400 creds)."""
+    HEAVY = "Heavy armor"
+    """Heavy shields (50 HP shield, 1000 creds)."""
+    REGEN = "Regen Shield"
+    """Regenerative shield (regenerates shield health)."""
+
+
+class PlayerRoundLoadout(BaseModel):
+    """Buy-phase loadout and economy state for a single player in a round."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "description": "Buy-phase loadout for one player in a replay round.",
+        },
+        use_enum_values=True,
+    )
+
+    player_id: int = Field(
+        default=0,
+        description="Unique player ID on vlr.gg (0 when not matched from overview)",
+    )
+    name: str = Field(default="", description="Player name")
+    team: str = Field(default="", description="Team tag or name")
+    agent: str = Field(default="", description="Agent name (e.g. 'Sage', 'Neon')")
+    side: str = Field(
+        default="",
+        description="Side the player played in this round: 'Attack' or 'Defense'",
+    )
+    weapon: str = Field(
+        default="",
+        description="Equipped weapon at round start (e.g. 'Ghost', 'Vandal', 'Operator')",
+    )
+    armor: ArmorType = Field(
+        default=ArmorType.NO_ARMOR,
+        description="Equipped armor ('No armor', 'Light armor', 'Heavy armor', 'Regen Shield')",
+    )
+    credits_left: int = Field(
+        default=0,
+        description="Credits remaining after the buy phase",
+    )
+    spent: int = Field(
+        default=0,
+        description="Credits spent in the buy phase",
+    )
 
 
 class ReplayEventType(Enum):
@@ -205,6 +257,10 @@ class ReplayRound(BaseModel):
         default="",
         description="Name of the team attacking (planting) in this round",
     )
+    loadouts: list[PlayerRoundLoadout] = Field(
+        default_factory=list,
+        description="Buy-phase loadouts for all players in this round (equipped weapon, armor, and credits)",
+    )
     players: list[ReplayPlayerRef] = Field(
         default_factory=list,
         description="The ten players with real player ID, agent, team, and side",
@@ -217,6 +273,31 @@ class ReplayRound(BaseModel):
         default=None,
         description="Raw vlr.gg detonation marker: the spike explodes between event ``boom_at - 1`` and event ``boom_at``",
     )
+
+    def loadout_for(self, player: str | int) -> PlayerRoundLoadout | None:
+        """Return the loadout for a player by name or player ID, or None.
+
+        Args:
+            player: Player name (case-insensitive) or integer player ID.
+
+        Returns:
+            PlayerRoundLoadout | None: The matching loadout, or None.
+
+        """
+        if isinstance(player, int):
+            if player <= 0:
+                return None
+            for ld in self.loadouts:
+                if ld.player_id == player:
+                    return ld
+        else:
+            key = str(player).strip().casefold()
+            if not key:
+                return None
+            for ld in self.loadouts:
+                if ld.name.casefold() == key:
+                    return ld
+        return None
 
 
 class ReplayData(BaseModel):

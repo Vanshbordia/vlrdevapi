@@ -652,6 +652,7 @@ def main():
     def tee_print(*args2, **kwargs):
         text = " ".join(str(a) for a in args2)
         _log_lines.append(text)
+        kwargs.setdefault('flush', True)
         try:
             orig_print(*args2, **kwargs)
         except UnicodeEncodeError:

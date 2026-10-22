@@ -21,6 +21,8 @@ from selectolax.lexbor import LexborNode as Node
 
 from vlrdevapi._series._utils import resolve_game_id
 from vlrdevapi._series.replay.models import (
+    ArmorType,
+    PlayerRoundLoadout,
     ReplayActor,
     ReplayAlivePlayer,
     ReplayData,
@@ -185,6 +187,83 @@ def _clock_seconds(clock: str) -> int | None:
         return None
 
 
+def _parse_loadouts(round_div: Node) -> list[PlayerRoundLoadout]:
+    """Parse buy-phase player loadouts from the ``.lg-mir`` section."""
+    loadouts: list[PlayerRoundLoadout] = []
+    for team_div in round_div.css(".lg-mir-team"):
+        cls = team_div.attributes.get("class", "")
+        side = "Attack" if "mod-atk" in cls else "Defense" if "mod-def" in cls else ""
+        for row in team_div.css(".lg-mir-row"):
+            name_el = row.css_first(".lg-mir-name")
+            name = name_el.text(strip=True) if name_el else ""
+
+            team_el = row.css_first(".lg-mir-tag")
+            team_tag = team_el.text(strip=True) if team_el else ""
+
+            agent = ""
+            agent_img = row.css_first(".lg-agent")
+            if agent_img:
+                title = agent_img.attributes.get("title", "")
+                if "(" in title and ")" in title:
+                    agent = title.split("(")[-1].split(")")[0].strip()
+                else:
+                    agent = title.strip()
+                if not agent:
+                    src = agent_img.attributes.get("src", "")
+                    agent = src.split("/")[-1].replace(".png", "").strip().capitalize()
+
+            weapon = ""
+            gun_img = row.css_first(".lg-kit-gun")
+            if gun_img:
+                weapon = gun_img.attributes.get("title", "").strip()
+                if not weapon:
+                    src = gun_img.attributes.get("src", "")
+                    weapon = src.split("/")[-1].replace(".png", "").strip().capitalize()
+
+            armor = ArmorType.NO_ARMOR
+            shield_img = row.css_first(".lg-kit-shield")
+            if shield_img:
+                shield_title = shield_img.attributes.get("title", "")
+                if "light" in shield_title.lower():
+                    armor = ArmorType.LIGHT
+                elif "heavy" in shield_title.lower():
+                    armor = ArmorType.HEAVY
+                elif "regen" in shield_title.lower():
+                    armor = ArmorType.REGEN
+
+            credits_left = 0
+            creds_left_el = row.css_first(".lg-mir-left")
+            if creds_left_el:
+                txt = creds_left_el.text(strip=True).replace(",", "")
+                try:
+                    credits_left = int(txt)
+                except ValueError:
+                    credits_left = 0
+
+            spent = 0
+            spent_el = row.css_first(".lg-kit-spent")
+            if spent_el:
+                txt = spent_el.text(strip=True).replace("−", "").replace("-", "").replace(",", "").strip()
+                try:
+                    spent = int(txt)
+                except ValueError:
+                    spent = 0
+
+            loadouts.append(
+                PlayerRoundLoadout(
+                    name=name,
+                    team=team_tag,
+                    agent=agent,
+                    side=side,
+                    weapon=weapon,
+                    armor=armor,
+                    credits_left=credits_left,
+                    spent=spent,
+                ),
+            )
+    return loadouts
+
+
 def _parse_round(round_div: Node, team1: str, team2: str) -> ReplayRound | None:
     """Parse one ``div.lg-round`` block into a ReplayRound.
 
@@ -220,6 +299,7 @@ def _parse_round(round_div: Node, team1: str, team2: str) -> ReplayRound | None:
         )
         for info in players.values()
     ]
+    round_data.loadouts = _parse_loadouts(round_div)
 
     events_raw = data.get("events") or []
     boom_at = data.get("boom")

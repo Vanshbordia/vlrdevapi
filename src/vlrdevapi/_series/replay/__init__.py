@@ -1,4 +1,6 @@
 from vlrdevapi._series.replay.models import (
+    ArmorType,
+    PlayerRoundLoadout,
     ReplayActor,
     ReplayAlivePlayer,
     ReplayData,
@@ -10,6 +12,8 @@ from vlrdevapi._series.replay.models import (
 from vlrdevapi._series.replay.namespace import SeriesReplayNamespace
 
 __all__ = [
+    "ArmorType",
+    "PlayerRoundLoadout",
     "ReplayActor",
     "ReplayAlivePlayer",
     "ReplayData",

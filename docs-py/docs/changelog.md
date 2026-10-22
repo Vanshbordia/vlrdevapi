@@ -49,8 +49,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   (`seconds`) form, kill cause (weapon or ability, e.g. `Sheriff`,
   `Overdrive`, `Tour de Force`, `Spike`), killer/victim positions with
   distance in minimap units, spike sites, and per-event alive snapshots
-  (name, agent, team, side, minimap coordinates, facing angle). Real
-  vlr.gg team and player IDs are resolved from the game's overview tab
+  (name, agent, team, side, minimap coordinates, facing angle). Each
+  `ReplayRound` also includes `loadouts` (`list[PlayerRoundLoadout]`)
+  and the `loadout_for(player)` helper, capturing every player's
+  equipped weapon at round start, armor (supporting `No armor`,
+  `Light armor`, `Heavy armor`, and `Regen Shield`), and credits
+  left / spent in the buy phase. Real vlr.gg team and player IDs are
+  resolved from the game's overview tab
   (one extra request, `team1_id`/`team2_id` and `player_id` fields) and
   matched strictly within each player's team so duplicate names never
   cross teams; unplayed maps or maps without round data return an

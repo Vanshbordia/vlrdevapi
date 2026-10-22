@@ -66,6 +66,41 @@ class TestChampions2026GFSunset:
         assert players[5].team == "Team Vitality"
         assert players[5].side == "Attack"
 
+    def test_round_loadouts(self):
+        r1 = self.data.round(1)
+        assert len(r1.loadouts) == 10
+        erde = r1.loadout_for("erde")
+        assert erde is not None
+        assert erde.name == "erde"
+        assert erde.team == "LOUD"
+        assert erde.agent == "Sage"
+        assert erde.side == "Defense"
+        assert erde.weapon == "Ghost"
+        assert erde.armor == "No armor"
+        assert erde.credits_left == 0
+        assert erde.spent == 800
+
+        # Case-insensitive helper test
+        assert r1.loadout_for("ERDE") == erde
+        assert r1.loadout_for("Unknown") is None
+
+    def test_loadout_armors_and_weapons(self):
+        r1 = self.data.round(1)
+        darker = r1.loadout_for("Darker")
+        assert darker.weapon == "Classic"
+        assert darker.armor == "Light armor"
+
+        r3 = self.data.round(3)
+        erde_r3 = r3.loadout_for("erde")
+        assert erde_r3.weapon == "Vandal"
+        assert erde_r3.armor == "Heavy armor"
+        assert erde_r3.credits_left == 100
+        assert erde_r3.spent == 4400
+
+        derke_r3 = r3.loadout_for("Derke")
+        assert derke_r3.weapon == "Vandal"
+        assert derke_r3.armor == "Regen Shield"
+
     def test_first_kill_details(self):
         ev = self.data.round(1).events[0]
         assert ev.seq == 0
