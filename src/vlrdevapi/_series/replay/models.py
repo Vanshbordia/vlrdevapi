@@ -285,11 +285,15 @@ class ReplayRound(BaseModel):
 
         """
         if isinstance(player, int):
+            if player <= 0:
+                return None
             for ld in self.loadouts:
                 if ld.player_id == player:
                     return ld
         else:
-            key = str(player).casefold()
+            key = str(player).strip().casefold()
+            if not key:
+                return None
             for ld in self.loadouts:
                 if ld.name.casefold() == key:
                     return ld

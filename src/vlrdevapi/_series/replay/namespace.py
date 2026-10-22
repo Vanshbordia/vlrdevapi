@@ -182,16 +182,22 @@ def _apply_id_resolution(
                 continue
             ids[name_key] = player.player_id
             ids_by_name.setdefault(name_key, set()).add(player.player_id)
+            if player.team_short:
+                ids_by_team.setdefault(player.team_short.strip().casefold(), ids)
         if team.team_name:
-            ids_by_team[team.team_name.casefold()] = ids
+            ids_by_team[team.team_name.strip().casefold()] = ids
+        if team.team_short:
+            ids_by_team[team.team_short.strip().casefold()] = ids
 
     def resolve(team: str, name: str) -> int:
         name_key = (name or "").strip().casefold()
         if not name_key:
             return 0
-        team_ids = ids_by_team.get((team or "").casefold())
-        if team_ids is not None and name_key in team_ids:
-            return team_ids[name_key]
+        team_key = (team or "").strip().casefold()
+        if team_key:
+            team_ids = ids_by_team.get(team_key)
+            if team_ids is not None and name_key in team_ids:
+                return team_ids[name_key]
         candidates = ids_by_name.get(name_key)
         if candidates is not None and len(candidates) == 1:
             return next(iter(candidates))

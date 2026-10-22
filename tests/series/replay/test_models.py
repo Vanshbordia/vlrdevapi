@@ -206,3 +206,43 @@ def test_attach_player_ids_from_fixtures():
     _attach_player_ids(result, html, GAME_ID)
     assert result.team1_id == 6961
     assert {p.name: p.player_id for p in result.round(1).players}["Chronicle"] == 458
+
+def test_loadout_for_unresolved_players_returns_none():
+    from vlrdevapi._series.replay.models import PlayerRoundLoadout, ReplayRound
+
+    rd = ReplayRound(
+        round_number=1,
+        loadouts=[
+            PlayerRoundLoadout(player_id=0, name="Player1", team="TEAM1"),
+            PlayerRoundLoadout(player_id=0, name="Player2", team="TEAM1"),
+            PlayerRoundLoadout(player_id=456, name="Player3", team="TEAM2"),
+        ],
+    )
+    # Asking for 0 or negative must return None even if unresolved players have player_id == 0
+    assert rd.loadout_for(0) is None
+    assert rd.loadout_for(-1) is None
+    # Valid positive ID matches
+    res = rd.loadout_for(456)
+    assert res is not None
+    assert res.name == "Player3"
+    # Name match
+    assert rd.loadout_for("Player1") is not None
+    assert rd.loadout_for("Player1").name == "Player1"
+    assert rd.loadout_for("nonexistent") is None
+    assert rd.loadout_for("") is None
+
+
+def test_resolve_short_team_tags():
+    from vlrdevapi._series.replay.models import PlayerRoundLoadout
+
+    result = _replay()
+    round1 = result.round(1)
+    # Add dummy loadouts with short team tags
+    round1.loadouts.extend([
+        PlayerRoundLoadout(player_id=0, name="ace", team="LOD"),
+        PlayerRoundLoadout(player_id=0, name="ace", team="VIT"),
+    ])
+    _apply_id_resolution(result, _stats(dup_names=True))
+    assert round1.loadouts[-2].player_id == 111
+    assert round1.loadouts[-1].player_id == 222
+
