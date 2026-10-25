@@ -4,7 +4,6 @@ from datetime import tzinfo
 from zoneinfo import ZoneInfo
 
 import httpx
-from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
 from vlrdevapi._base import SyncNamespace
 from vlrdevapi._team.info.models import TeamInfo

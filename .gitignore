@@ -31,3 +31,5 @@ official-docs/node_modules/
 
 # Zensical cache
 docs-py/.cache/
+
+temp/

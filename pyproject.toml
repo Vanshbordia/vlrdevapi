@@ -49,6 +49,12 @@ test = [
     "respx>=0.23.1",
     "pytest-cov>=7.1.0",
 ]
+mcp = [
+    "mcp>=1.0.0",
+]
+
+[project.scripts]
+vlrdevapi-mcp = "vlrdevapi.mcp.server:main"
 
 [dependency-groups]
 dev = [

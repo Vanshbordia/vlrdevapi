@@ -23,7 +23,15 @@ __all__ = [
 import httpx
 from selectolax.lexbor import LexborHTMLParser as HTMLParser
 
-from vlrdevapi.exceptions import ClientError, HTTPError, NotFoundError, RateLimitError, RequestError, RequestTimeoutError, ServerError
+from vlrdevapi.exceptions import (
+    ClientError,
+    HTTPError,
+    NotFoundError,
+    RateLimitError,
+    RequestError,
+    RequestTimeoutError,
+    ServerError,
+)
 
 BASE_URL = "https://www.vlr.gg"
 DEFAULT_TIMEOUT = 15
