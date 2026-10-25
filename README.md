@@ -7,7 +7,9 @@
 **The modern, type-safe Python library for VLR.gg Valorant esports data**
 
 [![PyPI version](https://img.shields.io/pypi/v/vlrdevapi.svg)](https://pypi.org/project/vlrdevapi/)
-[![Python Version](https://img.shields.io/pypi/pyversions/vlrdevapi.svg)](https://pypi.org/project/vlrdevapi/)
+[![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14%20%7C%203.15-blue.svg)](https://pypi.org/project/vlrdevapi/)
+[![Status: Stable](https://img.shields.io/badge/status-stable-brightgreen.svg)](https://pypi.org/project/vlrdevapi/)
+[![MCP Server](https://img.shields.io/badge/MCP-41%20tools-red.svg)](https://vlrdevapi.pages.dev/docs/mcp/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/badge/docs-vlrdevapi.pages.dev-blue.svg)](https://vlrdevapi.pages.dev/docs/)
 
@@ -59,7 +61,7 @@ pip install "vlrdevapi[mcp]"        # MCP server (vlrdevapi-mcp)
 pip install "vlrdevapi[all]"
 ```
 
-> **Requirements:** Python 3.11 or higher.
+> **Requirements:** Python 3.11, 3.12, 3.13, 3.14, or 3.15.
 
 ---
 
