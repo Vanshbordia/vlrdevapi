@@ -14,16 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - `.to_df()` — converts records directly into a `pandas.DataFrame`.
   - `.to_polars()` — converts records directly into a native `polars.DataFrame` with typed nested arrays (`pl.List(pl.String)`).
   - `.to_csv(path=None)` — exports to standard CSV format with semicolon-delimited lists (`"Player;IGL"`) and in-memory string output when `path` is omitted.
-  - `.to_parquet(path=...)` — writes Apache Parquet files via pyarrow or Polars engine.
-  - `.to_excel(path=..., sheet_name="Data")` — exports Excel `.xlsx` spreadsheets via openpyxl.
+  - `.to_parquet(path, index=False)` — writes Apache Parquet files via pandas and pyarrow.
+  - `.to_excel(path, sheet_name="Sheet1", index=False)` — exports Excel `.xlsx` spreadsheets via pandas and openpyxl.
   - `.to_json(path=None, indent=2)` — exports clean serialized JSON to string or disk with comprehensive recursive datetime and list handling.
-  - `.to_markdown(path=None, index=False)` — generates GitHub-flavored markdown tables with proper column alignments.
+  - `.to_markdown(columns=None)` — generates GitHub-flavored markdown tables with proper column alignments, pipe escaping, and zero dependencies.
 - **Granular Optional Dependency Extras** — Data export dependencies are strictly optional and modular:
   - `vlrdevapi[pandas]`: installs `pandas>=2.0.0`
   - `vlrdevapi[polars]`: installs `polars>=1.0.0`
-  - `vlrdevapi[excel]`: installs `openpyxl>=3.1.0`
-  - `vlrdevapi[parquet]`: installs `pyarrow>=14.0.0`
-  - `vlrdevapi[mcp]`: installs `mcp>=1.0.0`
+  - `vlrdevapi[excel]`: installs `openpyxl>=3.1.0` and `pandas>=2.0.0`
+  - `vlrdevapi[parquet]`: installs `pyarrow>=14.0.0` and `pandas>=2.0.0`
+  - `vlrdevapi[mcp]`: installs `mcp>=1.2.0`
   - `vlrdevapi[all]`: installs all optional tabular, file, and MCP dependencies.
   - Missing dependencies provide actionable, friendly install prompts with exact pip commands instead of generic import errors.
 - **First-Class Model Context Protocol (MCP) Server** — Built-in MCP server for AI agents and LLMs (Claude Desktop, Cursor, Zed, Antigravity):
@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   - High-level composite tools for complex agent tasks:
     - `get_match_full_context(series_id)` — aggregates overview, player statistics, and streams/VODs into a single response.
     - `get_team_overview(team_id)` — combines team info, roster, upcoming schedule, and tournament placements.
-    - `compare_teams(team_id_1, team_id_2)` — side-by-side comparison of two teams with rosters and recent map statistics/forms.
+    - `compare_teams(team_id_1, team_id_2, last_days=60)` — side-by-side comparison of two teams with rosters and recent map statistics/forms.
     - `get_player_career_summary(player_id)` — consolidated dossier with profile, current teams, agent pool ratings, and tournament placements.
     - `get_h2h_matchup(team_id_1, team_id_2)` — head-to-head match history between two organizations.
     - `get_tournament_dossier(event_id)` — tournament overview with participating teams, stages, and standings.

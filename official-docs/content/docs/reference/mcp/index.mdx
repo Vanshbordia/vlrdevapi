@@ -116,8 +116,8 @@ In addition to granular endpoints, VLRdevAPI provides 8 high-level composite too
 | Tool Name | Parameters | Description |
 |:---|:---|:---|
 | `get_match_full_context` | `series_id: int` | Aggregates match overview, player statistics, and streams/VODs into a single context payload. |
-| `get_team_overview` | `team_id: int` | Comprehensive dossier with team info, active roster, recent match results, upcoming schedule, and tournament placements. |
-| `compare_teams` | `team_id_1: int`, `team_id_2: int` | Side-by-side comparison of two teams (rosters, rankings, earnings, recent form). |
+| `get_team_overview` | `team_id: int` | Comprehensive dossier with team info, active roster, upcoming schedule, and tournament placements. |
+| `compare_teams` | `team_id_1: int`, `team_id_2: int`, `last_days: int = 60` | Side-by-side comparison of two teams (rosters, recent map performance statistics, and forms). |
 | `get_player_career_summary` | `player_id: int` | Consolidated player dossier with biography, current teams, agent pool ratings, and placements. |
 | `get_h2h_matchup` | `team_id_1: int`, `team_id_2: int`, `limit: int = 50` | Full head-to-head match history between two organizations. |
 | `get_tournament_dossier` | `event_id: int` | Tournament overview combining participating teams, stages, and standings. |
@@ -138,10 +138,10 @@ In addition to granular endpoints, VLRdevAPI provides 8 high-level composite too
 
 - **`series_info(series_id: int)`**: Detailed match overview including teams, date, format, score, event, and map vetoes.
 - **`series_players(series_id: int, game_id: str = "all")`**: Player statistics for a series or specific map (ACS, K/D, ADR, KAST).
-- **`series_rounds(series_id: int, game_id: int = 1)`**: Round-by-round results including round winner, win type, and economy for a map.
+- **`series_rounds(series_id: int, game_id: int)`**: Round-by-round results including round winner, win type, and economy for a map.
 - **`series_performance(series_id: int, game_id: str = "all")`**: Kill matrix and head-to-head duels between players.
 - **`series_economy(series_id: int, game_id: str = "all")`**: Team economy data, bank reserves, loadout values, and buy types per round.
-- **`series_replay(series_id: int, game_id: int = 1)`**: 2D spatial replay events, minimap coordinates, kill locations, and loadouts.
+- **`series_replay(series_id: int, game_id: int)`**: 2D spatial replay events, minimap coordinates, kill locations, and loadouts.
 - **`series_vods(series_id: int)`**: VOD links, broadcast streams, and timestamped match recordings.
 - **`series_map_summary(series_id: int, game_id: str)`**: Map-level summary combining economy, replay timeline, and player stats.
 
@@ -159,8 +159,8 @@ In addition to granular endpoints, VLRdevAPI provides 8 high-level composite too
 
 - **`player_info(player_id: int)`**: Player profile including IGN, real name, country, and total tournament winnings.
 - **`player_teams(player_id: int)`**: Career team history, past organizations, and join/leave dates.
-- **`player_agents(player_id: int, timespan: str = "all")`**: Agent statistics (ACS, K/D, ADR, KAST) over a timespan (`30d`, `60d`, `90d`, `all`). Agent statistics (ACS, K/D, ADR, KAST, pick rates) over a timespan.
-- **`player_matches(player_id: int, limit: int = 50, return_all: bool = false)`**: Match history for a player with individual ratings and scores.
+- **`player_agents(player_id: int, timespan: str = "all")`**: Agent statistics (ACS, K/D, ADR, KAST, pick rates) over a timespan (`30d`, `60d`, `90d`, `all`).
+- **`player_matches(player_id: int, limit: int = 50)`**: Match history for a player with individual ratings and scores.
 - **`player_profile(player_id: int)`**: Consolidated profile combining bio, current team, and top agents.
 - **`player_placements(player_id: int)`**: Tournament placements and prize earnings won by a player.
 

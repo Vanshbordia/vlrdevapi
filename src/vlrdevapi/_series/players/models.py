@@ -74,6 +74,14 @@ class TeamPlayers(BaseModel):
     players: list[PlayerGameStats] = Field(default_factory=list, description="List of players with their per-game stats")
 
 
+def _calc_kd(kills: int | None, deaths: int | None) -> float | None:
+    if kills is None or deaths is None:
+        return None
+    if deaths > 0:
+        return round(kills / deaths, 2)
+    return float(kills)
+
+
 class PlayersStats(ExportableModel):
     """Player statistics for a series game on vlr.gg."""
 
@@ -144,11 +152,13 @@ class PlayersStats(ExportableModel):
                             }
                             if side_stat is not None:
                                 rec.update({
+                                    "player_name": p.name,
                                     "rating": side_stat.rating,
                                     "acs": side_stat.acs,
                                     "kills": side_stat.kills,
                                     "deaths": side_stat.deaths,
                                     "assists": side_stat.assists,
+                                    "kd": _calc_kd(side_stat.kills, side_stat.deaths),
                                     "kd_diff": side_stat.kd_diff,
                                     "kast": side_stat.kast,
                                     "adr": side_stat.adr,
@@ -184,18 +194,13 @@ class PlayersStats(ExportableModel):
                             "url": f"https://www.vlr.gg/{self.series_id or g.series_id}",
                         }
                         if side_stat is not None:
-                            kd_val = (
-                                round(side_stat.kills / side_stat.deaths, 2)
-                                if (side_stat.deaths and side_stat.deaths > 0)
-                                else (float(side_stat.kills) if side_stat.kills else 0.0)
-                            )
                             rec.update({
                                 "rating": side_stat.rating,
                                 "acs": side_stat.acs,
                                 "kills": side_stat.kills,
                                 "deaths": side_stat.deaths,
                                 "assists": side_stat.assists,
-                                "kd": kd_val,
+                                "kd": _calc_kd(side_stat.kills, side_stat.deaths),
                                 "kd_diff": side_stat.kd_diff,
                                 "kast": side_stat.kast,
                                 "adr": side_stat.adr,
@@ -237,11 +242,7 @@ class PlayersStats(ExportableModel):
                         "kills": ov.kills if ov else None,
                         "deaths": ov.deaths if ov else None,
                         "assists": ov.assists if ov else None,
-                        "kd": (
-                            round(ov.kills / ov.deaths, 2)
-                            if (ov and ov.deaths and ov.deaths > 0)
-                            else (float(ov.kills) if (ov and ov.kills) else 0.0)
-                        ),
+                        "kd": _calc_kd(ov.kills, ov.deaths) if ov else None,
                         "kd_diff": ov.kd_diff if ov else None,
                         "kast": ov.kast if ov else None,
                         "adr": ov.adr if ov else None,

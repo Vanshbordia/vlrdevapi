@@ -524,3 +524,55 @@ def test_empty_buy_tier_does_not_crash_buy_matrix_export() -> None:
     )
     records = model.to_records(view="buy_matrix")
     assert records == []
+
+
+def test_players_stats_kd_calculation_with_none_or_zero() -> None:
+    """Verify that players with None kills, None deaths, or 0 deaths do not crash export."""
+    p_none_kills = PlayerGameStats(
+        player_id=1,
+        name="PlayerNoneKills",
+        stats=PlayerStats(
+            overall=SideStats(kills=None, deaths=5),
+            attack=SideStats(kills=None, deaths=2),
+            defend=SideStats(kills=None, deaths=3),
+        ),
+    )
+    p_zero_deaths = PlayerGameStats(
+        player_id=2,
+        name="PlayerZeroDeaths",
+        stats=PlayerStats(
+            overall=SideStats(kills=10, deaths=0),
+            attack=SideStats(kills=6, deaths=0),
+            defend=SideStats(kills=4, deaths=0),
+        ),
+    )
+    p_none_deaths = PlayerGameStats(
+        player_id=3,
+        name="PlayerNoneDeaths",
+        stats=PlayerStats(
+            overall=SideStats(kills=10, deaths=None),
+        ),
+    )
+    stats = PlayersStats(
+        series_id=100,
+        game_id="all",
+        team1=TeamPlayers(team_id=10, team_name="Team A", players=[p_none_kills, p_zero_deaths, p_none_deaths]),
+        team2=TeamPlayers(team_id=20, team_name="Team B", players=[]),
+    )
+
+    # Wide view
+    records_wide = stats.to_records(side="wide")
+    assert records_wide[0]["kd"] is None
+    assert records_wide[1]["kd"] == 10.0
+    assert records_wide[2]["kd"] is None
+
+    # Single-side view
+    records_overall = stats.to_records(side="overall")
+    assert records_overall[0]["kd"] is None
+    assert records_overall[1]["kd"] == 10.0
+    assert records_overall[2]["kd"] is None
+
+    # Split view
+    records_split = stats.to_records(side="split")
+    assert records_split[0]["kd"] is None
+
