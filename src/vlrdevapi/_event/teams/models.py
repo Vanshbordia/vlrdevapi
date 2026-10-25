@@ -1,4 +1,8 @@
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class TeamPlayer(BaseModel):
@@ -63,7 +67,7 @@ class EventStageTeams(BaseModel):
         description="List of teams in this stage",
     )
 
-class EventTeams(BaseModel):
+class EventTeams(ExportableModel):
     """Wrapper for teams grouped by stage."""
 
     model_config = ConfigDict(
@@ -73,6 +77,44 @@ class EventTeams(BaseModel):
         default_factory=list,
         description="List of stages containing teams",
     )
+
+    def to_records(self, by_player: bool = False, **kwargs: Any) -> list[dict[str, Any]]:
+        """Convert event teams to tabular records.
+
+        Args:
+            by_player: If True, returns 1 row per player on each team.
+                       If False (default), returns 1 row per team with players list.
+        """
+        records: list[dict[str, Any]] = []
+        for stage in self.stages:
+            for team in stage.teams:
+                team_url = f"https://www.vlr.gg/team/{team.id}" if team.id else None
+                if by_player:
+                    for p in team.players:
+                        records.append({
+                            "stage_path": stage.stage_path,
+                            "stage_name": stage.stage_name,
+                            "team_id": team.id or None,
+                            "team_name": team.name or "TBD",
+                            "note": team.note or None,
+                            "player_id": p.id or None,
+                            "player_name": p.name,
+                            "player_url": f"https://www.vlr.gg/player/{p.id}" if p.id else None,
+                            "team_url": team_url,
+                        })
+                else:
+                    player_names = [p.name for p in team.players] if team.players else []
+                    records.append({
+                        "stage_path": stage.stage_path,
+                        "stage_name": stage.stage_name,
+                        "team_id": team.id or None,
+                        "team_name": team.name or "TBD",
+                        "note": team.note or None,
+                        "player_count": len(team.players),
+                        "players": player_names,
+                        "url": team_url,
+                    })
+        return records
 
     def __len__(self) -> int:
         return len(self.stages)

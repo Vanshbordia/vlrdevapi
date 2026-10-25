@@ -1,7 +1,10 @@
 from datetime import date, datetime, time
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class MatchStatus(str, Enum):
@@ -77,7 +80,7 @@ class EventMatch(BaseModel):
     )
 
 
-class EventMatches(BaseModel):
+class EventMatches(ExportableModel):
     """Collection of matches for an event."""
 
     model_config = ConfigDict(
@@ -88,3 +91,31 @@ class EventMatches(BaseModel):
     matches: list[EventMatch] = Field(
         default_factory=list, description="List of matches in the event",
     )
+
+    def to_records(self, **kwargs: Any) -> list[dict[str, Any]]:
+        """Convert event matches to tabular records."""
+        records: list[dict[str, Any]] = []
+        for m in self.matches:
+            team1 = m.teams[0] if len(m.teams) > 0 else None
+            team2 = m.teams[1] if len(m.teams) > 1 else None
+            t1_name = (team1.name if team1 else "") or "TBD"
+            t2_name = (team2.name if team2 else "") or "TBD"
+
+            records.append({
+                "event_id": self.event_id,
+                "match_id": m.match_id,
+                "stage": m.stage,
+                "phase": m.phase,
+                "status": m.status.value if hasattr(m.status, "value") else str(m.status),
+                "datetime_utc": m.datetime_utc.isoformat() if m.datetime_utc else None,
+                "team1_name": t1_name,
+                "team1_id": team1.id if team1 else None,
+                "team1_score": team1.score if team1 else None,
+                "team1_winner": team1.winner if team1 else False,
+                "team2_name": t2_name,
+                "team2_id": team2.id if team2 else None,
+                "team2_score": team2.score if team2 else None,
+                "team2_winner": team2.winner if team2 else False,
+                "url": f"https://www.vlr.gg/{m.match_id}",
+            })
+        return records

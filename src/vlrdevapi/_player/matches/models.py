@@ -2,8 +2,11 @@
 from datetime import date as date_
 from datetime import datetime as datetime_
 from datetime import time as time_
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class TeamInMatch(BaseModel):
@@ -61,7 +64,7 @@ class MatchHistoryPage(BaseModel):
         default=False, description="Whether there is a next page of results",
     )
 
-class PlayerMatches(BaseModel):
+class PlayerMatches(ExportableModel):
     model_config = ConfigDict(
         json_schema_extra={
             "description": "Collection of match entries for a player.",
@@ -72,6 +75,34 @@ class PlayerMatches(BaseModel):
     matches: list[MatchEntry] = Field(
         default_factory=list, description="List of match entries",
     )
+
+    def to_records(self, **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten player match history into tabular records (1 row per match)."""
+        records: list[dict[str, Any]] = []
+        for m in self.matches:
+            url = m.url
+            if url and url.startswith("/"):
+                url = f"https://www.vlr.gg{url}"
+            elif not url and m.match_id:
+                url = f"https://www.vlr.gg/{m.match_id}"
+
+            records.append({
+                "player_id": self.player_id,
+                "match_id": m.match_id,
+                "event": m.event,
+                "stage": m.stage,
+                "bracket": m.bracket,
+                "result": m.result,
+                "score1": m.score1,
+                "score2": m.score2,
+                "team1_name": m.team1.name or "TBD",
+                "team1_tag": m.team1.tag,
+                "team2_name": m.team2.name or "TBD",
+                "team2_tag": m.team2.tag,
+                "datetime": m.datetime.isoformat() if m.datetime else None,
+                "url": url,
+            })
+        return records
 
     def __len__(self) -> int:
         return len(self.matches)

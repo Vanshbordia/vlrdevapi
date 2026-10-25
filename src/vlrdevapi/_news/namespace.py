@@ -94,6 +94,16 @@ class NewsNamespace:
         """
         return self._list(page)
 
+    @property
+    def list(self) -> NewsListNamespace:
+        """Browse the news listing.
+
+        Returns:
+            A ``NewsListNamespace`` instance. Call with an optional ``page``
+            parameter to fetch a ``NewsPage`` model.
+        """
+        return self._list
+
     @sanitize_and_validate
     def article(self, article_id: int) -> NewsArticle:
         """Get a single news article from vlr.gg.

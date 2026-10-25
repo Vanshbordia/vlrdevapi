@@ -1,9 +1,12 @@
 from datetime import datetime as datetime_
+from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
-class NewsArticle(BaseModel):
+class NewsArticle(ExportableModel):
     """A full news article from vlr.gg.
 
     Attributes:
@@ -39,3 +42,22 @@ class NewsArticle(BaseModel):
     content_md: str = Field(
         default="", description="Full content of the news article converted to Markdown"
     )
+
+    def to_records(self, **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten article metadata and content into tabular records."""
+        ev_link = self.event_link
+        if ev_link and ev_link.startswith("/"):
+            ev_link = f"https://www.vlr.gg{ev_link}"
+
+        return [{
+            "id": self.id,
+            "title": self.title,
+            "author": self.author or None,
+            "date": self.date.isoformat() if self.date else None,
+            "event_name": self.event_name or None,
+            "event_link": ev_link or None,
+            "url": f"https://www.vlr.gg/{self.id}",
+            "char_count": len(self.content),
+            "content": self.content,
+            "content_md": self.content_md,
+        }]

@@ -1,7 +1,10 @@
 
 from datetime import datetime as datetime_
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class TeamInLiveMatch(BaseModel):
@@ -37,7 +40,7 @@ class LiveMatchEntry(BaseModel):
     )
 
 
-class LiveMatchesPage(BaseModel):
+class LiveMatchesPage(ExportableModel):
     model_config = ConfigDict(
         json_schema_extra={"description": "Live matches from vlr.gg."},
     )
@@ -45,3 +48,37 @@ class LiveMatchesPage(BaseModel):
     matches: list[LiveMatchEntry] = Field(
         default_factory=list, description="List of live match entries",
     )
+
+    def to_records(self, **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten live matches into tabular records (1 row per match)."""
+        records: list[dict[str, Any]] = []
+        for m in self.matches:
+            url = m.url
+            if url and url.startswith("/"):
+                url = f"https://www.vlr.gg{url}"
+            elif not url and m.match_id:
+                url = f"https://www.vlr.gg/{m.match_id}"
+
+            t1_name = m.team1.name if (m.team1 and m.team1.name) else "TBD"
+            t1_id = m.team1.id if (m.team1 and m.team1.id) else None
+            t1_tag = (m.team1.tag if (m.team1 and m.team1.tag) else None) or ("TBD" if t1_name == "TBD" else None)
+
+            t2_name = m.team2.name if (m.team2 and m.team2.name) else "TBD"
+            t2_id = m.team2.id if (m.team2 and m.team2.id) else None
+            t2_tag = (m.team2.tag if (m.team2 and m.team2.tag) else None) or ("TBD" if t2_name == "TBD" else None)
+
+            records.append({
+                "match_id": m.match_id,
+                "event": m.event,
+                "stage": m.stage,
+                "status": m.status or "live",
+                "datetime": m.datetime.isoformat() if m.datetime else None,
+                "team1_id": t1_id,
+                "team1_name": t1_name,
+                "team1_tag": t1_tag,
+                "team2_id": t2_id,
+                "team2_name": t2_name,
+                "team2_tag": t2_tag,
+                "url": url,
+            })
+        return records

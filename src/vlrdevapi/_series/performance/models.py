@@ -1,5 +1,9 @@
 
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class KillEntry(BaseModel):
@@ -176,7 +180,7 @@ class AdvStatsEntry(BaseModel):
     one_v5_rounds: list[AdvStatsNotableRound] = Field(default_factory=list, description="Detailed round info for 1v5 clutches")
 
 
-class PerformanceData(BaseModel):
+class PerformanceData(ExportableModel):
     """Performance metrics for a game/map within a series on vlr.gg."""
 
     model_config = ConfigDict(
@@ -203,3 +207,62 @@ class PerformanceData(BaseModel):
         default_factory=list,
         description="Advanced stats entries (2K, 3K, clutches, etc.).",
     )
+
+    def to_records(self, view: str = "matrix", **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten performance data into tabular records.
+
+        Args:
+            view: Either 'matrix' (default: 1 row per killer-victim matchup) or
+                'advanced' (1 row per player with multi-kills and clutch stats).
+            **kwargs: Extra parameters (ignored).
+        """
+        records: list[dict[str, Any]] = []
+        url = f"https://www.vlr.gg/{self.series_id}/?game={self.game_id}&tab=performance"
+
+        if view == "advanced":
+            for adv in self.adv_stats:
+                records.append({
+                    "series_id": self.series_id,
+                    "game_id": self.game_id,
+                    "player_id": adv.player_id or None,
+                    "name": adv.name,
+                    "team": adv.team_short,
+                    "agent": adv.agent,
+                    "2k": adv.two_k,
+                    "3k": adv.three_k,
+                    "4k": adv.four_k,
+                    "5k": adv.five_k,
+                    "1v1": adv.one_v1,
+                    "1v2": adv.one_v2,
+                    "1v3": adv.one_v3,
+                    "1v4": adv.one_v4,
+                    "1v5": adv.one_v5,
+                    "plants": adv.plants,
+                    "defuses": adv.defuses,
+                    "economy": adv.economy,
+                    "url": url,
+                })
+            return records
+
+        for m_type, matrix in (
+            ("all", self.all_kills_matrix),
+            ("first_kills", self.first_kills_matrix),
+            ("op_kills", self.op_kills_matrix),
+        ):
+            for e in matrix.entries:
+                records.append({
+                    "series_id": self.series_id,
+                    "game_id": self.game_id,
+                    "matrix_type": m_type,
+                    "killer": e.killer,
+                    "killer_id": e.killer_id or None,
+                    "killer_team": e.killer_team,
+                    "victim": e.victim,
+                    "victim_id": e.victim_id or None,
+                    "victim_team": e.victim_team,
+                    "kills": e.kills,
+                    "deaths": e.deaths,
+                    "diff": e.diff,
+                    "url": url,
+                })
+        return records

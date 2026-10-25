@@ -1,7 +1,10 @@
 
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class EventSeriesLink(BaseModel):
@@ -98,7 +101,7 @@ class EventLocation(BaseModel):
     )
 
 
-class EventInfo(BaseModel):
+class EventInfo(ExportableModel):
     """Event information from vlr.gg."""
 
     model_config = ConfigDict(
@@ -141,3 +144,22 @@ class EventInfo(BaseModel):
         default=None,
         description="Region info from 'Region' desc-item (flag-only); None if no region item",
     )
+
+    def to_records(self, **kwargs: Any) -> list[dict[str, Any]]:
+        """Convert event info to tabular records."""
+        return [{
+            "event_id": self.id,
+            "name": self.name,
+            "subtitle": self.subtitle or None,
+            "series_name": (self.series.name if self.series else "") or None,
+            "stage": (self.stage.name if self.stage else "") or None,
+            "regions": [r.name for r in self.regions] if self.regions else [],
+            "start_date": self.start_date.isoformat() if self.start_date else None,
+            "end_date": self.end_date.isoformat() if self.end_date else None,
+            "prize_amount": self.prize.amount if self.prize else None,
+            "prize_currency": self.prize.currency_code if self.prize else None,
+            "prize_usd": self.prize.converted_amount if self.prize else None,
+            "location_country": (self.location.country if self.location else "") or None,
+            "location_venue": (self.location.venue if self.location else "") or None,
+            "url": f"https://www.vlr.gg/event/{self.id}",
+        }]

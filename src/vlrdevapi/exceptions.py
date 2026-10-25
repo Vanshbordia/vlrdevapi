@@ -4,6 +4,7 @@ __all__ = [
     "ClientError",
     "DataNotFoundError",
     "HTTPError",
+    "MissingDependencyError",
     "NotFoundError",
     "ParseStructureError",
     "ParsingError",
@@ -23,6 +24,10 @@ class VlrdevapiError(Exception):
 
 
 VlrdevapiException = VlrdevapiError
+
+
+class MissingDependencyError(VlrdevapiError, ImportError):
+    """Raised when an optional feature requires a package that is not installed."""
 
 
 class RequestError(VlrdevapiError):

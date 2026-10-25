@@ -1,7 +1,10 @@
 
 from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class RoundWinType(StrEnum):
@@ -81,7 +84,7 @@ class RoundData(BaseModel):
     )
 
 
-class RoundsData(BaseModel):
+class RoundsData(ExportableModel):
     """Round-by-round data for a game/map within a series on vlr.gg."""
 
     model_config = ConfigDict(
@@ -100,3 +103,42 @@ class RoundsData(BaseModel):
         default_factory=list,
         description="List of rounds for this game",
     )
+
+    def to_records(self, **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten round-by-round outcomes into tabular records."""
+        records: list[dict[str, Any]] = []
+        url = f"https://www.vlr.gg/{self.series_id}/?game={self.game_id}"
+        t1_name = self.team1 or "TBD"
+        t2_name = self.team2 or "TBD"
+
+        for r in self.rounds:
+            win_type = r.win_type.value if hasattr(r.win_type, "value") else str(r.win_type)
+            b1 = int(r.bank_team1) if r.bank_team1 is not None else None
+            b2 = int(r.bank_team2) if r.bank_team2 is not None else None
+            s1 = int(r.spent_team1) if r.spent_team1 is not None else None
+            s2 = int(r.spent_team2) if r.spent_team2 is not None else None
+
+            records.append({
+                "series_id": self.series_id,
+                "game_id": self.game_id,
+                "round_number": r.round_number,
+                "team1_name": t1_name,
+                "team1_id": self.team1_id or None,
+                "team2_name": t2_name,
+                "team2_id": self.team2_id or None,
+                "winner_name": r.winner_team_name or "TBD",
+                "winner_id": r.winner_team_id or None,
+                "win_type": win_type,
+                "side": r.side or None,
+                "team1_score": r.team1_score,
+                "team2_score": r.team2_score,
+                "is_pistol_round": r.is_pistol_round,
+                "buy_type_team1": r.buy_type_team1 or None,
+                "buy_type_team2": r.buy_type_team2 or None,
+                "bank_team1": b1,
+                "bank_team2": b2,
+                "spent_team1": s1,
+                "spent_team2": s2,
+                "url": url,
+            })
+        return records

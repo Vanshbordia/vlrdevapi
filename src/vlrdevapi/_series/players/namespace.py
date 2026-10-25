@@ -67,5 +67,7 @@ class SeriesPlayersNamespace:
         result = parse_players_stats(html, game_id=gid)
         result.series_id = series_id
         result.game_id = gid
+        for m in result.maps:
+            m.series_id = series_id
         return result
 
