@@ -123,6 +123,16 @@ with VLRClient() as client:
     print(full.content_md[:500])`,
     methods: ['news()', 'news.article()'],
   },
+  {
+    id: 'mcp',
+    label: 'MCP Server',
+    blurb: 'Model Context Protocol server with 41 AI agent tools for Claude Desktop, Cursor, and Zed.',
+    file: 'mcp_server.py',
+    returns: 'MCPServer',
+    href: '/docs/reference/mcp',
+    code: `# Run via CLI for Claude Desktop or Cursor\n# $ vlrdevapi-mcp\n\n# Or initialize in Python:\nfrom vlrdevapi.mcp.server import create_server\n\nserver = create_server()\nprint(f"Server {server.name} initialized with 41 tools")\n# Tools: get_match_full_context, get_team_overview,\n# compare_teams, series_replay, series_economy...`,
+    methods: ['matches_*', 'series_*', 'team_*', 'player_*', 'event_*', 'composite_*'],
+  },
 ];
 
 const shortDate = (value: string) =>
@@ -374,6 +384,36 @@ function Preview({ id }: { id: ModuleId }) {
               </div>
             ))}
           </div>
+        </div>
+      </PreviewShell>
+    );
+  }
+
+  if (id === 'mcp') {
+    return (
+      <PreviewShell
+        eyebrow="AI Agent Integration"
+        title="Model Context Protocol Server"
+        meta="41 Tools · stdio transport · Claude / Cursor ready"
+        badge="MCPServer"
+      >
+        <div className="space-y-2">
+          <div className="flex items-center justify-between border border-white/[0.07] bg-white/[0.02] px-3 py-2">
+            <span className="font-mono text-[12px] text-fd-primary">get_match_full_context</span>
+            <span className="text-[12px] text-fd-muted">Overview + stats + VODs</span>
+          </div>
+          <div className="flex items-center justify-between border border-white/[0.07] bg-white/[0.02] px-3 py-2">
+            <span className="font-mono text-[12px] text-fd-primary">get_team_overview</span>
+            <span className="text-[12px] text-fd-muted">Roster + form + schedule</span>
+          </div>
+          <div className="flex items-center justify-between border border-white/[0.07] bg-white/[0.02] px-3 py-2">
+            <span className="font-mono text-[12px] text-fd-primary">series_map_summary</span>
+            <span className="text-[12px] text-fd-muted">Economy + replay + stats</span>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
+          <span className="text-[12px] text-fd-muted">CLI command</span>
+          <code className="font-mono text-[12px] text-white/70">vlrdevapi-mcp</code>
         </div>
       </PreviewShell>
     );

@@ -8,12 +8,14 @@ const BASE_URL = siteUrl;
 
 const summary = `# VLRdevAPI
 
-> A type-safe Python SDK for Valorant esports data from VLR.gg. It returns typed Pydantic models for matches, players, teams, events, series, and news.
+> A type-safe Python SDK and Model Context Protocol (MCP) server for Valorant esports data from VLR.gg. It returns typed Pydantic models for matches, players, teams, events, series, and news, and supports universal tabular exports to pandas, Polars, CSV, Parquet, and Excel.
 
-- **What it is**: an open-source Python client that reads VLR.gg and returns typed objects, so you do not have to write or maintain a scraper.
-- **When to use it**: you need Valorant esports data in Python, including upcoming and live matches, results, standings, team rosters, player statistics, or news.
+- **What it is**: an open-source Python client and MCP server that reads VLR.gg and returns typed objects, so you do not have to write or maintain a scraper.
+- **When to use it**: you need Valorant esports data in Python, in AI agent workflows (Claude Desktop, Cursor), or exported into DataFrames/spreadsheets.
 - **Key endpoints**: \`vlrdevapi.matches.upcoming()\`, \`vlrdevapi.matches.live()\`, \`vlrdevapi.player(id).profile()\`, \`vlrdevapi.team(id).info()\`, \`vlrdevapi.event(id).info()\`, \`vlrdevapi.series(id).info()\`, and \`vlrdevapi.news()\`.
-- **Install**: \`pip install vlrdevapi\` or \`uv add vlrdevapi\`, on Python 3.11 or newer.
+- **Tabular exports**: every model supports \`.to_df()\`, \`.to_polars()\`, \`.to_csv()\`, \`.to_parquet()\`, \`.to_excel()\`, \`.to_json()\`, and \`.to_markdown()\`.
+- **MCP Server**: built-in Model Context Protocol server CLI \`vlrdevapi-mcp\` exposing 41 tools for AI assistants.
+- **Install**: \`pip install vlrdevapi\` (or \`pip install "vlrdevapi[all]"\`), on Python 3.11 or newer.
 - **Free and no API key**: no key, token, subscription, or account is required.`;
 
 function linkSection(
@@ -32,15 +34,17 @@ function linkSection(
 
 const faq = `## FAQ
 
-**What is VLRdevAPI?** VLRdevAPI is a Python library for accessing VLR.gg Valorant esports data. It returns typed Pydantic models and needs no API key.
+**What is VLRdevAPI?** VLRdevAPI is a type-safe Python library and Model Context Protocol (MCP) server for accessing VLR.gg Valorant esports data. It returns typed Pydantic models, supports universal tabular exports (pandas, Polars, CSV, Parquet, Excel), and needs no API key.
+
+**How does the MCP server work?** Run \`vlrdevapi-mcp\` to start a stdio MCP server exposing 41 tools for Claude Desktop, Cursor, Zed, and AI agents.
 
 **Do I need an API key?** No. Install the package and start calling methods.
 
-**What Python version is required?** Python 3.11 or newer.
+**What Python version is required?** Python 3.11 or newer (Python 3.11–3.15 supported).
 
 **What data can it return?** Upcoming, live, and completed matches; team info, rosters, stats, placements, and transactions; player info, agent stats, match history, and profiles; event listings, stages, teams, matches, and standings; series info, VODs, player stats, rounds, performance, and economy; and news listings plus full articles.
 
-**How is it installed?** \`pip install vlrdevapi\` or \`uv add vlrdevapi\`.
+**How is it installed?** \`pip install vlrdevapi\` or \`pip install "vlrdevapi[all]"\`.
 
 **Where is the full reference?** ${BASE_URL}/docs/`;
 
@@ -52,10 +56,10 @@ const useCases = `## Use cases
 - [Valorant stats API](${BASE_URL}/valorant-stats-api/): Player, team, and match statistics from VLR.gg in Python.`;
 
 /**
- * Fumadocs renders the docs index as `- [Title](url): description`. Append a
+ * Fumadocs renders the docs index as \`- [Title](url): description\`. Append a
  * link to the per-page markdown so LLMs can fetch the raw source, the same way
- * the Blog and Guides sections do. The docs heading is demoted to `##` because
- * the summary block owns the single `#` heading.
+ * the Blog and Guides sections do. The docs heading is demoted to \`##\` because
+ * the summary block owns the single \`#\` heading.
  */
 function withDocMarkdownLinks(index: string) {
   const markdownByUrl = new Map<string, string>();

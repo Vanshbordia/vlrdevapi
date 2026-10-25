@@ -25,6 +25,8 @@ Whether you need live match tickers, tournament brackets, historical player rati
 
 ## Highlights
 
+- **Universal Tabular Data Exports** — Seamlessly export any response into `pandas.DataFrame` (`.to_df()`), native `polars.DataFrame` (`.to_polars()`), `CSV` (`.to_csv()`), `Apache Parquet` (`.to_parquet()`), `Excel` (`.to_excel()`), formatted `JSON` (`.to_json()`), and `Markdown` (`.to_markdown()`).
+- **Model Context Protocol (MCP) Server** — Connect Claude Desktop, Cursor, Zed, and AI agents directly to live Valorant data via the built-in `vlrdevapi-mcp` stdio server with 41 tools.
 - **Complete Valorant Esports Coverage** — Tournaments, match schedules, live scoreboards, player careers, team rosters, roster transactions, and esports news.
 - **2D Kill-Feed Replay Timelines** — Spatial `(x, y)` kill coordinates, viewing angles, kill distances, plant/defuse events, spike detonations (`boom`), resurrections, alive player snapshots, and buy-phase **player loadouts** (weapons, shields, spent credits, remaining bank).
 - **Round-by-Round Economy** — Full team buy matrices (`loadout_value`, `spent`, `bank`, buy classifications like `Eco`, `Anti-eco`, `Semi-buy`, `Semi-rifle`, and `Full buy`).
@@ -41,11 +43,20 @@ Whether you need live match tickers, tournament brackets, historical player rati
 Install `vlrdevapi` using [uv](https://docs.astral.sh/uv/) (recommended) or `pip`:
 
 ```bash
-# Using uv (recommended)
+# Basic installation
+pip install vlrdevapi
+# or with uv
 uv add vlrdevapi
 
-# Using pip
-pip install vlrdevapi
+# With optional extras
+pip install "vlrdevapi[pandas]"     # pandas.DataFrame (.to_df())
+pip install "vlrdevapi[polars]"     # polars.DataFrame (.to_polars())
+pip install "vlrdevapi[excel]"      # Excel .xlsx (.to_excel())
+pip install "vlrdevapi[parquet]"    # Apache Parquet (.to_parquet())
+pip install "vlrdevapi[mcp]"        # MCP server (vlrdevapi-mcp)
+
+# Install with all optional extras
+pip install "vlrdevapi[all]"
 ```
 
 > **Requirements:** Python 3.11 or higher.
@@ -249,6 +260,72 @@ print(f"Length: {len(article.content_md):,} characters")
 ```
 
 Learn more in the [News Reference Documentation](https://vlrdevapi.pages.dev/docs/reference/news/).
+
+---
+
+## Tabular Data Exports (Data Science & Analytics)
+
+Every response model inherits from `ExportableModel`, enabling instant conversion to dataframes, spreadsheets, and serialized files:
+
+```python
+import vlrdevapi
+
+# 1. Fetch player statistics for a grand final
+players = vlrdevapi.series(754737).players()
+
+# 2. Convert to pandas DataFrame
+df = players.to_df()
+print(df[["player_name", "team_name", "rating", "acs", "kd"]].head())
+
+# 3. Convert to Polars DataFrame (preserving typed list columns)
+polars_df = players.to_polars()
+
+# 4. Export to CSV (semicolon-delimited lists, e.g. "neon;raze;jett")
+players.to_csv("grand_final_players.csv")
+
+# 5. Export to Apache Parquet
+players.to_parquet("grand_final_players.parquet")
+
+# 6. Export to Excel (.xlsx)
+players.to_excel("grand_final_players.xlsx", sheet_name="PlayerStats")
+
+# 7. Export to JSON (in-memory string or written to disk)
+json_payload = players.to_json(indent=2)
+
+# 8. Print GitHub-flavored Markdown table
+print(players.to_markdown())
+```
+
+---
+
+## Model Context Protocol (MCP) Server
+
+VLRdevAPI includes a native MCP server for AI assistants and autonomous coding agents:
+
+```bash
+# Run server over stdio
+vlrdevapi-mcp
+
+# Or zero-install with uvx
+uvx --from "vlrdevapi[mcp]" vlrdevapi-mcp
+```
+
+### Claude Desktop & Cursor Integration
+
+Add to your `claude_desktop_config.json` or `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "vlrdevapi": {
+      "command": "uvx",
+      "args": ["--from", "vlrdevapi[mcp]", "vlrdevapi-mcp"]
+    }
+  }
+}
+```
+
+The MCP server provides **41 tools** covering matches, series, teams, players, tournaments, and editorial news, plus high-level composite tools (`get_match_full_context`, `get_team_overview`, `compare_teams`, `get_player_career_summary`, `get_h2h_matchup`, `get_tournament_dossier`, `get_live_and_upcoming_schedule`, `get_news_digest`, `series_map_summary`).
 
 ---
 

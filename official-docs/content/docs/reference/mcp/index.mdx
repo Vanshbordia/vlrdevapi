@@ -1,0 +1,196 @@
+---
+title: MCP Server (Model Context Protocol)
+description: Built-in Model Context Protocol server exposing 41 tools for AI assistants, Claude Desktop, Cursor, Zed, and autonomous agents.
+icon: Bot
+---
+
+VLRdevAPI includes a native **Model Context Protocol (MCP)** server that connects LLM applications, coding agents, and chat interfaces directly to live Valorant esports data from [vlr.gg](https://www.vlr.gg/).
+
+With 41 tools covering matches, series, teams, players, tournaments, editorial news, and high-level composite dossiers, AI models can inspect live schedules, calculate head-to-head records, analyze player agent ratings, and evaluate round-by-round economies without custom scraping code.
+
+---
+
+## Installation
+
+The MCP server is included as an optional dependency extra:
+
+```bash
+# Install with MCP dependencies
+pip install "vlrdevapi[mcp]"
+
+# Or install with all extras (pandas, polars, openpyxl, pyarrow, mcp)
+pip install "vlrdevapi[all]"
+```
+
+---
+
+## Running the Server
+
+The server communicates over standard input/output (`stdio`) using the MCP protocol.
+
+### Option 1: CLI Entry Point
+
+```bash
+vlrdevapi-mcp
+```
+
+### Option 2: Python Module
+
+```bash
+python -m vlrdevapi.mcp.server
+```
+
+### Option 3: Zero-Install via `uvx`
+
+```bash
+uvx --from "vlrdevapi[mcp]" vlrdevapi-mcp
+```
+
+---
+
+## Client Configuration
+
+### Claude Desktop
+
+Add `vlrdevapi` to your Claude Desktop configuration file:
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "vlrdevapi": {
+      "command": "uvx",
+      "args": ["--from", "vlrdevapi[mcp]", "vlrdevapi-mcp"]
+    }
+  }
+}
+```
+
+Or if installed in a local Python virtual environment:
+
+```json
+{
+  "mcpServers": {
+    "vlrdevapi": {
+      "command": "/path/to/venv/bin/vlrdevapi-mcp"
+    }
+  }
+}
+```
+
+### Cursor IDE
+
+In Cursor Settings &rarr; **Features** &rarr; **MCP Servers**, add a new server or configure `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "vlrdevapi": {
+      "command": "vlrdevapi-mcp"
+    }
+  }
+}
+```
+
+### Zed Editor
+
+In Zed's `settings.json`:
+
+```json
+{
+  "context_servers": {
+    "vlrdevapi": {
+      "command": "vlrdevapi-mcp"
+    }
+  }
+}
+```
+
+---
+
+## High-Level Composite Tools
+
+In addition to granular endpoints, VLRdevAPI provides 9 high-level composite tools designed specifically for multi-step agent reasoning, returning unified context in a single call:
+
+| Tool Name | Parameters | Description |
+|:---|:---|:---|
+| `get_match_full_context` | `series_id: int` | Aggregates match overview, player statistics, and streams/VODs into a single context payload. |
+| `get_team_overview` | `team_id: int` | Comprehensive dossier with team info, active roster, recent match results, upcoming schedule, and tournament placements. |
+| `compare_teams` | `team_id_1: int`, `team_id_2: int` | Side-by-side comparison of two teams (rosters, rankings, earnings, recent form). |
+| `get_player_career_summary` | `player_id: int` | Consolidated player dossier with biography, current teams, agent pool ratings, and placements. |
+| `get_h2h_matchup` | `team_id_1: int`, `team_id_2: int`, `limit: int = 50` | Full head-to-head match history between two organizations. |
+| `get_tournament_dossier` | `event_id: int` | Tournament overview combining participating teams, stages, and standings. |
+| `get_live_and_upcoming_schedule` | `limit: int = 15` | Combined live match ticker and upcoming schedule. |
+| `get_news_digest` | `limit: int = 5`, `include_top_article_body: bool = true` | Latest esports news digest with optional full Markdown body for the top story. |
+| `series_map_summary` | `series_id: int`, `game_id: str` | Deep single-map breakdown combining map economy, replay events, and player ratings. |
+
+---
+
+## Complete Tool Catalog
+
+### Matches
+
+- **`matches_upcoming(page: int = 1)`**: Fetch upcoming scheduled matches with team names, event details, and match times.
+- **`matches_live()`**: Fetch currently live matches with real-time scores, team names, and event info.
+- **`matches_completed(page: int = 1)`**: Fetch past completed match results with final scores, winners, and dates.
+
+### Series & Games
+
+- **`series_info(series_id: int)`**: Detailed match overview including teams, date, format, score, event, and map vetoes.
+- **`series_players(series_id: int, game_id: str = "all")`**: Player statistics for a series or specific map (ACS, K/D, ADR, KAST).
+- **`series_rounds(series_id: int, game_id: str)`**: Round-by-round results including round winner, win type, and economy.
+- **`series_performance(series_id: int, game_id: str = "all")`**: Kill matrix and head-to-head duels between players.
+- **`series_economy(series_id: int, game_id: str = "all")`**: Team economy data, bank reserves, loadout values, and buy types per round.
+- **`series_replay(series_id: int, game_id: str)`**: 2D spatial replay events, minimap coordinates, kill locations, and loadouts.
+- **`series_vods(series_id: int)`**: VOD links, broadcast streams, and timestamped match recordings.
+- **`series_map_summary(series_id: int, game_id: str)`**: Map-level summary combining economy, replay timeline, and player stats.
+
+### Teams
+
+- **`team_info(team_id: int)`**: Team profile details including name, tag, country, ranking, and social links.
+- **`team_roster(team_id: int)`**: Active team roster with player names, real names, and staff roles.
+- **`team_stats(team_id: int)`**: Map win rates, side win percentages (Attack/Defense), and pick frequencies.
+- **`team_completed_matches(team_id: int, page: int = 1)`**: Historical match results for a team.
+- **`team_upcoming_matches(team_id: int)`**: Upcoming scheduled fixtures for a team.
+- **`team_transactions(team_id: int)`**: Roster transactions, player additions, departures, and role transfers.
+- **`team_placements(team_id: int)`**: Tournament tournament results, placement finishes, and prize earnings.
+
+### Players
+
+- **`player_info(player_id: int)`**: Player profile including IGN, real name, country, and total tournament winnings.
+- **`player_teams(player_id: int)`**: Career team history, past organizations, and join/leave dates.
+- **`player_agents(player_id: int, timespan: str = "60d")`**: Agent statistics (ACS, K/D, ADR, KAST, pick rates) over a timespan.
+- **`player_matches(player_id: int, page: int = 1)`**: Match history for a player with individual ratings and scores.
+- **`player_profile(player_id: int)`**: Consolidated profile combining bio, current team, and top agents.
+- **`player_placements(player_id: int)`**: Tournament placements and prize earnings won by a player.
+
+### Events & Tournaments
+
+- **`events_list(tier: str = "all", status: str = "all", region: str = "all")`**: Browse tournaments by tier (vct, game-changers), region, and status.
+- **`event_info(event_id: int)`**: Tournament overview including prize pool, dates, location, and format.
+- **`event_stages(event_id: int)`**: Tournament stages and brackets (Group Stage, Playoffs, Lower Final).
+- **`event_teams(event_id: int)`**: Participating teams and qualified rosters in an event.
+- **`event_matches(event_id: int)`**: Scheduled and completed fixtures within a tournament.
+- **`event_standings(event_id: int)`**: Final tournament placements, rank orders, and prize payouts.
+
+### Editorial News
+
+- **`news_list(page: int = 1)`**: Latest news articles and headlines from the vlr.gg editorial desk.
+- **`news_article(article_id: int)`**: Full article content with title, author, publish date, and GitHub-flavored Markdown text.
+
+---
+
+## Response Serialization & Architecture
+
+All tool responses are serialized using VLRdevAPI's optimized `ExportableModel.to_dict()` and `ExportableModel.to_json()` methods. This delivers:
+
+1. **Lightweight JSON Payloads**: Direct serialization avoids bloated intermediate representations, minimizing token usage in LLM context windows.
+2. **Graceful Error Trapping**: Domain exceptions (such as `NotFoundError` or `ValidationError`) are caught and returned as structured JSON error responses rather than crashing the MCP connection:
+   ```json
+   {
+     "error": "NotFound",
+     "message": "Player with ID 99999999 not found"
+   }
+   ```
+3. **Strict Validation**: All input arguments conform to standard JSON Schemas generated from Pydantic types, ensuring reliable tool calling across Claude, GPT-4, and Gemini.

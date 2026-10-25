@@ -4,6 +4,7 @@ import { Faq } from '@/components/landing/faq';
 import { ModuleShowcase } from '@/components/landing/module-showcase';
 import { Hero } from '@/components/landing/home/hero';
 import { Features } from '@/components/landing/home/features';
+import { McpSection } from '@/components/landing/home/mcp-section';
 import { Integrations } from '@/components/landing/home/integrations';
 import { LatestPosts } from '@/components/landing/home/latest-posts';
 import { FinalCta } from '@/components/landing/home/final-cta';
@@ -18,6 +19,9 @@ export default function LandingPage() {
       <main id="main" tabIndex={-1} className="flex-1 bg-fd-canvas text-white">
         <Hero />
         <Features />
+
+        {/* Model Context Protocol (AI & Agents) */}
+        <McpSection />
 
         {/* Namespace showcase */}
         <section className="border-b border-white/10">
