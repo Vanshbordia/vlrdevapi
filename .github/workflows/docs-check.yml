@@ -22,7 +22,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install package
-        run: uv sync --group dev
+        run: uv sync --group dev --all-extras
 
       # Restore fixture cache scoped to the current ref (branch or main) and version prefix (v3).
       # This ensures caches are never shared across unrelated branches or older versions.

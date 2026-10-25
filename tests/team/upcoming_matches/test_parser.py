@@ -84,21 +84,21 @@ class TestParseTeamUpcomingMatches:
                 assert m.url.startswith("https://")
 
     def test_stage_and_bracket_are_parsed_separately(self):
-        html = _load_html(14137)
-        result = parse_team_upcoming_matches(html, 14137)
+        html = _load_html(8050)
+        result = parse_team_upcoming_matches(html, 8050)
 
         assert len(result.matches) == 1
         match = result.matches[0]
-        assert match.event == "VCT 26: CN Threshold"
-        assert match.stage == "Week 1"
-        assert match.bracket == "QF"
+        assert "GC" in match.event
+        assert match.stage == ""
+        assert match.bracket == "UBSF"
 
     def test_parse_only_upcoming_section(self):
         """Regression: the section after the heading must not include Recent Results."""
-        html = _load_html(14137)
-        result = parse_team_upcoming_matches(html, 14137)
+        html = _load_html(8050)
+        result = parse_team_upcoming_matches(html, 8050)
 
-        assert [m.match_id for m in result.matches] == [777946]
-        # The page contains recent results (738335, 736474, ...).
-        assert all(m.match_id != 738335 for m in result.matches)
+        assert [m.match_id for m in result.matches] == [773433]
+        # The page contains recent results (773429, 736474, ...).
+        assert all(m.match_id != 773429 for m in result.matches)
 

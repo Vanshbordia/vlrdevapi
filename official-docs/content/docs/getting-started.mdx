@@ -119,6 +119,7 @@ players = vlrdevapi.series(754737).players()
 
 # Export directly to pandas DataFrame
 df = players.to_df()
+print(f"Exported {len(df)} player records to DataFrame")
 
 # Or to native Polars DataFrame
 pl_df = players.to_polars()

@@ -64,12 +64,12 @@ class TestSyncModuleLevel:
         assert first_map.start_seconds == 132
 
     def test_upcoming_series_streams_without_vods(self, mock_vlr):
-        mock_vlr.get("/777946").respond(
-            200, text=load_fixture("series", "777946", "overview.html"),
+        mock_vlr.get("/773433").respond(
+            200, text=load_fixture("series", "773433", "overview.html"),
         )
 
-        result = vlrdevapi.series.vods(777946)
-        assert len(result.streams) == 7
+        result = vlrdevapi.series.vods(773433)
+        assert len(result.streams) == 113
         assert result.vods == []
 
         platforms = {stream.platform for stream in result.streams}

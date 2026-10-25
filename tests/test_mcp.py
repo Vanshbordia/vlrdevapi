@@ -146,3 +146,44 @@ def test_mcp_composite_tool_serialization() -> None:
         assert payload["overview"]["event"] == "VCT Masters"
         assert "player_statistics" in payload
         assert "vods" in payload
+
+
+def test_mcp_event_matches_stage_id_forwarding() -> None:
+    """Verify that event_matches tool calls matches with stage_id without TypeError."""
+    server = create_server()
+    with patch("vlrdevapi.event") as mock_event:
+        mock_ev = mock_event.return_value
+        mock_ev.matches.return_value.to_dict.return_value = {"matches": []}
+
+        result = asyncio.run(server.call_tool("event_matches", {"event_id": 100, "stage": "Playoffs"}))
+        assert result.content
+        mock_ev.matches.assert_called_once_with(stage_id="Playoffs", state="all")
+
+
+def test_mcp_team_stats_composition_translation() -> None:
+    """Verify that team_stats translates agent_composition='composition' to 'basic'."""
+    server = create_server()
+    with patch("vlrdevapi.team") as mock_team:
+        mock_t = mock_team.return_value
+        mock_t.stats.return_value.to_dict.return_value = {"stats": []}
+
+        result = asyncio.run(server.call_tool("team_stats", {"team_id": 100, "agent_composition": "composition"}))
+        assert result.content
+        mock_t.stats.assert_called_once_with(last_days=None, agent_composition="basic")
+
+
+def test_mcp_series_rounds_and_replay_integer_game_id() -> None:
+    """Verify that series_rounds and series_replay tools default to int map number."""
+    server = create_server()
+    with patch("vlrdevapi.series") as mock_series:
+        mock_s = mock_series.return_value
+        mock_s.rounds.return_value.to_dict.return_value = {"rounds": []}
+        mock_s.replay.return_value.to_dict.return_value = {"events": []}
+
+        res1 = asyncio.run(server.call_tool("series_rounds", {"series_id": 200}))
+        assert res1.content
+        mock_s.rounds.assert_called_once_with(game_id=1)
+
+        res2 = asyncio.run(server.call_tool("series_replay", {"series_id": 200}))
+        assert res2.content
+        mock_s.replay.assert_called_once_with(game_id=1)

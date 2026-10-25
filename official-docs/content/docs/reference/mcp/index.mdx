@@ -139,10 +139,10 @@ In addition to granular endpoints, VLRdevAPI provides 9 high-level composite too
 
 - **`series_info(series_id: int)`**: Detailed match overview including teams, date, format, score, event, and map vetoes.
 - **`series_players(series_id: int, game_id: str = "all")`**: Player statistics for a series or specific map (ACS, K/D, ADR, KAST).
-- **`series_rounds(series_id: int, game_id: str)`**: Round-by-round results including round winner, win type, and economy.
+- **`series_rounds(series_id: int, game_id: int = 1)`**: Round-by-round results including round winner, win type, and economy for a map.
 - **`series_performance(series_id: int, game_id: str = "all")`**: Kill matrix and head-to-head duels between players.
 - **`series_economy(series_id: int, game_id: str = "all")`**: Team economy data, bank reserves, loadout values, and buy types per round.
-- **`series_replay(series_id: int, game_id: str)`**: 2D spatial replay events, minimap coordinates, kill locations, and loadouts.
+- **`series_replay(series_id: int, game_id: int = 1)`**: 2D spatial replay events, minimap coordinates, kill locations, and loadouts.
 - **`series_vods(series_id: int)`**: VOD links, broadcast streams, and timestamped match recordings.
 - **`series_map_summary(series_id: int, game_id: str)`**: Map-level summary combining economy, replay timeline, and player stats.
 
@@ -150,29 +150,29 @@ In addition to granular endpoints, VLRdevAPI provides 9 high-level composite too
 
 - **`team_info(team_id: int)`**: Team profile details including name, tag, country, ranking, and social links.
 - **`team_roster(team_id: int)`**: Active team roster with player names, real names, and staff roles.
-- **`team_stats(team_id: int)`**: Map win rates, side win percentages (Attack/Defense), and pick frequencies.
-- **`team_completed_matches(team_id: int, page: int = 1)`**: Historical match results for a team.
+- **`team_stats(team_id: int, last_days: int | None = None, agent_composition: str = "none")`**: Map win rates, side win percentages (Attack/Defense), and agent compositions.
+- **`team_completed_matches(team_id: int, limit: int = 50, return_all: bool = false)`**: Historical match results for a team.
 - **`team_upcoming_matches(team_id: int)`**: Upcoming scheduled fixtures for a team.
 - **`team_transactions(team_id: int)`**: Roster transactions, player additions, departures, and role transfers.
-- **`team_placements(team_id: int)`**: Tournament tournament results, placement finishes, and prize earnings.
+- **`team_placements(team_id: int)`**: Tournament results, placement finishes, and prize earnings.
 
 ### Players
 
 - **`player_info(player_id: int)`**: Player profile including IGN, real name, country, and total tournament winnings.
 - **`player_teams(player_id: int)`**: Career team history, past organizations, and join/leave dates.
-- **`player_agents(player_id: int, timespan: str = "60d")`**: Agent statistics (ACS, K/D, ADR, KAST, pick rates) over a timespan.
+- **`player_agents(player_id: int, timespan: str = "all")`**: Agent statistics (ACS, K/D, ADR, KAST, pick rates) over a timespan.
 - **`player_matches(player_id: int, page: int = 1)`**: Match history for a player with individual ratings and scores.
 - **`player_profile(player_id: int)`**: Consolidated profile combining bio, current team, and top agents.
 - **`player_placements(player_id: int)`**: Tournament placements and prize earnings won by a player.
 
 ### Events & Tournaments
 
-- **`events_list(tier: str = "all", status: str = "all", region: str = "all")`**: Browse tournaments by tier (vct, game-changers), region, and status.
+- **`events_list(page: int = 1, tier: str = "all", region: str = "all", status: str | None = None)`**: Browse tournaments by tier (`vct`, `vcl`, `gc`, `t3`), region (`americas`, `emea`, `pacific`, `china`), and status (`ongoing`, `upcoming`, `completed`).
 - **`event_info(event_id: int)`**: Tournament overview including prize pool, dates, location, and format.
 - **`event_stages(event_id: int)`**: Tournament stages and brackets (Group Stage, Playoffs, Lower Final).
 - **`event_teams(event_id: int)`**: Participating teams and qualified rosters in an event.
-- **`event_matches(event_id: int)`**: Scheduled and completed fixtures within a tournament.
-- **`event_standings(event_id: int)`**: Final tournament placements, rank orders, and prize payouts.
+- **`event_matches(event_id: int, stage: str | None = None, state: str = "all")`**: Scheduled and completed fixtures within a tournament.
+- **`event_standings(event_id: int, stage: str | None = None)`**: Final tournament placements, rank orders, and prize payouts.
 
 ### Editorial News
 

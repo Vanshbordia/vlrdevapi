@@ -1978,16 +1978,22 @@ all = [
     { name = "pyarrow" },
 ]
 arrow = [
+    { name = "pandas" },
     { name = "pyarrow" },
 ]
 excel = [
     { name = "openpyxl" },
+    { name = "pandas" },
 ]
 mcp = [
     { name = "mcp" },
 ]
 pandas = [
     { name = "pandas" },
+]
+parquet = [
+    { name = "pandas" },
+    { name = "pyarrow" },
 ]
 polars = [
     { name = "polars" },
@@ -2019,18 +2025,22 @@ requires-dist = [
     { name = "openpyxl", marker = "extra == 'all'", specifier = ">=3.1.0" },
     { name = "openpyxl", marker = "extra == 'excel'", specifier = ">=3.1.0" },
     { name = "pandas", marker = "extra == 'all'", specifier = ">=2.0.0" },
+    { name = "pandas", marker = "extra == 'arrow'", specifier = ">=2.0.0" },
+    { name = "pandas", marker = "extra == 'excel'", specifier = ">=2.0.0" },
     { name = "pandas", marker = "extra == 'pandas'", specifier = ">=2.0.0" },
+    { name = "pandas", marker = "extra == 'parquet'", specifier = ">=2.0.0" },
     { name = "polars", marker = "extra == 'all'", specifier = ">=1.0.0" },
     { name = "polars", marker = "extra == 'polars'", specifier = ">=1.0.0" },
     { name = "pyarrow", marker = "extra == 'all'", specifier = ">=14.0.0" },
     { name = "pyarrow", marker = "extra == 'arrow'", specifier = ">=14.0.0" },
+    { name = "pyarrow", marker = "extra == 'parquet'", specifier = ">=14.0.0" },
     { name = "pydantic", specifier = ">=2.14.1" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=9.1.1" },
     { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=7.1.0" },
     { name = "respx", marker = "extra == 'test'", specifier = ">=0.23.1" },
     { name = "selectolax", specifier = ">=1.0.0" },
 ]
-provides-extras = ["test", "mcp", "pandas", "polars", "excel", "arrow", "all"]
+provides-extras = ["test", "mcp", "pandas", "polars", "excel", "parquet", "arrow", "all"]
 
 [package.metadata.requires-dev]
 dev = [

@@ -36,16 +36,17 @@ def register_teams_tools(server: MCPServer) -> None:
     def team_stats(
         team_id: int,
         last_days: int | None = None,
-        agent_composition: Literal["none", "composition", "detailed"] = "none",
+        agent_composition: Literal["none", "basic", "detailed", "composition"] = "none",
     ) -> str:
         """Get map-level statistics, win rates, and agent composition data for a team.
 
         Args:
             team_id: Unique VLR.gg team ID.
             last_days: Optional filter for recent activity (e.g. 30, 60, 90 days).
-            agent_composition: Detail level for agent compositions: 'none', 'composition', or 'detailed'.
+            agent_composition: Detail level for agent compositions: 'none', 'basic', or 'detailed'.
         """
-        return vlrdevapi.team(team_id).stats(last_days=last_days, agent_composition=agent_composition)
+        comp = "basic" if agent_composition == "composition" else agent_composition
+        return vlrdevapi.team(team_id).stats(last_days=last_days, agent_composition=comp)
 
     @server.tool()
     @handle_errors

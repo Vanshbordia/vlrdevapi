@@ -60,7 +60,7 @@ def _require_pyarrow() -> Any:
     except ImportError:
         raise MissingDependencyError(
             "pyarrow is required for Parquet (.parquet) export. "
-            "Install it via: pip install 'vlrdevapi[arrow]' or uv add 'vlrdevapi[arrow]'"
+            "Install it via: pip install 'vlrdevapi[parquet]' (or 'vlrdevapi[arrow]') or uv add 'vlrdevapi[parquet]'"
         ) from None
 
 
@@ -147,18 +147,25 @@ def records_to_markdown(records: list[dict[str, Any]], columns: list[str] | None
     if not columns:
         return ""
 
+    def _escape_md(s: str) -> str:
+        return s.replace("|", "\\|")
+
     def _format_md_val(val: Any) -> str:
         if val is None:
             return ""
         if isinstance(val, (list, tuple)):
             if all(isinstance(x, (str, int, float)) for x in val):
-                return ", ".join(str(x) for x in val)
-            return json.dumps(val)
-        if isinstance(val, dict):
-            return json.dumps(val)
-        return str(val).replace("\n", " ").strip()
+                res = ", ".join(str(x) for x in val)
+            else:
+                res = json.dumps(val)
+        elif isinstance(val, dict):
+            res = json.dumps(val)
+        else:
+            res = str(val).replace("\n", " ").strip()
+        return _escape_md(res)
 
-    widths = {col: max(len(str(col)), 3) for col in columns}
+    escaped_columns = [_escape_md(str(c)) for c in columns]
+    widths = {col: max(len(esc_col), 3) for col, esc_col in zip(columns, escaped_columns)}
     formatted_rows: list[list[str]] = []
     for r in records:
         row_vals: list[str] = []
@@ -168,7 +175,7 @@ def records_to_markdown(records: list[dict[str, Any]], columns: list[str] | None
             row_vals.append(val_str)
         formatted_rows.append(row_vals)
 
-    header_line = "| " + " | ".join(col.ljust(widths[col]) for col in columns) + " |"
+    header_line = "| " + " | ".join(esc_col.ljust(widths[col]) for col, esc_col in zip(columns, escaped_columns)) + " |"
     separator_line = "| " + " | ".join("-" * widths[col] for col in columns) + " |"
     data_lines = [
         "| " + " | ".join(val.ljust(widths[col]) for col, val in zip(columns, row)) + " |"
@@ -266,10 +273,16 @@ class ExportableModel(BaseModel):
         pl = _require_polars()
         return pl.DataFrame(self.to_records(**kwargs))
 
-    def to_excel(self, path: str | Path, **kwargs: Any) -> None:
+    def to_excel(
+        self,
+        path: str | Path,
+        sheet_name: str = "Sheet1",
+        index: bool = False,
+        **kwargs: Any,
+    ) -> None:
         """Export tabular records to an Excel (.xlsx) file.
 
-        Requires openpyxl and pandas. Install with: pip install 'vlrdevapi[excel,pandas]'
+        Requires openpyxl and pandas. Install with: pip install 'vlrdevapi[excel]'
         """
         _require_openpyxl()
         df = self.to_df(**kwargs)
@@ -281,13 +294,13 @@ class ExportableModel(BaseModel):
                 df[col] = df[col].apply(
                     lambda v: v.replace(tzinfo=None) if hasattr(v, "tzinfo") and v.tzinfo is not None else v
                 )
-        df.to_excel(path, index=False, engine="openpyxl")
+        df.to_excel(path, sheet_name=sheet_name, index=index, engine="openpyxl")
 
-    def to_parquet(self, path: str | Path, **kwargs: Any) -> None:
+    def to_parquet(self, path: str | Path, index: bool = False, **kwargs: Any) -> None:
         """Export tabular records to an Apache Parquet (.parquet) file.
 
-        Requires pyarrow and pandas. Install with: pip install 'vlrdevapi[arrow,pandas]'
+        Requires pyarrow and pandas. Install with: pip install 'vlrdevapi[parquet]'
         """
         _require_pyarrow()
         df = self.to_df(**kwargs)
-        df.to_parquet(path, index=False, engine="pyarrow")
+        df.to_parquet(path, index=index, engine="pyarrow")

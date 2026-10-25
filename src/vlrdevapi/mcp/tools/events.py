@@ -56,7 +56,7 @@ def register_events_tools(server: MCPServer) -> None:
             stage: Optional stage name or slug to filter.
             state: Match status filter: 'all', 'upcoming', or 'completed'.
         """
-        return vlrdevapi.event(event_id).matches(stage=stage, state=state)
+        return vlrdevapi.event(event_id).matches(stage_id=stage, state=state)
 
     @server.tool()
     @handle_errors
@@ -73,16 +73,16 @@ def register_events_tools(server: MCPServer) -> None:
     @handle_errors
     def events_list(
         page: int = 1,
-        tier: str = "all",
-        region: str = "all",
-        status: str | None = None,
+        tier: Literal["all", "vct", "vcl", "t3", "gc", "collegiate", "offseason"] = "all",
+        region: Literal["all", "americas", "emea", "pacific", "china"] = "all",
+        status: Literal["ongoing", "upcoming", "completed", "paused"] | None = None,
     ) -> str:
         """Browse tournament listings filtered by tier, region, and status.
 
         Args:
             page: Page number (1-indexed). Defaults to 1.
-            tier: Event tier filter (e.g. 'all', 'vct', 'gc', 'challengers').
-            region: Region filter (e.g. 'all', 'na', 'eu', 'ap', 'sa', 'oceania').
-            status: Status filter: 'all', 'ongoing', 'upcoming', or 'completed'.
+            tier: Event tier: 'all', 'vct', 'vcl', 't3', 'gc', 'collegiate', or 'offseason'.
+            region: Region: 'all', 'americas', 'emea', 'pacific', or 'china'.
+            status: Optional status: 'ongoing', 'upcoming', 'completed', or 'paused'. Leave None for all.
         """
-        return vlrdevapi.event.list(page=page, tier=tier, region=region, status=status)  # type: ignore[arg-type]
+        return vlrdevapi.event.list(page=page, tier=tier, region=region, status=status)

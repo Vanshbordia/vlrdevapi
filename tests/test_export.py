@@ -461,3 +461,66 @@ def test_excel_export_roundtrip(tmp_path: Path) -> None:
         assert df.iloc[0]["winner_name"] == "SEN"
     except ImportError:
         pass
+
+
+def test_records_to_markdown_pipe_escaping() -> None:
+    """Verify that pipe characters inside cells and columns are properly escaped with backslash."""
+    records = [
+        {"title": "SEN vs FNC | Map 1 Highlights | Grand Final", "note": "score: 13 | 11"},
+        {"title": "Normal title", "note": "clean note"},
+    ]
+    md = records_to_markdown(records)
+    lines = md.strip().split("\n")
+    assert len(lines) == 4
+    assert r"SEN vs FNC \| Map 1 Highlights \| Grand Final" in lines[2]
+    assert r"score: 13 \| 11" in lines[2]
+
+
+def test_excel_sheet_name_support(tmp_path: Path) -> None:
+    """Verify that to_excel respects the custom sheet_name parameter."""
+    try:
+        import openpyxl
+        import pandas as pd
+        model = RoundsData(
+            series_id=99,
+            game_id=1,
+            team1="SEN",
+            team1_id=1,
+            team2="FNC",
+            team2_id=2,
+            rounds=[
+                RoundData(
+                    round_number=1,
+                    winner_team_name="SEN",
+                    winner_team_id=1,
+                    win_type=RoundWinType.ELIMINATION,
+                    side="Attack",
+                    team1_score=1,
+                    team2_score=0,
+                )
+            ],
+        )
+        xlsx_path = tmp_path / "custom_sheet.xlsx"
+        model.to_excel(xlsx_path, sheet_name="PlayerStats")
+        assert xlsx_path.exists()
+        wb = openpyxl.load_workbook(xlsx_path)
+        assert "PlayerStats" in wb.sheetnames
+    except ImportError:
+        pass
+
+
+def test_empty_buy_tier_does_not_crash_buy_matrix_export() -> None:
+    """Verify that EconomyData with None or empty buy matrix does not raise AttributeError."""
+    model = EconomyData(
+        series_id=500,
+        game_id=1,
+        team1="SEN",
+        team1_id=1,
+        team2="FNC",
+        team2_id=2,
+        buy_matrix_team1=None,
+        buy_matrix_team2=None,
+        rounds=[],
+    )
+    records = model.to_records(view="buy_matrix")
+    assert records == []

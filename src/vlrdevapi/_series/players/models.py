@@ -173,6 +173,7 @@ class PlayersStats(ExportableModel):
                             "team_tag": t_tag,
                             "player_id": p.player_id,
                             "name": p.name,
+                            "player_name": p.name,
                             "country_code": p.country_code or None,
                             "country": p.country or None,
                             "primary_agent": p.agents[0] if p.agents else None,
@@ -181,12 +182,18 @@ class PlayersStats(ExportableModel):
                             "url": f"https://www.vlr.gg/{self.series_id or g.series_id}",
                         }
                         if side_stat is not None:
+                            kd_val = (
+                                round(side_stat.kills / side_stat.deaths, 2)
+                                if (side_stat.deaths and side_stat.deaths > 0)
+                                else (float(side_stat.kills) if side_stat.kills else 0.0)
+                            )
                             rec.update({
                                 "rating": side_stat.rating,
                                 "acs": side_stat.acs,
                                 "kills": side_stat.kills,
                                 "deaths": side_stat.deaths,
                                 "assists": side_stat.assists,
+                                "kd": kd_val,
                                 "kd_diff": side_stat.kd_diff,
                                 "kast": side_stat.kast,
                                 "adr": side_stat.adr,
@@ -216,6 +223,7 @@ class PlayersStats(ExportableModel):
                         "team_tag": t_tag,
                         "player_id": p.player_id,
                         "name": p.name,
+                        "player_name": p.name,
                         "country_code": p.country_code or None,
                         "country": p.country or None,
                         "primary_agent": p.agents[0] if p.agents else None,
@@ -227,6 +235,11 @@ class PlayersStats(ExportableModel):
                         "kills": ov.kills if ov else None,
                         "deaths": ov.deaths if ov else None,
                         "assists": ov.assists if ov else None,
+                        "kd": (
+                            round(ov.kills / ov.deaths, 2)
+                            if (ov and ov.deaths and ov.deaths > 0)
+                            else (float(ov.kills) if (ov and ov.kills) else 0.0)
+                        ),
                         "kd_diff": ov.kd_diff if ov else None,
                         "kast": ov.kast if ov else None,
                         "adr": ov.adr if ov else None,

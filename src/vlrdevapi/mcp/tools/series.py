@@ -33,15 +33,14 @@ def register_series_tools(server: MCPServer) -> None:
 
     @server.tool()
     @handle_errors
-    def series_rounds(series_id: int, game_id: str = "all") -> str:
+    def series_rounds(series_id: int, game_id: int = 1) -> str:
         """Get round-by-round breakdown (win type, defuse/plant events, attacking/defending side).
 
         Args:
             series_id: Unique VLR.gg series ID.
-            game_id: Specific game map number (e.g. '1', '2') or 'all'.
+            game_id: Specific game map number (1-indexed, e.g. 1 for Map 1). Defaults to 1.
         """
-        target_game = int(game_id) if game_id.isdigit() else game_id
-        return vlrdevapi.series(series_id).rounds(game_id=target_game)
+        return vlrdevapi.series(series_id).rounds(game_id=int(game_id))
 
     @server.tool()
     @handle_errors
@@ -69,15 +68,14 @@ def register_series_tools(server: MCPServer) -> None:
 
     @server.tool()
     @handle_errors
-    def series_replay(series_id: int, game_id: str = "all") -> str:
+    def series_replay(series_id: int, game_id: int = 1) -> str:
         """Get 2D kill-feed replay timeline with spatial (x, y) coordinates, angles, and player loadouts.
 
         Args:
             series_id: Unique VLR.gg series ID.
-            game_id: Specific game map number (e.g. '1', '2') or 'all'.
+            game_id: Specific game map number (1-indexed, e.g. 1 for Map 1). Defaults to 1.
         """
-        target_game = int(game_id) if game_id.isdigit() else game_id
-        return vlrdevapi.series(series_id).replay(game_id=target_game)
+        return vlrdevapi.series(series_id).replay(game_id=int(game_id))
 
     @server.tool()
     @handle_errors
@@ -101,7 +99,7 @@ def register_series_tools(server: MCPServer) -> None:
         target_game = int(game_id) if game_id.isdigit() else game_id
         match = vlrdevapi.series(series_id)
         return {
-            "players": match.players(game_id=target_game).to_dict(),
-            "rounds": match.rounds(game_id=target_game).to_dict(),
-            "economy": match.economy(game_id=target_game).to_dict(),
+            "players": match.players(game_id=target_game).to_dict(orient="model"),
+            "rounds": match.rounds(game_id=target_game).to_dict(orient="model"),
+            "economy": match.economy(game_id=target_game).to_dict(orient="model"),
         }

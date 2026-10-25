@@ -61,9 +61,15 @@ polars = [
 ]
 excel = [
     "openpyxl>=3.1.0",
+    "pandas>=2.0.0",
+]
+parquet = [
+    "pyarrow>=14.0.0",
+    "pandas>=2.0.0",
 ]
 arrow = [
     "pyarrow>=14.0.0",
+    "pandas>=2.0.0",
 ]
 all = [
     "mcp>=1.0.0",

@@ -196,11 +196,11 @@ class EconomyData(ExportableModel):
         default_factory=list,
         description="List of economy data for each round",
     )
-    buy_matrix_team1: TeamBuyMatrix = Field(
+    buy_matrix_team1: TeamBuyMatrix | None = Field(
         default_factory=TeamBuyMatrix,
         description="Full buy-type matrix for team 1 (summary + per-tier records).",
     )
-    buy_matrix_team2: TeamBuyMatrix = Field(
+    buy_matrix_team2: TeamBuyMatrix | None = Field(
         default_factory=TeamBuyMatrix,
         description="Full buy-type matrix for team 2 (summary + per-tier records).",
     )
@@ -241,12 +241,14 @@ class EconomyData(ExportableModel):
                 (t1_name, self.team1_id, self.buy_matrix_team1),
                 (t2_name, self.team2_id, self.buy_matrix_team2),
             ):
+                if not matrix:
+                    continue
                 for tier_name, tier_record in (
                     ("Eco", matrix.eco),
                     ("Half-buy", matrix.half_buy),
                     ("Full-buy", matrix.full_buy),
                 ):
-                    total = tier_record.total
+                    total = tier_record.total if tier_record else None
                     records.append({
                         "series_id": self.series_id,
                         "game_id": self.game_id,

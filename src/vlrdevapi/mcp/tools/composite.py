@@ -29,9 +29,9 @@ def register_composite_tools(server: MCPServer) -> None:
         vods = match.vods()
 
         return {
-            "overview": info.to_dict(),
-            "player_statistics": players.to_dict(),
-            "vods": vods.to_dict(),
+            "overview": info.to_dict(orient="model"),
+            "player_statistics": players.to_dict(orient="model"),
+            "vods": vods.to_dict(orient="model"),
         }
 
     @server.tool()
@@ -49,10 +49,10 @@ def register_composite_tools(server: MCPServer) -> None:
         placements = team.placements()
 
         return {
-            "info": info.to_dict(),
-            "roster": roster.to_dict(),
-            "upcoming_matches": upcoming.to_dict(),
-            "placements": placements.to_dict(),
+            "info": info.to_dict(orient="model"),
+            "roster": roster.to_dict(orient="model"),
+            "upcoming_matches": upcoming.to_dict(orient="model"),
+            "placements": placements.to_dict(orient="model"),
         }
 
     @server.tool()
@@ -72,14 +72,14 @@ def register_composite_tools(server: MCPServer) -> None:
 
         return {
             "team_1": {
-                "info": t1.info().to_dict(),
-                "roster": t1.roster().to_dict(),
-                "stats": t1.stats(last_days=last_days).to_dict(),
+                "info": t1.info().to_dict(orient="model"),
+                "roster": t1.roster().to_dict(orient="model"),
+                "stats": t1.stats(last_days=last_days).to_dict(orient="model"),
             },
             "team_2": {
-                "info": t2.info().to_dict(),
-                "roster": t2.roster().to_dict(),
-                "stats": t2.stats(last_days=last_days).to_dict(),
+                "info": t2.info().to_dict(orient="model"),
+                "roster": t2.roster().to_dict(orient="model"),
+                "stats": t2.stats(last_days=last_days).to_dict(orient="model"),
             },
         }
 
@@ -95,10 +95,10 @@ def register_composite_tools(server: MCPServer) -> None:
         """
         p = vlrdevapi.player(player_id)
         return {
-            "profile": p.profile().to_dict(),
-            "agent_stats": p.agents(timespan="all").to_dict(),
-            "placements": p.placements().to_dict(),
-            "teams_history": p.teams().to_dict(),
+            "profile": p.profile().to_dict(orient="model"),
+            "agent_stats": p.agents(timespan="all").to_dict(orient="model"),
+            "placements": p.placements().to_dict(orient="model"),
+            "teams_history": p.teams().to_dict(orient="model"),
         }
 
     @server.tool()
@@ -135,10 +135,10 @@ def register_composite_tools(server: MCPServer) -> None:
         """
         ev = vlrdevapi.event(event_id)
         return {
-            "info": ev.info().to_dict(),
-            "stages": ev.stages().to_dict(),
-            "standings": ev.standings().to_dict(),
-            "teams": ev.teams().to_dict(),
+            "info": ev.info().to_dict(orient="model"),
+            "stages": ev.stages().to_dict(orient="model"),
+            "standings": ev.standings().to_dict(orient="model"),
+            "teams": ev.teams().to_dict(orient="model"),
         }
 
     @server.tool()
@@ -153,7 +153,7 @@ def register_composite_tools(server: MCPServer) -> None:
         upcoming = vlrdevapi.matches.upcoming()
         up_records = upcoming.to_records()[:limit] if hasattr(upcoming, "to_records") else []
         return {
-            "live_matches": live.to_dict(),
+            "live_matches": live.to_dict(orient="model"),
             "upcoming_matches": up_records,
         }
 
@@ -172,7 +172,7 @@ def register_composite_tools(server: MCPServer) -> None:
         if include_top_article_body and news_recs:
             top_id = news_recs[0].get("id")
             if top_id:
-                top_article = vlrdevapi.news.article(top_id).to_dict()
+                top_article = vlrdevapi.news.article(top_id).to_dict(orient="model")
         return {
             "headlines": news_recs,
             "latest_full_article": top_article,

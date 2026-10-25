@@ -27,7 +27,7 @@ from vlrdevapi.exceptions import (
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-def serialize(result: Any, orient: str = "records") -> str:
+def serialize(result: Any, orient: str = "model") -> str:
     """Serialize vlrdevapi models, dicts, lists, or primitive objects to JSON."""
     if isinstance(result, ExportableModel):
         return result.to_json(indent=2, orient=orient) or ""
