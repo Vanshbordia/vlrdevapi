@@ -1,7 +1,7 @@
 ---
 icon: lucide/bot
 title: MCP Server
-description: Model Context Protocol (MCP) server for VLRdevAPI, exposing 41 tools for Claude Desktop, Cursor, Zed, and AI coding assistants.
+description: Model Context Protocol (MCP) server for VLRdevAPI, exposing 40 tools for Claude Desktop, Cursor, Zed, and AI coding assistants.
 ---
 
 # MCP Server
@@ -34,7 +34,7 @@ uvx --from "vlrdevapi[mcp]" vlrdevapi-mcp
 
 ## Server Tools
 
-The MCP server exposes 41 tools covering:
+The MCP server exposes 40 tools covering:
 - **Matches**: `matches_upcoming`, `matches_live`, `matches_completed`
 - **Series**: `series_info`, `series_players`, `series_rounds`, `series_performance`, `series_economy`, `series_replay`, `series_vods`, `series_map_summary`
 - **Teams**: `team_info`, `team_roster`, `team_stats`, `team_completed_matches`, `team_upcoming_matches`, `team_transactions`, `team_placements`

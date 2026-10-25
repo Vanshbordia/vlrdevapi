@@ -11,7 +11,7 @@ const faqs = [
   {
     question: 'Can I connect VLRdevAPI to Claude Desktop, Cursor, or AI coding agents?',
     answer:
-      'Yes! VLRdevAPI includes a native Model Context Protocol (MCP) server. Run "claude mcp add vlrdevapi -- uvx --from \\"vlrdevapi[mcp]\\" vlrdevapi-mcp" or drop the JSON config into Cursor, Windsurf, Claude Desktop, or custom agent runners. Your assistant gains 41 tools covering match schedules, live scores, player stats, and round-by-round replay timelines without writing any scraping code.',
+      'Yes! VLRdevAPI includes a native Model Context Protocol (MCP) server. Run "claude mcp add vlrdevapi -- uvx --from \\"vlrdevapi[mcp]\\" vlrdevapi-mcp" or drop the JSON config into Cursor, Windsurf, Claude Desktop, or custom agent runners. Your assistant gains 40 tools covering match schedules, live scores, player stats, and round-by-round replay timelines without writing any scraping code.',
   },
   {
     question: 'Do I need to host an MCP server or manage background processes?',

@@ -46,7 +46,7 @@ class EventStages(ExportableModel):
         """Convert event stages to tabular records."""
         records: list[dict[str, Any]] = []
         for s in self.stages:
-            stage_id = int(s.id) if (s.id and s.id.isdigit()) else (s.id or None)
+            stage_id = s.id or None
             records.append({
                 "stage_id": stage_id,
                 "stage_name": s.name or "All",

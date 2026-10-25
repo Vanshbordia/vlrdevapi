@@ -9,7 +9,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/vlrdevapi.svg)](https://pypi.org/project/vlrdevapi/)
 [![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14%20%7C%203.15-blue.svg)](https://pypi.org/project/vlrdevapi/)
 [![Status: Stable](https://img.shields.io/badge/status-stable-brightgreen.svg)](https://pypi.org/project/vlrdevapi/)
-[![MCP Server](https://img.shields.io/badge/MCP-41%20tools-red.svg)](https://vlrdevapi.pages.dev/docs/mcp/)
+[![MCP Server](https://img.shields.io/badge/MCP-40%20tools-red.svg)](https://vlrdevapi.pages.dev/docs/mcp/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/badge/docs-vlrdevapi.pages.dev-blue.svg)](https://vlrdevapi.pages.dev/docs/)
 
@@ -28,7 +28,7 @@ Whether you need live match tickers, tournament brackets, historical player rati
 ## Highlights
 
 - **Universal Tabular Data Exports** — Seamlessly export any response into `pandas.DataFrame` (`.to_df()`), native `polars.DataFrame` (`.to_polars()`), `CSV` (`.to_csv()`), `Apache Parquet` (`.to_parquet()`), `Excel` (`.to_excel()`), formatted `JSON` (`.to_json()`), and `Markdown` (`.to_markdown()`).
-- **Model Context Protocol (MCP) Server** — Connect Claude Desktop, Cursor, Zed, and AI agents directly to live Valorant data via the built-in `vlrdevapi-mcp` stdio server with 41 tools.
+- **Model Context Protocol (MCP) Server** — Connect Claude Desktop, Cursor, Zed, and AI agents directly to live Valorant data via the built-in `vlrdevapi-mcp` stdio server with 40 tools.
 - **Complete Valorant Esports Coverage** — Tournaments, match schedules, live scoreboards, player careers, team rosters, roster transactions, and esports news.
 - **2D Kill-Feed Replay Timelines** — Spatial `(x, y)` kill coordinates, viewing angles, kill distances, plant/defuse events, spike detonations (`boom`), resurrections, alive player snapshots, and buy-phase **player loadouts** (weapons, shields, spent credits, remaining bank).
 - **Round-by-Round Economy** — Full team buy matrices (`loadout_value`, `spent`, `bank`, buy classifications like `Eco`, `Anti-eco`, `Semi-buy`, `Semi-rifle`, and `Full buy`).
@@ -277,7 +277,7 @@ players = vlrdevapi.series(754737).players()
 
 # 2. Convert to pandas DataFrame
 df = players.to_df()
-print(df[["player_name", "team_name", "rating", "acs", "kd"]].head())
+print(df[["name", "team_name", "rating", "acs", "kills", "deaths"]].head())
 
 # 3. Convert to Polars DataFrame (preserving typed list columns)
 polars_df = players.to_polars()
@@ -327,7 +327,7 @@ Add to your `claude_desktop_config.json` or `.cursor/mcp.json`:
 }
 ```
 
-The MCP server provides **41 tools** covering matches, series, teams, players, tournaments, and editorial news, plus high-level composite tools (`get_match_full_context`, `get_team_overview`, `compare_teams`, `get_player_career_summary`, `get_h2h_matchup`, `get_tournament_dossier`, `get_live_and_upcoming_schedule`, `get_news_digest`, `series_map_summary`).
+The MCP server provides **40 tools** covering matches, series, teams, players, tournaments, and editorial news, plus high-level composite tools (`get_match_full_context`, `get_team_overview`, `compare_teams`, `get_player_career_summary`, `get_h2h_matchup`, `get_tournament_dossier`, `get_live_and_upcoming_schedule`, `get_news_digest`, `series_map_summary`).
 
 ---
 
@@ -335,7 +335,7 @@ The MCP server provides **41 tools** covering matches, series, teams, players, t
 
 ### Rate Limiting & Concurrency
 
-`vlrdevapi` includes sensible defaults (`4.0` requests per second) to respect VLR.gg servers. When using `VLRClient`, you can customize client settings:
+`vlrdevapi` includes sensible defaults (`3.0` requests per second) to respect VLR.gg servers. When using `VLRClient`, you can customize client settings:
 
 ```python
 from zoneinfo import ZoneInfo

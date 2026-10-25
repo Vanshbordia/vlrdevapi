@@ -1,12 +1,12 @@
 ---
 title: MCP Server (Model Context Protocol)
-description: Built-in Model Context Protocol server exposing 41 tools for AI assistants, Claude Desktop, Cursor, Zed, and autonomous agents.
+description: Built-in Model Context Protocol server exposing 40 tools for AI assistants, Claude Desktop, Cursor, Zed, and autonomous agents.
 icon: Bot
 ---
 
 VLRdevAPI includes a native **Model Context Protocol (MCP)** server that connects LLM applications, coding agents, and chat interfaces directly to live Valorant esports data from [vlr.gg](https://www.vlr.gg/).
 
-With 41 tools covering matches, series, teams, players, tournaments, editorial news, and high-level composite dossiers, AI models can inspect live schedules, calculate head-to-head records, analyze player agent ratings, and evaluate round-by-round economies without custom scraping code.
+With 40 tools covering matches, series, teams, players, tournaments, editorial news, and high-level composite dossiers, AI models can inspect live schedules, calculate head-to-head records, analyze player agent ratings, and evaluate round-by-round economies without custom scraping code.
 
 ---
 
@@ -111,7 +111,7 @@ In Zed's `settings.json`:
 
 ## High-Level Composite Tools
 
-In addition to granular endpoints, VLRdevAPI provides 9 high-level composite tools designed specifically for multi-step agent reasoning, returning unified context in a single call:
+In addition to granular endpoints, VLRdevAPI provides 8 high-level composite tools designed specifically for multi-step agent reasoning, returning unified context in a single call:
 
 | Tool Name | Parameters | Description |
 |:---|:---|:---|
@@ -123,7 +123,6 @@ In addition to granular endpoints, VLRdevAPI provides 9 high-level composite too
 | `get_tournament_dossier` | `event_id: int` | Tournament overview combining participating teams, stages, and standings. |
 | `get_live_and_upcoming_schedule` | `limit: int = 15` | Combined live match ticker and upcoming schedule. |
 | `get_news_digest` | `limit: int = 5`, `include_top_article_body: bool = true` | Latest esports news digest with optional full Markdown body for the top story. |
-| `series_map_summary` | `series_id: int`, `game_id: str` | Deep single-map breakdown combining map economy, replay events, and player ratings. |
 
 ---
 
@@ -131,9 +130,9 @@ In addition to granular endpoints, VLRdevAPI provides 9 high-level composite too
 
 ### Matches
 
-- **`matches_upcoming(page: int = 1)`**: Fetch upcoming scheduled matches with team names, event details, and match times.
+- **`matches_upcoming(page: int = 1, max_page: int = 0, return_all: bool = false)`**: Fetch upcoming scheduled matches with team names, event details, and match times.
 - **`matches_live()`**: Fetch currently live matches with real-time scores, team names, and event info.
-- **`matches_completed(page: int = 1)`**: Fetch past completed match results with final scores, winners, and dates.
+- **`matches_completed(page: int = 1, max_page: int = 0, return_all: bool = false)`**: Fetch past completed match results with final scores, winners, and dates.
 
 ### Series & Games
 
@@ -160,8 +159,8 @@ In addition to granular endpoints, VLRdevAPI provides 9 high-level composite too
 
 - **`player_info(player_id: int)`**: Player profile including IGN, real name, country, and total tournament winnings.
 - **`player_teams(player_id: int)`**: Career team history, past organizations, and join/leave dates.
-- **`player_agents(player_id: int, timespan: str = "all")`**: Agent statistics (ACS, K/D, ADR, KAST, pick rates) over a timespan.
-- **`player_matches(player_id: int, page: int = 1)`**: Match history for a player with individual ratings and scores.
+- **`player_agents(player_id: int, timespan: str = "all")`**: Agent statistics (ACS, K/D, ADR, KAST) over a timespan (`30d`, `60d`, `90d`, `all`). Agent statistics (ACS, K/D, ADR, KAST, pick rates) over a timespan.
+- **`player_matches(player_id: int, limit: int = 50, return_all: bool = false)`**: Match history for a player with individual ratings and scores.
 - **`player_profile(player_id: int)`**: Consolidated profile combining bio, current team, and top agents.
 - **`player_placements(player_id: int)`**: Tournament placements and prize earnings won by a player.
 

@@ -31,7 +31,7 @@ export const versions = [
     isoDate: '2026-10-25',
     github: 'https://github.com/vanshbordia/vlrdevapi/releases/tag/3.1.0',
     pypi: 'https://pypi.org/project/vlrdevapi/3.1.0/',
-    summary: 'Production/Stable release featuring a universal tabular export system (pandas, Polars, CSV, Parquet, Excel, JSON, Markdown), a first-class Model Context Protocol (MCP) server with 41 tools, Python 3.15 readiness, and refined semantic schema flatteners.',
+    summary: 'Production/Stable release featuring a universal tabular export system (pandas, Polars, CSV, Parquet, Excel, JSON, Markdown), a first-class Model Context Protocol (MCP) server with 40 tools, Python 3.15 readiness, and refined semantic schema flatteners.',
     sections: [
       {
         title: 'Added',

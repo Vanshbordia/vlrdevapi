@@ -94,7 +94,7 @@ const sections: FaqSection[] = [
     items: [
       {
         q: 'What is the VLRdevAPI MCP server?',
-        a: <>The Model Context Protocol (MCP) server allows AI assistants (Claude Desktop, Cursor, Claude Code, Windsurf, OpenCode, DeepSeek, Codex, Grok) to directly query live Valorant esports data from VLR.gg. It communicates over standard <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">stdio</code> and provides 41 tools covering matches, player stats, team rosters, tournament brackets, and round-by-round replay timelines. See the <Link href="/docs/mcp/" className="text-fd-primary underline underline-offset-2 decoration-fd-primary/30 transition-colors hover:decoration-fd-primary">MCP setup guide</Link>.</>,
+        a: <>The Model Context Protocol (MCP) server allows AI assistants (Claude Desktop, Cursor, Claude Code, Windsurf, OpenCode, DeepSeek, Codex, Grok) to directly query live Valorant esports data from VLR.gg. It communicates over standard <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">stdio</code> and provides 40 tools covering matches, player stats, team rosters, tournament brackets, and round-by-round replay timelines. See the <Link href="/docs/mcp/" className="text-fd-primary underline underline-offset-2 decoration-fd-primary/30 transition-colors hover:decoration-fd-primary">MCP setup guide</Link>.</>,
       },
       {
         q: 'How do I connect VLRdevAPI to Claude Desktop or Cursor?',

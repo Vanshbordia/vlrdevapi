@@ -12,8 +12,15 @@ from pydantic import BaseModel
 try:
     from mcp.server.mcpserver import MCPServer
 except ImportError:
-    # Backward compatibility with older mcp versions
-    from mcp.server.fastmcp import FastMCP as MCPServer  # type: ignore[no-redef]
+    try:
+        # Backward compatibility with older mcp versions
+        from mcp.server.fastmcp import FastMCP as MCPServer  # type: ignore[no-redef]
+    except ImportError:
+        from vlrdevapi.exceptions import MissingDependencyError
+        raise MissingDependencyError(
+            "mcp is required to use the vlrdevapi MCP server. "
+            "Install it via: pip install 'vlrdevapi[mcp]' or uv add 'vlrdevapi[mcp]'"
+        ) from None
 
 from vlrdevapi.commons.export import ExportableModel
 from vlrdevapi.exceptions import (

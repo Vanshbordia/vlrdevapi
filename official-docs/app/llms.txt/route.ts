@@ -14,7 +14,7 @@ const summary = `# VLRdevAPI
 - **When to use it**: you need Valorant esports data in Python, in AI agent workflows (Claude Desktop, Cursor), or exported into DataFrames/spreadsheets.
 - **Key endpoints**: \`vlrdevapi.matches.upcoming()\`, \`vlrdevapi.matches.live()\`, \`vlrdevapi.player(id).profile()\`, \`vlrdevapi.team(id).info()\`, \`vlrdevapi.event(id).info()\`, \`vlrdevapi.series(id).info()\`, and \`vlrdevapi.news()\`.
 - **Tabular exports**: every model supports \`.to_df()\`, \`.to_polars()\`, \`.to_csv()\`, \`.to_parquet()\`, \`.to_excel()\`, \`.to_json()\`, and \`.to_markdown()\`.
-- **MCP Server**: built-in Model Context Protocol server CLI \`vlrdevapi-mcp\` exposing 41 tools for AI assistants.
+- **MCP Server**: built-in Model Context Protocol server CLI \`vlrdevapi-mcp\` exposing 40 tools for AI assistants.
 - **Install**: \`pip install vlrdevapi\` (or \`pip install "vlrdevapi[all]"\`), on Python 3.11 or newer.
 - **Free and no API key**: no key, token, subscription, or account is required.`;
 
@@ -36,7 +36,7 @@ const faq = `## FAQ
 
 **What is VLRdevAPI?** VLRdevAPI is a type-safe Python library and Model Context Protocol (MCP) server for accessing VLR.gg Valorant esports data. It returns typed Pydantic models, supports universal tabular exports (pandas, Polars, CSV, Parquet, Excel), and needs no API key.
 
-**How does the MCP server work?** Run \`vlrdevapi-mcp\` to start a stdio MCP server exposing 41 tools for Claude Desktop, Cursor, Zed, and AI agents.
+**How does the MCP server work?** Run \`vlrdevapi-mcp\` to start a stdio MCP server exposing 40 tools for Claude Desktop, Cursor, Zed, and AI agents.
 
 **Do I need an API key?** No. Install the package and start calling methods.
 

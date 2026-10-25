@@ -1,4 +1,6 @@
 
+from __future__ import annotations
+
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -86,7 +88,7 @@ class PlayersStats(ExportableModel):
     map_name: str = Field(default="", description="Map name (e.g., 'Haven', 'Bind', 'Ascent')")
     team1: TeamPlayers = Field(default_factory=TeamPlayers, description="Team 1 player stats")
     team2: TeamPlayers = Field(default_factory=TeamPlayers, description="Team 2 player stats")
-    maps: list[Any] = Field(default_factory=list, description="Per-map player statistics when available")
+    maps: list[PlayersStats] = Field(default_factory=list, description="Per-map player statistics when available")
 
     def to_records(
         self,

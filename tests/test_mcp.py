@@ -74,7 +74,9 @@ def test_mcp_server_initialization() -> None:
         "get_news_digest",
     }
 
-    assert expected_tools.issubset(tool_names)
+    assert len(tools) == 40
+    assert len(expected_tools) == 40
+    assert tool_names == expected_tools
 
 
 def test_mcp_tool_casing_and_names() -> None:
@@ -180,10 +182,10 @@ def test_mcp_series_rounds_and_replay_integer_game_id() -> None:
         mock_s.rounds.return_value.to_dict.return_value = {"rounds": []}
         mock_s.replay.return_value.to_dict.return_value = {"events": []}
 
-        res1 = asyncio.run(server.call_tool("series_rounds", {"series_id": 200}))
+        res1 = asyncio.run(server.call_tool("series_rounds", {"series_id": 200, "game_id": 1}))
         assert res1.content
         mock_s.rounds.assert_called_once_with(game_id=1)
 
-        res2 = asyncio.run(server.call_tool("series_replay", {"series_id": 200}))
+        res2 = asyncio.run(server.call_tool("series_replay", {"series_id": 200, "game_id": 1}))
         assert res2.content
         mock_s.replay.assert_called_once_with(game_id=1)

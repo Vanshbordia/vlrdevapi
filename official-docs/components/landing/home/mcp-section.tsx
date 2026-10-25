@@ -97,7 +97,7 @@ export function McpSection() {
                 href="/docs/reference/mcp/"
                 className="inline-flex items-center gap-1.5 border border-white/15 px-4 py-2 text-[13px] font-medium text-white/80 transition-colors hover:border-white/30 hover:bg-white/[0.04] hover:text-white"
               >
-                All 41 tools
+                All 40 tools
               </Link>
             </div>
           </div>
@@ -173,7 +173,7 @@ export function McpSection() {
                     What Agents Can Query
                   </p>
                   <h3 className="mt-2 text-lg font-medium tracking-tight text-white sm:text-xl">
-                    41 tools &amp; composite dossiers
+                    40 tools &amp; composite dossiers
                   </h3>
                 </div>
                 <Sparkles className="size-5 shrink-0 text-fd-primary" aria-hidden="true" />

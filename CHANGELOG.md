@@ -29,11 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **First-Class Model Context Protocol (MCP) Server** — Built-in MCP server for AI agents and LLMs (Claude Desktop, Cursor, Zed, Antigravity):
   - CLI executable `vlrdevapi-mcp` (or `python -m vlrdevapi.mcp.server`, `uvx vlrdevapi-mcp`).
   - Standard `stdio` transport with structured, formatted tool definitions.
-  - 41 tools covering all endpoints across Matches, Series, Teams, Players, Events, and News.
+  - 40 tools covering all endpoints across Matches, Series, Teams, Players, Events, and News.
   - High-level composite tools for complex agent tasks:
     - `get_match_full_context(series_id)` — aggregates overview, player statistics, and streams/VODs into a single response.
-    - `get_team_overview(team_id)` — combines team info, roster, recent match results, upcoming schedule, and placements.
-    - `compare_teams(team_id_1, team_id_2)` — side-by-side comparison of two teams with rosters, rankings, earnings, and recent form.
+    - `get_team_overview(team_id)` — combines team info, roster, upcoming schedule, and tournament placements.
+    - `compare_teams(team_id_1, team_id_2)` — side-by-side comparison of two teams with rosters and recent map statistics/forms.
     - `get_player_career_summary(player_id)` — consolidated dossier with profile, current teams, agent pool ratings, and tournament placements.
     - `get_h2h_matchup(team_id_1, team_id_2)` — head-to-head match history between two organizations.
     - `get_tournament_dossier(event_id)` — tournament overview with participating teams, stages, and standings.
