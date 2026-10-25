@@ -88,3 +88,20 @@ def register_series_tools(server: MCPServer) -> None:
             series_id: Unique VLR.gg series ID.
         """
         return vlrdevapi.series(series_id).vods()
+
+    @server.tool()
+    @handle_errors
+    def series_map_summary(series_id: int, game_id: str) -> str:
+        """Get an all-in-one breakdown for a specific map: player stats, round events, and economy.
+
+        Args:
+            series_id: Unique VLR.gg series ID.
+            game_id: Specific game map number (e.g. '1', '2') or real game ID (e.g. '180437').
+        """
+        target_game = int(game_id) if game_id.isdigit() else game_id
+        match = vlrdevapi.series(series_id)
+        return {
+            "players": match.players(game_id=target_game).to_dict(),
+            "rounds": match.rounds(game_id=target_game).to_dict(),
+            "economy": match.economy(game_id=target_game).to_dict(),
+        }

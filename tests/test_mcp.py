@@ -61,10 +61,17 @@ def test_mcp_server_initialization() -> None:
         # News
         "news_list",
         "news_article",
+        # Series Map Summary
+        "series_map_summary",
         # Composite
         "get_match_full_context",
         "get_team_overview",
         "compare_teams",
+        "get_player_career_summary",
+        "get_h2h_matchup",
+        "get_tournament_dossier",
+        "get_live_and_upcoming_schedule",
+        "get_news_digest",
     }
 
     assert expected_tools.issubset(tool_names)
@@ -128,9 +135,9 @@ def test_mcp_composite_tool_serialization() -> None:
 
     with patch("vlrdevapi.series") as mock_series:
         mock_match = mock_series.return_value
-        mock_match.info.return_value.model_dump.return_value = {"id": 123, "event": "VCT Masters"}
-        mock_match.players.return_value.model_dump.return_value = {"players": []}
-        mock_match.vods.return_value.model_dump.return_value = {"vods": []}
+        mock_match.info.return_value.to_dict.return_value = {"id": 123, "event": "VCT Masters"}
+        mock_match.players.return_value.to_dict.return_value = {"players": []}
+        mock_match.vods.return_value.to_dict.return_value = {"vods": []}
 
         result = asyncio.run(server.call_tool("get_match_full_context", {"series_id": 123}))
         assert result.content

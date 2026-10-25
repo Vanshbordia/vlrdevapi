@@ -255,3 +255,209 @@ def test_missing_dependency_error_on_to_df() -> None:
             model.to_df()
         assert "pandas is required" in str(exc_info.value)
         assert "vlrdevapi[pandas]" in str(exc_info.value)
+
+
+def test_missing_dependency_error_on_to_polars() -> None:
+    """Verify that calling .to_polars() without polars raises MissingDependencyError."""
+    class SampleModel(ExportableModel):
+        val: int = 42
+
+    model = SampleModel()
+    with patch("builtins.__import__", side_effect=ImportError("No module named 'polars'")):
+        with pytest.raises(MissingDependencyError) as exc_info:
+            model.to_polars()
+        assert "polars is required" in str(exc_info.value)
+        assert "vlrdevapi[polars]" in str(exc_info.value)
+
+
+def test_missing_dependency_error_on_to_excel() -> None:
+    """Verify that calling .to_excel() without openpyxl raises MissingDependencyError."""
+    class SampleModel(ExportableModel):
+        val: int = 42
+
+    model = SampleModel()
+    with patch("builtins.__import__", side_effect=ImportError("No module named 'openpyxl'")):
+        with pytest.raises(MissingDependencyError) as exc_info:
+            model.to_excel("dummy.xlsx")
+        assert "openpyxl is required" in str(exc_info.value)
+        assert "vlrdevapi[excel]" in str(exc_info.value)
+
+
+def test_missing_dependency_error_on_to_parquet() -> None:
+    """Verify that calling .to_parquet() without pyarrow raises MissingDependencyError."""
+    class SampleModel(ExportableModel):
+        val: int = 42
+
+    model = SampleModel()
+    with patch("builtins.__import__", side_effect=ImportError("No module named 'pyarrow'")):
+        with pytest.raises(MissingDependencyError) as exc_info:
+            model.to_parquet("dummy.parquet")
+        assert "pyarrow is required" in str(exc_info.value)
+        assert "vlrdevapi[arrow]" in str(exc_info.value)
+
+
+def test_to_json_in_memory_and_file(tmp_path: Path) -> None:
+    """Verify .to_json() string generation and file writing."""
+    p1 = PlayerGameStats(
+        player_id=3520,
+        name="ZmjjKK",
+        country="China",
+        country_code="cn",
+        team_short="EDG",
+        agents=["Neon", "Raze"],
+    )
+    model = PlayersStats(
+        series_id=378829,
+        game_id="all",
+        map_name="All Maps",
+        team1=TeamPlayers(team_id=1120, team_name="EDward Gaming", players=[p1]),
+    )
+
+    # 1. In-memory JSON records export
+    json_str = model.to_json(orient="records")
+    assert json_str is not None
+    import json
+    data = json.loads(json_str)
+    assert isinstance(data, list)
+    assert len(data) == 1
+    assert data[0]["name"] == "ZmjjKK"
+    assert data[0]["primary_agent"] == "Neon"
+    assert data[0]["agents"] == ["Neon", "Raze"]
+    assert isinstance(data[0]["agents"], list)
+
+    # 2. In-memory model tree export
+    model_json = model.to_json(orient="model")
+    model_data = json.loads(model_json)
+    assert isinstance(model_data, dict)
+    assert model_data["series_id"] == 378829
+
+    # 3. File export
+    target_file = tmp_path / "players.json"
+    res = model.to_json(path=target_file)
+    assert res is None
+    assert target_file.exists()
+    file_data = json.loads(target_file.read_text(encoding="utf-8"))
+    assert file_data[0]["name"] == "ZmjjKK"
+
+
+def test_to_dict_export() -> None:
+    """Verify .to_dict() returns records list or model dict."""
+    roster = TeamRoster(
+        players=[Player(id=1, ign="Boaster", roles=["Player", "IGL"])],
+    )
+    # Default 'records' orient
+    recs = roster.to_dict()
+    assert isinstance(recs, list)
+    assert recs[0]["ign"] == "Boaster"
+    assert recs[0]["roles"] == ["Player", "IGL"]
+    assert recs[0]["primary_role"] == "Player"
+
+    # 'model' orient
+    model_tree = roster.to_dict(orient="model")
+    assert isinstance(model_tree, dict)
+    assert "players" in model_tree
+
+
+def test_csv_multivalue_list_formatting(tmp_path: Path) -> None:
+    """Verify that list columns are cleanly formatted in CSV with semicolons."""
+    records = [
+        {"player": "ZmjjKK", "agents": ["Neon", "Raze", "Jett"], "team": "EDG"},
+        {"player": "CHICHOO", "agents": ["Cypher"], "team": "EDG"},
+    ]
+    target_csv = tmp_path / "agents.csv"
+    records_to_csv(records, path=target_csv)
+    lines = target_csv.read_text(encoding="utf-8").strip().split("\n")
+    assert lines[0] == "player,agents,team"
+    assert lines[1] == 'ZmjjKK,Neon; Raze; Jett,EDG'
+    assert lines[2] == 'CHICHOO,Cypher,EDG'
+
+
+def test_series_players_map_segregation_and_polars_parquet(tmp_path: Path) -> None:
+    """Verify series players map-by-map segregation, Polars List type, and Parquet roundtrip."""
+    map1 = PlayersStats(
+        series_id=100,
+        game_id="101",
+        map_name="Haven",
+        team1=TeamPlayers(
+            team_id=1,
+            team_name="SEN",
+            players=[PlayerGameStats(player_id=10, name="TenZ", agents=["Omen"])],
+        ),
+    )
+    overview = PlayersStats(
+        series_id=100,
+        game_id="all",
+        map_name="",
+        team1=TeamPlayers(
+            team_id=1,
+            team_name="SEN",
+            players=[PlayerGameStats(player_id=10, name="TenZ", agents=["Omen", "Yoru"])],
+        ),
+        maps=[map1],
+    )
+
+    # Verify to_records outputs Map 1 row then All Maps overview row
+    records = overview.to_records()
+    assert len(records) == 2
+    assert records[0]["map_name"] == "Haven"
+    assert records[0]["primary_agent"] == "Omen"
+    assert records[0]["agents"] == ["Omen"]
+    assert records[1]["map_name"] == "All Maps"
+    assert records[1]["primary_agent"] == "Omen"
+    assert records[1]["agents"] == ["Omen", "Yoru"]
+
+    # Test Polars List(Utf8) preservation
+    try:
+        import polars as pl
+        pl_df = overview.to_polars()
+        assert isinstance(pl_df, pl.DataFrame)
+        assert len(pl_df) == 2
+        assert pl_df.schema["agents"] == pl.List(pl.String)
+    except ImportError:
+        pass
+
+    # Test Parquet write and read
+    try:
+        import pandas as pd
+        parquet_file = tmp_path / "players.parquet"
+        overview.to_parquet(parquet_file)
+        assert parquet_file.exists()
+        re_read = pd.read_parquet(parquet_file)
+        assert len(re_read) == 2
+        assert re_read.iloc[0]["map_name"] == "Haven"
+    except ImportError:
+        pass
+
+
+def test_excel_export_roundtrip(tmp_path: Path) -> None:
+    """Verify Excel export creates valid .xlsx readable by openpyxl/pandas."""
+    try:
+        import openpyxl  # noqa: F401
+        import pandas as pd
+        model = RoundsData(
+            series_id=99,
+            game_id=1,
+            team1="SEN",
+            team1_id=1,
+            team2="FNC",
+            team2_id=2,
+            rounds=[
+                RoundData(
+                    round_number=1,
+                    winner_team_name="SEN",
+                    winner_team_id=1,
+                    win_type=RoundWinType.ELIMINATION,
+                    side="Attack",
+                    team1_score=1,
+                    team2_score=0,
+                )
+            ],
+        )
+        xlsx_path = tmp_path / "rounds.xlsx"
+        model.to_excel(xlsx_path)
+        assert xlsx_path.exists()
+        df = pd.read_excel(xlsx_path)
+        assert len(df) == 1
+        assert df.iloc[0]["winner_name"] == "SEN"
+    except ImportError:
+        pass

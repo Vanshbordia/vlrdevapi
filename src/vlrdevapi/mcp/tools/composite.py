@@ -29,9 +29,9 @@ def register_composite_tools(server: MCPServer) -> None:
         vods = match.vods()
 
         return {
-            "overview": info.model_dump(),
-            "player_statistics": players.model_dump(),
-            "vods": vods.model_dump(),
+            "overview": info.to_dict(),
+            "player_statistics": players.to_dict(),
+            "vods": vods.to_dict(),
         }
 
     @server.tool()
@@ -49,10 +49,10 @@ def register_composite_tools(server: MCPServer) -> None:
         placements = team.placements()
 
         return {
-            "info": info.model_dump(),
-            "roster": roster.model_dump(),
-            "upcoming_matches": upcoming.model_dump(),
-            "placements": placements.model_dump(),
+            "info": info.to_dict(),
+            "roster": roster.to_dict(),
+            "upcoming_matches": upcoming.to_dict(),
+            "placements": placements.to_dict(),
         }
 
     @server.tool()
@@ -72,13 +72,108 @@ def register_composite_tools(server: MCPServer) -> None:
 
         return {
             "team_1": {
-                "info": t1.info().model_dump(),
-                "roster": t1.roster().model_dump(),
-                "stats": t1.stats(last_days=last_days).model_dump(),
+                "info": t1.info().to_dict(),
+                "roster": t1.roster().to_dict(),
+                "stats": t1.stats(last_days=last_days).to_dict(),
             },
             "team_2": {
-                "info": t2.info().model_dump(),
-                "roster": t2.roster().model_dump(),
-                "stats": t2.stats(last_days=last_days).model_dump(),
+                "info": t2.info().to_dict(),
+                "roster": t2.roster().to_dict(),
+                "stats": t2.stats(last_days=last_days).to_dict(),
             },
+        }
+
+    @server.tool()
+    @handle_errors
+    def get_player_career_summary(player_id: int) -> str:
+        """Comprehensive career profile and scouting report for a pro Valorant player.
+
+        Combines profile, agent statistics, tournament placements, and team history into one dossier.
+
+        Args:
+            player_id: Unique VLR.gg player identifier.
+        """
+        p = vlrdevapi.player(player_id)
+        return {
+            "profile": p.profile().to_dict(),
+            "agent_stats": p.agents(timespan="all").to_dict(),
+            "placements": p.placements().to_dict(),
+            "teams_history": p.teams().to_dict(),
+        }
+
+    @server.tool()
+    @handle_errors
+    def get_h2h_matchup(team_id_1: int, team_id_2: int, limit: int = 50) -> str:
+        """Analyze direct head-to-head match history and recent records between two teams.
+
+        Args:
+            team_id_1: First team VLR ID.
+            team_id_2: Second team VLR ID.
+            limit: Past matches to inspect for head-to-head encounters (default 50).
+        """
+        t1 = vlrdevapi.team(team_id_1)
+        t2 = vlrdevapi.team(team_id_2)
+        m1 = t1.completed_matches(limit=limit)
+        direct_matches = [
+            m for m in m1.to_records()
+            if m.get("opponent_id") == team_id_2
+        ]
+        return {
+            "team_1": {"id": team_id_1, "name": t1.info().name},
+            "team_2": {"id": team_id_2, "name": t2.info().name},
+            "head_to_head_matches_found": len(direct_matches),
+            "matches": direct_matches,
+        }
+
+    @server.tool()
+    @handle_errors
+    def get_tournament_dossier(event_id: int) -> str:
+        """Complete tournament dossier: overview details, stages, participating teams, and standings.
+
+        Args:
+            event_id: Unique VLR.gg tournament/event identifier.
+        """
+        ev = vlrdevapi.event(event_id)
+        return {
+            "info": ev.info().to_dict(),
+            "stages": ev.stages().to_dict(),
+            "standings": ev.standings().to_dict(),
+            "teams": ev.teams().to_dict(),
+        }
+
+    @server.tool()
+    @handle_errors
+    def get_live_and_upcoming_schedule(limit: int = 15) -> str:
+        """Instant esports schedule: currently live matches followed by upcoming scheduled matches.
+
+        Args:
+            limit: Maximum upcoming matches to include (default 15).
+        """
+        live = vlrdevapi.matches.live()
+        upcoming = vlrdevapi.matches.upcoming()
+        up_records = upcoming.to_records()[:limit] if hasattr(upcoming, "to_records") else []
+        return {
+            "live_matches": live.to_dict(),
+            "upcoming_matches": up_records,
+        }
+
+    @server.tool()
+    @handle_errors
+    def get_news_digest(limit: int = 5, include_top_article_body: bool = True) -> str:
+        """Executive Valorant esports news digest: recent headlines and full content of the top article.
+
+        Args:
+            limit: Number of recent news items to summarize (default 5).
+            include_top_article_body: If True, fetches full text and Markdown for the latest article.
+        """
+        news = vlrdevapi.news(page=1)
+        news_recs = news.to_records()[:limit] if hasattr(news, "to_records") else []
+        top_article = None
+        if include_top_article_body and news_recs:
+            top_id = news_recs[0].get("id")
+            if top_id:
+                top_article = vlrdevapi.news.article(top_id).to_dict()
+        return {
+            "headlines": news_recs,
+            "latest_full_article": top_article,
         }

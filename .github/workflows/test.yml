@@ -5,6 +5,8 @@ on:
     paths:
       - 'src/**'
       - 'tests/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
       - 'scripts/download_fixtures.py'
       - '.github/workflows/test.yml'
   push:
@@ -12,6 +14,8 @@ on:
     paths:
       - 'src/**'
       - 'tests/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
       - 'scripts/download_fixtures.py'
       - '.github/workflows/test.yml'
 
@@ -20,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.11', '3.12', '3.13', '3.14']
+        python-version: ['3.11', '3.12', '3.13', '3.14', '3.15']
 
     steps:
       - uses: actions/checkout@v7

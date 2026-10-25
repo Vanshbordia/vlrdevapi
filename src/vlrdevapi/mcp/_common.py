@@ -15,6 +15,7 @@ except ImportError:
     # Backward compatibility with older mcp versions
     from mcp.server.fastmcp import FastMCP as MCPServer  # type: ignore[no-redef]
 
+from vlrdevapi.commons.export import ExportableModel
 from vlrdevapi.exceptions import (
     NotFoundError,
     ParsingError,
@@ -26,8 +27,10 @@ from vlrdevapi.exceptions import (
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-def serialize(result: Any) -> str:
-    """Serialize Pydantic models, dicts, lists, or primitive objects to JSON."""
+def serialize(result: Any, orient: str = "records") -> str:
+    """Serialize vlrdevapi models, dicts, lists, or primitive objects to JSON."""
+    if isinstance(result, ExportableModel):
+        return result.to_json(indent=2, orient=orient) or ""
     if isinstance(result, BaseModel):
         return result.model_dump_json(indent=2)
     if isinstance(result, (dict, list)):
