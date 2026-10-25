@@ -1,0 +1,143 @@
+---
+title: "Announcing VLRdevAPI v3.1: MCP Server, Universal Tabular Exports, and Python 3.15 Ready"
+description: Production/Stable release introducing a native Model Context Protocol (MCP) server with 41 AI agent tools, universal tabular data exports (pandas, Polars, CSV, Parquet, Excel, JSON, Markdown), and Python 3.15 readiness.
+date: 2026-10-25
+author: VLRdevAPI
+---
+
+Today we are excited to release **VLRdevAPI v3.1.0**, marking our official promotion to **Production/Stable (`Development Status :: 5 - Production/Stable`)**.
+
+This milestone release brings two transformative capabilities to VLRdevAPI:
+1. **Universal Tabular Export Layer** — One-line conversion of any response model into `pandas`, `Polars`, `CSV`, `Parquet`, `Excel`, `JSON`, and formatted `Markdown` tables.
+2. **Native Model Context Protocol (MCP) Server** — A built-in `vlrdevapi-mcp` stdio server exposing 41 tools for Claude Desktop, Cursor, Zed, and autonomous AI agents.
+
+```bash
+# Upgrade to 3.1.0
+pip install -U vlrdevapi
+
+# Or install with all data science & MCP extras
+pip install "vlrdevapi[all]"
+```
+
+---
+
+## 1. Native Model Context Protocol (MCP) Server
+
+AI coding assistants and autonomous agents can now inspect Valorant esports data natively. VLRdevAPI v3.1 includes a production-grade MCP server supporting the standard Model Context Protocol.
+
+Run the server directly via the CLI:
+
+```bash
+vlrdevapi-mcp
+```
+
+Or run without prior installation via `uvx`:
+
+```bash
+uvx --from "vlrdevapi[mcp]" vlrdevapi-mcp
+```
+
+### Configured for Claude Desktop & Cursor
+
+Connect Claude Desktop by adding `vlrdevapi` to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "vlrdevapi": {
+      "command": "uvx",
+      "args": ["--from", "vlrdevapi[mcp]", "vlrdevapi-mcp"]
+    }
+  }
+}
+```
+
+### 40 Tools + Specialized Composite Analysis Tools
+
+The MCP server provides 40 tools spanning matches, series, teams, players, tournaments, and editorial news. It also introduces high-level composite tools designed for complex reasoning tasks:
+
+- **`get_match_full_context(series_id)`**: Combines series overview, player ratings, and VODs in a single call.
+- **`get_team_overview(team_id)`**: Gathers team profile, active roster, recent match results, upcoming fixtures, and tournament placements.
+- **`compare_teams(team_id_1, team_id_2)`**: Compares rosters, rankings, earnings, and recent form head-to-head.
+- **`get_player_career_summary(player_id)`**: Consolidates player biography, team history, agent ratings, and tournament placements.
+- **`get_h2h_matchup(team_id_1, team_id_2)`**: Extracts historical match records between two teams.
+- **`get_tournament_dossier(event_id)`**: Overview of tournament stages, participating teams, and final standings.
+- **`get_live_and_upcoming_schedule(limit)`**: Merges the live match ticker with upcoming schedules.
+- **`get_news_digest(limit)`**: Editorial digest with optional full Markdown article body.
+- **`series_map_summary(series_id, game_id)`**: Map-level summary combining economy, replay timeline, and player stats.
+
+All tools trap domain errors gracefully and return structured JSON responses, ensuring your AI assistants never crash during interactive sessions.
+
+---
+
+## 2. Universal Tabular Export Layer
+
+Transforming Valorant esports data into dataframes and spreadsheets previously required manual dictionary comprehension loops. In v3.1, every model inherits from `ExportableModel`:
+
+```python
+import vlrdevapi
+
+# Fetch series player statistics
+players = vlrdevapi.series(754737).players()
+
+# 1. Convert to pandas DataFrame
+df = players.to_df()
+print(df[["name", "team_name", "rating", "acs", "kills", "deaths"]].head())
+
+# 2. Convert to native Polars DataFrame (with typed nested list columns)
+polars_df = players.to_polars()
+
+# 3. Export to CSV (with semicolon-delimited multi-value lists)
+players.to_csv("match_stats.csv")
+
+# 4. Export to Apache Parquet
+players.to_parquet("match_stats.parquet")
+
+# 5. Export to Excel (.xlsx)
+players.to_excel("match_stats.xlsx", sheet_name="GrandFinal")
+
+# 6. Export to in-memory JSON or file
+json_str = players.to_json(indent=2)
+
+# 7. Generate a GitHub-flavored Markdown table
+print(players.to_markdown())
+```
+
+### Thoughtful Semantic Flattening
+
+Our tabular extraction system is intentionally designed for analytics:
+- **No static columns**: Upcoming and completed match tables omit meaningless static status columns.
+- **TBD matchups resolved**: Matches without determined opponents render `"TBD"` instead of empty gaps.
+- **Map segregation**: Multi-map series player stats distinguish individual maps from aggregate views (`"All Maps"`).
+- **Spreadsheet-safe lists**: Multi-value fields (e.g. agent pools or roster roles) use standard semicolons (`"Player;IGL"` or `"neon;raze;jett"`), preventing malformed CSV formatting.
+
+---
+
+## 3. Modular Dependency Extras
+
+Data science libraries are heavy. To keep `vlrdevapi` lightweight for bots and microservices, export dependencies are strictly optional:
+
+- `pip install "vlrdevapi[pandas]"`
+- `pip install "vlrdevapi[polars]"`
+- `pip install "vlrdevapi[excel]"`
+- `pip install "vlrdevapi[parquet]"`
+- `pip install "vlrdevapi[mcp]"`
+- `pip install "vlrdevapi[all]"`
+
+Calling `.to_df()` without pandas installed will raise a descriptive `MissingDependencyError` with the exact pip install command.
+
+---
+
+## 4. Python 3.15 Ready & Production Stable
+
+VLRdevAPI is tested against Python 3.11, 3.12, 3.13, 3.14, and the upcoming Python 3.15 nightly builds. With 1,164 automated tests covering every parser, scraper route, export format, and MCP tool, v3.1 is ready for production workloads.
+
+---
+
+## Getting Started
+
+Check out the updated documentation:
+- [MCP Server Reference](/docs/reference/mcp/)
+- [Getting Started](/docs/getting-started/)
+- [Installation Guide](/docs/installation/)
+- [Changelog](/changelog/)

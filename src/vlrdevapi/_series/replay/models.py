@@ -1,8 +1,11 @@
 """Data models for the series replay (kill-feed timeline) module."""
 
 from enum import Enum, StrEnum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class ArmorType(StrEnum):
@@ -300,7 +303,7 @@ class ReplayRound(BaseModel):
         return None
 
 
-class ReplayData(BaseModel):
+class ReplayData(ExportableModel):
     """Kill-feed replay timeline for a game/map within a series on vlr.gg."""
 
     model_config = ConfigDict(
@@ -342,3 +345,67 @@ class ReplayData(BaseModel):
             if round_data.round_number == round_number:
                 return round_data
         return None
+
+    def to_records(self, view: str = "events", **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten replay data into tabular records.
+
+        Args:
+            view: Either 'events' (default: 1 row per kill/plant/defuse event with
+                spatial coordinates) or 'loadouts' (1 row per player per round
+                with buy phase equipment and economy).
+            **kwargs: Extra parameters (ignored).
+        """
+        url = f"https://www.vlr.gg/{self.series_id}/?game={self.game_id}&tab=logs"
+        records: list[dict[str, Any]] = []
+        if view == "loadouts":
+            for r in self.rounds:
+                for ld in r.loadouts:
+                    records.append({
+                        "series_id": self.series_id,
+                        "game_id": self.game_id,
+                        "round_number": r.round_number,
+                        "player_id": ld.player_id or None,
+                        "name": ld.name,
+                        "team": ld.team,
+                        "agent": ld.agent,
+                        "side": ld.side,
+                        "weapon": ld.weapon,
+                        "armor": str(ld.armor),
+                        "spent": ld.spent,
+                        "credits_left": ld.credits_left,
+                        "url": url,
+                    })
+            return records
+
+        for r in self.rounds:
+            for ev in r.events:
+                actor = ev.actor
+                victim = ev.victim
+                ev_type = ev.type.value if hasattr(ev.type, "value") else str(ev.type)
+                records.append({
+                    "series_id": self.series_id,
+                    "game_id": self.game_id,
+                    "round_number": r.round_number,
+                    "attacking_team": r.attacking,
+                    "event_seq": ev.seq,
+                    "event_type": ev_type,
+                    "clock": ev.clock,
+                    "seconds": ev.seconds,
+                    "actor_id": actor.player_id if actor else None,
+                    "actor_name": actor.name if actor else "",
+                    "actor_team": actor.team if actor else "",
+                    "actor_agent": actor.agent if actor else "",
+                    "victim_id": victim.player_id if victim else None,
+                    "victim_name": victim.name if victim else "",
+                    "victim_team": victim.team if victim else "",
+                    "victim_agent": victim.agent if victim else "",
+                    "cause": ev.cause or "",
+                    "site": ev.site or "",
+                    "from_x": ev.from_x,
+                    "from_y": ev.from_y,
+                    "pos_x": ev.pos_x,
+                    "pos_y": ev.pos_y,
+                    "distance_units": ev.distance_units,
+                    "url": url,
+                })
+        return records

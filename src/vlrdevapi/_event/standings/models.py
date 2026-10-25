@@ -1,4 +1,8 @@
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class TeamStanding(BaseModel):
@@ -79,7 +83,7 @@ class EventStageStandings(BaseModel):
         description="List of standing entries for this stage",
     )
 
-class EventStandings(BaseModel):
+class EventStandings(ExportableModel):
     """Wrapper for standings grouped by stage."""
 
     model_config = ConfigDict(
@@ -89,6 +93,28 @@ class EventStandings(BaseModel):
         default_factory=list,
         description="List of stages containing standings",
     )
+
+    def to_records(self, **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten event standings into tabular records (1 row per team placement)."""
+        records: list[dict[str, Any]] = []
+        for stage in self.stages:
+            for s in stage.standings:
+                t_name = (s.team.name if s.team else "") or "TBD"
+                t_id = s.team.id if (s.team and s.team.id) else None
+                records.append({
+                    "stage_name": stage.stage_name,
+                    "stage_path": stage.stage_path,
+                    "place": s.place,
+                    "team_id": t_id,
+                    "team_name": t_name,
+                    "team_country": s.team.country if s.team else "",
+                    "prize_money": s.prize_money,
+                    "prize_currency": s.prize_currency or "",
+                    "points": s.points,
+                    "note": s.note or "",
+                    "url": f"https://www.vlr.gg/team/{t_id}" if t_id else "",
+                })
+        return records
 
     def __len__(self) -> int:
         return len(self.stages)

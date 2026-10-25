@@ -1,10 +1,11 @@
 
 from datetime import date
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from vlrdevapi._event.info.models import EventPrize
+from vlrdevapi.commons.export import ExportableModel
 
 
 class EventListItem(BaseModel):
@@ -71,7 +72,7 @@ class EventListFilters(BaseModel):
     page: int = Field(default=1, description="Page number requested")
 
 
-class EventList(BaseModel):
+class EventList(ExportableModel):
     """Paginated list of events from vlr.gg."""
 
     model_config = ConfigDict(
@@ -91,6 +92,35 @@ class EventList(BaseModel):
     )
     filters: EventListFilters = Field(..., description="Filters applied")
     pagination: EventListPagination = Field(..., description="Pagination metadata")
+
+    def to_records(self, **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten event listing into tabular records (1 row per event)."""
+        records: list[dict[str, Any]] = []
+        for ev in self.events:
+            url = ev.url
+            if url and url.startswith("/"):
+                url = f"https://www.vlr.gg{url}"
+            elif not url and ev.id:
+                url = f"https://www.vlr.gg/event/{ev.id}"
+
+            # VLR parser sets year to 2019 when listing omits year
+            s_date = ev.start_date.isoformat() if (ev.start_date and ev.start_date.year >= 2020) else None
+            e_date = ev.end_date.isoformat() if (ev.end_date and ev.end_date.year >= 2020) else None
+            curr = (ev.prize.currency_code or ev.prize.currency_symbol) if ev.prize else None
+
+            records.append({
+                "event_id": ev.id,
+                "name": ev.name,
+                "status": ev.status,
+                "start_date": s_date,
+                "end_date": e_date,
+                "region": ev.region or None,
+                "prize_amount": ev.prize.amount if ev.prize else None,
+                "prize_currency": curr or None,
+                "prize_converted_usd": ev.prize.converted_amount if ev.prize else None,
+                "url": url,
+            })
+        return records
 
     @model_validator(mode="after")
     def _sync_matches_and_has_next(self) -> "EventList":

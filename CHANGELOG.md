@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [3.1.0] - 2026-10-25
+
+### Added
+
+- **Multi-Format Tabular Export Layer** — All Pydantic models now inherit from `ExportableModel`, enabling seamless tabular serialization into popular data science formats:
+  - `.to_records()` — extracts clean, unnested lists of Python dictionaries with semantic flattening across every namespace.
+  - `.to_df()` — converts records directly into a `pandas.DataFrame`.
+  - `.to_polars()` — converts records directly into a native `polars.DataFrame` with typed nested arrays (`pl.List(pl.String)`).
+  - `.to_csv(path=None)` — exports to standard CSV format with semicolon-delimited lists (`"Player;IGL"`) and in-memory string output when `path` is omitted.
+  - `.to_parquet(path, index=False)` — writes Apache Parquet files via pandas and pyarrow.
+  - `.to_excel(path, sheet_name="Sheet1", index=False)` — exports Excel `.xlsx` spreadsheets via pandas and openpyxl.
+  - `.to_json(path=None, indent=2)` — exports clean serialized JSON to string or disk with comprehensive recursive datetime and list handling.
+  - `.to_markdown(columns=None)` — generates GitHub-flavored markdown tables with proper column alignments, pipe escaping, and zero dependencies.
+- **Granular Optional Dependency Extras** — Data export dependencies are strictly optional and modular:
+  - `vlrdevapi[pandas]`: installs `pandas>=2.0.0`
+  - `vlrdevapi[polars]`: installs `polars>=1.0.0`
+  - `vlrdevapi[excel]`: installs `openpyxl>=3.1.0` and `pandas>=2.0.0`
+  - `vlrdevapi[parquet]`: installs `pyarrow>=14.0.0` and `pandas>=2.0.0`
+  - `vlrdevapi[mcp]`: installs `mcp>=1.2.0`
+  - `vlrdevapi[all]`: installs all optional tabular, file, and MCP dependencies.
+  - Missing dependencies provide actionable, friendly install prompts with exact pip commands instead of generic import errors.
+- **First-Class Model Context Protocol (MCP) Server** — Built-in MCP server for AI agents and LLMs (Claude Desktop, Cursor, Zed, Antigravity):
+  - CLI executable `vlrdevapi-mcp` (or `python -m vlrdevapi.mcp.server`, `uvx vlrdevapi-mcp`).
+  - Standard `stdio` transport with structured, formatted tool definitions.
+  - 40 tools covering all endpoints across Matches, Series, Teams, Players, Events, and News.
+  - High-level composite tools for complex agent tasks:
+    - `get_match_full_context(series_id)` — aggregates overview, player statistics, and streams/VODs into a single response.
+    - `get_team_overview(team_id)` — combines team info, roster, upcoming schedule, and tournament placements.
+    - `compare_teams(team_id_1, team_id_2, last_days=60)` — side-by-side comparison of two teams with rosters and recent map statistics/forms.
+    - `get_player_career_summary(player_id)` — consolidated dossier with profile, current teams, agent pool ratings, and tournament placements.
+    - `get_h2h_matchup(team_id_1, team_id_2)` — head-to-head match history between two organizations.
+    - `get_tournament_dossier(event_id)` — tournament overview with participating teams, stages, and standings.
+    - `get_live_and_upcoming_schedule(limit)` — live ticker combined with upcoming match schedule.
+    - `get_news_digest(limit, include_top_article_body)` — latest esports headlines with optional top article body.
+    - `series_map_summary(series_id, game_id)` — targeted map-level overview combining economy, replay timeline, and player stats.
+- **Python 3.15 Ready** — Added Python 3.15 to the CI/CD test and publish workflows, verified across uv python matrix.
+- **Production/Stable Status** — Package status promoted to `Development Status :: 5 - Production/Stable` in package metadata.
+
+### Improved
+
+- **Semantic Model Flattening** — Tabular export extractors (`.to_records()`) now generate clean, non-redundant rows:
+  - Upcoming/completed matches omit static status columns and resolve unannounced teams as `"TBD"`.
+  - Player agent statistics provide unnested, clean numeric columns (`acs`, `kd`, `adr`, `kast`, `kpr`, `apr`).
+  - Series player stats properly segregate map rows, labeling the aggregate map view as `"All Maps"`.
+  - Team rosters separate `primary_role` and multi-role lists.
+- **Unified Serialization in MCP Tools** — MCP server tools now leverage `ExportableModel.to_dict()` and `ExportableModel.to_json()`, eliminating redundant ad-hoc JSON conversion and drastically speeding up tool invocations.
+- **CSV Multi-Value List Formatting** — Agent lists and team roles are formatted with standard semicolon delimiters (`"neon;raze;jett"`) instead of Python `repr()` strings, ensuring full compatibility with spreadsheet applications and analytical parsers.
+- **Parser Corrections** — Fixed swapped KAST and ADR columns in `player.agents()` table extraction to match VLR.gg's actual table headers.
+
 ## [3.0.0] - 2026-10-23
 
 ### Breaking
@@ -436,6 +485,7 @@ The API surface, module structure, and type system are all new.
 - `aiohttp` and `asyncio` dependencies.
 - v1.x match/event/team parsing modules.
 
+[3.1.0]: https://github.com/Vanshbordia/vlrdevapi/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.4.1...v3.0.0
 [2.4.1]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.3.0...v2.4.0

@@ -2,9 +2,11 @@
 
 from datetime import date as _date
 from datetime import datetime as _datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class SeriesTeam(BaseModel):
@@ -137,7 +139,7 @@ class SeriesHeadToHeadMatch(BaseModel):
     )
 
 
-class SeriesInfo(BaseModel):
+class SeriesInfo(ExportableModel):
     """Overview information for a match/series on vlr.gg."""
 
     model_config = ConfigDict(
@@ -182,3 +184,60 @@ class SeriesInfo(BaseModel):
         default_factory=list,
         description="Previous matches between the two teams",
     )
+
+    def to_records(self, view: str = "games", **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten series overview into tabular records.
+
+        Args:
+            view: Either 'games' (default: 1 row per map/game in the series) or
+                'summary' (single row with overall series metadata and final score).
+            **kwargs: Extra parameters (ignored).
+        """
+        t1_name = self.team1.name or "TBD"
+        t2_name = self.team2.name or "TBD"
+        dt_str = self.datetime.isoformat() if self.datetime else None
+        url = f"https://www.vlr.gg/{self.series_id}"
+
+        if view == "summary" or not self.games:
+            return [{
+                "series_id": self.series_id,
+                "status": self.status,
+                "event_id": self.event_id,
+                "event_name": self.event_name,
+                "stage": self.stage,
+                "bracket": self.bracket,
+                "best_of": self.best_of,
+                "patch": self.patch,
+                "datetime": dt_str,
+                "team1_id": self.team1.id or None,
+                "team1_name": t1_name,
+                "team1_tag": self.team1.tag,
+                "score1": self.score1,
+                "team2_id": self.team2.id or None,
+                "team2_name": t2_name,
+                "team2_tag": self.team2.tag,
+                "score2": self.score2,
+                "url": url,
+            }]
+
+        records: list[dict[str, Any]] = []
+        for g in self.games:
+            records.append({
+                "series_id": self.series_id,
+                "game_id": g.game_id,
+                "order": g.order,
+                "map_name": g.map_name,
+                "picked_by": g.picked_by,
+                "played": g.played,
+                "team1_name": t1_name,
+                "team1_score": g.team1_score,
+                "team2_name": t2_name,
+                "team2_score": g.team2_score,
+                "event_name": self.event_name,
+                "stage": self.stage,
+                "bracket": self.bracket,
+                "patch": self.patch,
+                "datetime": dt_str,
+                "url": url,
+            })
+        return records

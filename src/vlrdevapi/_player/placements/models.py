@@ -1,4 +1,8 @@
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class PlayerEventPlacement(BaseModel):
@@ -26,7 +30,7 @@ class PlayerEventPlacement(BaseModel):
     team_name: str = Field(default="", description="Team the player represented")
 
 
-class PlayerPlacements(BaseModel):
+class PlayerPlacements(ExportableModel):
     """Event placements and total winnings for a player."""
 
     model_config = ConfigDict(
@@ -46,3 +50,21 @@ class PlayerPlacements(BaseModel):
         default_factory=list,
         description="List of individual event placements",
     )
+
+    def to_records(self, **kwargs: Any) -> list[dict[str, Any]]:
+        """Convert player placements to tabular records."""
+        records: list[dict[str, Any]] = []
+        for p in self.placements:
+            records.append({
+                "player_id": self.player_id,
+                "event_id": p.event_id,
+                "event_name": p.event_name,
+                "year": p.year,
+                "stage": p.stage,
+                "placement": p.placement,
+                "prize_amount": p.prize_amount,
+                "prize_currency": p.prize_currency,
+                "team_name": p.team_name or "TBD",
+                "url": f"https://www.vlr.gg/event/{p.event_id}" if p.event_id else "",
+            })
+        return records

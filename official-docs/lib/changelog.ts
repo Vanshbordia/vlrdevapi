@@ -26,6 +26,35 @@ export type ChangelogVersion = {
 
 export const versions = [
   {
+    version: '3.1.0',
+    date: '25 October 2026',
+    isoDate: '2026-10-25',
+    github: 'https://github.com/vanshbordia/vlrdevapi/releases/tag/3.1.0',
+    pypi: 'https://pypi.org/project/vlrdevapi/3.1.0/',
+    summary: 'Production/Stable release featuring a universal tabular export system (pandas, Polars, CSV, Parquet, Excel, JSON, Markdown), a first-class Model Context Protocol (MCP) server with 40 tools, Python 3.15 readiness, and refined semantic schema flatteners.',
+    sections: [
+      {
+        title: 'Added',
+        items: [
+          'Multi-format tabular export layer — All Pydantic models inherit from ExportableModel, enabling one-line conversions to pandas (.to_df()), Polars (.to_polars()), CSV (.to_csv()), Parquet (.to_parquet()), Excel (.to_excel()), structured JSON (.to_json()), formatted Markdown tables (.to_markdown()), and dictionary records (.to_records()).',
+          'Modular optional dependency extras — Clean install bundles for every stack: `vlrdevapi[pandas]`, `vlrdevapi[polars]`, `vlrdevapi[excel]`, `vlrdevapi[parquet]`, `vlrdevapi[mcp]`, or `vlrdevapi[all]`, with friendly, actionable install hints upon missing libraries.',
+          'Model Context Protocol (MCP) server — Built-in stdio server (`vlrdevapi-mcp` CLI) with 40 structured tools covering matches, series, teams, players, events, news, and specialized composite tools (`get_match_full_context`, `get_team_overview`, `compare_teams`, `get_player_career_summary`, `get_h2h_matchup`, `get_tournament_dossier`, `get_live_and_upcoming_schedule`, `get_news_digest`, `series_map_summary`).',
+          'Python 3.15 readiness — Full compatibility across Python 3.11 through Python 3.15 dev/nightly matrices.',
+          'Production/Stable release badge — Promoted package classifier to Development Status :: 5 - Production/Stable.',
+        ],
+      },
+      {
+        title: 'Improved',
+        items: [
+          'Semantic schema flattening — Export records feature unnested, clean fields: static status columns omitted from upcoming matches, unannounced matchups defaulted to "TBD", series player stats clearly partitioned by map ("All Maps" for overall aggregates), and player agent statistics flattened into typed floats.',
+          'Unified MCP serialization — Server tools natively call ExportableModel serialization, eliminating redundant conversion steps and accelerating tool responses.',
+          'CSV multi-value list formatting — Agent pools and roster roles are serialized as clean semicolon-separated strings ("Player;IGL") for standard spreadsheet and analytics ingestion.',
+          'Table parser fixes — Fixed inverted ADR and KAST column values in player agent stat parsing.',
+        ],
+      },
+    ],
+  },
+  {
     version: '3.0.0',
     date: '23 October 2026',
     isoDate: '2026-10-23',

@@ -7,7 +7,8 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
-from pydantic import ValidationError as PydanticValidationError, validate_call
+from pydantic import ValidationError as PydanticValidationError
+from pydantic import validate_call
 
 from vlrdevapi.exceptions import ValidationError
 

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { GithubIcon } from './github-icon';
+import { project } from '@/lib/project';
 
 const links = [
   { href: '/docs/', label: 'Docs' },
@@ -312,7 +313,7 @@ export function MobileNav() {
                 </div>
               </div>
               <p className="mt-8 pb-8 font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
-                VLR.gg data · typed for Python
+                VLR.gg data · typed for Python · v{project.version}
               </p>
             </nav>
           </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type MouseEvent } from 'react';
 
-export type ModuleId = 'player' | 'team' | 'series' | 'event' | 'news';
+export type ModuleId = 'player' | 'team' | 'series' | 'event' | 'news' | 'mcp';
 
 export interface ModuleNavItem {
   id: ModuleId;

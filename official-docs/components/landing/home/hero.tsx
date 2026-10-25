@@ -3,6 +3,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { CopyCommand } from '@/components/landing/copy-command';
 import { HeroDemo } from '@/components/landing/hero-demo';
 import { Reveal } from '@/components/landing/reveal';
+import { project } from '@/lib/project';
 
 /**
  * Landing hero.
@@ -28,10 +29,19 @@ export function Hero() {
         <div className="grid gap-12 lg:grid-cols-[1.02fr_0.98fr] lg:items-start lg:gap-14 xl:gap-20">
           <div>
             <Reveal>
-              <p className="flex items-center gap-2.5 font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
-                <span aria-hidden="true" className="size-1.5 bg-fd-primary" />
-                Python SDK for VLR.gg
-              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="flex items-center gap-2.5 font-mono text-[12px] uppercase tracking-[0.18em] text-fd-muted">
+                  <span aria-hidden="true" className="size-1.5 bg-fd-primary" />
+                  Python SDK &amp; MCP for VLR.gg
+                </p>
+                <Link
+                  href="/changelog/"
+                  className="group inline-flex items-center gap-1.5 border border-white/15 bg-white/[0.03] px-2 py-0.5 font-mono text-[11px] text-white/70 transition-colors hover:border-fd-primary/50 hover:text-white"
+                >
+                  <span>v{project.version} released</span>
+                  <ArrowUpRight className="size-3 text-fd-primary transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </Link>
+              </div>
             </Reveal>
 
             <h1 className="mt-7 text-[2.3rem] font-medium leading-[1.02] tracking-[-0.04em] text-white sm:text-[3.3rem] lg:text-[3.8rem] xl:text-[4.2rem]">

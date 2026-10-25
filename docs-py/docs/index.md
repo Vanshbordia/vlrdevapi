@@ -30,4 +30,10 @@ Or with [uv](https://docs.astral.sh/uv/):
 uv add vlrdevapi
 ```
 
+## Highlights
+
+- **Typed Models**: Fully validated Pydantic models for matches, series, teams, players, tournaments, and news.
+- **Universal Tabular Exports**: One-line `.to_df()`, `.to_polars()`, `.to_csv()`, `.to_parquet()`, `.to_excel()`, `.to_json()`, and `.to_markdown()` on every response.
+- **Model Context Protocol (MCP)**: Native `vlrdevapi-mcp` stdio server with 40 tools for Claude Desktop, Cursor, and Zed.
+
 

@@ -1,7 +1,10 @@
 
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class BuyType(Enum):
@@ -174,7 +177,7 @@ class RoundEconomyData(BaseModel):
     )
 
 
-class EconomyData(BaseModel):
+class EconomyData(ExportableModel):
     """Economy data for a game/map within a series on vlr.gg."""
 
     model_config = ConfigDict(
@@ -193,11 +196,11 @@ class EconomyData(BaseModel):
         default_factory=list,
         description="List of economy data for each round",
     )
-    buy_matrix_team1: TeamBuyMatrix = Field(
+    buy_matrix_team1: TeamBuyMatrix | None = Field(
         default_factory=TeamBuyMatrix,
         description="Full buy-type matrix for team 1 (summary + per-tier records).",
     )
-    buy_matrix_team2: TeamBuyMatrix = Field(
+    buy_matrix_team2: TeamBuyMatrix | None = Field(
         default_factory=TeamBuyMatrix,
         description="Full buy-type matrix for team 2 (summary + per-tier records).",
     )
@@ -219,3 +222,67 @@ class EconomyData(BaseModel):
     bonus_team2: EconScore | None = Field(
         default=None, description="Bonus rounds won/total for team 2 (shortcut to buy_matrix_team2.bonus).",
     )
+
+    def to_records(self, view: str = "rounds", **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten economy data into tabular records.
+
+        Args:
+            view: Either 'rounds' (default: 1 row per round with bank, spent, buy type,
+                and winner) or 'buy_matrix' (won/total performance across buy tiers).
+            **kwargs: Extra parameters (ignored).
+        """
+        records: list[dict[str, Any]] = []
+        url = f"https://www.vlr.gg/{self.series_id}/?game={self.game_id}&tab=economy"
+        t1_name = self.team1 or "TBD"
+        t2_name = self.team2 or "TBD"
+
+        if view == "buy_matrix":
+            for team_name, team_id, matrix in (
+                (t1_name, self.team1_id, self.buy_matrix_team1),
+                (t2_name, self.team2_id, self.buy_matrix_team2),
+            ):
+                if not matrix:
+                    continue
+                for tier_name, tier_record in (
+                    ("Eco", matrix.eco),
+                    ("Half-buy", matrix.half_buy),
+                    ("Full-buy", matrix.full_buy),
+                ):
+                    total = tier_record.total if tier_record else None
+                    records.append({
+                        "series_id": self.series_id,
+                        "game_id": self.game_id,
+                        "team_id": team_id or None,
+                        "team_name": team_name,
+                        "buy_tier": tier_name,
+                        "won": total.won if total else 0,
+                        "total": total.total if total else 0,
+                        "win_rate": round(total.won / total.total, 3) if total and total.total else 0.0,
+                        "url": url,
+                    })
+            return records
+
+        for r in self.rounds:
+            b1 = int(r.bank_team1) if r.bank_team1 is not None else None
+            b2 = int(r.bank_team2) if r.bank_team2 is not None else None
+            s1 = int(r.spent_team1) if r.spent_team1 is not None else None
+            s2 = int(r.spent_team2) if r.spent_team2 is not None else None
+
+            records.append({
+                "series_id": self.series_id,
+                "game_id": self.game_id,
+                "round_number": r.round_number,
+                "winner_name": r.winner.name if r.winner else "TBD",
+                "winner_id": r.winner.id if (r.winner and r.winner.id) else None,
+                "is_pistol_round": r.is_pistol_round,
+                "team1_name": t1_name,
+                "team1_spent": s1,
+                "team1_bank": b1,
+                "team1_buy_type": r.buy_type_team1.value if hasattr(r.buy_type_team1, "value") else str(r.buy_type_team1),
+                "team2_name": t2_name,
+                "team2_spent": s2,
+                "team2_bank": b2,
+                "team2_buy_type": r.buy_type_team2.value if hasattr(r.buy_type_team2, "value") else str(r.buy_type_team2),
+                "url": url,
+            })
+        return records

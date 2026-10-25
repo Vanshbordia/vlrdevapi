@@ -56,12 +56,12 @@ class TestSyncWithClient:
 
 class TestUpcoming:
     def test_series_info_upcoming(self, mock_vlr):
-        mock_vlr.get("/777946").respond(
-            200, text=load_fixture("series", "777946", "overview.html"),
+        mock_vlr.get("/773433").respond(
+            200, text=load_fixture("series", "773433", "overview.html"),
         )
 
-        result = vlrdevapi.series.info(777946)
-        assert result.series_id == 777946
+        result = vlrdevapi.series.info(773433)
+        assert result.series_id == 773433
         assert result.status == "upcoming"
         assert result.best_of == 3
         assert len(result.games) == 3

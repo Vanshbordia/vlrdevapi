@@ -9,6 +9,7 @@ from vlrdevapi.commons.datetime import (
     parse_vlr_iso_datetime,
     parse_vlr_time,
 )
+from vlrdevapi.commons.export import ExportableModel
 from vlrdevapi.commons.prizes import parse_prize_amount
 from vlrdevapi.commons.regions import (
     COUNTRY_TO_REGION,
@@ -34,6 +35,7 @@ __all__ = [
     "VALID_REGIONS",
     "VLR_STORED_TZ",
     "VLR_TIMEZONE",
+    "ExportableModel",
     "detect_vlr_timezone",
     "detect_vlr_timezone_from_url",
     "get_country_name",

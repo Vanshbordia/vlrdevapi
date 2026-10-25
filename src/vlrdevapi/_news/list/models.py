@@ -1,6 +1,9 @@
 from datetime import datetime as datetime_
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class News(BaseModel):
@@ -35,7 +38,7 @@ class News(BaseModel):
     author: str = Field(default="", description="Author of the news item")
 
 
-class NewsPage(BaseModel):
+class NewsPage(ExportableModel):
     """A single page of news items from the vlr.gg news listing.
 
     Attributes:
@@ -53,3 +56,24 @@ class NewsPage(BaseModel):
         default=False, description="Whether there is a next page of results"
     )
     page_number: int = Field(default=0, description="Current page number")
+
+    def to_records(self, **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten news articles into tabular records (1 row per article)."""
+        records: list[dict[str, Any]] = []
+        for n in self.news:
+            url = n.link
+            if url and url.startswith("/"):
+                url = f"https://www.vlr.gg{url}"
+            elif not url and n.id:
+                url = f"https://www.vlr.gg/{n.id}"
+
+            records.append({
+                "id": n.id,
+                "title": n.title,
+                "subtitle": n.subtitle,
+                "author": n.author,
+                "date": n.date.isoformat() if n.date else None,
+                "country_name": n.country_name,
+                "url": url,
+            })
+        return records

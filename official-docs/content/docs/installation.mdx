@@ -24,6 +24,24 @@ Or with pip:
 pip install vlrdevapi
 ```
 
+## Optional Dependency Extras
+
+VLRdevAPI provides modular extras so you only install the dependencies your project requires:
+
+```bash
+# Data science exports
+pip install "vlrdevapi[pandas]"     # pandas.DataFrame (.to_df())
+pip install "vlrdevapi[polars]"     # polars.DataFrame (.to_polars())
+pip install "vlrdevapi[excel]"      # Excel .xlsx (.to_excel())
+pip install "vlrdevapi[parquet]"    # Apache Parquet (.to_parquet())
+
+# Model Context Protocol server
+pip install "vlrdevapi[mcp]"        # vlrdevapi-mcp CLI for Claude & Cursor
+
+# Install all optional extras
+pip install "vlrdevapi[all]"
+```
+
 ## Install from Source
 
 Clone the repository and install with uv:

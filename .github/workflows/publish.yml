@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.11', '3.12', '3.13', '3.14']
+        python-version: ['3.11', '3.12', '3.13', '3.14', '3.15']
 
     steps:
       - uses: actions/checkout@v7
@@ -23,7 +23,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --group dev
+        run: uv sync --group dev --all-extras
 
       - name: Download fixtures
         run: uv run python scripts/download_fixtures.py

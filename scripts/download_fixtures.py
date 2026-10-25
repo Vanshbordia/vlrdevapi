@@ -1,6 +1,5 @@
 import asyncio
 from pathlib import Path
-from typing import Dict
 
 import httpx
 
@@ -19,7 +18,7 @@ HEADERS = {
 }
 
 
-ROUTES: list[tuple[str, str, Dict[str, str]]] = []
+ROUTES: list[tuple[str, str, dict[str, str]]] = []
 
 # ── Matches ────────────────────────────────────────────────────
 ROUTES += [
@@ -276,6 +275,11 @@ ROUTES += [
         {},
     ),
     (
+        "/team/8050/mibr-gc",
+        "team/8050/overview_light.html",
+        {},
+    ),
+    (
         "/team/matches/120/?core_id=all&group=completed&page=2",
         "team/120/completed_matches_page2.html",
         {},
@@ -487,8 +491,8 @@ for _gid in GAMES_BO5_2026:
     ]
 
 # ── Upcoming series (best_of + TBD map tabs) ─────────────────
-SERIES_ID_UPCOMING = 777946
-SERIES_SLUG_UPCOMING = "titan-esports-club-vs-unsettled-resentment-vct-china-2026-threshold-week-1-qf"
+SERIES_ID_UPCOMING = 773433
+SERIES_SLUG_UPCOMING = "mibr-gc-vs-gentle-mates-gc-game-changers-2026-championship-s-o-paulo-ubsf"
 
 ROUTES.append(
     (
@@ -529,7 +533,7 @@ for _sid, _sslug, _gid in SERIES_LOG_SAMPLES:
 # Unplayed map (Abyss, game 4 of the 2026 GF): graceful empty replay data.
 ROUTES.append(
     (
-        f"/754737/loud-vs-team-vitality-valorant-champions-2026-gf/?game=283290&tab=logs",
+        "/754737/loud-vs-team-vitality-valorant-champions-2026-gf/?game=283290&tab=logs",
         "series/754737_loud-vs-team-vitality-valorant-champions-2026-gf/game_283290_logs.html",
         {},
     ),
@@ -560,8 +564,7 @@ def _parse_last_page(html: str) -> int | None:
     for el in pagination.css("a.btn.mod-page, span.btn.mod-page"):
         try:
             num = int(el.text(strip=True))
-            if num > max_page:
-                max_page = num
+            max_page = max(max_page, num)
         except ValueError:
             continue
     return max_page if max_page > 0 else None

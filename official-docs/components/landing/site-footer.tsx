@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { Brand, BrandMark } from './brand';
 import { GithubIcon } from './github-icon';
+import { project } from '@/lib/project';
 
 const columns = [
   {
@@ -103,7 +104,7 @@ export function SiteFooter() {
             <span className="text-white">
               <BrandMark className="size-3" />
             </span>
-            Open source · MIT · Python 3.11+
+            Open source · MIT · Python 3.11+ · v{project.version}
           </p>
         </div>
 

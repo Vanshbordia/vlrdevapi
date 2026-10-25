@@ -1,7 +1,10 @@
 
 from datetime import datetime as datetime_
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class OpponentInCompletedMatch(BaseModel):
@@ -39,7 +42,7 @@ class TeamCompletedMatchEntry(BaseModel):
     datetime: datetime_ | None = Field(default=None, description="Match datetime (UTC)")
 
 
-class TeamCompletedMatches(BaseModel):
+class TeamCompletedMatches(ExportableModel):
     model_config = ConfigDict(
         json_schema_extra={"description": "Collection of completed matches for a team."},
     )
@@ -52,3 +55,34 @@ class TeamCompletedMatches(BaseModel):
         default=False,
         description="Whether more completed matches exist beyond the returned results",
     )
+
+    def to_records(self, **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten completed matches into tabular records (1 row per match)."""
+        records: list[dict[str, Any]] = []
+        for m in self.matches:
+            url = m.url
+            if url and url.startswith("/"):
+                url = f"https://www.vlr.gg{url}"
+            elif not url and m.match_id:
+                url = f"https://www.vlr.gg/{m.match_id}"
+
+            opp_name = m.opponent.name if (m.opponent and m.opponent.name) else "TBD"
+            opp_id = m.opponent.id if (m.opponent and m.opponent.id) else None
+            opp_tag = m.opponent.tag if m.opponent else ""
+
+            records.append({
+                "team_id": self.team_id,
+                "match_id": m.match_id,
+                "event": m.event,
+                "stage": m.stage,
+                "bracket": m.bracket,
+                "opponent_id": opp_id,
+                "opponent_name": opp_name,
+                "opponent_tag": opp_tag,
+                "team_score": m.team_score,
+                "opponent_score": m.opponent_score,
+                "is_win": m.is_win,
+                "datetime": m.datetime.isoformat() if m.datetime else None,
+                "url": url,
+            })
+        return records

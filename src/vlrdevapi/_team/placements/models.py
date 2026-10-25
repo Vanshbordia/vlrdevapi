@@ -1,5 +1,9 @@
 
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class EventPlacement(BaseModel):
@@ -39,7 +43,7 @@ class TeamEventPlacement(BaseModel):
     )
 
 
-class TeamPlacements(BaseModel):
+class TeamPlacements(ExportableModel):
     """Collection of team event placements."""
 
     model_config = ConfigDict(
@@ -57,3 +61,34 @@ class TeamPlacements(BaseModel):
         default_factory=list,
         description="List of event placements",
     )
+
+    def to_records(self, **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten tournament placements into tabular records (1 row per placement stage)."""
+        records: list[dict[str, Any]] = []
+        for ep in self.placements:
+            if ep.placements:
+                for p in ep.placements:
+                    records.append({
+                        "team_id": self.team_id,
+                        "event_id": ep.event_id,
+                        "event_name": ep.event_name,
+                        "year": ep.year,
+                        "stage": p.stage or None,
+                        "placement": p.placement,
+                        "prize": ep.prize,
+                        "prize_currency": ep.prize_currency,
+                        "url": f"https://www.vlr.gg/event/{ep.event_id}" if ep.event_id else None,
+                    })
+            else:
+                records.append({
+                    "team_id": self.team_id,
+                    "event_id": ep.event_id,
+                    "event_name": ep.event_name,
+                    "year": ep.year,
+                    "stage": None,
+                    "placement": None,
+                    "prize": ep.prize,
+                    "prize_currency": ep.prize_currency,
+                    "url": f"https://www.vlr.gg/event/{ep.event_id}" if ep.event_id else None,
+                })
+        return records

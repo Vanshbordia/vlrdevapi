@@ -3,6 +3,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { CopyCommand } from '@/components/landing/copy-command';
 import { GithubIcon } from '@/components/landing/github-icon';
 import { Reveal } from '@/components/landing/reveal';
+import { project } from '@/lib/project';
 
 /** Closing call to action. */
 export function FinalCta() {
@@ -46,7 +47,7 @@ export function FinalCta() {
         <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <CopyCommand />
           <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-fd-muted">
-            MIT · Python 3.11+ · no API key
+            MIT · Python 3.11+ · v{project.version} · no API key
           </p>
         </div>
       </div>

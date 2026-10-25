@@ -90,6 +90,35 @@ const sections: FaqSection[] = [
     ],
   },
   {
+    title: 'Model Context Protocol (MCP) & AI',
+    items: [
+      {
+        q: 'What is the VLRdevAPI MCP server?',
+        a: <>The Model Context Protocol (MCP) server allows AI assistants (Claude Desktop, Cursor, Claude Code, Windsurf, OpenCode, DeepSeek, Codex, Grok) to directly query live Valorant esports data from VLR.gg. It communicates over standard <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">stdio</code> and provides 40 tools covering matches, player stats, team rosters, tournament brackets, and round-by-round replay timelines. See the <Link href="/docs/mcp/" className="text-fd-primary underline underline-offset-2 decoration-fd-primary/30 transition-colors hover:decoration-fd-primary">MCP setup guide</Link>.</>,
+      },
+      {
+        q: 'How do I connect VLRdevAPI to Claude Desktop or Cursor?',
+        a: <>No complex installation is needed. Add a simple command configuration using <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">uvx --from &quot;vlrdevapi[mcp]&quot; vlrdevapi-mcp</code> to your <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">claude_desktop_config.json</code> or <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">.cursor/mcp.json</code>. For Claude Code CLI, run <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">claude mcp add vlrdevapi -- uvx --from &quot;vlrdevapi[mcp]&quot; vlrdevapi-mcp</code>.</>,
+      },
+      {
+        q: 'Do I need to host an MCP server or run a background daemon?',
+        a: <>No. The server executes on-demand over stdio via <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">uvx</code>. Your AI client launches the process when a session begins and shuts it down when you finish. There are no servers to maintain, no ports to open, and no API keys required.</>,
+      },
+      {
+        q: 'Can I use VLRdevAPI with autonomous AI agents (OpenCode, DeepSeek, Codex, Grok)?',
+        a: <>Yes. Any agent framework or LLM environment that supports MCP or external CLI tool execution can invoke the server. We provide a ready-to-paste agent prompt on our <Link href="/docs/mcp/#autonomous-ai-agents-opencode-deepseek-codex-grok-etc" className="text-fd-primary underline underline-offset-2 decoration-fd-primary/30 transition-colors hover:decoration-fd-primary">MCP page</Link>.</>,
+      },
+      {
+        q: 'What high-level composite tools are available for AI models?',
+        a: <>To minimize LLM token usage and prevent multiple roundtrips, VLRdevAPI provides 9 high-level composite tools: <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">get_match_full_context</code>, <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">get_team_overview</code>, <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">compare_teams</code>, <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">get_player_career_summary</code>, <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">get_h2h_matchup</code>, <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">get_tournament_dossier</code>, <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">get_live_and_upcoming_schedule</code>, <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">get_news_digest</code>, and <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">series_map_summary</code>. Full schemas are documented in the <Link href="/docs/reference/mcp/" className="text-fd-primary underline underline-offset-2 decoration-fd-primary/30 transition-colors hover:decoration-fd-primary">MCP reference</Link>.</>,
+      },
+      {
+        q: 'Can I export scraped data into Pandas, Polars, or Excel spreadsheets?',
+        a: <>Yes! All models inherit from <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">ExportableModel</code>, allowing instant export with <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">.to_df()</code>, <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">.to_polars()</code>, <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">.to_csv()</code>, <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">.to_parquet()</code>, <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">.to_excel()</code>, <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">.to_json()</code>, and <code className="border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[12px] text-white/65">.to_markdown()</code>.</>,
+      },
+    ],
+  },
+  {
     title: 'Technical',
     items: [
       {

@@ -1,4 +1,8 @@
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class SeriesStream(BaseModel):
@@ -47,7 +51,7 @@ class SeriesVod(BaseModel):
     )
 
 
-class SeriesVods(BaseModel):
+class SeriesVods(ExportableModel):
     """Streams and VOD/video links for a match/series on vlr.gg."""
 
     model_config = ConfigDict(
@@ -61,3 +65,35 @@ class SeriesVods(BaseModel):
         default_factory=list, description="Live and watch-party streams",
     )
     vods: list[SeriesVod] = Field(default_factory=list, description="List of VOD entries")
+
+    def to_records(self, view: str = "vods", **kwargs: Any) -> list[dict[str, Any]]:
+        """Convert VODs or streams to tabular records.
+
+        Args:
+            view: Either 'vods' or 'streams'.
+        """
+        series_url = f"https://www.vlr.gg/{self.series_id}"
+        records: list[dict[str, Any]] = []
+        if view == "streams":
+            for s in self.streams:
+                records.append({
+                    "series_id": self.series_id,
+                    "platform": s.platform,
+                    "channel": s.channel,
+                    "stream_type": s.stream_type,
+                    "country_code": s.country_code,
+                    "url": s.url,
+                    "series_url": series_url,
+                })
+        else:
+            for v in self.vods:
+                records.append({
+                    "series_id": self.series_id,
+                    "label": v.label,
+                    "platform": v.platform,
+                    "map_number": v.map_number,
+                    "start_seconds": v.start_seconds,
+                    "url": v.url,
+                    "series_url": series_url,
+                })
+        return records

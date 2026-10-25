@@ -1,5 +1,11 @@
 
+from __future__ import annotations
+
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class SideStats(BaseModel):
@@ -68,7 +74,15 @@ class TeamPlayers(BaseModel):
     players: list[PlayerGameStats] = Field(default_factory=list, description="List of players with their per-game stats")
 
 
-class PlayersStats(BaseModel):
+def _calc_kd(kills: int | None, deaths: int | None) -> float | None:
+    if kills is None or deaths is None:
+        return None
+    if deaths > 0:
+        return round(kills / deaths, 2)
+    return float(kills)
+
+
+class PlayersStats(ExportableModel):
     """Player statistics for a series game on vlr.gg."""
 
     model_config = ConfigDict(
@@ -82,3 +96,185 @@ class PlayersStats(BaseModel):
     map_name: str = Field(default="", description="Map name (e.g., 'Haven', 'Bind', 'Ascent')")
     team1: TeamPlayers = Field(default_factory=TeamPlayers, description="Team 1 player stats")
     team2: TeamPlayers = Field(default_factory=TeamPlayers, description="Team 2 player stats")
+    maps: list[PlayersStats] = Field(default_factory=list, description="Per-map player statistics when available")
+
+    def to_records(
+        self,
+        side: str = "all_splits",
+        include_maps: bool = True,
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """Flatten player statistics across both teams into tabular records.
+
+        Args:
+            side: Stats presentation format:
+                - 'all_splits' / 'wide' (default): 1 row per player with complete
+                  overall, attack, and defense stats side-by-side as dedicated columns.
+                - 'overall': 1 row per player with overall combined stats only.
+                - 'attack': 1 row per player with attack stats only.
+                - 'defend': 1 row per player with defense stats only.
+                - 'long' / 'split': 3 rows per player with a 'side' column.
+            include_maps: Whether to include individual map rows along with the series summary.
+            **kwargs: Extra parameters (ignored).
+        """
+        records: list[dict[str, Any]] = []
+
+        target_games: list[PlayersStats] = []
+        if include_maps and self.maps:
+            target_games.extend(self.maps)
+        target_games.append(self)
+
+        for g in target_games:
+            map_display = g.map_name or ("All Maps" if str(g.game_id).lower() == "all" else f"Map {g.game_id}")
+
+            if side in ("long", "split", "all"):
+                for team in (g.team1, g.team2):
+                    t_name = team.team_name or "TBD"
+                    t_tag = team.team_short or (t_name if t_name == "TBD" else None)
+                    for p in team.players:
+                        for s_name in ("overall", "attack", "defend"):
+                            side_stat = getattr(p.stats, s_name, None)
+                            rec: dict[str, Any] = {
+                                "series_id": g.series_id or self.series_id,
+                                "game_id": g.game_id,
+                                "map_name": map_display,
+                                "team_id": team.team_id or None,
+                                "team_name": t_name,
+                                "team_tag": t_tag,
+                                "player_id": p.player_id,
+                                "name": p.name,
+                                "country_code": p.country_code or None,
+                                "country": p.country or None,
+                                "primary_agent": p.agents[0] if p.agents else None,
+                                "agents": list(p.agents),
+                                "side": s_name,
+                                "url": f"https://www.vlr.gg/{self.series_id or g.series_id}",
+                            }
+                            if side_stat is not None:
+                                rec.update({
+                                    "player_name": p.name,
+                                    "rating": side_stat.rating,
+                                    "acs": side_stat.acs,
+                                    "kills": side_stat.kills,
+                                    "deaths": side_stat.deaths,
+                                    "assists": side_stat.assists,
+                                    "kd": _calc_kd(side_stat.kills, side_stat.deaths),
+                                    "kd_diff": side_stat.kd_diff,
+                                    "kast": side_stat.kast,
+                                    "adr": side_stat.adr,
+                                    "hs_percent": side_stat.hs_percent,
+                                    "first_kills": side_stat.first_kills,
+                                    "first_deaths": side_stat.first_deaths,
+                                    "fk_fd_diff": side_stat.fk_fd_diff,
+                                })
+                            records.append(rec)
+                continue
+
+            if side in ("overall", "attack", "defend"):
+                for team in (g.team1, g.team2):
+                    t_name = team.team_name or "TBD"
+                    t_tag = team.team_short or (t_name if t_name == "TBD" else None)
+                    for p in team.players:
+                        side_stat = getattr(p.stats, side, None)
+                        rec = {
+                            "series_id": g.series_id or self.series_id,
+                            "game_id": g.game_id,
+                            "map_name": map_display,
+                            "team_id": team.team_id or None,
+                            "team_name": t_name,
+                            "team_tag": t_tag,
+                            "player_id": p.player_id,
+                            "name": p.name,
+                            "player_name": p.name,
+                            "country_code": p.country_code or None,
+                            "country": p.country or None,
+                            "primary_agent": p.agents[0] if p.agents else None,
+                            "agents": list(p.agents),
+                            "side": side,
+                            "url": f"https://www.vlr.gg/{self.series_id or g.series_id}",
+                        }
+                        if side_stat is not None:
+                            rec.update({
+                                "rating": side_stat.rating,
+                                "acs": side_stat.acs,
+                                "kills": side_stat.kills,
+                                "deaths": side_stat.deaths,
+                                "assists": side_stat.assists,
+                                "kd": _calc_kd(side_stat.kills, side_stat.deaths),
+                                "kd_diff": side_stat.kd_diff,
+                                "kast": side_stat.kast,
+                                "adr": side_stat.adr,
+                                "hs_percent": side_stat.hs_percent,
+                                "first_kills": side_stat.first_kills,
+                                "first_deaths": side_stat.first_deaths,
+                                "fk_fd_diff": side_stat.fk_fd_diff,
+                            })
+                        records.append(rec)
+                continue
+
+            # Default ('all_splits' / 'wide'): Complete view with overall, attack, and defense side-by-side
+            for team in (g.team1, g.team2):
+                t_name = team.team_name or "TBD"
+                t_tag = team.team_short or (t_name if t_name == "TBD" else None)
+                for p in team.players:
+                    ov = p.stats.overall
+                    att = p.stats.attack
+                    defn = p.stats.defend
+
+                    records.append({
+                        "series_id": g.series_id or self.series_id,
+                        "game_id": g.game_id,
+                        "map_name": map_display,
+                        "team_id": team.team_id or None,
+                        "team_name": t_name,
+                        "team_tag": t_tag,
+                        "player_id": p.player_id,
+                        "name": p.name,
+                        "player_name": p.name,
+                        "country_code": p.country_code or None,
+                        "country": p.country or None,
+                        "primary_agent": p.agents[0] if p.agents else None,
+                        "agents": list(p.agents),
+                        "url": f"https://www.vlr.gg/{self.series_id or g.series_id}",
+                        # Overall Stats
+                        "rating": ov.rating if ov else None,
+                        "acs": ov.acs if ov else None,
+                        "kills": ov.kills if ov else None,
+                        "deaths": ov.deaths if ov else None,
+                        "assists": ov.assists if ov else None,
+                        "kd": _calc_kd(ov.kills, ov.deaths) if ov else None,
+                        "kd_diff": ov.kd_diff if ov else None,
+                        "kast": ov.kast if ov else None,
+                        "adr": ov.adr if ov else None,
+                        "hs_percent": ov.hs_percent if ov else None,
+                        "first_kills": ov.first_kills if ov else None,
+                        "first_deaths": ov.first_deaths if ov else None,
+                        "fk_fd_diff": ov.fk_fd_diff if ov else None,
+                        # Attack Stats
+                        "attack_rating": att.rating if att else None,
+                        "attack_acs": att.acs if att else None,
+                        "attack_kills": att.kills if att else None,
+                        "attack_deaths": att.deaths if att else None,
+                        "attack_assists": att.assists if att else None,
+                        "attack_kd_diff": att.kd_diff if att else None,
+                        "attack_kast": att.kast if att else None,
+                        "attack_adr": att.adr if att else None,
+                        "attack_hs_percent": att.hs_percent if att else None,
+                        "attack_first_kills": att.first_kills if att else None,
+                        "attack_first_deaths": att.first_deaths if att else None,
+                        "attack_fk_fd_diff": att.fk_fd_diff if att else None,
+                        # Defense Stats
+                        "defend_rating": defn.rating if defn else None,
+                        "defend_acs": defn.acs if defn else None,
+                        "defend_kills": defn.kills if defn else None,
+                        "defend_deaths": defn.deaths if defn else None,
+                        "defend_assists": defn.assists if defn else None,
+                        "defend_kd_diff": defn.kd_diff if defn else None,
+                        "defend_kast": defn.kast if defn else None,
+                        "defend_adr": defn.adr if defn else None,
+                        "defend_hs_percent": defn.hs_percent if defn else None,
+                        "defend_first_kills": defn.first_kills if defn else None,
+                        "defend_first_deaths": defn.first_deaths if defn else None,
+                        "defend_fk_fd_diff": defn.fk_fd_diff if defn else None,
+                    })
+        return records

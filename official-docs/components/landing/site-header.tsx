@@ -4,6 +4,7 @@ import { GithubIcon } from './github-icon';
 import { DocsCtaLink, SiteNavLinks } from './site-nav-links';
 import { MobileNav } from './mobile-nav';
 import { WhyMenu } from './why-menu';
+import { project } from '@/lib/project';
 
 /**
  * Site header.
@@ -25,9 +26,13 @@ export function SiteHeader() {
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-6 px-5 sm:px-8">
           <div className="flex items-center gap-3">
             <Brand />
-            <span className="hidden border border-white/15 px-2 py-0.5 font-mono text-[12px] tracking-wide text-white/50 sm:inline">
-              v3.0
-            </span>
+            <Link
+              href="/changelog/"
+              title={`View ${project.version} release notes`}
+              className="hidden border border-white/15 px-2 py-0.5 font-mono text-[12px] tracking-wide text-white/50 transition-colors hover:border-fd-primary/50 hover:text-white sm:inline"
+            >
+              v{project.version}
+            </Link>
           </div>
 
           <nav aria-label="Main navigation" className="hidden flex-1 items-center gap-1 lg:flex">

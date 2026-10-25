@@ -1,5 +1,9 @@
 
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 
 class Player(BaseModel):
@@ -27,7 +31,7 @@ class Player(BaseModel):
     )
 
 
-class TeamRoster(BaseModel):
+class TeamRoster(ExportableModel):
     """Team roster information from vlr.gg."""
 
     model_config = ConfigDict(
@@ -38,3 +42,23 @@ class TeamRoster(BaseModel):
     staff: list[Player] = Field(
         default_factory=list, description="List of staff members",
     )
+
+    def to_records(self, include_staff: bool = True, **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten roster into tabular records (1 row per member)."""
+        records: list[dict[str, Any]] = []
+        members = list(self.players) + (list(self.staff) if include_staff else [])
+        for m in members:
+            records.append({
+                "player_id": m.id,
+                "ign": m.ign,
+                "real_name": m.real_name or None,
+                "country": m.country or None,
+                "primary_role": m.roles[0] if m.roles else None,
+                "roles": list(m.roles) if m.roles else [],
+                "is_captain": m.is_captain,
+                "is_active": m.is_active,
+                "is_sub": m.is_sub,
+                "photo_url": m.photo_url or None,
+                "url": f"https://www.vlr.gg/player/{m.id}",
+            })
+        return records

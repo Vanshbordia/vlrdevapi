@@ -1,7 +1,9 @@
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from vlrdevapi.commons.export import ExportableModel
 
 AgentCompositionLevel = Literal["none", "basic", "detailed"]
 
@@ -90,7 +92,7 @@ class MapStats(BaseModel):
     )
 
 
-class TeamStats(BaseModel):
+class TeamStats(ExportableModel):
     model_config = ConfigDict(
         json_schema_extra={
             "description": "Collection of map statistics for a team (excludes maps with 0 games).",
@@ -102,3 +104,26 @@ class TeamStats(BaseModel):
         default_factory=list,
         description="Map statistics (only maps with games_played > 0)",
     )
+
+    def to_records(self, **kwargs: Any) -> list[dict[str, Any]]:
+        """Flatten team map statistics into tabular records (1 row per map)."""
+        records: list[dict[str, Any]] = []
+        for m in self.maps:
+            records.append({
+                "team_id": self.team_id,
+                "map_name": m.map_name,
+                "games_played": m.games_played,
+                "win_rate": m.win_rate,
+                "wins": m.wins,
+                "losses": m.losses,
+                "attack_first": m.attack_first,
+                "defense_first": m.defense_first,
+                "attack_round_win_rate": m.attack_round_win_rate,
+                "attack_rounds_won": m.attack_rounds_won,
+                "attack_rounds_lost": m.attack_rounds_lost,
+                "defense_round_win_rate": m.defense_round_win_rate,
+                "defense_rounds_won": m.defense_rounds_won,
+                "defense_rounds_lost": m.defense_rounds_lost,
+                "url": f"https://www.vlr.gg/team/stats/{self.team_id}",
+            })
+        return records

@@ -335,6 +335,62 @@ def _parse_team_link(el: Node | None) -> tuple[int, str]:
     return team_id, team_name
 
 
+def _parse_game_div(
+    game_div: Node,
+    gid: str,
+    team1_id: int,
+    team1_name: str,
+    team2_id: int,
+    team2_name: str,
+) -> PlayersStats | None:
+    """Parse a single game container (.vm-stats-game) into PlayersStats."""
+    tables = game_div.css("div.ovw-table")
+    if len(tables) < 2:
+        return None
+
+    stats = PlayersStats(game_id=gid)
+    if gid != "all":
+        map_div = game_div.css_first(".vm-stats-game-header .map")
+        if map_div:
+            name_div = map_div.css_first(".map-name")
+            if name_div:
+                span = name_div.css_first("span")
+                if span:
+                    stats.map_name = span.text(deep=False, strip=True)
+                if not stats.map_name:
+                    stats.map_name = name_div.text(strip=True)
+            if not stats.map_name:
+                bold_div = map_div.css_first("div[style*='font-weight: 700']")
+                if bold_div:
+                    m = re.search(r"<span[^>]*>\s*([A-Za-z]+)", bold_div.html or "")
+                    if m:
+                        stats.map_name = m.group(1)
+            if not stats.map_name:
+                stats.map_name = map_div.text(strip=True)
+    else:
+        stats.map_name = ""
+
+    team1_players = _parse_table(tables[0])
+    team2_players = _parse_table(tables[1])
+
+    team1_short = team1_players[0].team_short if team1_players else ""
+    team2_short = team2_players[0].team_short if team2_players else ""
+
+    stats.team1 = TeamPlayers(
+        team_id=team1_id,
+        team_name=team1_name,
+        team_short=team1_short,
+        players=team1_players,
+    )
+    stats.team2 = TeamPlayers(
+        team_id=team2_id,
+        team_name=team2_name,
+        team_short=team2_short,
+        players=team2_players,
+    )
+    return stats
+
+
 def parse_players_stats(html: HTMLParser, game_id: str = "all") -> PlayersStats:
     """Parse player statistics from the series page HTML.
 
@@ -343,7 +399,7 @@ def parse_players_stats(html: HTMLParser, game_id: str = "all") -> PlayersStats:
         game_id: Game/map identifier ('all' for combined, or numeric ID).
 
     Returns:
-        PlayersStats: Parsed player stats for both teams.
+        PlayersStats: Parsed player stats for both teams and all available maps.
 
     """
     result = PlayersStats()
@@ -358,46 +414,18 @@ def parse_players_stats(html: HTMLParser, game_id: str = "all") -> PlayersStats:
     if not game_div:
         return result
 
-    if gid != "all":
-        map_div = game_div.css_first(".vm-stats-game-header .map")
-        if map_div:
-            name_div = map_div.css_first(".map-name")
-            if name_div:
-                span = name_div.css_first("span")
-                if span:
-                    result.map_name = span.text(deep=False, strip=True)
-                if not result.map_name:
-                    result.map_name = name_div.text(strip=True)
-            if not result.map_name:
-                bold_div = map_div.css_first("div[style*='font-weight: 700']")
-                if bold_div:
-                    m = re.search(r"<span[^>]*>\s*([A-Za-z]+)", bold_div.html or "")
-                    if m:
-                        result.map_name = m.group(1)
-            if not result.map_name:
-                result.map_name = map_div.text(strip=True)
-
-    tables = game_div.css("div.ovw-table")
-    if len(tables) < 2:
+    main_stats = _parse_game_div(game_div, gid, team1_id, team1_name, team2_id, team2_name)
+    if not main_stats:
         return result
+    result = main_stats
 
-    team1_players = _parse_table(tables[0])
-    team2_players = _parse_table(tables[1])
-
-    team1_short = team1_players[0].team_short if team1_players else ""
-    team2_short = team2_players[0].team_short if team2_players else ""
-
-    result.team1 = TeamPlayers(
-        team_id=team1_id,
-        team_name=team1_name,
-        team_short=team1_short,
-        players=team1_players,
-    )
-    result.team2 = TeamPlayers(
-        team_id=team2_id,
-        team_name=team2_name,
-        team_short=team2_short,
-        players=team2_players,
-    )
+    # If parsing series overview ("all"), also collect individual maps that are on the page
+    if gid == "all":
+        for g_div in html.css("div.vm-stats-game"):
+            other_gid = g_div.attributes.get("data-game-id", "") or ""
+            if other_gid and other_gid != "all":
+                map_stat = _parse_game_div(g_div, other_gid, team1_id, team1_name, team2_id, team2_name)
+                if map_stat:
+                    result.maps.append(map_stat)
 
     return result

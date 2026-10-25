@@ -107,6 +107,44 @@ Each namespace has dedicated methods for different data types:
 - **`series(id)`** - series-specific data (info, VODs, player stats, economy)
 - **`news(page)`** / **`news.article(article_id)`** - news listings and full articles
 
+## Data Science Exports & Tabular Serialization
+
+Every response model in VLRdevAPI includes built-in tabular export methods:
+
+```python
+import vlrdevapi
+
+# Fetch player stats and convert to pandas or polars
+players = vlrdevapi.series(754737).players()
+
+# Export directly to pandas DataFrame
+df = players.to_df()
+print(f"Exported {len(df)} player records to DataFrame")
+
+# Or to native Polars DataFrame
+pl_df = players.to_polars()
+
+# Save to disk as CSV, Excel, Parquet, or JSON
+players.to_csv("players_stats.csv")
+players.to_excel("players_stats.xlsx")
+players.to_parquet("players_stats.parquet")
+players.to_json("players_stats.json")
+```
+
+## Model Context Protocol (MCP) Server
+
+Connect Claude Desktop, Cursor, or autonomous agents to live Valorant esports data using the built-in MCP server:
+
+```bash
+# Run via CLI
+vlrdevapi-mcp
+
+# Or zero-install with uvx
+uvx --from "vlrdevapi[mcp]" vlrdevapi-mcp
+```
+
+Learn more in the [MCP Server Reference](/docs/reference/mcp/).
+
 ## Next Steps
 
 - Follow the [Quick Start](/docs/quickstart/) for a complete, runnable example
