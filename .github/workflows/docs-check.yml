@@ -5,11 +5,15 @@ on:
     paths:
       - 'official-docs/**'
       - 'docs-py/**'
+      - 'src/**'
+      - 'scripts/**'
   push:
     branches: [main]
     paths:
       - 'official-docs/**'
       - 'docs-py/**'
+      - 'src/**'
+      - 'scripts/**'
 
 jobs:
   check:
@@ -23,6 +27,9 @@ jobs:
 
       - name: Install package
         run: uv sync --group dev --all-extras
+
+      - name: Validate documentation schemas against Python library
+        run: uv run scripts/check_docs_schema.py
 
       # Restore fixture cache scoped to the current ref (branch or main) and version prefix (v3).
       # This ensures caches are never shared across unrelated branches or older versions.
