@@ -1,0 +1,151 @@
+---
+title: Primeiros Passos
+description: Uma introdução ao VLRdevAPI, sua arquitetura e padrões de uso.
+icon: Rocket
+---
+
+VLRdevAPI é uma biblioteca Python para extrair dados de esports do Valorant diretamente do [VLR.gg](https://www.vlr.gg/). Ela gerencia requisições HTTP, análise de HTML e normalização de dados para que você possa trabalhar com objetos Python tipados em vez de marcação bruta.
+
+## Visão Geral da Arquitetura
+
+A biblioteca oferece duas maneiras de acessar os dados:
+
+- **Acesso em nível de módulo** - um cliente padrão inicializado sob demanda (lazy) que permite comandos rápidos em uma linha
+- **`VLRClient` explícito** - oferece controle total sobre configurações, timeouts e ciclo de vida dos recursos
+
+Ambas as abordagens disponibilizam os mesmos seis namespaces:
+
+| Namespace | Descrição |
+|---|---|
+| `matches` | Listagens de partidas futuras, ao vivo e concluídas |
+| `team` | Informações de times, elencos (rosters), estatísticas, partidas e classificações |
+| `player` | Perfis de jogadores, agentes, times e histórico de partidas |
+| `event` | Informações de eventos, etapas, tabelas de classificação, times e partidas |
+| `series` | Informações de séries, VODs, estatísticas de jogadores e dados de economia |
+| `news` | Listagens de notícias e artigos completos |
+
+## Pré-requisitos
+
+- **Python 3.11 ou superior** - Verifique sua versão com `python --version`
+
+## Instalação
+
+```bash
+uv add vlrdevapi
+```
+
+Ou com pip:
+
+```bash
+pip install vlrdevapi
+```
+
+## Padrões de Uso
+
+<Steps>
+  <Step>
+
+  ### Acesso em nível de módulo
+
+  A maneira mais simples de começar. A biblioteca instancia um cliente padrão no primeiro uso.
+
+```python
+import vlrdevapi
+
+matches = vlrdevapi.matches.upcoming()
+for match in matches.matches[:5]:
+    t1 = match.team1.name if match.team1 else "A Definir"
+    t2 = match.team2.name if match.team2 else "A Definir"
+    print(f"{t1} vs {t2}")
+```
+  </Step>
+
+  <Step>
+
+  ### Cliente explícito com gerenciador de contexto (context manager)
+
+  Use esta abordagem quando precisar de configurações personalizadas ou quiser controlar o encerramento do cliente.
+
+  ```python
+  from vlrdevapi import VLRClient
+
+  with VLRClient() as client:
+      page = client.matches.upcoming()
+      for match in page.matches[:5]:
+          t1 = match.team1.name if match.team1 else "A Definir"
+          t2 = match.team2.name if match.team2 else "A Definir"
+          print(f"{t1} vs {t2}")
+  ```
+  </Step>
+
+  <Step>
+
+  ### Acesso encadeado (Curried)
+
+  Passe um ID uma única vez e encadeie chamadas de métodos.
+
+  ```python
+  import vlrdevapi
+
+  team = vlrdevapi.team(2593)
+  info = team.info()
+  roster = team.roster()
+  print(f"{info.name} tem {len(roster.players)} jogadores")
+  ```
+  </Step>
+</Steps>
+
+## Referência dos Namespaces
+
+Cada namespace possui métodos dedicados para diferentes tipos de dados:
+
+- **`matches.upcoming()`** / **`matches.live()`** / **`matches.completed()`** - listagens de partidas
+- **`team(id)`** - dados específicos de times (elenco, estatísticas, partidas, colocações)
+- **`player(id)`** - dados específicos de jogadores (perfil, agentes, times, partidas)
+- **`event(id)`** - dados específicos de eventos (informações, etapas, tabela, times)
+- **`series(id)`** - dados específicos de séries (informações, VODs, estatísticas dos jogadores, economia)
+- **`news(page)`** / **`news.article(article_id)`** - listagem de notícias e artigos completos
+
+## Exportação para Ciência de Dados e Serialização Tabular
+
+Cada modelo de resposta no VLRdevAPI inclui métodos integrados para exportação tabular:
+
+```python
+import vlrdevapi
+
+# Busca estatísticas de jogadores e converte para pandas ou polars
+players = vlrdevapi.series(754737).players()
+
+# Exporta diretamente para DataFrame do pandas
+df = players.to_df()
+print(f"Exportados {len(df)} registros de jogadores para DataFrame")
+
+# Ou para DataFrame nativo do Polars
+pl_df = players.to_polars()
+
+# Salva diretamente no disco em CSV, Excel, Parquet ou JSON
+players.to_csv("players_stats.csv")
+players.to_excel("players_stats.xlsx")
+players.to_parquet("players_stats.parquet")
+players.to_json("players_stats.json")
+```
+
+## Servidor MCP (Model Context Protocol)
+
+Conecte o Claude Desktop, Cursor ou agentes autônomos aos dados de esports em tempo real usando o servidor MCP integrado:
+
+```bash
+# Executar via linha de comando
+vlrdevapi-mcp
+
+# Ou execução direta sem instalação prévia com uvx
+uvx --from "vlrdevapi[mcp]" vlrdevapi-mcp
+```
+
+Saiba mais no guia [Servidor MCP](/docs/mcp/).
+
+## Próximos Passos
+
+- Siga o [Início Rápido](/docs/quickstart/) para um exemplo completo e executável
+- Explore a [Instalação](/docs/installation/) detalhada com dependências extras
+- Consulte o [Guia de Contribuição](/docs/contributing/) para colaborar com o projeto

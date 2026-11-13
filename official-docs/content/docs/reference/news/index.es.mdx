@@ -1,0 +1,63 @@
+---
+title: Visión General de la API de Noticias (News API)
+description: "Consulta las últimas noticias de Valorant en vlr.gg mediante el espacio de nombres news."
+icon: Newspaper
+---
+
+La API de Noticias proporciona acceso a los artículos publicados en vlr.gg. Se accede mediante `vlrdevapi.news` a través del cliente por defecto del módulo o mediante una instancia explícita de `VLRClient`.
+
+<Callout type="info">
+El espacio de nombres news **no** es invocable con un ID vinculado previamente (curried) — no tiene patrón de acceso pre-asociado. Se consulta directamente por número de página.
+</Callout>
+
+## Patrones de Acceso
+
+### Nivel de módulo (cliente por defecto)
+
+```python
+import vlrdevapi
+
+result = vlrdevapi.news(page=1)
+print(f"Noticias en la página 1: {len(result.news)}")
+```
+
+### Cliente explícito
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient() as client:
+    result = client.news(page=1)
+    print(f"Más páginas disponibles: {result.has_next_page}")
+```
+
+## Referencia
+
+| Método | Retorna | Descripción |
+|--------|---------|-------------|
+| [`news(page)`](./list) | `NewsPage` | Explora el listado de noticias con paginación |
+| [`news.article(article_id)`](./article) | `NewsArticle` | Obtiene el contenido completo de un artículo |
+
+## Manejo Común de Errores
+
+Todos los métodos de noticias lanzan excepciones tipadas de `vlrdevapi.exceptions`:
+
+| Excepción | Cuándo se Lanza |
+|-----------|-----------------|
+| `ValidationError` | Argumentos inválidos (`page` inválido, etc.) |
+| `NotFoundError` | La página o el artículo no existen (página fuera de rango o ID de artículo desconocido — vlr.gg devuelve una página genérica detectada por el contenido) |
+| `RequestError` | Fallo de red o error HTTP |
+| `RateLimitError` | Demasiadas peticiones (HTTP 429) |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import ValidationError, RequestError
+
+try:
+    result = vlrdevapi.news(page=1)
+    print(f"Se obtuvieron {len(result.news)} noticias")
+except ValidationError as e:
+    print(f"Entrada inválida: {e}")
+except RequestError as e:
+    print(f"Error en la petición: {e}")
+```

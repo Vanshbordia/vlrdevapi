@@ -1,0 +1,167 @@
+---
+title: 选手赛事成绩 (Player Placements)
+description: "获取选手在各大赛事的最终名次成绩以及在 vlr.gg 上统计的生涯总奖金。"
+---
+
+`player.placements(player_id)` 从选手个人主页的 Event Placements 卡片中提取其在各大赛事的名次记录及生涯总奖金。
+
+## 函数签名
+
+```python
+player.placements(player_id: int) -> PlayerPlacements
+```
+
+通过柯里化链式访问：
+
+```python
+vlrdevapi.player(player_id).placements() -> PlayerPlacements
+```
+
+## 参数
+
+<TypeTable type={{
+  "player_id": {
+    description: "vlr.gg 上的唯一选手 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+}} />
+
+## 返回值 - `PlayerPlacements`
+
+<TypeTable type={{
+  "player_id": {
+    description: "vlr.gg 上的唯一选手 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "total_winnings": {
+    description: "职业生涯赛事总奖金额度（数值型），若不可用则为 None。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "total_winnings_currency": {
+    description: "总奖金货币符号（例如 '$'）。",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "placements": {
+    description: "选手在各项赛事不同阶段的独立名次列表。若选手参加了同一赛事的多个阶段，该赛事可能会出现多条记录。",
+    type: "list[PlayerEventPlacement]",
+    typeDescription: "list[PlayerEventPlacement] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+}} />
+
+### `PlayerEventPlacement` 字段说明
+
+<TypeTable type={{
+  "event_id": {
+    description: "赛事在 vlr.gg 上的 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "event_name": {
+    description: "赛事名称（例如 'Champions 2024'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "year": {
+    description: "赛事举办年份。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "stage": {
+    description: "赛事阶段（例如 'Playoffs'、'Group Stage'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "placement": {
+    description: "在该阶段取得的名次（例如 '1st'、'2nd'、'5th–6th'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "prize_amount": {
+    description: "该名次获得的奖金数额，若未列出奖金则为 None。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "prize_currency": {
+    description: "奖金的货币符号（例如 '$'）。",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "team_name": {
+    description: "该选手参赛时代表的战队名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## 示例
+
+### 查看所有赛事名次
+
+```python
+import vlrdevapi
+
+placements = vlrdevapi.player.placements(player_id=46051)
+
+print(
+    f"生涯总奖金: {placements.total_winnings_currency}"
+    f"{placements.total_winnings:,}"
+)
+for entry in placements.placements:
+    prize = (
+        f"{entry.prize_currency}{entry.prize_amount:,}"
+        if entry.prize_amount is not None
+        else "无奖金"
+    )
+    print(
+        f"{entry.year} | {entry.event_name} | "
+        f"{entry.stage} - {entry.placement} | {entry.team_name} | {prize}"
+    )
+```
+
+### 按赛事对名次进行归类
+
+```python
+from collections import defaultdict
+import vlrdevapi
+
+result = vlrdevapi.player.placements(player_id=11225)
+events = defaultdict(list)
+
+for entry in result.placements:
+    events[(entry.event_id, entry.event_name)].append(entry)
+
+for (event_id, event_name), rows in events.items():
+    print(f"{event_name} ({event_id})")
+    for row in rows:
+        print(f"  {row.stage}: {row.placement} ({row.team_name})")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(46051)
+placements = player.placements()
+
+for entry in placements.placements:
+    if entry.prize_amount:
+        print(f"{entry.event_name}: {entry.prize_currency}{entry.prize_amount:,}")
+```\n

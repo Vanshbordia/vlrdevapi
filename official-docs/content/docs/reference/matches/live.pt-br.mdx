@@ -1,0 +1,92 @@
+---
+title: Partidas Ao Vivo (Live Matches)
+description: "Obtenha as partidas que estão acontecendo ao vivo agora no vlr.gg com detalhes das equipes e status da série."
+---
+
+`matches.live()` retorna todas as partidas que estão em andamento neste momento no vlr.gg.
+
+## Assinatura
+
+```python
+matches.live() -> LiveMatchesPage
+```
+
+## Retorno - `LiveMatchesPage`
+
+<TypeTable type={{
+  "matches": {
+    description: "Lista de partidas ao vivo no momento.",
+    type: "list[LiveMatchEntry]",
+    typeDescription: "list[LiveMatchEntry] - veja os campos abaixo",
+    default: "[]",
+  },
+}} />
+
+### Campos de `LiveMatchEntry`
+
+<TypeTable type={{
+  "match_id": {
+    description: "Identificador numérico da partida no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "Caminho relativo para a página da partida ao vivo no vlr.gg.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "Nome do evento ou campeonato.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: 'Etapa do campeonato (ex: "Playoffs", "Etapa Suíça").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1": {
+    description: "Informações do time 1 (nome, placar parcial no mapa e mapas vencidos).",
+    type: "TeamInLiveMatch | None",
+    typeDescription: "TeamInLiveMatch | None",
+    default: "None",
+  },
+  "team2": {
+    description: "Informações do time 2 (nome, placar parcial no mapa e mapas vencidos).",
+    type: "TeamInLiveMatch | None",
+    typeDescription: "TeamInLiveMatch | None",
+    default: "None",
+  },
+  "status": {
+    description: 'Status do confronto (ex: "live").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "datetime": {
+    description: "Horário de início da partida em UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+## Exemplos de Código
+
+```python
+import vlrdevapi
+
+live_page = vlrdevapi.matches.live()
+print(f"Partidas ao vivo agora: {len(live_page.matches)}")
+
+for match in live_page.matches:
+    t1 = match.team1.name if match.team1 else "Time 1"
+    t2 = match.team2.name if match.team2 else "Time 2"
+    s1 = match.team1.score if match.team1 and match.team1.score is not None else 0
+    s2 = match.team2.score if match.team2 and match.team2.score is not None else 0
+    print(f"AO VIVO: {t1} [{s1} - {s2}] {t2} | {match.event}")
+```

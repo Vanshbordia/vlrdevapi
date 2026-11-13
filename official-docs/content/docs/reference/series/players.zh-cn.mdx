@@ -1,0 +1,197 @@
+---
+title: 比赛选手数据 (Series Players)
+description: "获取单场比赛中选手的各项数据统计：战斗评分 (ACS)、K/D、回合均伤 (ADR)、KAST 以及爆头率。"
+---
+
+`series.players(series_id, game_id)` 返回系列赛中单张指定地图，或全场所有地图累计的选手竞技统计数据。
+
+## 函数签名
+
+```python
+series.players(
+    series_id: int,
+    game_id: int | str = "all",
+) -> PlayersStats
+```
+
+通过柯里化链式访问：
+
+```python
+vlrdevapi.series(series_id).players(game_id: int | str = "all") -> PlayersStats
+```
+
+## 参数
+
+<TypeTable type={{
+  "series_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+  "game_id": {
+    description: '系列赛中的小局序号（从 1 开始的正整数），或传入 "all" 获取全场汇总统计。',
+    type: "int | str",
+    typeDescription: 'int (第 N 局) 或 "all"',
+    default: '"all"',
+    required: false,
+  },
+}} />
+
+## 返回值 - `PlayersStats`
+
+<TypeTable type={{
+  "series_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: '所查询的地图小局标识（"all" 或小局数字 ID）。',
+    type: "str",
+    typeDescription: "str",
+    default: '"all"',
+  },
+  "map_name": {
+    description: '地图名称（例如 "Haven", "Bind"）。若 game_id="all" 则为空字符串。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "players": {
+    description: "各选手表现统计列表。",
+    type: "list[PlayerStatsEntry]",
+    typeDescription: "list[PlayerStatsEntry] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+}} />
+
+### `PlayerStatsEntry` 字段说明
+
+<TypeTable type={{
+  "player_id": {
+    description: "选手的唯一 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "player_name": {
+    description: "选手比赛 ID。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team_name": {
+    description: "选手所属战队名称或 Tag。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "该局选用的特工名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "rating": {
+    description: "Rating 2.0 竞技评分。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "acs": {
+    description: "平均战斗评分 (Average Combat Score)。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "kills": {
+    description: "击杀数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "deaths": {
+    description: "阵亡数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "assists": {
+    description: "助攻数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "kd": {
+    description: "击杀/阵亡比率 (K/D)。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "adr": {
+    description: "回合平均伤害 (ADR)。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "hs_percent": {
+    description: "爆头命中率百分比 (HS%)。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "kast": {
+    description: "KAST 团队贡献率字符串（例如 '78%'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "first_kills": {
+    description: "首杀次数 (First Bloods)。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "first_deaths": {
+    description: "首亡次数 (First Deaths)。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+## 示例
+
+### 查看全场总数据
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.series.players(series_id=670471, game_id="all")
+for p in stats.players[:5]:
+    print(f"{p.player_name} ({p.team_name}): {p.kills}/{p.deaths}/{p.assists} | ACS: {p.acs} | Rating: {p.rating}")
+```
+
+### 查看第 1 局数据
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.series.players(series_id=670471, game_id=1)
+print(f"地图 1: {stats.map_name}")
+for p in stats.players:
+    print(f"  {p.player_name} [{p.agent}]: {p.kills}击杀 / {p.deaths}阵亡 (KD {p.kd})")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+stats = series.players(game_id=1)
+best_player = max(stats.players, key=lambda p: p.rating or 0)
+print(f"第一图最佳选手: {best_player.player_name}，Rating 为 {best_player.rating}")
+```\n

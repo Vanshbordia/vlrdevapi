@@ -1,0 +1,63 @@
+---
+title: 新闻 API 概述 (News API)
+description: "通过 news 命名空间浏览 vlr.gg 上的最新无畏契约 (Valorant) 资讯与新闻。"
+icon: Newspaper
+---
+
+新闻 API 提供了获取 vlr.gg 网站资讯列表与文章内容的能力。你可以通过模块级默认客户端 `vlrdevapi.news` 或显式的 `VLRClient` 实例进行访问。
+
+<Callout type="info">
+news 命名空间**不能**通过柯里化 ID（预绑定 ID）进行调用 — 它没有预绑定参数模式，直接通过页码进行获取。
+</Callout>
+
+## 访问模式
+
+### 模块级（默认客户端）
+
+```python
+import vlrdevapi
+
+result = vlrdevapi.news(page=1)
+print(f"第 1 页新闻数量: {len(result.news)}")
+```
+
+### 显式客户端
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient() as client:
+    result = client.news(page=1)
+    print(f"是否有下一页: {result.has_next_page}")
+```
+
+## 参考方法
+
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| [`news(page)`](./list) | `NewsPage` | 分页浏览新闻列表 |
+| [`news.article(article_id)`](./article) | `NewsArticle` | 获取新闻文章的完整内容 |
+
+## 常见异常处理
+
+所有 news 方法均会抛出 `vlrdevapi.exceptions` 中的类型化异常：
+
+| 异常 | 触发时机 |
+|------|----------|
+| `ValidationError` | 参数无效（如非法的 `page` 页码等） |
+| `NotFoundError` | 页面或文章不存在（超出范围的页码或未知的文章 ID — vlr.gg 对此类情况会返回通用页面，SDK 会通过内容解析进行识别） |
+| `RequestError` | 网络失败或 HTTP 错误 |
+| `RateLimitError` | 请求过于频繁 (HTTP 429) |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import ValidationError, RequestError
+
+try:
+    result = vlrdevapi.news(page=1)
+    print(f"成功获取 {len(result.news)} 条新闻")
+except ValidationError as e:
+    print(f"输入参数无效: {e}")
+except RequestError as e:
+    print(f"请求失败: {e}")
+```

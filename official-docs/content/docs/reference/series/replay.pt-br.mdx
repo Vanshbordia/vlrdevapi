@@ -1,0 +1,180 @@
+---
+title: Replay da Série (Series Replay)
+description: "Obtenha a linha do tempo do replay com o kill-feed de cada round - abates com armas e coordenadas espaciais, plantas e desarmes de Spike, ressurreições e ângulos de visão."
+---
+
+`series.replay(series_id, game_id)` retorna a linha do tempo de replay do kill-feed para cada rodada de um mapa específico dentro de uma série no vlr.gg (aba logs).
+
+## Assinatura
+
+```python
+series.replay(
+    series_id: int,
+    game_id: int,
+) -> ReplayData
+```
+
+Com acesso curried:
+
+```python
+vlrdevapi.series(series_id).replay(game_id: int) -> ReplayData
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único da série no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+  "game_id": {
+    description: "Número do mapa na série (base 1) ou seu game ID numérico real do vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+}} />
+
+## Retorno - `ReplayData`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único da série no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: "Identificador do mapa no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team1": {
+    description: "Nome da Equipe 1.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2": {
+    description: "Nome da Equipe 2.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1_id": {
+    description: "ID da Equipe 1 no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2_id": {
+    description: "ID da Equipe 2 no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "num_rounds": {
+    description: "Quantidade de rounds com dados de replay registrados.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "rounds": {
+    description: "Lista de rounds do replay em ordem cronológica.",
+    type: "list[ReplayRound]",
+    typeDescription: "list[ReplayRound] - veja os campos abaixo",
+    default: "[]",
+  },
+}} />
+
+### Método auxiliar `round(round_number)`
+
+`ReplayData.round(n)` retorna o `ReplayRound` para uma rodada específica (base 1) ou `None` caso não haja dados.
+
+## `ReplayRound`
+
+<TypeTable type={{
+  "round_number": {
+    description: "Número da rodada.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "attacking": {
+    description: "Nome da equipe que iniciou no ataque nesta rodada.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "loadouts": {
+    description: "Loadout da fase de compra dos 10 jogadores (arma equipada, escudo e créditos).",
+    type: "list[PlayerRoundLoadout]",
+    typeDescription: "list[PlayerRoundLoadout]",
+    default: "[]",
+  },
+  "players": {
+    description: "Os dez jogadores com ID real, agente, equipe e lado.",
+    type: "list[ReplayPlayerRef]",
+    typeDescription: "list[ReplayPlayerRef]",
+    default: "[]",
+  },
+  "events": {
+    description: "Eventos ordenados do kill-feed (incluindo 'boom' e 'resurrect' derivados).",
+    type: "list[ReplayEvent]",
+    typeDescription: "list[ReplayEvent]",
+    default: "[]",
+  },
+  "boom_at": {
+    description: "Marcador de detonação da Spike.",
+    type: "int | None",
+    typeDescription: "int or None",
+  },
+}} />
+
+## Exemplos
+
+### Kill-feed da Rodada 1
+
+```python
+import vlrdevapi
+
+replay = vlrdevapi.series.replay(series_id=754737, game_id=283288)
+print(f"{replay.team1} vs {replay.team2} ({replay.num_rounds} rounds)")
+
+for ev in replay.round(1).events:
+    who = ev.actor.name if ev.actor else "-"
+    print(f"{ev.seq}. {ev.seconds}s {ev.type.full_name}: {who}", end="")
+    if ev.cause:
+        print(f" ({ev.cause})", end="")
+    if ev.victim:
+        print(f" -> {ev.victim.name}", end="")
+    print()
+```
+
+### Plantas e detonação da Spike
+
+```python
+import vlrdevapi
+from vlrdevapi._series.replay.models import ReplayEventType
+
+replay = vlrdevapi.series.replay(series_id=754737, game_id=283288)
+
+for ev in replay.round(14).events:
+    if ev.type in (ReplayEventType.PLANT, ReplayEventType.DEFUSE, ReplayEventType.BOOM):
+        print(f"{ev.clock or '-'} {ev.type.full_name} no bombsite {ev.site} em ({ev.pos_x}, {ev.pos_y})")
+```
+
+### Acesso curried
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(754737)
+replay = series.replay(game_id=283288)
+round_1 = replay.round(1)
+for ld in round_1.loadouts[:4]:
+    print(f"{ld.name} ({ld.agent}): {ld.weapon} + {ld.armor} (${ld.spent} gastos)")
+```\n

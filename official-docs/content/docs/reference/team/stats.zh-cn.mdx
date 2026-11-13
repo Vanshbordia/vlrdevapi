@@ -1,0 +1,274 @@
+---
+title: 战队数据统计 (Team Stats)
+description: "获取战队在可配置日期范围内的地图与特工阵容统计，支持按赛事/系列赛过滤以及细化特工阵容数据。"
+---
+
+`team.stats(team_id, ...)` 返回指定战队在 vlr.gg 上的地图级竞技统计数据，支持灵活的日期区间筛选以及可选的特工阵容胜率分析。
+
+## 函数签名
+
+```python
+team.stats(
+    team_id: int,
+    date_start: date | None = None,
+    date_end: date | None = None,
+    event_id: int | None = None,
+    series_id: int | None = None,
+    subseries_id: int | None = None,
+    last_days: int | None = None,
+    agent_composition: AgentCompositionLevel = "none",
+) -> TeamStats
+```
+
+## 参数
+
+<TypeTable type={{
+  "team_id": {
+    description: "vlr.gg 上的唯一战队 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+  "date_start": {
+    description: "统计开始日期（包含当天）。默认取 30 天前。",
+    type: "date | None",
+    typeDescription: "datetime.date - ISO 格式日期 (2025-01-01) 或 None",
+    default: "None",
+    required: false,
+  },
+  "date_end": {
+    description: "统计结束日期（包含当天）。默认取今天。",
+    type: "date | None",
+    typeDescription: "datetime.date - ISO 格式日期或 None",
+    default: "None",
+    required: false,
+  },
+  "event_id": {
+    description: "按特定赛事 ID 进行数据筛选。",
+    type: "int | None",
+    typeDescription: "int - vlr.gg 上的赛事 ID 或 None",
+    default: "None",
+    required: false,
+  },
+  "series_id": {
+    description: "按特定系列赛 ID 进行数据筛选。",
+    type: "int | None",
+    typeDescription: "int - 系列赛 ID 或 None",
+    default: "None",
+    required: false,
+  },
+  "subseries_id": {
+    description: "按子系列赛 ID 进行数据筛选。",
+    type: "int | None",
+    typeDescription: "int - 子系列赛 ID 或 None",
+    default: "None",
+    required: false,
+  },
+  "last_days": {
+    description: "快捷参数：直接指定统计最近 N 天的数据。",
+    type: "int | None",
+    typeDescription: "int - 天数（例如 90）或 None",
+    default: "None",
+    required: false,
+  },
+  "agent_composition": {
+    description: "特工阵容分析的细化层级。",
+    type: "AgentCompositionLevel",
+    typeDescription: '"none" - 不包含特工阵容 | "basic" - 包含阵容胜率但不含具体比赛详情 | "detailed" - 包含各阵容的完整比赛细节',
+    default: '"none"',
+    required: false,
+  },
+}} />
+
+## 返回值 - `TeamStats`
+
+<TypeTable type={{
+  "team_id": {
+    description: "战队 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "maps": {
+    description: "各张地图的竞技表现统计（仅包含实际进行了比赛的地图）。",
+    type: "list[MapStats]",
+    typeDescription: "list[MapStats] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+}} />
+
+### `MapStats` 字段说明
+
+<TypeTable type={{
+  "map_name": {
+    description: "地图名称（例如 'Haven', 'Bind'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "games_played": {
+    description: "在该地图上进行的比赛场次总数。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "win_rate": {
+    description: "地图胜率百分比数值（例如 33.0 代表 33%）。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "wins": {
+    description: "获胜场次数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "losses": {
+    description: "落败场次数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "attack_first": {
+    description: "先作为进攻方开局的次数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "defense_first": {
+    description: "先作为防守方开局的次数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "attack_round_win_rate": {
+    description: "进攻方回合胜率百分比。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "attack_rounds_won": {
+    description: "进攻方获胜回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "attack_rounds_lost": {
+    description: "进攻方落败回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "defense_round_win_rate": {
+    description: "防守方回合胜率百分比。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "defense_rounds_won": {
+    description: "防守方获胜回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "defense_rounds_lost": {
+    description: "防守方落败回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "compositions": {
+    description: "该地图上采用的特工阵容列表（若请求）。",
+    type: "list[AgentComposition] | None",
+    typeDescription: "list[AgentComposition] | None",
+    default: "None",
+  },
+}} />
+
+### `AgentComposition` 字段说明
+
+<TypeTable type={{
+  "agents": {
+    description: "特工名称列表（按首字母排序归一化）。",
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+  "games_played": {
+    description: "采用此套特工阵容的比赛局数。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "wins": {
+    description: "采用该阵容获胜局数。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "losses": {
+    description: "采用该阵容落败局数。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "win_rate": {
+    description: "该特工阵容的胜率百分比。",
+    type: "float",
+    typeDescription: "float",
+    default: "0.0",
+  },
+  "matches": {
+    description: "阵容对应的详细比赛列表（仅在 'detailed' 模式下返回）。",
+    type: "list[CompositionMatchDetails] | None",
+    typeDescription: "list[CompositionMatchDetails] | None",
+    default: "None",
+  },
+}} />
+
+## 示例
+
+### 默认查询最近 30 天的地图数据
+
+```python
+# doc-check: allow-empty
+import vlrdevapi
+
+stats = vlrdevapi.team.stats(team_id=2593)
+print(f"战队 {stats.team_id} 的地图战绩:")
+for m in stats.maps:
+    wr = f"{m.win_rate:.0f}%" if m.win_rate is not None else "N/A"
+    atk_wr = f"{m.attack_round_win_rate:.0f}%" if m.attack_round_win_rate is not None else "N/A"
+    def_wr = f"{m.defense_round_win_rate:.0f}%" if m.defense_round_win_rate is not None else "N/A"
+    print(f"  {m.map_name}: {m.games_played} 场 | {wr} 胜率 | 攻 {atk_wr} | 防 {def_wr}")
+```
+
+### 分析特工阵容出场与胜率
+
+```python
+# doc-check: allow-empty
+import vlrdevapi
+
+stats = vlrdevapi.team.stats(team_id=2593, last_days=90, agent_composition="basic")
+for m in stats.maps:
+    print(f"\n{m.map_name}:")
+    if m.compositions:
+        for comp in m.compositions[:3]:
+            agents = ", ".join(comp.agents)
+            print(f"  [{agents}] {comp.games_played}局 - {comp.wins}胜 / {comp.losses}负 ({comp.win_rate:.0f}%)")
+    else:
+        print("  (暂无特工阵容数据)")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+stats = team.stats(last_days=90)
+if stats.maps:
+    best_map = max(stats.maps, key=lambda m: m.win_rate or 0)
+    print(f"胜率最高的主场地图: {best_map.map_name} (胜率 {best_map.win_rate:.0f}%)")
+```\n

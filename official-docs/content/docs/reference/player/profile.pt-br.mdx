@@ -1,0 +1,156 @@
+---
+title: Perfil do Jogador (Player Profile)
+description: "Obtenha um perfil consolidado do jogador - reúne dados básicos, equipe atual, principais agentes e pseudônimos em uma única chamada."
+---
+
+`player.profile(player_id)` retorna um perfil consolidado combinando informações cadastrais, equipe atual e estatísticas dos principais agentes.
+
+## Assinatura
+
+```python
+player.profile(player_id: int) -> PlayerProfile
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "player_id": {
+    description: "Identificador único do jogador no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `PlayerProfile`
+
+<TypeTable type={{
+  "player_id": {
+    description: "Identificador único do jogador no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nick do jogador no jogo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "real_name": {
+    description: "Nome real do jogador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "img": {
+    description: "URL da foto de perfil do jogador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "x_link": {
+    description: "URL do perfil no X (Twitter).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "x_handle": {
+    description: "Handle do jogador no X (Twitter).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "twitch_link": {
+    description: "URL do canal na Twitch.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "twitch_handle": {
+    description: "Handle do canal na Twitch.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "País de origem do jogador (ex: 'BRAZIL').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_code": {
+    description: "Código de país de duas letras em minúsculas (ex: 'br').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "aliases": {
+    description: "Pseudônimos e nicks anteriores do jogador.",
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+  "current_team": {
+    description: "Equipe atual do jogador, se houver.",
+    type: "PlayerTeam | None",
+    typeDescription: "PlayerTeam | None",
+    default: "None",
+  },
+  "top_agents": {
+    description: "Agentes mais jogados, ordenados por taxa de uso.",
+    type: "list[AgentStats]",
+    typeDescription: "list[AgentStats]",
+    default: "[]",
+  },
+  "stats_timespan": {
+    description: "Período temporal aplicado nas estatísticas dos agentes ('30d' ou 'all').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Exemplos
+
+### Visão geral completa do perfil
+
+O método `profile` combina dados cadastrais, equipe atual e principais agentes em uma única consulta simplificada.
+
+```python
+import vlrdevapi
+
+profile = vlrdevapi.player.profile(player_id=438)
+print(f"{profile.name} ({profile.real_name})")
+print(f"País: {profile.country}")
+team_name = profile.current_team.name if profile.current_team else "(sem equipe)"
+print(f"Equipe: {team_name}")
+print("Principais agentes:")
+if profile.top_agents:
+    for a in profile.top_agents[:3]:
+        print(f"  {a.agent}: {a.rating} rating, {a.kd} KD")
+else:
+    print("  (sem dados de agentes)")
+```
+
+### Resumo das redes sociais
+
+```python
+import vlrdevapi
+
+profile = vlrdevapi.player.profile(player_id=438)
+print(f"X: {profile.x_handle} ({profile.x_link})")
+print(f"Twitch: {profile.twitch_handle} ({profile.twitch_link})")
+```
+
+### Acesso curried
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(438)
+profile = player.profile()
+if profile.top_agents:
+    best_agent = max(profile.top_agents, key=lambda a: a.rating or 0)
+    print(f"Melhor agente de {profile.name}: {best_agent.agent} ({best_agent.rating} rating)")
+```\n

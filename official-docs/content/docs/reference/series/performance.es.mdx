@@ -1,0 +1,274 @@
+---
+title: Rendimiento de la Serie (Series Performance)
+description: "Obtén datos avanzados de rendimiento: matrices de bajas (todas las bajas, first kills, bajas de Operator) y estadísticas de multikills y clutches."
+---
+
+`series.performance(series_id, game_id)` devuelve datos analíticos avanzados de rendimiento para una partida, incluyendo matrices completas de enfrentamientos individuales y estadísticas detalladas por jugador.
+
+## Firma
+
+```python
+series.performance(
+    series_id: int,
+    game_id: int | str = "all",
+) -> PerformanceData
+```
+
+Con acceso curried:
+
+```python
+vlrdevapi.series(series_id).performance(game_id: int | str = "all") -> PerformanceData
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único de la serie en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+  "game_id": {
+    description: 'Número de mapa en la serie (base 1) o "all" para datos globales acumulados.',
+    type: "int | str",
+    typeDescription: 'int o "all"',
+    default: '"all"',
+    required: false,
+  },
+}} />
+
+## Retorno - `PerformanceData`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único de la serie en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: 'Identificador del mapa ("all" o ID numérico).',
+    type: "str",
+    typeDescription: "str",
+    default: '"all"',
+  },
+  "all_kills_matrix": {
+    description: "Matriz completa de bajas que muestra quién eliminó a quién.",
+    type: "KillMatrix",
+    typeDescription: "KillMatrix - consulta los campos a continuación",
+  },
+  "first_kills_matrix": {
+    description: "Matriz de primeras bajas (duelos iniciales de cada ronda).",
+    type: "KillMatrix",
+    typeDescription: "KillMatrix",
+  },
+  "op_kills_matrix": {
+    description: "Matriz de bajas realizadas con Operator.",
+    type: "KillMatrix",
+    typeDescription: "KillMatrix",
+  },
+  "adv_stats": {
+    description: "Estadísticas avanzadas por jugador (bajas múltiples, clutches, etc.).",
+    type: "list[AdvStatsEntry]",
+    typeDescription: "list[AdvStatsEntry] - consulta los campos a continuación",
+    default: "[]",
+  },
+}} />
+
+### Campos de `KillMatrix`
+
+<TypeTable type={{
+  "entries": {
+    description: "Lista de registros de bajas (quién mató a quién, totales y diferencial).",
+    type: "list[KillEntry]",
+    typeDescription: "list[KillEntry]",
+    default: "[]",
+  },
+}} />
+
+`KillMatrix` ofrece métodos auxiliares: `lookup(killer, victim)`, `by_killer(name)`, `by_victim(name)`, `by_team(team)`, `killers()`, `victims()`.
+
+### Campos de `KillEntry`
+
+<TypeTable type={{
+  "killer": {
+    description: "Nombre del jugador atacante.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "killer_id": {
+    description: "ID del jugador atacante en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "killer_team": {
+    description: "Tag del equipo atacante.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "victim": {
+    description: "Nombre del jugador eliminado.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "victim_id": {
+    description: "ID del jugador eliminado en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "victim_team": {
+    description: "Tag del equipo de la víctima.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "kills": {
+    description: "Bajas totales conseguidas en este emparejamiento.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "deaths": {
+    description: "Muertes recibidas en este emparejamiento.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "diff": {
+    description: "Diferencial de bajas y muertes.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `AdvStatsEntry`
+
+<TypeTable type={{
+  "player_id": {
+    description: "Identificador del jugador en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nombre en el juego del jugador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team_short": {
+    description: "Tag del equipo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "Agente jugado.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "two_k": {
+    description: "Rondas con exactamente 2 bajas.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "three_k": {
+    description: "Rondas con exactamente 3 bajas.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "four_k": {
+    description: "Rondas con exactamente 4 bajas.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "five_k": {
+    description: "Rondas con 5 bajas (Ace).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v1": {
+    description: "Clutches 1v1 ganados.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v2": {
+    description: "Clutches 1v2 ganados.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v3": {
+    description: "Clutches 1v3 ganados.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v4": {
+    description: "Clutches 1v4 ganados.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v5": {
+    description: "Clutches 1v5 ganados.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "economy": {
+    description: "Puntuación económica (Econ rating).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "plants": {
+    description: "Número de plantas de Spike.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "defuses": {
+    description: "Número de desactivaciones de Spike.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+## Ejemplos
+
+### Matriz de bajas
+
+```python
+import vlrdevapi
+
+perf = vlrdevapi.series.performance(series_id=670471, game_id=1)
+if perf.all_kills_matrix.entries:
+    for entry in perf.all_kills_matrix.entries[:5]:
+        print(f"{entry.killer} ({entry.killer_team}) eliminó a {entry.victim} ({entry.victim_team})")
+```
+
+### Acceso curried
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+perf = series.performance(game_id=1)
+for player in perf.adv_stats[:3]:
+    print(f"{player.name} - 3K: {player.three_k} | 4K: {player.four_k} | Ace: {player.five_k}")
+```\n

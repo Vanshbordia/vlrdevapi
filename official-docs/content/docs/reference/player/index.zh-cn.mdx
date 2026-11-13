@@ -1,0 +1,77 @@
+---
+title: 选手 API 概述 (Player API)
+description: "Player 命名空间提供对 vlr.gg 独立选手数据的访问：基本资料、队伍变动、特工表现统计、比赛历史、赛事名次及综合选手档案。"
+icon: User
+---
+
+选手 API 提供了获取 vlr.gg 网站上各职业选手详细数据的能力。你可以通过 `vlrdevapi.player(id)`（柯里化链式访问）或显式的 `VLRClient` 实例进行调用。
+
+<Callout type="info">
+所有子命名空间均支持惰性初始化，并共享相同的 HTTP 客户端设置、超时时间、重试策略与速率限制规则。
+</Callout>
+
+## 访问模式
+
+### 模块级（默认客户端）
+
+```python
+import vlrdevapi
+
+# 直接访问（每次传入 player_id）
+info = vlrdevapi.player.info(player_id=438)
+print(f"{info.name} ({info.real_name})")
+
+# 柯里化访问 - 仅传入一次 player_id，连续调用不同方法
+player = vlrdevapi.player(438)
+info = player.info()
+print(f"国家/地区: {info.country}")
+agents = player.agents(timespan="60d")
+print(f"选用特工数量: {len(agents.agents)}")
+```
+
+### 显式客户端
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=30, requests_per_second=8) as client:
+    p = client.player(438)
+    info = p.info()
+    print(f"选手: {info.name} ({info.real_name}) 来自 {info.country}")
+```
+
+## 子命名空间参考
+
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| [`player.info(player_id)`](./info) | `PlayerInfo` | 基础资料 - 比赛 ID、真实姓名、国籍与社交账号链接 |
+| [`player.teams(player_id)`](./teams) | `PlayerTeams` | 当前与曾效力的战队记录 |
+| [`player.agents(player_id, timespan)`](./agents) | `AgentStatsPage` | 指定时间范围内的各特工详细竞技数据 |
+| [`player.matches(player_id, limit)`](./matches) | `PlayerMatches` | 选手的近期历史比赛记录 |
+| [`player.placements(player_id)`](./placements) | `PlayerPlacements` | 赛事最终名次与生涯总奖金 |
+| [`player.profile(player_id)`](./profile) | `PlayerProfile` | 整合档案 - 包含基础资料、所属战队与主力特工 |
+
+## 常见异常处理
+
+所有 player 方法均会抛出来自 `vlrdevapi.exceptions` 的类型化异常：
+
+| 异常 | 触发时机 |
+|------|----------|
+| `ValidationError` | 参数无效（如非法的 `player_id`、错误的 `timespan` 等） |
+| `NotFoundError` | 选手页面不存在 (HTTP 404) |
+| `RequestError` | 网络失败或 HTTP 错误 |
+| `RateLimitError` | 请求过于频繁 (HTTP 429) |
+| `ParsingError` | 页面 HTML 结构无法被正确解析 |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import NotFoundError, ValidationError
+
+try:
+    info = vlrdevapi.player.info(player_id=438)
+    print(f"选手: {info.name}")
+except NotFoundError:
+    print("未找到该选手")
+except ValidationError as e:
+    print(f"输入参数无效: {e}")
+```\n

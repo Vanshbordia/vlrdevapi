@@ -1,0 +1,152 @@
+---
+title: Plantilla del Equipo (Team Roster)
+description: "Obtén la alineación actual de un equipo: jugadores y cuerpo técnico con roles, condición de capitán y fotografías oficiales."
+---
+
+`team.roster(team_id)` devuelve la plantilla activa de un equipo en vlr.gg, desglosando jugadores y equipo técnico.
+
+## Firma
+
+```python
+team.roster(team_id: int) -> TeamRoster
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador único del equipo en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `TeamRoster`
+
+<TypeTable type={{
+  "players": {
+    description: "Lista de jugadores del equipo.",
+    type: "list[Player]",
+    typeDescription: "list[Player] - consulta los campos detallados a continuación",
+    default: "[]",
+  },
+  "staff": {
+    description: "Lista de miembros del cuerpo técnico.",
+    type: "list[Player]",
+    typeDescription: "list[Player]",
+    default: "[]",
+  },
+}} />
+
+### Campos de `Player`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador único del jugador/técnico en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "ign": {
+    description: "Nombre en el juego (in-game name).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "real_name": {
+    description: "Nombre real.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "País de origen.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "roles": {
+    description: 'Lista de funciones (ej. ["Player"], ["Head Coach"]).',
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+  "is_captain": {
+    description: "Indica si el jugador es capitán de la escuadra.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "photo_url": {
+    description: "URL de la foto de perfil oficial.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "is_active": {
+    description: "Indica si el jugador forma parte activa de la alineación.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "True",
+  },
+  "is_sub": {
+    description: "Indica si el jugador figura como suplente.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+## Ejemplos
+
+### Listar jugadores activos
+
+```python
+import vlrdevapi
+
+roster = vlrdevapi.team.roster(team_id=2593)
+print(f"Jugadores ({len(roster.players)}):")
+for p in roster.players:
+    cap = " (c)" if p.is_captain else ""
+    status = ""
+    if not p.is_active:
+        status = " [inactivo]"
+    elif p.is_sub:
+        status = " [suplente]"
+    print(f"  {p.ign}{cap} - {p.real_name} ({p.country}){status}")
+```
+
+### Listar cuerpo técnico
+
+```python
+import vlrdevapi
+
+roster = vlrdevapi.team.roster(team_id=2593)
+print(f"Cuerpo Técnico ({len(roster.staff)}):")
+for s in roster.staff:
+    print(f"  {s.ign} - {', '.join(s.roles)}")
+```
+
+### Consultar suplentes e inactivos
+
+```python
+import vlrdevapi
+
+roster = vlrdevapi.team.roster(team_id=2593)
+subs = [p.ign for p in roster.players if p.is_sub]
+inactive = [p.ign for p in roster.players if not p.is_active]
+print(f"Suplentes: {subs}")
+print(f"Inactivos: {inactive}")
+```
+
+### Acceso curried
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+roster = team.roster()
+for p in roster.players:
+    print(f"{p.ign} ({p.real_name})")
+```\n

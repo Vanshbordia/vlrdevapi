@@ -1,0 +1,152 @@
+---
+title: 战队阵容名单 (Team Roster)
+description: "获取战队当前的活跃名单阵容：包含现役选手与教练组、职务角色、队长身份及官方照片。"
+---
+
+`team.roster(team_id)` 返回指定战队在 vlr.gg 上的当前成员名单，涵盖选手与教练管理人员。
+
+## 函数签名
+
+```python
+team.roster(team_id: int) -> TeamRoster
+```
+
+## 参数
+
+<TypeTable type={{
+  "team_id": {
+    description: "vlr.gg 上的唯一战队 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+}} />
+
+## 返回值 - `TeamRoster`
+
+<TypeTable type={{
+  "players": {
+    description: "战队选手列表。",
+    type: "list[Player]",
+    typeDescription: "list[Player] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+  "staff": {
+    description: "教练与赛训管理团队人员列表。",
+    type: "list[Player]",
+    typeDescription: "list[Player]",
+    default: "[]",
+  },
+}} />
+
+### `Player` 字段说明
+
+<TypeTable type={{
+  "id": {
+    description: "成员在 vlr.gg 上的唯一 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "ign": {
+    description: "游戏比赛 ID (In-game name)。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "real_name": {
+    description: "真实姓名。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "国籍/地区名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "roles": {
+    description: '在队内的职务角色列表（例如 ["Player"], ["Head Coach"]）。',
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+  "is_captain": {
+    description: "是否为战队队长 (IGL)。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "photo_url": {
+    description: "成员官方肖像照片 URL。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "is_active": {
+    description: "当前是否属于主力活跃在队状态。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "True",
+  },
+  "is_sub": {
+    description: "是否属于替补队员身份。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+## 示例
+
+### 查看现役选手
+
+```python
+import vlrdevapi
+
+roster = vlrdevapi.team.roster(team_id=2593)
+print(f"选手列表 ({len(roster.players)} 人):")
+for p in roster.players:
+    cap = " (队长)" if p.is_captain else ""
+    status = ""
+    if not p.is_active:
+        status = " [非活跃]"
+    elif p.is_sub:
+        status = " [替补]"
+    print(f"  {p.ign}{cap} - {p.real_name} ({p.country}){status}")
+```
+
+### 查看教练与战队职员
+
+```python
+import vlrdevapi
+
+roster = vlrdevapi.team.roster(team_id=2593)
+print(f"教练团队 ({len(roster.staff)} 人):")
+for s in roster.staff:
+    print(f"  {s.ign} - {', '.join(s.roles)}")
+```
+
+### 筛选替补与非活跃选手
+
+```python
+import vlrdevapi
+
+roster = vlrdevapi.team.roster(team_id=2593)
+subs = [p.ign for p in roster.players if p.is_sub]
+inactive = [p.ign for p in roster.players if not p.is_active]
+print(f"替补名单: {subs}")
+print(f"非活跃队员: {inactive}")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+roster = team.roster()
+for p in roster.players:
+    print(f"{p.ign} ({p.real_name})")
+```\n

@@ -1,0 +1,266 @@
+---
+title: 比赛系列赛总览 (Series Info)
+description: "获取单场比赛的总览信息：参赛队伍、最终大比分、所属赛事、历史交锋、BP 选图及分地图比分。"
+---
+
+`series.info(series_id)` 返回 vlr.gg 网站上单场比赛（系列赛）的总览信息，包括两队资料、系列赛大比分、赛事背景、BP 地图禁选记录以及各小局的比分结果。
+
+## 函数签名
+
+```python
+series.info(series_id: int) -> SeriesInfo
+```
+
+通过柯里化链式访问：
+
+```python
+vlrdevapi.series(series_id).info() -> SeriesInfo
+```
+
+## 参数
+
+<TypeTable type={{
+  "series_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+}} />
+
+## 返回值 - `SeriesInfo`
+
+<TypeTable type={{
+  "series_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "status": {
+    description: '比赛进行状态："completed"（完赛）, "live"（进行中）或 "upcoming"（未开赛）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1": {
+    description: "第一支战队信息。",
+    type: "SeriesTeam",
+    typeDescription: "SeriesTeam - 详见下方字段说明",
+  },
+  "team2": {
+    description: "第二支战队信息。",
+    type: "SeriesTeam",
+    typeDescription: "SeriesTeam - 详见下方字段说明",
+  },
+  "score1": {
+    description: "第一支战队的大比分（获胜地图局数）。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "score2": {
+    description: "第二支战队的大比分（获胜地图局数）。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "best_of": {
+    description: "比赛赛制（例如 1 为 Bo1 单图，3 为 Bo3，5 为 Bo5）。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "event_id": {
+    description: "赛事在 vlr.gg 上的唯一 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "event_name": {
+    description: '赛事名称（例如 "Valorant Champions 2025"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: '赛事阶段（例如 "Playoffs"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "bracket": {
+    description: '具体轮次组别（例如 "Grand Final", "Upper Round 1"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "datetime": {
+    description: "UTC 开赛完整时间。",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+  "patch": {
+    description: '比赛采用的游戏补丁版本号（例如 "11.05"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "veto": {
+    description: "BP 阶段选图禁图记录列表。",
+    type: "list[MapVeto]",
+    typeDescription: "list[MapVeto] - 详见下方字段说明",
+    default: "[]",
+  },
+  "games": {
+    description: "系列赛各小局地图对阵及比分详情。",
+    type: "list[SeriesGame]",
+    typeDescription: "list[SeriesGame] - 详见下方字段说明",
+    default: "[]",
+  },
+  "forfeit": {
+    description: "若发生弃赛或判负，记录弃权详情 (ForfeitInfo)。",
+    type: "ForfeitInfo",
+    typeDescription: "ForfeitInfo",
+  },
+  "notes": {
+    description: "技术暂停或重开局等比赛备忘记录。",
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+  "head_to_head": {
+    description: "两支战队在过往赛事中的历史交锋对战记录。",
+    type: "list[SeriesHeadToHeadMatch]",
+    typeDescription: "list[SeriesHeadToHeadMatch]",
+    default: "[]",
+  },
+}} />
+
+### `SeriesTeam` 字段说明
+
+<TypeTable type={{
+  "id": {
+    description: "战队在 vlr.gg 上的唯一 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: '战队全称（例如 "EDward Gaming", "FNATIC"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: '战队比赛 Tag 缩写（例如 "EDG", "FNC"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "logo_url": {
+    description: "战队队标 Logo 图片的 URL。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `MapVeto` 字段说明
+
+<TypeTable type={{
+  "map_name": {
+    description: '地图名称（例如 "Lotus", "Haven"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "veto_type": {
+    description: 'BP 行为类型："ban"（禁用）, "pick"（选用）或 "decider"（决胜图）。',
+    type: "str",
+    typeDescription: '"ban" | "pick" | "decider"',
+    default: '""',
+  },
+  "team": {
+    description: "执行选图或禁图操作的战队（决胜图留空）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `SeriesGame` 字段说明
+
+<TypeTable type={{
+  "game_id": {
+    description: "该小局地图在 vlr.gg 上的唯一 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "order": {
+    description: "该地图在系列赛中的出场顺序（从 1 开始）。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "map_name": {
+    description: '地图名称（例如 "Split", "Bind"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "picked_by": {
+    description: "选择该地图的战队 Tag（决胜图留空）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "played": {
+    description: "该小局是否实际进行了比赛（未进行的局为 False）。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "True",
+  },
+  "team1_score": {
+    description: "第一支战队在该图的小分得分。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_score": {
+    description: "第二支战队在该图的小分得分。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+## 示例
+
+### 查看比赛对阵总览
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.series.info(series_id=670471)
+print(f"{info.team1.name} {info.score1} - {info.score2} {info.team2.name}")
+print(f"所属赛事: {info.event_name} ({info.stage})")
+print(f"比赛状态: {info.status}")
+for g in info.games:
+    if g.played:
+        print(f"  {g.map_name}: {g.team1_score} - {g.team2_score}")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+info = series.info()
+print(f"选图 BP 记录 ({len(info.veto)} 条):")
+for v in info.veto:
+    print(f"  {v.team} {v.veto_type} {v.map_name}")
+```\n

@@ -1,0 +1,77 @@
+---
+title: Visão Geral da API de Jogadores (Player API)
+description: "O namespace Player fornece acesso aos dados de jogadores individuais do vlr.gg - informações, equipes, estatísticas de agentes, histórico de partidas, colocações e perfil consolidado."
+icon: User
+---
+
+A API de Jogadores oferece dados detalhados para jogadores individuais no vlr.gg. É acessada via `vlrdevapi.player(id)` (acesso curried) ou através de uma instância explícita de `VLRClient`.
+
+<Callout type="info">
+Todos os sub-namespaces são inicializados sob demanda (lazy) e compartilham as mesmas configurações do cliente HTTP: timeout, tentativas de repetição e limites de taxa.
+</Callout>
+
+## Padrões de Acesso
+
+### Nível de módulo (cliente padrão)
+
+```python
+import vlrdevapi
+
+# Acesso direto (passando player_id a cada chamada)
+info = vlrdevapi.player.info(player_id=438)
+print(f"{info.name} ({info.real_name})")
+
+# Acesso curried - passe o player_id uma única vez e encadeie os métodos
+player = vlrdevapi.player(438)
+info = player.info()
+print(f"País: {info.country}")
+agents = player.agents(timespan="60d")
+print(f"Agentes jogados: {len(agents.agents)}")
+```
+
+### Cliente explícito
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=30, requests_per_second=8) as client:
+    p = client.player(438)
+    info = p.info()
+    print(f"{info.name} ({info.real_name}) de {info.country}")
+```
+
+## Referência de Sub-namespaces
+
+| Método | Retorno | Descrição |
+|--------|---------|-----------|
+| [`player.info(player_id)`](./info) | `PlayerInfo` | Informações básicas do jogador - nick, nome real, país e redes sociais |
+| [`player.teams(player_id)`](./teams) | `PlayerTeams` | Equipes atuais e passadas |
+| [`player.agents(player_id, timespan)`](./agents) | `AgentStatsPage` | Estatísticas por agente em um intervalo de tempo |
+| [`player.matches(player_id, limit)`](./matches) | `PlayerMatches` | Histórico de partidas do jogador |
+| [`player.placements(player_id)`](./placements) | `PlayerPlacements` | Colocações em eventos e premiação total acumulada |
+| [`player.profile(player_id)`](./profile) | `PlayerProfile` | Perfil consolidado - dados básicos, equipe atual e principais agentes |
+
+## Tratamento Comum de Erros
+
+Todos os métodos de jogador levantam exceções tipadas de `vlrdevapi.exceptions`:
+
+| Exceção | Quando é Lançada |
+|---------|------------------|
+| `ValidationError` | Argumentos inválidos (`player_id` incorreto, `timespan` inválido, etc.) |
+| `NotFoundError` | Página do jogador não encontrada (HTTP 404) |
+| `RequestError` | Falha de conexão ou erro HTTP |
+| `RateLimitError` | Excesso de requisições (HTTP 429) |
+| `ParsingError` | Estrutura da página desconhecida ou alterada |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import NotFoundError, ValidationError
+
+try:
+    info = vlrdevapi.player.info(player_id=438)
+    print(f"Jogador: {info.name}")
+except NotFoundError:
+    print("Jogador não encontrado")
+except ValidationError as e:
+    print(f"Entrada inválida: {e}")
+```\n

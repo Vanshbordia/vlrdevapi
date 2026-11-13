@@ -1,0 +1,205 @@
+---
+title: 选手特工统计 (Player Agents)
+description: "获取选手的各特工竞技数据：Rating、ACS、K/D、ADR、KAST 及更多指标，支持自定义时间范围。"
+---
+
+`player.agents(player_id, timespan)` 返回指定选手在 vlr.gg 上按特工分类的详细比赛竞技数据。
+
+## 函数签名
+
+```python
+player.agents(
+    player_id: int,
+    timespan: Literal["30d", "60d", "90d", "all"] = "all",
+) -> AgentStatsPage
+```
+
+## 参数
+
+<TypeTable type={{
+  "player_id": {
+    description: "vlr.gg 上的唯一选手 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+  "timespan": {
+    description: "数据统计的时间周期范围。",
+    type: 'Literal["30d", "60d", "90d", "all"]',
+    typeDescription: '"30d" - 最近 30 天 | "60d" - 最近 60 天 | "90d" - 最近 90 天 | "all" - 生涯全量数据',
+    default: '"all"',
+    required: false,
+  },
+}} />
+
+## 返回值 - `AgentStatsPage`
+
+<TypeTable type={{
+  "timespan": {
+    description: "当前查询所使用的时间范围参数。",
+    type: "str",
+    typeDescription: "str",
+    default: '"all"',
+  },
+  "agents": {
+    description: "各个特工的数据统计条目列表。",
+    type: "list[AgentStats]",
+    typeDescription: "list[AgentStats] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+}} />
+
+### `AgentStats` 字段说明
+
+<TypeTable type={{
+  "agent": {
+    description: "特工名称（例如 'jett'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "use": {
+    description: "出场使用频次与占比（例如 '(12) 46%'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "rounds": {
+    description: "使用该特工的总回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "rating": {
+    description: "选手的 Rating 2.0 评分。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "acs": {
+    description: "平均战斗评分 (Average Combat Score)。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "kd": {
+    description: "击杀/死亡比 (Kill/Death ratio)。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "adr": {
+    description: "回合平均伤害 (Average Damage per Round)。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "kast": {
+    description: "KAST 贡献回合百分比 (击杀、助攻、存活或被补枪)。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "kpr": {
+    description: "回合平均击杀 (Kills per Round)。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "apr": {
+    description: "回合平均助攻 (Assists per Round)。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "kills": {
+    description: "总击杀数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "deaths": {
+    description: "总阵亡数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "assists": {
+    description: "总助攻数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "first_kills": {
+    description: "首杀数 (First Bloods)。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "first_deaths": {
+    description: "被首杀数 (First Deaths)。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+## 示例
+
+### 使用默认时间范围查询特工统计
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.player.agents(player_id=438)
+print(f"统计范围: {stats.timespan}")
+if stats.agents:
+    for a in stats.agents:
+        print(f"{a.agent}: {a.rounds} 回合 | {a.rating} Rating | {a.acs} ACS | {a.kd} KD")
+else:
+    print("未获取到该选手的特工统计数据。")
+```
+
+### 筛选最近 60 天的数据
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.player.agents(player_id=438, timespan="60d")
+if stats.agents:
+    for a in stats.agents:
+        rnd = a.rounds or 0
+        rat = f"{a.rating:.2f}" if a.rating is not None else "N/A"
+        acs = f"{a.acs:.1f}" if a.acs is not None else "N/A"
+        kd = f"{a.kd:.2f}" if a.kd is not None else "N/A"
+        adr = f"{a.adr:.1f}" if a.adr is not None else "N/A"
+        print(f"{a.agent:>8} | {rnd:>3}r | R={rat} | ACS={acs} | K/D={kd} | ADR={adr}")
+else:
+    print("最近 60 天内没有找到特工比赛数据。")
+```
+
+### 查找出场回合最多的招牌特工
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.player.agents(player_id=438, timespan="all")
+if stats.agents:
+    most_played = max(stats.agents, key=lambda a: a.rounds or 0)
+    print(f"出场最多: {most_played.agent} ({most_played.rounds} 回合)")
+    print(f"Rating: {most_played.rating} | KD: {most_played.kd} | ACS: {most_played.acs}")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(438)
+stats = player.agents(timespan="90d")
+if stats.agents:
+    for a in stats.agents:
+        rnd = a.rounds or 0
+        rat = f"{a.rating:.2f}" if a.rating is not None else "N/A"
+        print(f"{a.agent}: {rnd} 回合中 Rating 为 {rat}")
+```\n

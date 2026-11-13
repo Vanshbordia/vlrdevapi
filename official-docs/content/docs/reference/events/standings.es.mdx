@@ -1,0 +1,120 @@
+---
+title: Clasificación del Torneo (Event Standings)
+description: Consulta la tabla de posiciones y grupos de un torneo, agrupada por fase con descargas concurrentes.
+---
+
+`event.standings(event_id)` devuelve la clasificación y tablas de grupos de un torneo, organizadas por fase. Los torneos con múltiples fases se obtienen en paralelo (hasta 5 peticiones concurrentes) para minimizar el tiempo de espera.
+
+## Firma
+
+```python
+event.standings(
+    event_id: int,
+    stage: str | None = None,
+) -> EventStandings
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador numérico único del torneo en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+  "stage": {
+    description: 'Nombre opcional de la fase o ruta de URL para filtrar (ej: "playoffs", "group-stage").',
+    type: "str | None",
+    typeDescription: "str - ruta/nombre de la fase o None para todas",
+    default: "None",
+    required: false,
+  },
+}} />
+
+## Retorno - `EventStandings`
+
+`EventStandings` envuelve una lista de instancias `EventStageStandings` y soporta `__len__`, `__iter__` y `__getitem__`.
+
+<TypeTable type={{
+  "stages": {
+    description: "Lista de fases que contienen las tablas de clasificación correspondientes.",
+    type: "list[EventStageStandings]",
+    typeDescription: "list[EventStageStandings]",
+  },
+}} />
+
+### Campos de `EventStageStandings`
+
+<TypeTable type={{
+  "stage_path": {
+    description: "Segmento de ruta de la fase en la URL.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage_name": {
+    description: "Nombre de la fase para mostrar.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "standings": {
+    description: "Lista de posiciones de los equipos en esta fase.",
+    type: "list[StandingEntry]",
+    typeDescription: "list[StandingEntry]",
+    default: "[]",
+  },
+}} />
+
+### Campos de `StandingEntry`
+
+<TypeTable type={{
+  "team": {
+    description: "Equipo al que corresponde esta posición en la tabla.",
+    type: "Team",
+    typeDescription: "Team - incluye id, name, tag, country, url",
+  },
+  "rank": {
+    description: "Posición numérica en la tabla de clasificación.",
+    type: "int",
+    typeDescription: "int",
+  },
+  "series_record": {
+    description: 'Historial de series ganadas y perdidas (ej: "5-1").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "map_record": {
+    description: 'Historial de mapas ganados y perdidos (ej: "11-4").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "map_diff": {
+    description: "Diferencia de mapas (balance neto de victorias).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "round_diff": {
+    description: "Diferencia de rondas a favor y en contra.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+}} />
+
+## Ejemplos de Código
+
+```python
+import vlrdevapi
+
+standings = vlrdevapi.event(2765).standings()
+
+for stage in standings.stages:
+    print(f"\n--- {stage.stage_name} ---")
+    for entry in stage.standings:
+        print(f"#{entry.rank} {entry.team.name:20s} | Series: {entry.series_record} | Mapas: {entry.map_record}")
+```

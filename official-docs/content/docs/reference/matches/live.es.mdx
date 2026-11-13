@@ -1,0 +1,92 @@
+---
+title: Partidos en Vivo (Live Matches)
+description: "Consulta los partidos que se están jugando en directo en vlr.gg con marcadores y estado en tiempo real."
+---
+
+`matches.live()` devuelve todos los enfrentamientos en curso en este momento en vlr.gg.
+
+## Firma
+
+```python
+matches.live() -> LiveMatchesPage
+```
+
+## Retorno - `LiveMatchesPage`
+
+<TypeTable type={{
+  "matches": {
+    description: "Lista de partidos en juego actualmente.",
+    type: "list[LiveMatchEntry]",
+    typeDescription: "list[LiveMatchEntry] - consulta los campos a continuación",
+    default: "[]",
+  },
+}} />
+
+### Campos de `LiveMatchEntry`
+
+<TypeTable type={{
+  "match_id": {
+    description: "Identificador numérico único del partido en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "Ruta relativa a la ficha del partido en vlr.gg.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "Nombre del torneo o liga.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: 'Fase de la competición (ej: "Playoffs", "Fase Suiza").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1": {
+    description: "Datos del equipo 1 con tanteo en directo y mapas.",
+    type: "TeamInLiveMatch | None",
+    typeDescription: "TeamInLiveMatch | None",
+    default: "None",
+  },
+  "team2": {
+    description: "Datos del equipo 2 con tanteo en directo y mapas.",
+    type: "TeamInLiveMatch | None",
+    typeDescription: "TeamInLiveMatch | None",
+    default: "None",
+  },
+  "status": {
+    description: 'Estado de la partida (ej: "live").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "datetime": {
+    description: "Hora de comienzo programada en UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+## Ejemplos de Código
+
+```python
+import vlrdevapi
+
+live_page = vlrdevapi.matches.live()
+print(f"Partidos disputándose ahora: {len(live_page.matches)}")
+
+for match in live_page.matches:
+    t1 = match.team1.name if match.team1 else "Equipo 1"
+    t2 = match.team2.name if match.team2 else "Equipo 2"
+    s1 = match.team1.score if match.team1 and match.team1.score is not None else 0
+    s2 = match.team2.score if match.team2 and match.team2.score is not None else 0
+    print(f"EN DIRECTO: {t1} [{s1} - {s2}] {t2} | {match.event}")
+```

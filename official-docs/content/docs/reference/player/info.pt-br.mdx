@@ -1,0 +1,154 @@
+---
+title: Informações do Jogador (Player Info)
+description: "Obtenha dados básicos do jogador - nick no jogo, nome real, país, links de redes sociais e pseudônimos conhecidos."
+---
+
+`player.info(player_id)` retorna informações básicas de um jogador no vlr.gg.
+
+## Assinatura
+
+```python
+player.info(player_id: int) -> PlayerInfo
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "player_id": {
+    description: "Identificador único do jogador no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `PlayerInfo`
+
+<TypeTable type={{
+  "player_id": {
+    description: "Identificador único do jogador no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nick do jogador no jogo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "real_name": {
+    description: "Nome real do jogador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "img": {
+    description: "URL da foto de perfil do jogador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "x_link": {
+    description: "URL do perfil no X (antigo Twitter).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "x_handle": {
+    description: "Handle do jogador no X (ex: '@ethanarnold').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "twitch_link": {
+    description: "URL do canal na Twitch.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "twitch_handle": {
+    description: "Handle do canal na Twitch (ex: 'ethancs').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "País de origem do jogador (ex: 'BRAZIL').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_code": {
+    description: "Código de país de duas letras em minúsculas (ex: 'br').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "aliases": {
+    description: "Pseudônimos conhecidos e nicks anteriores.",
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+  "total_winnings": {
+    description: "Total de premiações em dinheiro na carreira, ou None quando não disponível.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "total_winnings_currency": {
+    description: "Símbolo da moeda para o total de premiações (ex: '$').",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+## Exemplos
+
+### Consulta básica do jogador
+
+Obtenha o nick, nome real, país e perfis em redes sociais.
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.player.info(player_id=438)
+print(f"{info.name} ({info.real_name})")
+print(f"País: {info.country}")
+print(f"X: {info.x_handle}")
+print(f"Twitch: {info.twitch_handle}")
+```
+
+### Consultar outros nomes (aliases)
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.player.info(player_id=438)
+aliases = info.aliases if info.aliases else ["(nenhum)"]
+print(f"{info.name} também foi conhecido como: {', '.join(aliases)}")
+```
+
+### Consultar premiação total
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.player.info(player_id=46051)
+if info.total_winnings is not None:
+    print(f"{info.name}: {info.total_winnings_currency}{info.total_winnings:,}")
+else:
+    print(f"{info.name}: premiação não informada")
+```
+
+### Acesso curried
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(438)
+info = player.info()
+print(f"{info.name} - {info.country_code.upper()}")
+```\n

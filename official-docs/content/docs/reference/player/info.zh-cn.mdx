@@ -1,0 +1,152 @@
+---
+title: 选手资料 (Player Info)
+description: "获取选手的基本资料：比赛 ID、真实姓名、国籍、社交媒体主页与曾用名。"
+---
+
+`player.info(player_id)` 返回指定选手在 vlr.gg 上的基础资料。
+
+## 函数签名
+
+```python
+player.info(player_id: int) -> PlayerInfo
+```
+
+## 参数
+
+<TypeTable type={{
+  "player_id": {
+    description: "vlr.gg 上的唯一选手 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+}} />
+
+## 返回值 - `PlayerInfo`
+
+<TypeTable type={{
+  "player_id": {
+    description: "vlr.gg 上的唯一选手 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "选手的比赛游戏 ID（常用名）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "real_name": {
+    description: "选手的真实姓名。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "img": {
+    description: "选手个人头像照片的 URL。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "x_link": {
+    description: "X (原 Twitter) 个人主页链接。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "x_handle": {
+    description: "X (原 Twitter) 用户名（例如 '@ethanarnold'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "twitch_link": {
+    description: "Twitch 直播间主页链接。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "twitch_handle": {
+    description: "Twitch 直播间用户名（例如 'ethancs'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "选手的国籍/地区名称（例如 'CHINA'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_code": {
+    description: "两位小写国家/地区代码（例如 'cn'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "aliases": {
+    description: "选手过往使用的曾用名列表。",
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+  "total_winnings": {
+    description: "职业生涯赛事总奖金额度（数值型），若无则为 None。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "total_winnings_currency": {
+    description: "生涯总奖金货币符号（例如 '$'）。",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+## 示例
+
+### 基础查询选手信息
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.player.info(player_id=438)
+print(f"{info.name} ({info.real_name})")
+print(f"国家/地区: {info.country}")
+print(f"X 用户名: {info.x_handle}")
+print(f"Twitch 用户名: {info.twitch_handle}")
+```
+
+### 查看选手曾用名 (Aliases)
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.player.info(player_id=438)
+aliases = info.aliases if info.aliases else ["(无)"]
+print(f"{info.name} 的曾用名: {', '.join(aliases)}")
+```
+
+### 查询选手总奖金
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.player.info(player_id=46051)
+if info.total_winnings is not None:
+    print(f"{info.name}: {info.total_winnings_currency}{info.total_winnings:,}")
+else:
+    print(f"{info.name}: 暂无奖金数据")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(438)
+info = player.info()
+print(f"{info.name} - {info.country_code.upper()}")
+```\n

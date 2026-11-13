@@ -1,0 +1,116 @@
+---
+title: Times do Evento (Event Teams)
+description: Obtenha as equipes participantes de um evento, agrupadas por etapa com requisições paralelas para torneios multi-etapas.
+---
+
+`event.teams(event_id)` retorna as equipes que disputam o evento, agrupadas por etapa. Quando o evento possui múltiplas etapas, as páginas de times são consultadas em paralelo (até 5 requisições concorrentes) para máxima velocidade.
+
+## Assinatura
+
+```python
+event.teams(
+    event_id: int,
+    stage: str | None = None,
+) -> EventTeams
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador numérico exclusivo do evento no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+  "stage": {
+    description: 'Nome opcional da etapa ou segmento de URL para filtrar (ex: "playoffs", "group-stage").',
+    type: "str | None",
+    typeDescription: "str - caminho/nome da etapa, ou None para todas",
+    default: "None",
+    required: false,
+  },
+}} />
+
+## Retorno - `EventTeams`
+
+`EventTeams` encapsula uma lista de instâncias de `EventStageTeams` e suporta `__len__`, `__iter__` e `__getitem__`.
+
+<TypeTable type={{
+  "stages": {
+    description: "Lista de etapas contendo suas respectivas equipes participantes.",
+    type: "list[EventStageTeams]",
+    typeDescription: "list[EventStageTeams]",
+  },
+}} />
+
+### Campos de `EventStageTeams`
+
+<TypeTable type={{
+  "stage_path": {
+    description: 'Segmento da URL correspondente à etapa (ex: "group-stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage_name": {
+    description: 'Nome de exibição da etapa (ex: "Fase de Grupos").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "teams": {
+    description: "Lista de times participantes desta etapa.",
+    type: "list[Team]",
+    typeDescription: "list[Team]",
+    default: "[]",
+  },
+}} />
+
+### Campos de `Team`
+
+<TypeTable type={{
+  "id": {
+    description: "ID do time no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nome do time.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: "Abreviação ou tag do time (ex: LOUD, FNC).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "País de origem do time.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "url": {
+    description: "Caminho relativo da página do time no vlr.gg.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Exemplos de Código
+
+```python
+import vlrdevapi
+
+event_teams = vlrdevapi.event(2765).teams()
+
+for stage in event_teams.stages:
+    print(f"\nEtapa: {stage.stage_name} ({len(stage.teams)} times)")
+    for team in stage.teams:
+        print(f"  - {team.name} ({team.tag or 'Sem Tag'}) - País: {team.country}")
+```

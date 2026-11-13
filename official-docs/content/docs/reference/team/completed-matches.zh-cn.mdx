@@ -1,0 +1,196 @@
+---
+title: 战队完赛记录 (Team Completed Matches)
+description: "获取战队的已完赛历史比赛：包含最终比分、对手信息、胜负判定及赛事阶段背景。"
+---
+
+`team.completed_matches(team_id)` 返回指定战队在 vlr.gg 上的已完赛历史比赛记录。
+
+默认情况下，该接口返回前 **50** 场比赛（vlr.gg 单页容量）。可通过设置 `limit` 参数抓取更多，或使用 `return_all=True` 抓取全量历史分页。
+
+## 函数签名
+
+```python
+team.completed_matches(
+    team_id: int,
+    limit: int = 50,
+    return_all: bool = False,
+) -> TeamCompletedMatches
+```
+
+## 参数
+
+<TypeTable type={{
+  "team_id": {
+    description: "vlr.gg 上的唯一战队 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+  "limit": {
+    description: "返回的最大完赛场次数目。仅在必要时才会向后抓取更多页面。",
+    type: "int",
+    typeDescription: "正整数",
+    default: "50",
+  },
+  "return_all": {
+    description: "抓取所有历史页面并返回完整比赛记录。设置此项将覆盖 `limit`。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+## 返回值 - `TeamCompletedMatches`
+
+<TypeTable type={{
+  "team_id": {
+    description: "战队 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "matches": {
+    description: "已完赛的比赛条目列表。",
+    type: "list[TeamCompletedMatchEntry]",
+    typeDescription: "list[TeamCompletedMatchEntry] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+  "has_next_page": {
+    description: "在当前返回的结果之外是否还存在更多完赛记录页面。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+### `TeamCompletedMatchEntry` 字段说明
+
+<TypeTable type={{
+  "match_id": {
+    description: "比赛 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "比赛详情页面的相对 URL 地址。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "赛事名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: '赛事阶段（例如 "Playoffs", "Group Stage"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "bracket": {
+    description: '淘汰赛阶段内的具体对阵组（例如 "LBF", "Ro16"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "opponent": {
+    description: "对手战队信息。",
+    type: "OpponentInCompletedMatch | None",
+    typeDescription: "OpponentInCompletedMatch | None - 详见下方字段说明",
+    default: "None",
+  },
+  "team_score": {
+    description: "本战队得分。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "opponent_score": {
+    description: "对手战队得分。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "is_win": {
+    description: "本场比赛是否获胜。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "datetime": {
+    description: "UTC 比赛开赛时间。",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+### `OpponentInCompletedMatch` 字段说明
+
+<TypeTable type={{
+  "id": {
+    description: "对手战队 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "对手战队全称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: "对手战队 Tag 缩写。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## 示例
+
+### 查看近期完赛结果
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.team.completed_matches(team_id=2593)
+print(f"战队 {history.team_id} 的完赛战报:")
+for m in history.matches[:10]:
+    result = "获胜" if m.is_win else "落败"
+    opp = m.opponent.name if m.opponent else "待定"
+    round_label = " ".join(part for part in (m.stage, m.bracket) if part)
+    print(
+        f"  {m.team_score} - {m.opponent_score} 对阵 {opp} "
+        f"({result}) - {m.event} {round_label}"
+    )
+```
+
+### 统计近期胜负战绩
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.team.completed_matches(team_id=2593)
+wins = sum(1 for m in history.matches if m.is_win)
+losses = sum(1 for m in history.matches if not m.is_win)
+total = wins + losses
+pct = wins / total * 100 if total else 0
+print(f"{wins}胜 - {losses}负 (胜率 {pct:.0f}%) 共计 {total} 场比赛")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+history = team.completed_matches()
+for m in history.matches[:5]:
+    tag = m.opponent.tag if m.opponent else "TBD"
+    print(f"{'胜' if m.is_win else '负'} {m.team_score}-{m.opponent_score} 对阵 {tag}")
+```\n

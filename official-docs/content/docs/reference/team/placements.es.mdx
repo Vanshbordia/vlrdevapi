@@ -1,0 +1,153 @@
+---
+title: Clasificaciones del Equipo (Team Placements)
+description: "Obtén el historial de posiciones en torneos de un equipo: puestos alcanzados, premios económicos y recaudación acumulada."
+---
+
+`team.placements(team_id)` devuelve el historial de clasificaciones en torneos y premios monetarios conseguidos por un equipo en vlr.gg.
+
+## Firma
+
+```python
+team.placements(team_id: int) -> TeamPlacements
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador único del equipo en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `TeamPlacements`
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador del equipo.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "total_winnings": {
+    description: "Ganancias acumuladas por premios monetarios (valor numérico).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "total_winnings_currency": {
+    description: "Símbolo de la divisa de las ganancias (ej. '$', '€').",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "placements": {
+    description: "Lista de torneos y clasificaciones logradas.",
+    type: "list[TeamEventPlacement]",
+    typeDescription: "list[TeamEventPlacement] - consulta los campos detallados a continuación",
+    default: "[]",
+  },
+}} />
+
+### Campos de `TeamEventPlacement`
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador del evento en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "event_name": {
+    description: "Nombre del torneo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "year": {
+    description: "Año en el que se disputó el evento.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "placements": {
+    description: "Lista de clasificaciones por fases dentro del torneo.",
+    type: "list[EventPlacement]",
+    typeDescription: "list[EventPlacement] - consulta los campos a continuación",
+    default: "[]",
+  },
+  "prize": {
+    description: "Importe del premio en valor numérico.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "prize_currency": {
+    description: "Símbolo de la moneda del premio.",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `EventPlacement`
+
+<TypeTable type={{
+  "stage": {
+    description: 'Fase dentro del torneo (ej. "Playoffs", "Group Stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "placement": {
+    description: 'Puesto alcanzado (ej. "1st", "2nd", "3rd", "5th-8th").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Ejemplos
+
+### Todas las clasificaciones
+
+```python
+import vlrdevapi
+
+placements = vlrdevapi.team.placements(team_id=2593)
+total = f"{placements.total_winnings_currency}{placements.total_winnings:,}" if placements.total_winnings and placements.total_winnings_currency else "N/A"
+print(f"Ganancias totales: {total}")
+print()
+for event in placements.placements:
+    for p in event.placements:
+        print(f"{event.year} {event.event_name}: {p.placement} en {p.stage}")
+```
+
+### Ganancias desglosadas por año
+
+```python
+import vlrdevapi
+
+placements = vlrdevapi.team.placements(team_id=2593)
+by_year = {}
+for event in placements.placements:
+    by_year[event.year] = by_year.get(event.year, 0) + (event.prize or 0)
+currency = placements.total_winnings_currency or "$"
+for year in sorted(by_year):
+    print(f"  {year}: {currency}{by_year[year]:,}")
+```
+
+### Acceso curried
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+placements = team.placements()
+wins = [e for e in placements.placements for p in (e.placements or []) if "1st" in p.placement]
+print(f"Torneos ganados: {len(wins)}")
+for e in wins:
+    print(f"  {e.event_name} ({e.year})")
+```\n

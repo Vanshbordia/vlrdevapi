@@ -1,0 +1,125 @@
+---
+title: Lista de Noticias (News List)
+description: "Explora noticias en vlr.gg con soporte para paginación."
+---
+
+`news()` devuelve una lista paginada de noticias desde vlr.gg.
+
+## Firma
+
+```python
+news(
+    page: int = 1,
+) -> NewsPage
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "page": {
+    description: "Número de página (base 1).",
+    type: "int",
+    typeDescription: "Entero positivo",
+    default: "1",
+    required: false,
+  },
+}} />
+
+## Retorno - `NewsPage`
+
+<TypeTable type={{
+  "news": {
+    description: "Lista de noticias.",
+    type: "list[News]",
+    typeDescription: "list[News] - consulta los campos detallados a continuación",
+    default: "[]",
+  },
+  "has_next_page": {
+    description: "Indica si existe una página posterior de resultados.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "page_number": {
+    description: "Número de página actual (base 1).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+}} />
+
+### Campos de `News`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador único de la noticia en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "title": {
+    description: "Título de la noticia.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "subtitle": {
+    description: "Subtítulo o resumen corto de la noticia.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "link": {
+    description: "URL relativa hacia el artículo completo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_name": {
+    description: "País asociado a la noticia (ej. \"Spain\").",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "date": {
+    description: "Fecha de publicación como datetime UTC con zona horaria.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+  "author": {
+    description: "Autor de la noticia.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Ejemplos
+
+### Obtener las últimas noticias
+
+```python
+import vlrdevapi
+
+result = vlrdevapi.news(page=1)
+print(f"Noticias en esta página: {len(result.news)}")
+print(f"Más páginas disponibles: {result.has_next_page}")
+
+for item in result.news:
+    print(f"{item.date.date()} | {item.title} | por {item.author}")
+```
+
+### Filtrar noticias por país
+
+```python
+import vlrdevapi
+
+result = vlrdevapi.news(page=1)
+local_news = [n for n in result.news if n.country_name == "Spain"]
+if local_news:
+    for n in local_news:
+        print(f"{n.title} - {n.author}")
+else:
+    print("No hay noticias de España en esta página actualmente.")
+```

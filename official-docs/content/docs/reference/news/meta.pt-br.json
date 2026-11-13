@@ -1,0 +1,8 @@
+{
+  "title": "Notícias",
+  "pages": [
+    "list",
+    "article"
+  ],
+  "pagesIndex": "index"
+}

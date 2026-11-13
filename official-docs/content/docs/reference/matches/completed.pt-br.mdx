@@ -1,0 +1,122 @@
+---
+title: Partidas Concluídas (Completed Matches)
+description: "Consulte partidas concluídas no vlr.gg com placares, vencedores, paginação e suporte a múltiplas páginas."
+---
+
+`matches.completed()` retorna uma listagem paginada de partidas já finalizadas no vlr.gg, incluindo pontuação final e indicação dos times vencedores.
+
+## Assinatura
+
+```python
+matches.completed(
+    page: int = 1,
+    max_page: int = 0,
+    return_all: bool = False,
+) -> CompletedMatchesPage
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "page": {
+    description: "Número da página (base 1). Ignorado quando `return_all=True`.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    default: "1",
+    required: false,
+  },
+  "max_page": {
+    description: "Número máximo de páginas a buscar quando `return_all=True`. 0 indica sem limite.",
+    type: "int",
+    typeDescription: "Inteiro não negativo",
+    default: "0",
+    required: false,
+  },
+  "return_all": {
+    description: "Se for True, busca todas as páginas disponíveis e retorna os resultados combinados.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+    required: false,
+  },
+}} />
+
+## Retorno - `CompletedMatchesPage`
+
+<TypeTable type={{
+  "matches": {
+    description: "Lista de partidas concluídas.",
+    type: "list[CompletedMatchEntry]",
+    typeDescription: "list[CompletedMatchEntry] - veja os campos abaixo",
+    default: "[]",
+  },
+  "has_next_page": {
+    description: "Indica se existe uma página posterior de resultados.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+### Campos de `CompletedMatchEntry`
+
+<TypeTable type={{
+  "match_id": {
+    description: "Identificador numérico exclusivo da partida no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "Caminho relativo para a página da partida no vlr.gg.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "Nome do evento ou campeonato.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: 'Etapa do campeonato (ex: "Fase de Grupos", "Grande Final").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1": {
+    description: "Informações da primeira equipe (nome, pontuação e se venceu).",
+    type: "TeamInCompletedMatch | None",
+    typeDescription: "TeamInCompletedMatch | None",
+    default: "None",
+  },
+  "team2": {
+    description: "Informações da segunda equipe (nome, pontuação e se venceu).",
+    type: "TeamInCompletedMatch | None",
+    typeDescription: "TeamInCompletedMatch | None",
+    default: "None",
+  },
+  "datetime": {
+    description: "Data e horário de conclusão da partida em UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+## Exemplos de Código
+
+```python
+import vlrdevapi
+
+completed_page = vlrdevapi.matches.completed(page=1)
+
+for match in completed_page.matches[:5]:
+    t1 = match.team1.name if match.team1 else "TBD"
+    t2 = match.team2.name if match.team2 else "TBD"
+    s1 = match.team1.score if match.team1 and match.team1.score is not None else 0
+    s2 = match.team2.score if match.team2 and match.team2.score is not None else 0
+    winner = t1 if match.team1 and match.team1.is_winner else t2
+    print(f"{t1} [{s1} - {s2}] {t2} -> Vencedor: {winner} ({match.event})")
+```

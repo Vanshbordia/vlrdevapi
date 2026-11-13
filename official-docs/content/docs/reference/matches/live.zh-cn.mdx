@@ -1,0 +1,92 @@
+---
+title: 实时进行中比赛 (Live Matches)
+description: "获取 vlr.gg 上当前正在直播开打的比赛信息，包含队伍即时比分与赛段状态。"
+---
+
+`matches.live()` 返回当前在 vlr.gg 上标记为进行中的所有实时比赛对局。
+
+## 方法签名
+
+```python
+matches.live() -> LiveMatchesPage
+```
+
+## 返回类型 - `LiveMatchesPage`
+
+<TypeTable type={{
+  "matches": {
+    description: "当前正在进行中的比赛条目列表。",
+    type: "list[LiveMatchEntry]",
+    typeDescription: "list[LiveMatchEntry] - 字段明细见下方",
+    default: "[]",
+  },
+}} />
+
+### `LiveMatchEntry` 字段明细
+
+<TypeTable type={{
+  "match_id": {
+    description: "该场比赛在 vlr.gg 上的数值 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "对局页面在 vlr.gg 上的相对访问路径。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "所属锦标赛或赛事名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: '比赛所属赛段（例如："Playoffs"、"Swiss Stage"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1": {
+    description: "战队 1 资料（包含队名、局内实时比分与已获胜小局）。",
+    type: "TeamInLiveMatch | None",
+    typeDescription: "TeamInLiveMatch | None",
+    default: "None",
+  },
+  "team2": {
+    description: "战队 2 资料（包含队名、局内实时比分与已获胜小局）。",
+    type: "TeamInLiveMatch | None",
+    typeDescription: "TeamInLiveMatch | None",
+    default: "None",
+  },
+  "status": {
+    description: '比赛当前状态（例如："live"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "datetime": {
+    description: "比赛计划开赛的 UTC 标准时间。",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+## 代码示例
+
+```python
+import vlrdevapi
+
+live_page = vlrdevapi.matches.live()
+print(f"当前正在进行的对局数: {len(live_page.matches)}")
+
+for match in live_page.matches:
+    t1 = match.team1.name if match.team1 else "战队 1"
+    t2 = match.team2.name if match.team2 else "战队 2"
+    s1 = match.team1.score if match.team1 and match.team1.score is not None else 0
+    s2 = match.team2.score if match.team2 and match.team2.score is not None else 0
+    print(f"正在直播: {t1} [{s1} - {s2}] {t2} | {match.event}")
+```

@@ -1,0 +1,46 @@
+---
+title: Contribuindo para o VLRdevAPI
+description: "Configuração do ambiente de desenvolvimento, estilo de código e diretrizes de pull request para contribuir com o VLRdevAPI."
+---
+
+Obrigado pelo seu interesse em contribuir com o projeto!
+
+## Configuração do Ambiente de Desenvolvimento
+
+1. Clone o repositório: `git clone https://github.com/Vanshbordia/vlrdevapi`
+2. Instale as dependências: `uv sync --group dev`
+3. Execute as verificações prévias: `ruff check src/` e `ty check src/vlrdevapi/`
+
+## Diretrizes de Pull Request
+
+- Mantenha os Pull Requests (PRs) focados em uma única responsabilidade.
+- Adicione ou atualize os testes unitários para qualquer alteração de comportamento.
+- Execute `ruff check src/ tests/` e `ty check src/vlrdevapi/` antes de enviar o commit.
+- Atualize o CHANGELOG.md sob o cabeçalho da próxima versão.
+- Caso altere arquivos de documentação (.mdx), execute `uv run scripts/check_mdx_examples.py` e certifique-se de que todos os exemplos foram validados.
+
+## Estilo de Código
+
+- Siga a PEP 8 com as configurações padrão do `ruff` (linhas de 120 caracteres, aspas duplas).
+- Adicione docstrings no formato Google Style em todos os métodos públicos.
+- Adicione anotações de tipo completas (type hints) em todas as assinaturas de funções.
+- Prefira `Literal` em vez de `Union[Literal, str]` — a validação de tipos é feita em tempo de execução.
+
+## Estrutura do Projeto
+
+```
+src/vlrdevapi/
+  _base.py          # Classe base SyncNamespace
+  _cache.py         # Implementação de LRUCache
+  _client.py        # VLRClient principal
+  _event/           # Endpoints de eventos e torneios
+  _matches/         # Endpoints de listagens de partidas (live / upcoming / completed)
+  _news/            # Endpoints de notícias e artigos
+  _player/          # Endpoints de jogadores (info / teams / agents / matches / profile)
+  _series/          # Endpoints de séries (detalhes de partidas)
+  _team/            # Endpoints de times (info / roster / placements / etc.)
+  _utils/           # Utilitários internos (paginação, paths)
+  commons/          # Utilitários compartilhados (regiões, mapeamentos, datas, países, premiações)
+  validators.py     # Sanitização e validação de parâmetros
+  fetcher.py        # Requisições HTTP com retentativas e controle de taxa
+```

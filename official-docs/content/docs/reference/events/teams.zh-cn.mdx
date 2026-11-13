@@ -1,0 +1,116 @@
+---
+title: 参赛战队名单 (Event Teams)
+description: 获取赛事的参赛战队名单，支持按赛段归类展示，针对多赛段锦标赛支持并行网络抓取。
+---
+
+`event.teams(event_id)` 返回参与该赛事的全部参赛战队，并按赛段（如小组赛、淘汰赛）自动分组。当赛事包含多个赛段时，数据会通过线程池并行请求（最高 5 个并发），以实现极致的抓取效率。
+
+## 方法签名
+
+```python
+event.teams(
+    event_id: int,
+    stage: str | None = None,
+) -> EventTeams
+```
+
+## 请求参数
+
+<TypeTable type={{
+  "event_id": {
+    description: "vlr.gg 上的赛事唯一数值 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+  "stage": {
+    description: '可选的赛段筛选路径（例如："playoffs"、"group-stage"）。若为 None 则拉取全赛段。',
+    type: "str | None",
+    typeDescription: "str - 赛段名称/路径，或 None",
+    default: "None",
+    required: false,
+  },
+}} />
+
+## 返回类型 - `EventTeams`
+
+`EventTeams` 封装了 `EventStageTeams` 对象列表，支持标准的 Python 容器操作（`__len__`、`__iter__`、`__getitem__`）。
+
+<TypeTable type={{
+  "stages": {
+    description: "按赛段划分的参赛队伍分组列表。",
+    type: "list[EventStageTeams]",
+    typeDescription: "list[EventStageTeams]",
+  },
+}} />
+
+### `EventStageTeams` 字段明细
+
+<TypeTable type={{
+  "stage_path": {
+    description: '赛段在 URL 中的路径标识（例如："group-stage"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage_name": {
+    description: '赛段显示名称（例如："Group Stage"、"小组赛"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "teams": {
+    description: "本赛段中包含的战队条目列表。",
+    type: "list[Team]",
+    typeDescription: "list[Team]",
+    default: "[]",
+  },
+}} />
+
+### `Team` 字段明细
+
+<TypeTable type={{
+  "id": {
+    description: "战队在 vlr.gg 上的唯一数值 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "战队全称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: "战队缩写简称/队标代码（例如：EDG、PRX、FNC）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "战队所属国家/地区。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "url": {
+    description: "该战队在 vlr.gg 上的相对主页路径。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## 代码示例
+
+```python
+import vlrdevapi
+
+event_teams = vlrdevapi.event(2765).teams()
+
+for stage in event_teams.stages:
+    print(f"\n赛段: {stage.stage_name} (包含 {len(stage.teams)} 支队伍)")
+    for team in stage.teams:
+        print(f"  - {team.name} ({team.tag or '无简称'}) - 国家/地区: {team.country}")
+```

@@ -1,0 +1,78 @@
+---
+title: Visão Geral da API de Séries (Series API)
+description: "O namespace Series fornece acesso aos dados detalhados de partidas individuais (séries) do vlr.gg - visão geral, transmissões/VODs, estatísticas de jogadores, dados round a round, métricas de desempenho, economia e replay kill-feed."
+icon: Swords
+---
+
+A API de Séries oferece dados analíticos aprofundados para partidas individuais (séries) no vlr.gg. É acessada via `vlrdevapi.series(id)` (acesso curried) ou através de uma instância explícita de `VLRClient`.
+
+<Callout type="info">
+Todos os sub-namespaces são inicializados sob demanda (lazy) e compartilham a mesma configuração do cliente HTTP. Além disso, as informações de séries são utilizadas internamente pelo namespace de partidas de eventos para enriquecer os IDs das equipes.
+</Callout>
+
+## Padrões de Acesso
+
+### Nível de módulo (cliente padrão)
+
+```python
+import vlrdevapi
+
+# Acesso direto (passando series_id em cada método)
+info = vlrdevapi.series.info(series_id=670471)
+print(f"{info.team1.name} vs {info.team2.name}")
+
+# Acesso curried - passe o series_id uma única vez e encadeie os métodos
+series = vlrdevapi.series(670471)
+info = series.info()
+print(f"Placar: {info.score1} - {info.score2}")
+print(f"Evento: {info.event_name}")
+```
+
+### Cliente explícito
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=30, requests_per_second=8) as client:
+    s = client.series(670471)
+    info = s.info()
+    print(f"{info.team1.name} vs {info.team2.name}")
+    print(f"Placar: {info.score1} - {info.score2}")
+```
+
+## Referência de Sub-namespaces
+
+| Método | Retorno | Descrição |
+|--------|---------|-----------|
+| [`series.info(series_id)`](./info) | `SeriesInfo` | Visão geral da partida - equipes, placar, evento, histórico mútuo, vetos e mapas |
+| [`series.vods(series_id)`](./vods) | `SeriesVods` | Transmissões ao vivo, watch parties e links de VODs da partida |
+| [`series.players(series_id, game_id)`](./players) | `PlayersStats` | Estatísticas detalhadas dos jogadores por mapa ou agregadas |
+| [`series.rounds(series_id, game_id)`](./rounds) | `RoundsData` | Dados round a round incluindo economia individual de cada rodada |
+| [`series.performance(series_id, game_id)`](./performance) | `PerformanceData` | Matrizes de confrontos (kill matrices) e estatísticas avançadas |
+| [`series.economy(series_id, game_id)`](./economy) | `EconomyData` | Dados de economia por rodada e matriz por tipo de compra |
+| [`series.replay(series_id, game_id)`](./replay) | `ReplayData` | Linha do tempo de replay do kill-feed com posições espaciais |
+
+## Tratamento Comum de Erros
+
+Todos os métodos de séries levantam exceções tipadas de `vlrdevapi.exceptions`:
+
+| Exceção | Quando é Lançada |
+|---------|------------------|
+| `ValidationError` | Argumentos inválidos (`series_id` inválido, `game_id` incorreto, etc.) |
+| `NotFoundError` | Página da série não encontrada (HTTP 404) |
+| `RequestError` | Falha de conexão ou erro HTTP |
+| `RateLimitError` | Excesso de requisições (HTTP 429) |
+| `ParsingError` | Estrutura da página HTML não reconhecida |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import NotFoundError, ValidationError
+
+try:
+    info = vlrdevapi.series.info(series_id=670471)
+    print(f"Série: {info.team1.name} vs {info.team2.name}")
+except NotFoundError:
+    print("Série não encontrada")
+except ValidationError as e:
+    print(f"Entrada inválida: {e}")
+```\n

@@ -1,0 +1,115 @@
+---
+title: Artículo de Noticias (News Article)
+description: "Obtén el contenido completo de un artículo de noticias de vlr.gg."
+---
+
+`news.article()` obtiene el contenido completo del cuerpo de un artículo de noticias de vlr.gg. El contenido se devuelve tanto en texto plano (`content`) como en formato Markdown (`content_md`), conservando encabezados, listas anidadas, tablas, enlaces, bloques de código, énfasis e inserciones de clips de Twitch. `date` se devuelve como un datetime UTC con información de zona horaria.
+
+Si el ID del artículo no existe en vlr.gg, se lanza una excepción `NotFoundError` (vlr.gg retorna una página genérica ante IDs desconocidos, lo cual es detectado a partir del contenido de la página).
+
+## Firma
+
+```python
+news.article(
+    article_id: int,
+) -> NewsArticle
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "article_id": {
+    description: "ID del artículo de noticias. Usa `News.id` obtenido de un listado de noticias, o el prefijo numérico de `News.link`.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    default: "-",
+    required: true,
+  },
+}} />
+
+## Retorno - `NewsArticle`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador único del artículo en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "title": {
+    description: "Título del artículo de noticias.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "author": {
+    description: "Autor del artículo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "date": {
+    description: "Fecha de publicación como datetime UTC con zona horaria.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+  "event_name": {
+    description: "Evento asociado al artículo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event_link": {
+    description: "Enlace hacia la página del evento asociado.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "content": {
+    description: "Cuerpo completo del artículo en texto sin formato.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "content_md": {
+    description: "Cuerpo completo del artículo convertido a Markdown, conservando encabezados, listas anidadas, tablas, enlaces, código literal, énfasis y clips incrustados de Twitch.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Ejemplos
+
+### Obtener un artículo
+
+```python
+import vlrdevapi
+
+article = vlrdevapi.news.article(734100)
+print(f"{article.title}")
+print(f"Por {article.author} el {article.date}")
+print(f"Evento: {article.event_name}")
+print(article.content)
+```
+
+### Leer el artículo en formato Markdown
+
+```python
+import vlrdevapi
+
+article = vlrdevapi.news.article(734100)
+print(article.content_md)
+```
+
+### Leer un artículo encontrado en la lista de noticias
+
+```python
+import vlrdevapi
+
+page = vlrdevapi.news(page=1)
+article_id = page.news[0].id
+article = vlrdevapi.news.article(article_id)
+print(article.title)
+```

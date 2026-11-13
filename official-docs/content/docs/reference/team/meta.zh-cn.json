@@ -1,0 +1,13 @@
+{
+  "title": "战队资料",
+  "pages": [
+    "info",
+    "roster",
+    "completed-matches",
+    "upcoming-matches",
+    "transactions",
+    "stats",
+    "placements"
+  ],
+  "pagesIndex": "index"
+}

@@ -1,0 +1,85 @@
+---
+title: 赛事阶段划分 (Event Stages)
+description: 获取赛事的赛段细分结构 — 小组赛、淘汰赛及各自对应的开赛与结束日期。
+---
+
+`event.stages(event_id)` 返回赛事内部的赛段构成（如“小组赛”、“季后赛”），并解析出各个赛段在 vlr.gg 子导航栏上的起止日期。
+
+## 方法签名
+
+```python
+event.stages(event_id: int) -> EventStages
+```
+
+## 请求参数
+
+<TypeTable type={{
+  "event_id": {
+    description: "vlr.gg 上的赛事唯一数值 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+}} />
+
+## 返回类型 - `EventStages`
+
+`EventStages` 封装了 `EventStage` 对象列表，原生支持 Python 容器协议：`__len__`、`__iter__` 及 `__getitem__`。
+
+<TypeTable type={{
+  "stages": {
+    description: "包含本赛事全部赛段的列表。",
+    type: "list[EventStage]",
+    typeDescription: "list[EventStage] - 字段明细见下方",
+  },
+}} />
+
+### 容器协议支持
+
+| 方法/语法 | 行为表现 |
+|---|---|
+| `len(result)` | 返回赛段总数 |
+| `for stage in result` | 按顺序遍历每个赛段对象 |
+| `result[i]` | 通过下标索引直接定位指定赛段 |
+
+### `EventStage` 字段明细
+
+<TypeTable type={{
+  "name": {
+    description: '赛段显示名称（如："Group Stage"、"Playoffs"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "id": {
+    description: "该赛段在 URL 传参时所使用的 series_id 标识符。",
+    type: "str",
+    typeDescription: 'str（例如："all", "5556", "5557"）',
+    default: '""',
+  },
+  "start_date": {
+    description: "该赛段的预计起始日期。",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "end_date": {
+    description: "该赛段的预计结束日期。",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+}} />
+
+## 代码示例
+
+```python
+import vlrdevapi
+
+stages = vlrdevapi.event(2765).stages()
+print(f"总赛段数: {len(stages)}")
+
+for stage in stages:
+    print(f"- {stage.name} (ID: {stage.id})")
+    print(f"  赛期: {stage.start_date} 至 {stage.end_date}")
+```

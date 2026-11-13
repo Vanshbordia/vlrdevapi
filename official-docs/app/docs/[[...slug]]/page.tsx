@@ -16,10 +16,9 @@ import { canonicalUrl, gitConfig, siteUrl } from '@/lib/shared';
 import { getOgImage, resolveOgImage } from '@/lib/seo';
 import { project, projectAuthor, projectUrls } from '@/lib/project';
 
-
 export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const params = await props.params;
-  const page = source.getPage(params.slug);
+  const page = source.getPage(params.slug, 'en');
   if (!page) notFound();
   const lastModifiedTime = page.data.lastModified;
 
@@ -107,12 +106,14 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
 }
 
 export async function generateStaticParams() {
-  return source.generateParams();
+  return source.getPages('en').map((page) => ({
+    slug: page.slugs,
+  }));
 }
 
 export async function generateMetadata(props: PageProps<'/docs/[[...slug]]'>, parent: ResolvingMetadata): Promise<Metadata> {
   const params = await props.params;
-  const page = source.getPage(params.slug);
+  const page = source.getPage(params.slug, 'en');
   if (!page) notFound();
 
   // The Open Graph image comes from the `opengraph-image` file convention in
@@ -131,7 +132,15 @@ export async function generateMetadata(props: PageProps<'/docs/[[...slug]]'>, pa
   return {
     title,
     description: page.data.description,
-    alternates: { canonical: ogUrl },
+    alternates: {
+      canonical: ogUrl,
+      languages: {
+        en: canonicalUrl(page.url),
+        'pt-BR': canonicalUrl(source.getPage(params.slug, 'pt-br')?.url ?? `/pt-br${page.url}`),
+        es: canonicalUrl(source.getPage(params.slug, 'es')?.url ?? `/es${page.url}`),
+        'zh-CN': canonicalUrl(source.getPage(params.slug, 'zh-cn')?.url ?? `/zh-cn${page.url}`),
+      },
+    },
     openGraph: {
       type: 'article',
       siteName: project.name,

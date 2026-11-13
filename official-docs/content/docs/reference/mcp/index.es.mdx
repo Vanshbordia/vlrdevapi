@@ -1,0 +1,195 @@
+---
+title: "Servidor MCP (Model Context Protocol)"
+description: "Servidor Model Context Protocol integrado con 40 herramientas para asistentes de IA, Claude Desktop, Cursor, Zed y agentes autónomos."
+icon: Bot
+---
+
+VLRdevAPI incorpora un servidor nativo **Model Context Protocol (MCP)** que conecta aplicaciones basadas en LLMs, agentes de programación e interfaces de chat directamente con datos en vivo de esports de Valorant procedentes de [vlr.gg](https://www.vlr.gg/).
+
+Con 40 herramientas que abarcan partidos, series, equipos, jugadores, torneos, noticias y dosieres compuestos de alto nivel, los modelos de IA pueden consultar calendarios en directo, calcular registros históricos directos, analizar estadísticas de agentes por jugador y examinar la economía ronda a ronda sin programar scripts personalizados.
+
+---
+
+## Instalación
+
+El servidor MCP se suministra como un paquete de dependencias opcional:
+
+```bash
+# Instalar con dependencias de MCP
+pip install "vlrdevapi[mcp]"
+
+# O instalar con todos los extras opcionales (pandas, polars, openpyxl, pyarrow, mcp)
+pip install "vlrdevapi[all]"
+```
+
+---
+
+## Ejecución del Servidor
+
+El servidor se comunica a través de entrada/salida estándar (`stdio`) usando el protocolo MCP.
+
+### Opción 1: Comando CLI Directo
+
+```bash
+vlrdevapi-mcp
+```
+
+### Opción 2: Módulo de Python
+
+```bash
+python -m vlrdevapi.mcp.server
+```
+
+### Opción 3: Ejecución Inmediata sin Instalación vía `uvx`
+
+```bash
+uvx --from "vlrdevapi[mcp]" vlrdevapi-mcp
+```
+
+---
+
+## Configuración de Clientes
+
+### Claude Desktop
+
+Añade `vlrdevapi` a tu archivo de configuración de Claude Desktop:
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "vlrdevapi": {
+      "command": "uvx",
+      "args": ["--from", "vlrdevapi[mcp]", "vlrdevapi-mcp"]
+    }
+  }
+}
+```
+
+O si utilizas un entorno virtual de Python local:
+
+```json
+{
+  "mcpServers": {
+    "vlrdevapi": {
+      "command": "/ruta/al/entorno/bin/vlrdevapi-mcp"
+    }
+  }
+}
+```
+
+### Cursor IDE
+
+En Cursor Settings &rarr; **Features** &rarr; **MCP Servers**, añade un nuevo servidor o edita `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "vlrdevapi": {
+      "command": "vlrdevapi-mcp"
+    }
+  }
+}
+```
+
+### Editor Zed
+
+En el fichero `settings.json` de Zed:
+
+```json
+{
+  "context_servers": {
+    "vlrdevapi": {
+      "command": "vlrdevapi-mcp"
+    }
+  }
+}
+```
+
+---
+
+## Herramientas Compuestas de Alto Nivel
+
+Además de las llamadas atómicas individuales, VLRdevAPI proporciona 8 herramientas compuestas diseñadas específicamente para el razonamiento en varios pasos por parte de agentes de IA:
+
+| Nombre de la Herramienta | Parámetros | Descripción |
+|:---|:---|:---|
+| `get_match_full_context` | `series_id: int` | Consolida resumen del partido, estadísticas individuales y emisiones/VODs en una sola respuesta. |
+| `get_team_overview` | `team_id: int` | Dosier completo con información del equipo, plantilla activa, próximos compromisos y premios. |
+| `compare_teams` | `team_id_1: int`, `team_id_2: int`, `last_days: int = 60` | Comparativa lado a lado entre dos escuadras (plantillas, rendimiento por mapa y racha reciente). |
+| `get_player_career_summary` | `player_id: int` | Perfil consolidado del jugador con biografía, equipo actual, estadísticas de agentes y palmarés. |
+| `get_h2h_matchup` | `team_id_1: int`, `team_id_2: int`, `limit: int = 50` | Historial completo de enfrentamientos directos cara a cara entre dos clubes. |
+| `get_tournament_dossier` | `event_id: int` | Visión global del torneo combinando equipos participantes, fases y cuadro de clasificación. |
+| `get_live_and_upcoming_schedule` | `limit: int = 15` | Marcador en vivo junto con el calendario de partidos futuros. |
+| `get_news_digest` | `limit: int = 5`, `include_top_article_body: bool = true` | Resumen de actualidad de esports con texto completo opcional en Markdown para la noticia destacada. |
+
+---
+
+## Catálogo Completo de Herramientas
+
+### Partidos (Matches)
+
+- **`matches_upcoming(page: int = 1, max_page: int = 0, return_all: bool = false)`**: Consulta partidos programados con nombres de equipos, torneo y horarios de inicio.
+- **`matches_live()`**: Obtiene partidos en curso con marcadores en tiempo real y detalles del evento.
+- **`matches_completed(page: int = 1, max_page: int = 0, return_all: bool = false)`**: Resultados históricos de partidos con marcadores definitivos y fechas.
+
+### Series y Mapas (Series & Games)
+
+- **`series_info(series_id: int)`**: Resumen exhaustivo del partido con equipos, fecha, formato, resultado y vetos de mapa.
+- **`series_players(series_id: int, game_id: str = "all")`**: Estadísticas de jugadores para la serie o mapa específico (ACS, K/D, ADR, KAST).
+- **`series_rounds(series_id: int, game_id: int)`**: Resultados ronda por ronda con ganador, tipo de victoria y economía del mapa.
+- **`series_performance(series_id: int, game_id: str = "all")`**: Matriz de bajas (kill matrix) y duelos directos entre jugadores.
+- **`series_economy(series_id: int, game_id: str = "all")`**: Economía del equipo, dinero en banco, valor de armamento y tipo de compra por ronda.
+- **`series_replay(series_id: int, game_id: int)`**: Eventos espaciales 2D de repetición, coordenadas de minimapa, ubicaciones de bajas y compras.
+- **`series_vods(series_id: int)`**: Enlaces a grabaciones VOD, directos oficiales y retransmisiones marcadas con tiempo.
+- **`series_map_summary(series_id: int, game_id: str)`**: Resumen de mapa que combina economía, cronología de eventos y estadísticas.
+
+### Equipos (Teams)
+
+- **`team_info(team_id: int)`**: Perfil del club con nombre, sigla, país, puesto en el ranking y redes sociales.
+- **`team_roster(team_id: int)`**: Plantilla activa con nombres de competición (IGN), nombres reales y cuerpo técnico.
+- **`team_stats(team_id: int, last_days: int | None = None, agent_composition: str = "none")`**: Porcentajes de victoria por mapa, balance por bando (Ataque/Defensa) y composiciones.
+- **`team_completed_matches(team_id: int, limit: int = 50, return_all: bool = false)`**: Historial de resultados del equipo.
+- **`team_upcoming_matches(team_id: int)`**: Próximos partidos programados del equipo.
+- **`team_transactions(team_id: int)`**: Movimientos de plantilla, fichajes, bajas y traspasos de roles.
+- **`team_placements(team_id: int)`**: Puestos finales en torneos, eliminatorias y premios monetarios.
+
+### Jugadores (Players)
+
+- **`player_info(player_id: int)`**: Perfil del jugador con IGN, nombre real, país y ganancias acumuladas.
+- **`player_teams(player_id: int)`**: Historial de clubes durante su carrera deportiva con fechas de alta y baja.
+- **`player_agents(player_id: int, timespan: str = "all")`**: Estadísticas por agente (ACS, K/D, ADR, KAST, tasa de elección) en el periodo (`30d`, `60d`, `90d`, `all`).
+- **`player_matches(player_id: int, limit: int = 50)`**: Historial de encuentros del jugador con puntuaciones individuales.
+- **`player_profile(player_id: int)`**: Ficha consolidada con datos biográficos, equipo actual y agentes predilectos.
+- **`player_placements(player_id: int)`**: Palmarés en torneos y premios monetarios obtenidos por el competidor.
+
+### Torneos (Events)
+
+- **`events_list(page: int = 1, tier: str = "all", region: str = "all", status: str | None = None)`**: Listado de torneos por categoría (`vct`, `vcl`, `gc`, `t3`), región (`americas`, `emea`, `pacific`, `china`) y estado (`ongoing`, `upcoming`, `completed`).
+- **`event_info(event_id: int)`**: Ficha general del torneo con premios, fechas, localización y formato competitivo.
+- **`event_stages(event_id: int)`**: Fases y cuadros del torneo (Fase de Grupos, Eliminatorias, etc.).
+- **`event_teams(event_id: int)`**: Equipos participantes y alineaciones clasificadas.
+- **`event_matches(event_id: int, stage: str | None = None, state: str = "all")`**: Partidos programados y finalizados del evento.
+- **`event_standings(event_id: int, stage: str | None = None)`**: Posiciones finales, orden de clasificación y reparto de premios.
+
+### Noticias Editoriales (News)
+
+- **`news_list(page: int = 1)`**: Últimos artículos de actualidad redactados por el equipo de vlr.gg.
+- **`news_article(article_id: int)`**: Noticia completa con titular, redactor, fecha y texto en formato Markdown.
+
+---
+
+## Serialización de Respuestas y Arquitectura
+
+Todas las respuestas devueltas por las herramientas se serializan mediante los métodos `ExportableModel.to_dict()` y `ExportableModel.to_json()` de VLRdevAPI:
+
+1. **Respuestas JSON de Mínimo Consumo**: La serialización nativa evita estructuras intermedias pesadas, reduciendo el consumo de tokens en la ventana de contexto de los modelos LLM.
+2. **Captura Controlada de Excepciones**: Los errores de dominio (`NotFoundError`, `ValidationError`) se capturan y devuelven como respuestas estructuradas en formato JSON en lugar de interrumpir la conexión MCP:
+   ```json
+   {
+     "error": "NotFound",
+     "message": "Player with ID 99999999 not found"
+   }
+   ```
+3. **Validación Estricta de Parámetros**: Todas las entradas respetan esquemas JSON oficiales generados a partir de modelos Pydantic, garantizando llamadas consistentes y fiables desde Claude, GPT-4 y Gemini.

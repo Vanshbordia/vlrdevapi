@@ -1,0 +1,198 @@
+---
+title: 选手比赛历史 (Player Matches)
+description: "获取选手的历史比赛记录：对阵双方、比分、胜负结果、赛事阶段与比赛具体时间。"
+---
+
+`player.matches(player_id, limit)` 返回指定选手在 vlr.gg 上的历史比赛记录。
+
+## 函数签名
+
+```python
+player.matches(
+    player_id: int,
+    limit: int = 20,
+) -> PlayerMatches
+```
+
+## 参数
+
+<TypeTable type={{
+  "player_id": {
+    description: "vlr.gg 上的唯一选手 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+  "limit": {
+    description: "返回的最大比赛场次数目。",
+    type: "int",
+    typeDescription: "正整数",
+    default: "20",
+    required: false,
+  },
+}} />
+
+## 返回值 - `PlayerMatches`
+
+<TypeTable type={{
+  "player_id": {
+    description: "vlr.gg 上的唯一选手 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "matches": {
+    description: "比赛记录条目列表。",
+    type: "list[MatchEntry]",
+    typeDescription: "list[MatchEntry] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+}} />
+
+`PlayerMatches` 实现了 `__len__`、`__iter__` 与 `__getitem__` 协议，支持直接进行 `len()` 测量、`for` 迭代以及下标切片。
+
+### `MatchEntry` 字段说明
+
+<TypeTable type={{
+  "match_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "比赛详情页面的相对 URL 地址。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "赛事或锦标赛名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: '比赛所在的赛事阶段（例如 "Playoffs"、"Swiss Stage"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "bracket": {
+    description: '淘汰赛阶段内的具体轮次或对阵组（例如 "UBR1"、"LBF"、"GF"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1": {
+    description: "第一支战队信息。",
+    type: "TeamInMatch",
+    typeDescription: "TeamInMatch - 详见下方字段",
+  },
+  "team2": {
+    description: "第二支战队信息。",
+    type: "TeamInMatch",
+    typeDescription: "TeamInMatch",
+  },
+  "score1": {
+    description: "第一支战队的最终比分。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "score2": {
+    description: "第二支战队的最终比分。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "result": {
+    description: "该场比赛对该选手的胜负判定（'win' 或 'loss'）。",
+    type: "str",
+    typeDescription: '"win" | "loss"',
+    default: '""',
+  },
+  "date": {
+    description: "比赛日期。",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "time": {
+    description: "比赛开赛时间。",
+    type: "time | None",
+    typeDescription: "datetime.time | None",
+    default: "None",
+  },
+  "datetime": {
+    description: "合并后的 UTC 开赛完整时间。",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+### `TeamInMatch` 字段说明
+
+<TypeTable type={{
+  "name": {
+    description: "战队全称（例如 'Trace Esports'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: "战队比赛 Tag 缩写（例如 'TE'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "logo_url": {
+    description: "战队队标图片的 URL。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## 示例
+
+### 查看近期比赛记录
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.player.matches(player_id=438, limit=10)
+print(f"选手 {history.player_id} 的近期比赛:")
+if history.matches:
+    for m in history:
+        res = "获胜" if m.result == "win" else "落败"
+        print(f"  {m.team1.name} {m.score1} - {m.score2} {m.team2.name} ({res}) - {m.event}")
+else:
+    print("  未找到比赛历史记录。")
+```
+
+### 统计近期比赛胜率
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.player.matches(player_id=438, limit=50)
+wins = sum(1 for m in history if m.result == "win")
+losses = sum(1 for m in history if m.result == "loss")
+total = wins + losses
+pct = wins / total * 100 if total else 0
+print(f"战绩: {wins}胜 - {losses}负 (胜率 {pct:.0f}%)")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(438)
+history = player.matches(limit=5)
+if history.matches:
+    for m in history:
+        print(f"{m.date}: {'胜' if m.result == 'win' else '负'} {m.team1.tag} {m.score1}-{m.score2} {m.team2.tag}")
+```\n

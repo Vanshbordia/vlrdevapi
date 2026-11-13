@@ -1,0 +1,210 @@
+---
+title: Histórico de Partidas do Jogador (Player Matches)
+description: "Obtenha o histórico de partidas de um jogador - adversários, placares, resultados, torneio e datas das partidas."
+---
+
+`player.matches(player_id, limit)` retorna o histórico de partidas disputadas por um jogador no vlr.gg.
+
+## Assinatura
+
+```python
+player.matches(
+    player_id: int,
+    limit: int = 20,
+) -> PlayerMatches
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "player_id": {
+    description: "Identificador único do jogador no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+  "limit": {
+    description: "Número máximo de partidas a serem retornadas.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    default: "20",
+    required: false,
+  },
+}} />
+
+## Retorno - `PlayerMatches`
+
+<TypeTable type={{
+  "player_id": {
+    description: "Identificador único do jogador no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "matches": {
+    description: "Lista de partidas disputadas.",
+    type: "list[MatchEntry]",
+    typeDescription: "list[MatchEntry] - veja os campos detalhados abaixo",
+    default: "[]",
+  },
+}} />
+
+`PlayerMatches` implementa `__len__`, `__iter__` e `__getitem__`, permitindo iteração e indexação direta.
+
+### Campos de `MatchEntry`
+
+<TypeTable type={{
+  "match_id": {
+    description: "Identificador único da partida no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "URL relativa para a página da partida.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "Nome do evento/torneio.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: 'Etapa dentro do evento (ex: "Playoffs", "Swiss Stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "bracket": {
+    description: 'Chave/rodada dentro da etapa (ex: "UBR1", "LBF", "GF").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1": {
+    description: "Informações da primeira equipe.",
+    type: "TeamInMatch",
+    typeDescription: "TeamInMatch - veja os campos abaixo",
+  },
+  "team2": {
+    description: "Informações da segunda equipe.",
+    type: "TeamInMatch",
+    typeDescription: "TeamInMatch",
+  },
+  "score1": {
+    description: "Placar da primeira equipe.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "score2": {
+    description: "Placar da segunda equipe.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "result": {
+    description: "Resultado da partida para o jogador ('win' ou 'loss').",
+    type: "str",
+    typeDescription: '"win" | "loss"',
+    default: '""',
+  },
+  "date": {
+    description: "Data da partida.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "time": {
+    description: "Horário da partida.",
+    type: "time | None",
+    typeDescription: "datetime.time | None",
+    default: "None",
+  },
+  "datetime": {
+    description: "Data e horário combinados da partida em UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `TeamInMatch`
+
+<TypeTable type={{
+  "name": {
+    description: "Nome da equipe (ex: 'LOUD').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: "Tag da equipe (ex: 'LOUD').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "logo_url": {
+    description: "URL da imagem de logotipo da equipe.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Exemplos
+
+### Histórico recente de partidas
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.player.matches(player_id=438, limit=10)
+print(f"Partidas recentes do jogador {history.player_id}:")
+if history.matches:
+    for m in history:
+        result = "VENCEU" if m.result == "win" else "derrota"
+        print(f"  {m.team1.name} {m.score1} - {m.score2} {m.team2.name} ({result}) - {m.event}")
+else:
+    print("  Nenhum histórico de partidas encontrado.")
+```
+
+### Análise de vitórias e derrotas
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.player.matches(player_id=438, limit=50)
+wins = sum(1 for m in history if m.result == "win")
+losses = sum(1 for m in history if m.result == "loss")
+total = wins + losses
+pct = wins / total * 100 if total else 0
+print(f"Desempenho: {wins}V - {losses}D ({pct:.0f}% taxa de vitória)")
+```
+
+### Filtrar partidas de um torneio específico
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.player.matches(player_id=438, limit=100)
+champions_matches = [m for m in history if "champions" in m.event.lower()]
+if champions_matches:
+    for m in champions_matches[:5]:
+        print(f"{m.stage} {m.bracket}: {m.team1.name} vs {m.team2.name} ({m.score1}-{m.score2})")
+```
+
+### Acesso curried
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(438)
+history = player.matches(limit=5)
+if history.matches:
+    for m in history:
+        print(f"{m.date}: {'V' if m.result == 'win' else 'D'} {m.team1.tag} {m.score1}-{m.score2} {m.team2.tag}")
+```\n

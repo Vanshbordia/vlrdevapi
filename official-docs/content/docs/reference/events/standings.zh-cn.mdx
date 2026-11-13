@@ -1,0 +1,120 @@
+---
+title: 赛事阶段积分榜 (Event Standings)
+description: 获取赛事的各赛段分组积分榜与晋级排名，多赛段自动并发获取，支持可选赛段过滤。
+---
+
+`event.standings(event_id)` 返回赛事的分组积分与名次排行，按赛段自动分类。针对多赛段锦标赛支持并行网络抓取（最高 5 个并发），以提供极致的响应性能。
+
+## 方法签名
+
+```python
+event.standings(
+    event_id: int,
+    stage: str | None = None,
+) -> EventStandings
+```
+
+## 请求参数
+
+<TypeTable type={{
+  "event_id": {
+    description: "vlr.gg 上的赛事唯一数值 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+  "stage": {
+    description: '可选的特定赛段路径（例如："playoffs"、"group-stage"）。若为 None 则拉取全量赛段。',
+    type: "str | None",
+    typeDescription: "str - 赛段标识符，或 None",
+    default: "None",
+    required: false,
+  },
+}} />
+
+## 返回类型 - `EventStandings`
+
+`EventStandings` 封装了 `EventStageStandings` 对象列表，支持标准的 Python 容器协议（`__len__`、`__iter__`、`__getitem__`）。
+
+<TypeTable type={{
+  "stages": {
+    description: "按赛段划分的积分排名榜单列表。",
+    type: "list[EventStageStandings]",
+    typeDescription: "list[EventStageStandings]",
+  },
+}} />
+
+### `EventStageStandings` 字段明细
+
+<TypeTable type={{
+  "stage_path": {
+    description: "该赛段在 URL 中的路径段。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage_name": {
+    description: "赛段显示名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "standings": {
+    description: "本赛段中各战队的积分排名条目列表。",
+    type: "list[StandingEntry]",
+    typeDescription: "list[StandingEntry]",
+    default: "[]",
+  },
+}} />
+
+### `StandingEntry` 字段明细
+
+<TypeTable type={{
+  "team": {
+    description: "本行名次所对应的战队对象。",
+    type: "Team",
+    typeDescription: "Team - 包含 id, name, tag, country, url",
+  },
+  "rank": {
+    description: "战队在积分榜上的当前名次。",
+    type: "int",
+    typeDescription: "int",
+  },
+  "series_record": {
+    description: '系列赛大场胜负记录（例如："5-1"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "map_record": {
+    description: '小局小分胜负记录（例如："11-4"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "map_diff": {
+    description: "地图净胜场差额。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "round_diff": {
+    description: "单局回合净胜分差额。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+}} />
+
+## 代码示例
+
+```python
+import vlrdevapi
+
+standings = vlrdevapi.event(2765).standings()
+
+for stage in standings.stages:
+    print(f"\n--- {stage.stage_name} ---")
+    for entry in stage.standings:
+        print(f"#{entry.rank} {entry.team.name:20s} | 大场: {entry.series_record} | 小分: {entry.map_record}")
+```

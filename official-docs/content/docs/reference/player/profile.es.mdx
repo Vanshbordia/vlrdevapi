@@ -1,0 +1,156 @@
+---
+title: Perfil del Jugador (Player Profile)
+description: "Obtén un perfil consolidado del jugador: combina datos personales, equipo actual, agentes destacados y alias en una sola llamada."
+---
+
+`player.profile(player_id)` devuelve un perfil consolidado de un jugador combinando información básica, equipo actual y estadísticas de sus agentes principales.
+
+## Firma
+
+```python
+player.profile(player_id: int) -> PlayerProfile
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "player_id": {
+    description: "Identificador único del jugador en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `PlayerProfile`
+
+<TypeTable type={{
+  "player_id": {
+    description: "Identificador único del jugador en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nombre en el juego (in-game name).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "real_name": {
+    description: "Nombre real del jugador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "img": {
+    description: "URL de la imagen de perfil del jugador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "x_link": {
+    description: "Enlace al perfil de X (Twitter).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "x_handle": {
+    description: "Usuario en X (Twitter).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "twitch_link": {
+    description: "Enlace al canal de Twitch.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "twitch_handle": {
+    description: "Usuario en Twitch.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "País de origen del jugador (ej. 'SPAIN').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_code": {
+    description: "Código de país de dos letras en minúsculas (ej. 'es').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "aliases": {
+    description: "Alias y nombres anteriores conocidos.",
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+  "current_team": {
+    description: "Equipo actual del jugador, si está activo en uno.",
+    type: "PlayerTeam | None",
+    typeDescription: "PlayerTeam | None",
+    default: "None",
+  },
+  "top_agents": {
+    description: "Agentes más jugados, ordenados por porcentaje de uso.",
+    type: "list[AgentStats]",
+    typeDescription: "list[AgentStats]",
+    default: "[]",
+  },
+  "stats_timespan": {
+    description: "Rango de tiempo empleado para las estadísticas de agentes ('30d' o 'all').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Ejemplos
+
+### Vista completa del perfil
+
+El método `profile` es un atajo muy conveniente que combina datos biográficos, equipo actual y estadísticas de agentes principales en una sola petición.
+
+```python
+import vlrdevapi
+
+profile = vlrdevapi.player.profile(player_id=438)
+print(f"{profile.name} ({profile.real_name})")
+print(f"País: {profile.country}")
+team_name = profile.current_team.name if profile.current_team else "(agente libre)"
+print(f"Equipo: {team_name}")
+print("Agentes principales:")
+if profile.top_agents:
+    for a in profile.top_agents[:3]:
+        print(f"  {a.agent}: rating {a.rating}, KD {a.kd}")
+else:
+    print("  (sin datos de agentes)")
+```
+
+### Resumen de redes sociales
+
+```python
+import vlrdevapi
+
+profile = vlrdevapi.player.profile(player_id=438)
+print(f"X: {profile.x_handle} ({profile.x_link})")
+print(f"Twitch: {profile.twitch_handle} ({profile.twitch_link})")
+```
+
+### Acceso curried
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(438)
+profile = player.profile()
+if profile.top_agents:
+    best_agent = max(profile.top_agents, key=lambda a: a.rating or 0)
+    print(f"Mejor agente de {profile.name}: {best_agent.agent} ({best_agent.rating} rating)")
+```\n

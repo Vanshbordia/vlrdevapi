@@ -1,0 +1,175 @@
+---
+title: Economía de la Serie (Series Economy)
+description: "Obtén los datos de economía ronda a ronda de un mapa: reservas bancarias, gastos, tipo de compra, ganador y matriz económica."
+---
+
+`series.economy(series_id, game_id)` devuelve los datos económicos de cada ronda para un mapa específico de la serie en vlr.gg.
+
+## Firma
+
+```python
+series.economy(
+    series_id: int,
+    game_id: int,
+) -> EconomyData
+```
+
+Con acceso curried:
+
+```python
+vlrdevapi.series(series_id).economy(game_id: int) -> EconomyData
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único de la serie en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+  "game_id": {
+    description: "Número de mapa dentro de la serie (base 1).",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+}} />
+
+## Retorno - `EconomyData`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único de la serie en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: "Identificador del mapa en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team1": {
+    description: "Nombre del Equipo 1 (defensa en el primer tiempo).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1_id": {
+    description: "ID del Equipo 1.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2": {
+    description: "Nombre del Equipo 2 (ataque en el primer tiempo).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2_id": {
+    description: "ID del Equipo 2.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "rounds": {
+    description: "Lista de datos económicos ronda a ronda.",
+    type: "list[RoundEconomyData]",
+    typeDescription: "list[RoundEconomyData] - consulta los campos a continuación",
+    default: "[]",
+  },
+  "buy_matrix_team1": {
+    description: "Matriz por tipo de compra del Equipo 1.",
+    type: "TeamBuyMatrix",
+    typeDescription: "TeamBuyMatrix",
+  },
+  "buy_matrix_team2": {
+    description: "Matriz por tipo de compra del Equipo 2.",
+    type: "TeamBuyMatrix",
+    typeDescription: "TeamBuyMatrix",
+  },
+}} />
+
+### Campos de `RoundEconomyData`
+
+<TypeTable type={{
+  "round_number": {
+    description: "Número de ronda (base 1).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "bank_team1": {
+    description: "Créditos en banco del Equipo 1 al inicio de la ronda.",
+    type: "float",
+    typeDescription: "float",
+    default: "0.0",
+  },
+  "bank_team2": {
+    description: "Créditos en banco del Equipo 2 al inicio de la ronda.",
+    type: "float",
+    typeDescription: "float",
+    default: "0.0",
+  },
+  "spent_team1": {
+    description: "Créditos gastados por el Equipo 1 en esta ronda.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "spent_team2": {
+    description: "Créditos gastados por el Equipo 2 en esta ronda.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "winner": {
+    description: "Información del equipo ganador de la ronda.",
+    type: "RoundWinner",
+    typeDescription: "RoundWinner",
+  },
+  "buy_type_team1": {
+    description: "Tipo de compra del Equipo 1 (Pistol, Eco, Half-buy, Full-buy).",
+    type: "BuyType",
+    typeDescription: "BuyType enum",
+  },
+  "buy_type_team2": {
+    description: "Tipo de compra del Equipo 2.",
+    type: "BuyType",
+    typeDescription: "BuyType enum",
+  },
+  "is_pistol_round": {
+    description: "Indica si se trata de una ronda de pistolas (rondas 1 y 13).",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+## Ejemplos
+
+### Análisis de la economía de las rondas
+
+```python
+import vlrdevapi
+
+econ = vlrdevapi.series.economy(series_id=670471, game_id=1)
+print(f"Economía: {econ.team1} vs {econ.team2}")
+for r in econ.rounds[:5]:
+    print(f"Ronda {r.round_number}: {econ.team1} ({r.buy_type_team1.value}, ${r.spent_team1}) vs {econ.team2} ({r.buy_type_team2.value}, ${r.spent_team2}) -> Ganador: {r.winner.name}")
+```
+
+### Acceso curried
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+econ = series.economy(game_id=1)
+if econ.pistol_team1:
+    print(f"{econ.team1} rondas de pistolas: {econ.pistol_team1.won}/{econ.pistol_team1.total}")
+```\n

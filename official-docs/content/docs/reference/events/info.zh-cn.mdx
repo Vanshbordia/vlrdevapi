@@ -1,0 +1,114 @@
+---
+title: 赛事详情 (Event Info)
+description: 获取特定赛事的完整元数据 — 包含赛事名称、所属系列赛、赛期起止日期、奖金总额、举办城市与赛区。
+---
+
+`event.info(event_id)` 返回 vlr.gg 上单场锦标赛的详尽综合元数据。
+
+## 方法签名
+
+```python
+event.info(event_id: int) -> EventInfo
+```
+
+## 请求参数
+
+<TypeTable type={{
+  "event_id": {
+    description: "vlr.gg 上的赛事唯一数值 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+}} />
+
+## 返回类型 - `EventInfo`
+
+<TypeTable type={{
+  "id": {
+    description: "赛事标识符。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "赛事完整显示全称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "subtitle": {
+    description: "赛事副标题或宣传标语。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "image_url": {
+    description: "赛事 Logo/缩略图的远程图片 URL。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "series": {
+    description: "所属父级系列赛层级（如 Valorant Champions Tour 2026）。",
+    type: "EventSeriesLink | None",
+    typeDescription: "EventSeriesLink | None - 详细字段见下方说明",
+    default: "None",
+  },
+  "stage": {
+    description: "系列赛内部所处的具体赛段标签（如 Stage 1）。",
+    type: "EventStageTag | None",
+    typeDescription: "EventStageTag | None - 详细字段见下方说明",
+    default: "None",
+  },
+  "regions": {
+    description: "赛事所关联的赛区标签。若包含多个独立大区则统一标识为 International（国际）。",
+    type: "list[EventRegion]",
+    typeDescription: "list[EventRegion] - 详细字段见下方说明",
+    default: "[]",
+  },
+  "start_date": {
+    description: "赛事揭幕开赛日期。",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "end_date": {
+    description: "赛事总决赛闭幕日期。",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "prize": {
+    description: "奖金池详细信息（包含金额数值及币种）。",
+    type: "EventPrize | None",
+    typeDescription: "EventPrize | None - 详细字段见下方说明",
+    default: "None",
+  },
+  "location": {
+    description: "线下举办场馆及国家/城市。",
+    type: "EventLocation | None",
+    typeDescription: "EventLocation | None - 详细字段见下方说明",
+    default: "None",
+  },
+  "region_location": {
+    description: "国家或赛区级地理标识（如线上选拔赛所在国家）。",
+    type: "EventLocation | None",
+    typeDescription: "EventLocation | None - 详细字段见下方说明",
+    default: "None",
+  },
+}} />
+
+## 代码示例
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.event(2765).info()
+print(f"赛事: {info.name}")
+if info.prize:
+    print(f"奖金: {info.prize.raw_text}")
+if info.location:
+    print(f"举办场馆: {info.location.venue}, {info.location.country}")
+print(f"赛期: {info.start_date} 至 {info.end_date}")
+```

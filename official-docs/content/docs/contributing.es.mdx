@@ -1,0 +1,46 @@
+---
+title: Cómo Contribuir a VLRdevAPI
+description: "Configuración del entorno de desarrollo, estilo de código y directrices de pull request para colaborar con VLRdevAPI."
+---
+
+¡Gracias por tu interés en contribuir a este proyecto!
+
+## Configuración del Entorno de Desarrollo
+
+1. Clona el repositorio: `git clone https://github.com/Vanshbordia/vlrdevapi`
+2. Instala las dependencias: `uv sync --group dev`
+3. Ejecuta los análisis preliminares: `ruff check src/` y `ty check src/vlrdevapi/`
+
+## Directrices para Pull Requests (PR)
+
+- Mantén cada PR enfocado en un único objetivo o funcionalidad.
+- Añade o actualiza pruebas automatizadas para cualquier cambio en el comportamiento.
+- Ejecuta `ruff check src/ tests/` y `ty check src/vlrdevapi/` antes de enviar cambios al repositorio.
+- Actualiza el archivo CHANGELOG.md bajo el encabezado de la próxima versión.
+- Si modificas archivos de documentación (.mdx), ejecuta `uv run scripts/check_mdx_examples.py` para asegurar que todos los ejemplos compilan correctamente.
+
+## Estilo de Código
+
+- Sigue el estándar PEP 8 con la configuración por defecto de `ruff` (longitud de línea de 120 caracteres, comillas dobles).
+- Emplea docstrings en estilo Google para todos los métodos públicos.
+- Añade anotaciones de tipo completas (type hints) en todas las firmas de funciones.
+- Utiliza `Literal` en lugar de `Union[Literal, str]` — la validación se realiza en tiempo de ejecución.
+
+## Estructura del Proyecto
+
+```
+src/vlrdevapi/
+  _base.py          # Clase base SyncNamespace
+  _cache.py         # Implementación de LRUCache
+  _client.py        # Cliente principal VLRClient
+  _event/           # Endpoints de eventos y torneos
+  _matches/         # Endpoints de listados de partidos (live / upcoming / completed)
+  _news/            # Endpoints de noticias y artículos
+  _player/          # Endpoints de jugadores (info / teams / agents / matches / profile)
+  _series/          # Endpoints de series (detalles de partidas)
+  _team/            # Endpoints de equipos (info / roster / placements / etc.)
+  _utils/           # Utilidades internas (paginación, rutas)
+  commons/          # Utilidades comunes (regiones, mapeos, fechas, países, premios)
+  validators.py     # Validación y saneamiento de entradas
+  fetcher.py        # Peticiones HTTP con reintentos y control de tasa
+```

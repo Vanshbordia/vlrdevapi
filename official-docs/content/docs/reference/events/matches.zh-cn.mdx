@@ -1,0 +1,120 @@
+---
+title: 赛事赛程与对阵 (Event Matches)
+description: 按赛段和对局状态筛选赛事包含的比赛，支持在底层并行补全参赛战队的唯一数值 ID。
+---
+
+`event.matches(event_id)` 返回赛事内部的赛程场次，支持按赛段和对局状态（未开始、直播中、已完赛）灵活筛选。各对阵队伍的 ID 将通过后台线程池在抓取系列赛概览时自动并行填充。
+
+## 方法签名
+
+```python
+event.matches(
+    event_id: int,
+    stage_id: str | None = None,
+    state: Literal["all", "completed", "live", "upcoming"] = "all",
+) -> EventMatches
+```
+
+## 请求参数
+
+<TypeTable type={{
+  "event_id": {
+    description: "vlr.gg 上的赛事唯一数值 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+  "stage_id": {
+    description: '匹配 URL 参数 series_id 的赛段编号（例如："5556"）。',
+    type: "str | None",
+    typeDescription: "str - 通过 event.stages() 获取的赛段 ID，或 None 表示全量",
+    default: "None",
+    required: false,
+  },
+  "state": {
+    description: "按比赛当前进行状态进行过滤。",
+    type: 'Literal["all", "completed", "live", "upcoming"]',
+    typeDescription: '"all" - 不筛选 | "completed" - 已结束对局 | "live" - 正在进行 | "upcoming" - 待开赛日程',
+    default: '"all"',
+    required: false,
+  },
+}} />
+
+## 返回类型 - `EventMatches`
+
+<TypeTable type={{
+  "event_id": {
+    description: "本批次赛程所属的赛事 ID。",
+    type: "int",
+    typeDescription: "int",
+  },
+  "matches": {
+    description: "赛事所包含的比赛条目列表。",
+    type: "list[EventMatch]",
+    typeDescription: "list[EventMatch]",
+    default: "[]",
+  },
+}} />
+
+### `EventMatch` 字段明细
+
+<TypeTable type={{
+  "event_id": {
+    description: "赛事唯一数值标识符。",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+  "match_id": {
+    description: "比赛在 vlr.gg 页面 URL 上的对局编号。",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+  "team1": {
+    description: "对阵双方中的战队 1（已包含补充的战队 ID 与名称）。",
+    type: "MatchTeam | None",
+    typeDescription: "MatchTeam | None",
+  },
+  "team2": {
+    description: "对阵双方中的战队 2（已包含补充的战队 ID 与名称）。",
+    type: "MatchTeam | None",
+    typeDescription: "MatchTeam | None",
+  },
+  "score1": {
+    description: "战队 1 获胜的大比分局数/小分。",
+    type: "int | None",
+    typeDescription: "int | None",
+  },
+  "score2": {
+    description: "战队 2 获胜的大比分局数/小分。",
+    type: "int | None",
+    typeDescription: "int | None",
+  },
+  "status": {
+    description: "该场比赛的进行状态。",
+    type: "str",
+    typeDescription: '"completed" | "live" | "upcoming"',
+  },
+  "round_info": {
+    description: '比赛所属的具体轮次描述（例如："Grand Final"、"Upper Semifinals"）。',
+    type: "str | None",
+    typeDescription: "str | None",
+  },
+}} />
+
+## 代码示例
+
+```python
+import vlrdevapi
+
+# 获取指定赛事中已完赛的赛果
+matches = vlrdevapi.event(2765).matches(state="completed")
+
+for m in matches.matches[:5]:
+    t1 = m.team1.name if m.team1 else "待定"
+    t2 = m.team2.name if m.team2 else "待定"
+    s1 = m.score1 if m.score1 is not None else 0
+    s2 = m.score2 if m.score2 is not None else 0
+    print(f"{t1} [{s1} - {s2}] {t2} | {m.round_info}")
+```

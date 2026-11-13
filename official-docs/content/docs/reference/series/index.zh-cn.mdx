@@ -1,0 +1,78 @@
+---
+title: 比赛系列赛 API 概述 (Series API)
+description: "Series 命名空间提供对 vlr.gg 单场比赛（系列赛）全量数据的访问：比赛总览、直播流与录像 VOD、选手表现、逐回合战况、对决数据、经济分析及击杀回放时间线。"
+icon: Swords
+---
+
+比赛 API 提供了获取 vlr.gg 网站上单场比赛（Bo1/Bo3/Bo5 系列赛）深度竞技数据的能力。你可以通过 `vlrdevapi.series(id)`（柯里化链式访问）或显式的 `VLRClient` 实例进行调用。
+
+<Callout type="info">
+所有子命名空间均支持惰性初始化，并共享相同的 HTTP 客户端配置。同时，赛事比赛列表模块内部也会复用该模块的数据来丰富战队 ID 信息。
+</Callout>
+
+## 访问模式
+
+### 模块级（默认客户端）
+
+```python
+import vlrdevapi
+
+# 直接访问（每次调用传入 series_id）
+info = vlrdevapi.series.info(series_id=670471)
+print(f"{info.team1.name} 对阵 {info.team2.name}")
+
+# 柯里化访问 - 仅传入一次 series_id，连续调用不同方法
+series = vlrdevapi.series(670471)
+info = series.info()
+print(f"比分: {info.score1} - {info.score2}")
+print(f"所属赛事: {info.event_name}")
+```
+
+### 显式客户端
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=30, requests_per_second=8) as client:
+    s = client.series(670471)
+    info = s.info()
+    print(f"{info.team1.name} 对阵 {info.team2.name}")
+    print(f"大比分: {info.score1} - {info.score2}")
+```
+
+## 子命名空间参考
+
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| [`series.info(series_id)`](./info) | `SeriesInfo` | 比赛总览 - 对阵队伍、大比分、所属赛事、交手历史、BP 选图及小局小分 |
+| [`series.vods(series_id)`](./vods) | `SeriesVods` | 官方直播源、二路转播与各小局录像 (VOD) 链接 |
+| [`series.players(series_id, game_id)`](./players) | `PlayersStats` | 单小局或全场累计的选手详细竞技数据 |
+| [`series.rounds(series_id, game_id)`](./rounds) | `RoundsData` | 逐回合战况详情（含每回合胜利方式与经济收支） |
+| [`series.performance(series_id, game_id)`](./performance) | `PerformanceData` | 选手相互对决击杀矩阵与高阶关键表现统计 |
+| [`series.economy(series_id, game_id)`](./economy) | `EconomyData` | 逐回合经济分析与各经济局类型胜负矩阵 |
+| [`series.replay(series_id, game_id)`](./replay) | `ReplayData` | 包含击杀事件、武器与坐标位置的回放日志时间线 |
+
+## 常见异常处理
+
+所有 series 方法均会抛出来自 `vlrdevapi.exceptions` 的类型化异常：
+
+| 异常 | 触发时机 |
+|------|----------|
+| `ValidationError` | 参数无效（如非法的 `series_id`、错误的 `game_id` 等） |
+| `NotFoundError` | 比赛系列赛页面不存在 (HTTP 404) |
+| `RequestError` | 网络失败或 HTTP 错误 |
+| `RateLimitError` | 请求过于频繁 (HTTP 429) |
+| `ParsingError` | 页面 HTML 结构无法被正确解析 |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import NotFoundError, ValidationError
+
+try:
+    info = vlrdevapi.series.info(series_id=670471)
+    print(f"比赛: {info.team1.name} vs {info.team2.name}")
+except NotFoundError:
+    print("未找到该场比赛")
+except ValidationError as e:
+    print(f"输入参数无效: {e}")
+```\n

@@ -1,0 +1,139 @@
+---
+title: Transmissões e VODs da Série (Series Streams & VODs)
+description: "Obtenha links de transmissões ao vivo, watch parties e vídeos sob demanda (VODs) de uma partida - Twitch, YouTube, Kick e plataformas regionais."
+---
+
+`series.vods(series_id)` retorna as transmissões e links de VODs (Vídeo sob Demanda) exibidos na página da partida no vlr.gg. Transmissões oficiais e watch parties ficam disponíveis inclusive para partidas futuras; os vídeos da partida completa e por mapa são indexados após a conclusão do confronto.
+
+## Assinatura
+
+```python
+series.vods(series_id: int) -> SeriesVods
+```
+
+Com acesso curried:
+
+```python
+vlrdevapi.series(series_id).vods() -> SeriesVods
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único da série no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `SeriesVods`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único da série no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "streams": {
+    description: "Transmissões ao vivo oficiais e watch parties associadas a esta partida.",
+    type: "list[SeriesStream]",
+    typeDescription: "list[SeriesStream] - veja os campos detalhados abaixo",
+    default: "[]",
+  },
+  "vods": {
+    description: "Gravações da partida completa e vídeos individuais de cada mapa.",
+    type: "list[SeriesVod]",
+    typeDescription: "list[SeriesVod] - veja os campos detalhados abaixo",
+    default: "[]",
+  },
+}} />
+
+### Campos de `SeriesStream`
+
+<TypeTable type={{
+  "platform": {
+    description: "Código da plataforma de streaming (ex: 'twitch', 'youtube', 'kick', 'bilibili', 'soop').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "name": {
+    description: "Nome do canal de transmissão ou streamer.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "url": {
+    description: "URL da transmissão ao vivo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "País ou idioma da transmissão.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `SeriesVod`
+
+<TypeTable type={{
+  "title": {
+    description: "Título ou descrição do VOD (ex: 'Full Match', 'Map 1').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "url": {
+    description: "URL de reprodução do vídeo gravado.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "map_name": {
+    description: "Nome do mapa referente ao vídeo, ou vazio para a partida completa.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Exemplos
+
+### Listar transmissões ao vivo
+
+```python
+import vlrdevapi
+
+vod_data = vlrdevapi.series.vods(series_id=670471)
+print(f"Transmissões disponíveis ({len(vod_data.streams)}):")
+for s in vod_data.streams:
+    print(f"  [{s.platform.upper()}] {s.name} ({s.country}): {s.url}")
+```
+
+### Obter links de VODs da partida
+
+```python
+import vlrdevapi
+
+vod_data = vlrdevapi.series.vods(series_id=670471)
+print(f"VODs encontrados ({len(vod_data.vods)}):")
+for v in vod_data.vods:
+    print(f"  {v.title}: {v.url}")
+```
+
+### Acesso curried
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+vod_data = series.vods()
+for v in vod_data.vods:
+    print(f"{v.title} -> {v.url}")
+```\n

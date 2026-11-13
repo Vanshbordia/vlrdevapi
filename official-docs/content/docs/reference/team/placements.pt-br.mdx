@@ -1,0 +1,153 @@
+---
+title: Colocações da Equipe (Team Placements)
+description: "Obtenha o histórico de colocações em torneios de uma equipe - colocações, premiação em dinheiro e ganhos acumulados."
+---
+
+`team.placements(team_id)` retorna o histórico de colocações e premiações em torneios de uma equipe no vlr.gg.
+
+## Assinatura
+
+```python
+team.placements(team_id: int) -> TeamPlacements
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador único da equipe no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `TeamPlacements`
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador da equipe.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "total_winnings": {
+    description: "Total acumulado de premiação em dinheiro como valor numérico.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "total_winnings_currency": {
+    description: "Símbolo da moeda da premiação (ex: '$', '€').",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "placements": {
+    description: "Lista de torneios e colocações obtidas.",
+    type: "list[TeamEventPlacement]",
+    typeDescription: "list[TeamEventPlacement] - veja os campos detalhados abaixo",
+    default: "[]",
+  },
+}} />
+
+### Campos de `TeamEventPlacement`
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador do evento no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "event_name": {
+    description: "Nome do evento.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "year": {
+    description: "Ano do evento.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "placements": {
+    description: "Lista de colocações nas etapas do evento.",
+    type: "list[EventPlacement]",
+    typeDescription: "list[EventPlacement] - veja os campos abaixo",
+    default: "[]",
+  },
+  "prize": {
+    description: "Premiação recebida como valor numérico.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "prize_currency": {
+    description: "Símbolo da moeda do prêmio.",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `EventPlacement`
+
+<TypeTable type={{
+  "stage": {
+    description: 'Etapa dentro do evento (ex: "Playoffs", "Group Stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "placement": {
+    description: 'Colocação obtida (ex: "1st", "2nd", "3rd", "5th-8th").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Exemplos
+
+### Todas as colocações
+
+```python
+import vlrdevapi
+
+placements = vlrdevapi.team.placements(team_id=2593)
+total = f"{placements.total_winnings_currency}{placements.total_winnings:,}" if placements.total_winnings and placements.total_winnings_currency else "N/A"
+print(f"Total acumulado: {total}")
+print()
+for event in placements.placements:
+    for p in event.placements:
+        print(f"{event.year} {event.event_name}: {p.placement} em {p.stage}")
+```
+
+### Premiação dividida por ano
+
+```python
+import vlrdevapi
+
+placements = vlrdevapi.team.placements(team_id=2593)
+by_year = {}
+for event in placements.placements:
+    by_year[event.year] = by_year.get(event.year, 0) + (event.prize or 0)
+currency = placements.total_winnings_currency or "$"
+for year in sorted(by_year):
+    print(f"  {year}: {currency}{by_year[year]:,}")
+```
+
+### Acesso curried
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+placements = team.placements()
+wins = [e for e in placements.placements for p in (e.placements or []) if "1st" in p.placement]
+print(f"Títulos conquistados: {len(wins)}")
+for e in wins:
+    print(f"  {e.event_name} ({e.year})")
+```\n

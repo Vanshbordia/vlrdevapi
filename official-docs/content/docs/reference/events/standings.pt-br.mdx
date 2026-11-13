@@ -1,0 +1,120 @@
+---
+title: Classificação do Evento (Event Standings)
+description: Obtenha a tabela de classificação e pontuação de um evento, agrupada por etapa com suporte a requisições paralelas.
+---
+
+`event.standings(event_id)` retorna a classificação e tabelas de grupos de um evento, agrupadas por etapa. Eventos com múltiplas etapas são consultados em paralelo (até 5 requisições concorrentes) para garantir alta performance.
+
+## Assinatura
+
+```python
+event.standings(
+    event_id: int,
+    stage: str | None = None,
+) -> EventStandings
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador numérico exclusivo do evento no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+  "stage": {
+    description: 'Nome opcional da etapa ou segmento de URL para filtrar (ex: "playoffs", "group-stage").',
+    type: "str | None",
+    typeDescription: "str - caminho/nome da etapa, ou None para todas",
+    default: "None",
+    required: false,
+  },
+}} />
+
+## Retorno - `EventStandings`
+
+`EventStandings` encapsula uma lista de instâncias de `EventStageStandings` e suporta `__len__`, `__iter__` e `__getitem__`.
+
+<TypeTable type={{
+  "stages": {
+    description: "Lista de etapas contendo suas respectivas tabelas de classificação.",
+    type: "list[EventStageStandings]",
+    typeDescription: "list[EventStageStandings]",
+  },
+}} />
+
+### Campos de `EventStageStandings`
+
+<TypeTable type={{
+  "stage_path": {
+    description: "Segmento de caminho da etapa na URL.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage_name": {
+    description: "Nome de exibição da etapa.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "standings": {
+    description: "Lista de posições e desempenhos dos times nesta etapa.",
+    type: "list[StandingEntry]",
+    typeDescription: "list[StandingEntry]",
+    default: "[]",
+  },
+}} />
+
+### Campos de `StandingEntry`
+
+<TypeTable type={{
+  "team": {
+    description: "Equipe correspondente a esta linha da tabela.",
+    type: "Team",
+    typeDescription: "Team - inclui id, name, tag, country, url",
+  },
+  "rank": {
+    description: "Posição numérica da equipe na classificação.",
+    type: "int",
+    typeDescription: "int",
+  },
+  "series_record": {
+    description: 'Histórico de séries (ex: "5-1").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "map_record": {
+    description: 'Histórico de mapas vencidos e perdidos (ex: "11-4").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "map_diff": {
+    description: "Saldo de mapas (diferença entre vitórias e derrotas).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "round_diff": {
+    description: "Saldo de rodadas/rounds da equipe.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+}} />
+
+## Exemplos de Código
+
+```python
+import vlrdevapi
+
+standings = vlrdevapi.event(2765).standings()
+
+for stage in standings.stages:
+    print(f"\n--- {stage.stage_name} ---")
+    for entry in stage.standings:
+        print(f"#{entry.rank} {entry.team.name:20s} | Séries: {entry.series_record} | Mapas: {entry.map_record}")
+```

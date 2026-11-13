@@ -1,0 +1,120 @@
+---
+title: Partidos del Torneo (Event Matches)
+description: Consulta los partidos de un torneo con filtrado por fase y estado, incluyendo enriquecimiento concurrente de IDs de equipo.
+---
+
+`event.matches(event_id)` devuelve la lista de partidos de un torneo con filtrado flexible por fase y estado. Los identificadores de equipo se completan de forma automática y en paralelo mediante consultas directas de series.
+
+## Firma
+
+```python
+event.matches(
+    event_id: int,
+    stage_id: str | None = None,
+    state: Literal["all", "completed", "live", "upcoming"] = "all",
+) -> EventMatches
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador numérico único del torneo en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+  "stage_id": {
+    description: 'Identificador de la fase correspondiente al parámetro de URL series_id (ej: "5556").',
+    type: "str | None",
+    typeDescription: "str - ID de fase obtenido en event.stages() o None para todas",
+    default: "None",
+    required: false,
+  },
+  "state": {
+    description: "Filtra los partidos por su estado actual.",
+    type: 'Literal["all", "completed", "live", "upcoming"]',
+    typeDescription: '"all" - todos | "completed" - jugados | "live" - en juego | "upcoming" - programados',
+    default: '"all"',
+    required: false,
+  },
+}} />
+
+## Retorno - `EventMatches`
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador del torneo al que pertenecen estos partidos.",
+    type: "int",
+    typeDescription: "int",
+  },
+  "matches": {
+    description: "Lista de partidos del torneo.",
+    type: "list[EventMatch]",
+    typeDescription: "list[EventMatch]",
+    default: "[]",
+  },
+}} />
+
+### Campos de `EventMatch`
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador del evento.",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+  "match_id": {
+    description: "Identificador numérico del partido en la URL de vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+  "team1": {
+    description: "Primer equipo de la serie (incluye ID y nombre).",
+    type: "MatchTeam | None",
+    typeDescription: "MatchTeam | None",
+  },
+  "team2": {
+    description: "Segundo equipo de la serie (incluye ID y nombre).",
+    type: "MatchTeam | None",
+    typeDescription: "MatchTeam | None",
+  },
+  "score1": {
+    description: "Mapas ganados por el equipo 1.",
+    type: "int | None",
+    typeDescription: "int | None",
+  },
+  "score2": {
+    description: "Mapas ganados por el equipo 2.",
+    type: "int | None",
+    typeDescription: "int | None",
+  },
+  "status": {
+    description: "Estado del partido.",
+    type: "str",
+    typeDescription: '"completed" | "live" | "upcoming"',
+  },
+  "round_info": {
+    description: 'Ronda o fase del partido (ej: "Gran Final", "Semifinal de Cuadro Superior").',
+    type: "str | None",
+    typeDescription: "str | None",
+  },
+}} />
+
+## Ejemplos de Código
+
+```python
+import vlrdevapi
+
+# Obtener partidos finalizados de un torneo
+matches = vlrdevapi.event(2765).matches(state="completed")
+
+for m in matches.matches[:5]:
+    t1 = m.team1.name if m.team1 else "TBD"
+    t2 = m.team2.name if m.team2 else "TBD"
+    s1 = m.score1 if m.score1 is not None else 0
+    s2 = m.score2 if m.score2 is not None else 0
+    print(f"{t1} [{s1} - {s2}] {t2} | {m.round_info}")
+```

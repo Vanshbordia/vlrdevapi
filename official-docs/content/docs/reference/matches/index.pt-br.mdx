@@ -1,0 +1,71 @@
+---
+title: Visão Geral da API de Partidas
+description: "Consulte e filtre partidas no vlr.gg - listagens de partidas futuras, ao vivo e concluídas com detalhes de equipes, placares e paginação."
+icon: Swords
+---
+
+A API de Partidas (Matches API) fornece acesso às listas de partidas do vlr.gg, divididas em três categorias: futuras (upcoming), ao vivo (live) e concluídas (completed). É acessada através de `vlrdevapi.matches` pelo cliente padrão ou por uma instância explícita de `VLRClient`.
+
+<Callout type="info">
+Todos os sub-namespaces são inicializados sob demanda (lazy) e compartilham a mesma configuração de cliente HTTP. Ao contrário de namespaces curried (como event e series), o namespace principal matches **não** é chamável diretamente como função.
+</Callout>
+
+## Padrões de Acesso
+
+### Nível de módulo (cliente padrão)
+
+```python
+# doc-check: skip
+import vlrdevapi
+
+# Partidas futuras
+upcoming = vlrdevapi.matches.upcoming(page=1)
+print(f"Futuras: {len(upcoming.matches)} partidas")
+
+# Partidas concluídas
+completed = vlrdevapi.matches.completed(page=1)
+print(f"Concluídas: {len(completed.matches)} partidas na página 1")
+```
+
+### Cliente explícito
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=15, requests_per_second=8) as client:
+    upcoming = client.matches.upcoming(page=1)
+    print(f"Futuras via cliente explícito: {len(upcoming.matches)} partidas")
+```
+
+## Referência dos Sub-namespaces
+
+| Método | Retorno | Descrição |
+|---|---|---|
+| [`matches.upcoming(page, max_page, return_all)`](./upcoming) | `UpcomingMatchesPage` | Navega por partidas futuras com paginação |
+| [`matches.live()`](./live) | `LiveMatchesPage` | Obtém as partidas em andamento no momento |
+| [`matches.completed(page, max_page, return_all)`](./completed) | `CompletedMatchesPage` | Navega por partidas finalizadas com paginação e placares |
+
+## Tratamento de Erros Comuns
+
+Todos os métodos de matches levantam exceções tipadas de `vlrdevapi.exceptions`:
+
+| Exceção | Quando é Lançada |
+|---|---|
+| `ValidationError` | Parâmetros inválidos (`page` inválido, `max_page` negativo, etc.) |
+| `NotFoundError` | A página solicitada não foi encontrada (HTTP 404) |
+| `RequestError` | Falha de conectividade ou erro HTTP |
+| `RateLimitError` | Limite de requisições excedido (HTTP 429) |
+| `ParsingError` | Estrutura HTML não reconhecida |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import ValidationError, RequestError
+
+try:
+    results = vlrdevapi.matches.upcoming(page=1)
+    print(f"Carregadas {len(results.matches)} partidas futuras")
+except ValidationError as e:
+    print(f"Entrada inválida: {e}")
+except RequestError as e:
+    print(f"Falha na requisição: {e}")
+```

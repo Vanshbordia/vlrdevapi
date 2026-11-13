@@ -1,0 +1,9 @@
+{
+  "title": "对局列表",
+  "pages": [
+    "upcoming",
+    "live",
+    "completed"
+  ],
+  "pagesIndex": "index"
+}

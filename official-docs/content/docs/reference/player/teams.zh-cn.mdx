@@ -1,0 +1,130 @@
+---
+title: 选手效力战队 (Player Teams)
+description: "获取选手的当前战队与过往战队经历，包含加入、离队以及进入非活跃状态的具体日期。"
+---
+
+`player.teams(player_id)` 返回该选手在 vlr.gg 上的当前战队及历史效力战队列表。
+
+## 函数签名
+
+```python
+player.teams(player_id: int) -> PlayerTeams
+```
+
+## 参数
+
+<TypeTable type={{
+  "player_id": {
+    description: "vlr.gg 上的唯一选手 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+}} />
+
+## 返回值 - `PlayerTeams`
+
+<TypeTable type={{
+  "current_teams": {
+    description: "选手当前所在的战队列表。",
+    type: "list[PlayerTeam]",
+    typeDescription: "list[PlayerTeam] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+  "past_teams": {
+    description: "选手曾效力过的历史战队列表。",
+    type: "list[PlayerTeam]",
+    typeDescription: "list[PlayerTeam]",
+    default: "[]",
+  },
+}} />
+
+### `PlayerTeam` 字段说明
+
+<TypeTable type={{
+  "team_id": {
+    description: "战队在 vlr.gg 上的 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "战队名称（例如 'EDward Gaming'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "slug": {
+    description: "战队 URL 缩写别名（例如 'edward-gaming'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "logo_url": {
+    description: "战队队标 Logo 图片的 URL。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "joined_date": {
+    description: "加入战队的日期（通常为对应月份的第一天）。",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "left_date": {
+    description: "离开战队的日期（通常为对应月份的第一天）。",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "inactive_date": {
+    description: "转为替补或非活跃状态的日期（通常为对应月份的第一天）。",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+}} />
+
+## 示例
+
+### 查询当前与过往战队
+
+```python
+import vlrdevapi
+
+teams = vlrdevapi.player.teams(player_id=438)
+
+print("当前效力战队:")
+for t in teams.current_teams:
+    print(f"  {t.name} (自 {t.joined_date})")
+
+print("历史效力战队:")
+for t in teams.past_teams:
+    end = t.left_date or t.inactive_date or "至今"
+    print(f"  {t.name} ({t.joined_date} - {end})")
+```
+
+### 构建职业生涯战队时间线
+
+```python
+import vlrdevapi
+from datetime import datetime, timezone
+
+teams = vlrdevapi.player.teams(player_id=438)
+all_teams = teams.current_teams + teams.past_teams
+for t in sorted(all_teams, key=lambda x: x.joined_date or datetime(1, 1, 1, tzinfo=timezone.utc)):
+    print(f"{t.joined_date}: 加入 {t.name}")
+    if t.left_date:
+        print(f"{t.left_date}: 离开 {t.name}")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(438)
+teams = player.teams()
+print(f"当前战队: {[t.name for t in teams.current_teams]}")
+```\n

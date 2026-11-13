@@ -1,0 +1,197 @@
+---
+title: Jogadores da Série (Series Players)
+description: "Obtenha estatísticas individuais de jogadores por partida - ACS, K/D, ADR, KAST e porcentagem de headshots."
+---
+
+`series.players(series_id, game_id)` retorna estatísticas detalhadas de jogadores para um mapa específico dentro de uma série, ou agregadas para todos os mapas jogados.
+
+## Assinatura
+
+```python
+series.players(
+    series_id: int,
+    game_id: int | str = "all",
+) -> PlayersStats
+```
+
+Com acesso curried:
+
+```python
+vlrdevapi.series(series_id).players(game_id: int | str = "all") -> PlayersStats
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único da série no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+  "game_id": {
+    description: 'Número do mapa na série (base 1) ou "all" para dados consolidados de todos os mapas.',
+    type: "int | str",
+    typeDescription: 'int (ordem do mapa 1..N) ou "all"',
+    default: '"all"',
+    required: false,
+  },
+}} />
+
+## Retorno - `PlayersStats`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único da série no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: 'Identificador do mapa consultado ("all" ou ID numérico).',
+    type: "str",
+    typeDescription: "str",
+    default: '"all"',
+  },
+  "map_name": {
+    description: 'Nome do mapa (ex: "Haven", "Bind"). Vazio quando game_id="all".',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "players": {
+    description: "Lista de estatísticas individuais dos jogadores.",
+    type: "list[PlayerStatsEntry]",
+    typeDescription: "list[PlayerStatsEntry] - veja os campos detalhados abaixo",
+    default: "[]",
+  },
+}} />
+
+### Campos de `PlayerStatsEntry`
+
+<TypeTable type={{
+  "player_id": {
+    description: "Identificador único do jogador no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "player_name": {
+    description: "Nick do jogador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team_name": {
+    description: "Nome ou tag da equipe.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "Nome do agente utilizado no mapa.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "rating": {
+    description: "Rating 2.0 do jogador.",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "acs": {
+    description: "Pontuação média de combate (Average Combat Score).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "kills": {
+    description: "Total de eliminações.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "deaths": {
+    description: "Total de mortes.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "assists": {
+    description: "Total de assistências.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "kd": {
+    description: "Relação Eliminações/Mortes (K/D).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "adr": {
+    description: "Dano médio por rodada (ADR).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "hs_percent": {
+    description: "Porcentagem de tiros na cabeça (Headshot %).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "kast": {
+    description: "Porcentagem de rounds com KAST.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "first_kills": {
+    description: "Primeiros abates conquistados (FK).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "first_deaths": {
+    description: "Primeiras mortes sofridas (FD).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+## Exemplos
+
+### Estatísticas consolidadas da série completa
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.series.players(series_id=670471, game_id="all")
+for p in stats.players[:5]:
+    print(f"{p.player_name} ({p.team_name}): {p.kills}/{p.deaths}/{p.assists} | ACS: {p.acs} | Rating: {p.rating}")
+```
+
+### Estatísticas do Mapa 1
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.series.players(series_id=670471, game_id=1)
+print(f"Mapa 1: {stats.map_name}")
+for p in stats.players:
+    print(f"  {p.player_name} [{p.agent}]: {p.kills}K / {p.deaths}D (K/D {p.kd})")
+```
+
+### Acesso curried
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+stats = series.players(game_id=1)
+best_player = max(stats.players, key=lambda p: p.rating or 0)
+print(f"MVP do Mapa 1: {best_player.player_name} com rating {best_player.rating}")
+```\n

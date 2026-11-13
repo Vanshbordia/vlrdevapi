@@ -29,7 +29,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: canonicalUrl(page.url),
     lastModified: page.data.lastModified,
     changeFrequency: 'weekly' as const,
-    priority: page.url === '/docs' ? 1 : 0.8,
+    priority: page.url.endsWith('/docs') || page.url.endsWith('/docs/') ? 1 : 0.8,
   }))
 
   const blogUrls = getBlogEntries().map((post) => ({

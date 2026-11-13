@@ -1,0 +1,181 @@
+---
+title: 比赛回合战况 (Series Rounds)
+description: "获取系列赛中指定地图的逐回合对战记录：回合获胜方、胜利方式、攻防阵营以及各队经济投入。"
+---
+
+`series.rounds(series_id, game_id)` 返回系列赛中单张小局地图的逐回合比赛记录，并直接关联了来自 vlr.gg 经济面板的资金、支出与买枪等级数据。
+
+## 函数签名
+
+```python
+series.rounds(
+    series_id: int,
+    game_id: int,
+) -> RoundsData
+```
+
+通过柯里化链式访问：
+
+```python
+vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
+```
+
+## 参数
+
+<TypeTable type={{
+  "series_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+  "game_id": {
+    description: "系列赛中小局地图的序号（从 1 开始的正整数）。",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+}} />
+
+## 返回值 - `RoundsData`
+
+<TypeTable type={{
+  "series_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: "地图在 vlr.gg 上的唯一 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team1": {
+    description: "第一支战队全称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2": {
+    description: "第二支战队全称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "rounds": {
+    description: "所有回合的战斗发展列表。",
+    type: "list[RoundInfo]",
+    typeDescription: "list[RoundInfo] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+}} />
+
+### `RoundInfo` 字段说明
+
+<TypeTable type={{
+  "round_number": {
+    description: "回合序号 (1-24+)。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "winner": {
+    description: '该回合获胜方："team1" 或 "team2"。',
+    type: "str",
+    typeDescription: '"team1" | "team2"',
+    default: '""',
+  },
+  "win_type": {
+    description: '获胜判定方式："elimination"（全歼敌方）, "defuse"（拆除爆弹）, "detonation"（爆弹引爆）, 或 "time"（防守超时）。',
+    type: "str",
+    typeDescription: '"elimination" | "defuse" | "detonation" | "time"',
+    default: '""',
+  },
+  "team1_score": {
+    description: "本回合结束后第一支战队的累计比分。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2_score": {
+    description: "本回合结束后第二支战队的累计比分。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team1_side": {
+    description: '第一支战队在本回合所属的攻防方："attack" 或 "defense"。',
+    type: "str",
+    typeDescription: '"attack" | "defense"',
+    default: '""',
+  },
+  "team2_side": {
+    description: '第二支战队在本回合所属的攻防方："attack" 或 "defense"。',
+    type: "str",
+    typeDescription: '"attack" | "defense"',
+    default: '""',
+  },
+  "team1_bank": {
+    description: "第一支战队在回合初始拥有的总誉币储备。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team1_spend": {
+    description: "第一支战队本回合采购武器技能所消耗的誉币。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team1_buy_type": {
+    description: '第一支战队的买枪类型评级 ("eco", "semi-eco", "semi-buy", "full-buy")。',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "team2_bank": {
+    description: "第二支战队在回合初始拥有的总誉币储备。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_spend": {
+    description: "第二支战队本回合采购消耗的誉币。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_buy_type": {
+    description: '第二支战队的买枪类型评级 ("eco", "semi-eco", "semi-buy", "full-buy")。',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+## 示例
+
+### 查看逐回合战报
+
+```python
+import vlrdevapi
+
+rounds_data = vlrdevapi.series.rounds(series_id=670471, game_id=1)
+print(f"比赛: {rounds_data.team1} vs {rounds_data.team2}")
+for r in rounds_data.rounds:
+    win_team = rounds_data.team1 if r.winner == "team1" else rounds_data.team2
+    print(f"第 {r.round_number:2d} 回合: 比分 {r.team1_score}-{r.team2_score} | 获胜: {win_team} ({r.win_type})")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+rounds_data = series.rounds(game_id=1)
+defuses = [r for r in rounds_data.rounds if r.win_type == "defuse"]
+print(f"拆包获胜的回合数: {len(defuses)}")
+```\n

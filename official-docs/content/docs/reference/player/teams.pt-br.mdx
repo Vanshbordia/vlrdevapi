@@ -1,0 +1,130 @@
+---
+title: Equipes do Jogador (Player Teams)
+description: "Obtenha as equipes atuais e anteriores de um jogador, com datas de entrada, saída ou inatividade."
+---
+
+`player.teams(player_id)` retorna as equipes atuais e históricas de um jogador no vlr.gg.
+
+## Assinatura
+
+```python
+player.teams(player_id: int) -> PlayerTeams
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "player_id": {
+    description: "Identificador único do jogador no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `PlayerTeams`
+
+<TypeTable type={{
+  "current_teams": {
+    description: "Equipes em que o jogador atua atualmente.",
+    type: "list[PlayerTeam]",
+    typeDescription: "list[PlayerTeam] - veja os campos detalhados abaixo",
+    default: "[]",
+  },
+  "past_teams": {
+    description: "Equipes pelas quais o jogador já passou anteriormente.",
+    type: "list[PlayerTeam]",
+    typeDescription: "list[PlayerTeam]",
+    default: "[]",
+  },
+}} />
+
+### Campos de `PlayerTeam`
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador da equipe no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nome da equipe (ex: 'LOUD').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "slug": {
+    description: "Slug da equipe na URL (ex: 'loud').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "logo_url": {
+    description: "URL da imagem de logotipo da equipe.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "joined_date": {
+    description: "Data em que o jogador ingressou na equipe (1º dia do mês de referência).",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "left_date": {
+    description: "Data em que o jogador deixou a equipe (1º dia do mês de referência).",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "inactive_date": {
+    description: "Data em que o jogador foi movido para a reserva/inatividade (1º dia do mês de referência).",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+}} />
+
+## Exemplos
+
+### Equipes atuais e passadas
+
+```python
+import vlrdevapi
+
+teams = vlrdevapi.player.teams(player_id=438)
+
+print("Equipes atuais:")
+for t in teams.current_teams:
+    print(f"  {t.name} (desde {t.joined_date})")
+
+print("Equipes anteriores:")
+for t in teams.past_teams:
+    end = t.left_date or t.inactive_date or "presente"
+    print(f"  {t.name} ({t.joined_date} - {end})")
+```
+
+### Linha do tempo das equipes
+
+```python
+import vlrdevapi
+from datetime import datetime, timezone
+
+teams = vlrdevapi.player.teams(player_id=438)
+all_teams = teams.current_teams + teams.past_teams
+for t in sorted(all_teams, key=lambda x: x.joined_date or datetime(1, 1, 1, tzinfo=timezone.utc)):
+    print(f"{t.joined_date}: Entrou em {t.name}")
+    if t.left_date:
+        print(f"{t.left_date}: Saiu de {t.name}")
+```
+
+### Acesso curried
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(438)
+teams = player.teams()
+print(f"Atualmente em: {[t.name for t in teams.current_teams]}")
+```\n

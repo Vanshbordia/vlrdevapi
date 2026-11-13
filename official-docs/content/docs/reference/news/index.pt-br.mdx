@@ -1,0 +1,63 @@
+---
+title: Visão Geral da API de Notícias (News API)
+description: "Acompanhe as últimas notícias de Valorant no vlr.gg através do namespace news."
+icon: Newspaper
+---
+
+A API de Notícias oferece acesso às publicações de notícias no vlr.gg. É acessada via `vlrdevapi.news` através do cliente padrão do módulo ou por uma instância explícita de `VLRClient`.
+
+<Callout type="info">
+O namespace news **não** pode ser chamado com um ID pré-vinculado (curried) — não possui padrão de acesso pré-fixado. Os dados são obtidos diretamente pelo número da página.
+</Callout>
+
+## Padrões de Acesso
+
+### Nível de módulo (cliente padrão)
+
+```python
+import vlrdevapi
+
+result = vlrdevapi.news(page=1)
+print(f"Notícias na página 1: {len(result.news)}")
+```
+
+### Cliente explícito
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient() as client:
+    result = client.news(page=1)
+    print(f"Mais páginas disponíveis: {result.has_next_page}")
+```
+
+## Referência
+
+| Método | Retorno | Descrição |
+|--------|---------|-----------|
+| [`news(page)`](./list) | `NewsPage` | Navegue pela lista de notícias com paginação |
+| [`news.article(article_id)`](./article) | `NewsArticle` | Obtenha o conteúdo completo de um artigo de notícia |
+
+## Tratamento Comum de Erros
+
+Todos os métodos de notícias levantam exceções tipadas de `vlrdevapi.exceptions`:
+
+| Exceção | Quando é Lançada |
+|---------|------------------|
+| `ValidationError` | Argumentos inválidos (`page` inválida, etc.) |
+| `NotFoundError` | Página ou artigo inexistente (página fora do intervalo, ou ID desconhecido — o vlr.gg retorna página genérica nesses casos, detectada pelo conteúdo) |
+| `RequestError` | Falha de rede ou erro HTTP |
+| `RateLimitError` | Excesso de requisições (HTTP 429) |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import ValidationError, RequestError
+
+try:
+    result = vlrdevapi.news(page=1)
+    print(f"Obtidas {len(result.news)} notícias")
+except ValidationError as e:
+    print(f"Entrada inválida: {e}")
+except RequestError as e:
+    print(f"Falha na requisição: {e}")
+```

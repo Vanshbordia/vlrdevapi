@@ -1,0 +1,170 @@
+---
+title: Información del Equipo (Team Info)
+description: "Obtén datos sobre el equipo: nombre, tag, país, logos claro y oscuro, redes sociales y sucesores/predecesores tras rebrandings."
+---
+
+`team.info(team_id)` devuelve información detallada de un equipo en vlr.gg.
+
+## Firma
+
+```python
+team.info(team_id: int) -> TeamInfo
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador único del equipo en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `TeamInfo`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador único del equipo en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nombre completo del equipo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: "Acrónimo o tag corto del equipo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "light_logo_url": {
+    description: "URL del logotipo en versión para fondo claro.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "dark_logo_url": {
+    description: "URL del logotipo en versión para fondo oscuro.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "País del equipo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "is_active": {
+    description: "Indica si el equipo continúa en activo.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "True",
+  },
+  "socials": {
+    description: "Lista de redes sociales oficiales del club.",
+    type: "list[TeamSocial] | None",
+    typeDescription: "list[TeamSocial] | None",
+    default: "None",
+  },
+  "previous_teams": {
+    description: "Lista de nombres u organizaciones anteriores (predecesores).",
+    type: "list[TeamSuccessor] | None",
+    typeDescription: "list[TeamSuccessor] | None",
+    default: "None",
+  },
+  "current_teams": {
+    description: "Lista de organizaciones actuales o sucesoras tras rebrandings.",
+    type: "list[TeamSuccessor] | None",
+    typeDescription: "list[TeamSuccessor] | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `TeamSocial`
+
+<TypeTable type={{
+  "name": {
+    description: 'Nombre de la plataforma (ej. "Twitch", "YouTube", "Twitter").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "url": {
+    description: "URL completa al perfil en la red social.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `TeamSuccessor`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador del equipo vinculado.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nombre del equipo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Ejemplos
+
+### Búsqueda básica de un equipo
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.team.info(team_id=2593)
+print(f"{info.name} ({info.tag})")
+print(f"País: {info.country}")
+print(f"Activo: {info.is_active}")
+print(f"Logo claro: {info.light_logo_url}")
+print(f"Logo oscuro: {info.dark_logo_url}")
+```
+
+### Redes sociales oficiales
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.team.info(team_id=2593)
+if info.socials:
+    for s in info.socials:
+        print(f"{s.name}: {s.url}")
+```
+
+### Linaje y cambios de marca (rebranding)
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.team.info(team_id=682)
+prev = ', '.join(t.name for t in info.previous_teams) if info.previous_teams else "(ninguno)"
+curr = ', '.join(t.name for t in info.current_teams) if info.current_teams else "(ninguno)"
+print(f"Conocido anteriormente como: {prev}")
+print(f"Conocido actualmente como: {curr}")
+```
+
+### Acceso curried
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+info = team.info()
+print(f"{info.name} ({info.tag}) - {info.country}")
+```\n

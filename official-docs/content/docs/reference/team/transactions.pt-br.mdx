@@ -1,0 +1,139 @@
+---
+title: Transferências da Equipe (Team Transactions)
+description: "Obtenha o histórico de transferências do elenco - contratações, saídas e movimentações para inatividade com datas e papéis."
+---
+
+`team.transactions(team_id)` retorna o histórico de movimentações e transferências de integrantes do elenco de uma equipe no vlr.gg.
+
+## Assinatura
+
+```python
+team.transactions(team_id: int) -> TeamTransactions
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador único da equipe no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `TeamTransactions`
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador da equipe.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "transactions": {
+    description: "Lista de movimentações/transferências.",
+    type: "list[TeamTransaction]",
+    typeDescription: "list[TeamTransaction] - veja os campos detalhados abaixo",
+    default: "[]",
+  },
+}} />
+
+### Campos de `TeamTransaction`
+
+<TypeTable type={{
+  "date": {
+    description: "Data da transferência.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "action": {
+    description: "Tipo de ação da transferência.",
+    type: "TransactionAction",
+    typeDescription: '"Join" | "Leave" | "Inactive"',
+  },
+  "player": {
+    description: "Jogador ou integrante envolvido.",
+    type: "TransactionPlayer",
+    typeDescription: "TransactionPlayer - veja os campos abaixo",
+  },
+  "position": {
+    description: 'Posição/função (ex: "Player", "Assistant coach").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "source_url": {
+    description: "URL da fonte do anúncio ou notícia.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `TransactionPlayer`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador do jogador no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "ign": {
+    description: "Nick no jogo (In-game name).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "real_name": {
+    description: "Nome real.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "País de origem.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Exemplos
+
+### Transferências recentes
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.team.transactions(team_id=2593)
+print(f"Histórico de transferências da equipe {history.team_id}:")
+for t in history.transactions[:10]:
+    print(f"  {t.date}: {t.player.ign} {t.action.value} ({t.position})")
+```
+
+### Contabilizar contratações vs saídas
+
+```python
+from collections import Counter
+import vlrdevapi
+
+history = vlrdevapi.team.transactions(team_id=2593)
+counts = Counter(t.action.value for t in history.transactions)
+print(f"Entradas: {counts.get('Join', 0)}")
+print(f"Saídas: {counts.get('Leave', 0)}")
+print(f"Inativos: {counts.get('Inactive', 0)}")
+```
+
+### Acesso curried
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+history = team.transactions()
+for t in history.transactions[:5]:
+    print(f"{t.date}: {t.player.ign} -> {t.action.value}")
+```\n

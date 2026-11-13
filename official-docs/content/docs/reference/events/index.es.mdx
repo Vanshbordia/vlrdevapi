@@ -1,0 +1,81 @@
+---
+title: Visión General de la API de Torneos y Eventos
+description: "El espacio de nombres Events permite acceder a datos de torneos de vlr.gg: listado de torneos, metadatos, fases, equipos, partidos y clasificaciones."
+icon: Calendar
+---
+
+La API de Eventos es la puerta de entrada a todos los datos de torneos competitivos de Valorant. Puedes acceder mediante `vlrdevapi.event(id)` (acceso encadenado) o a través de una instancia explícita de `VLRClient`.
+
+<Callout type="info">
+Todos los sub-espacios de nombres se inicializan bajo demanda (lazy) y comparten la misma configuración de cliente HTTP, tiempos de espera, reintentos y límites de peticiones.
+</Callout>
+
+## Patrones de Acceso
+
+### A nivel de módulo (cliente predeterminado)
+
+```python
+import vlrdevapi
+
+# Listar y buscar eventos
+events = vlrdevapi.event.list(tier="vct", region="americas")
+print(f"Encontrados {len(events.events)} eventos de VCT Americas")
+
+# Acceso encadenado (curried) - pasa el ID una vez y encadena métodos
+event = vlrdevapi.event(2765)
+info = event.info()
+print(f"Torneo: {info.name}")
+stages = event.stages()
+print(f"Fases: {len(stages)}")
+matches = event.matches()
+print(f"Partidos: {len(matches.matches)}")
+```
+
+### Cliente explícito
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=30, requests_per_second=8) as client:
+    e = client.event(2765)
+    info = e.info()
+    print(f"Torneo: {info.name}")
+    print(f"Premios: {info.prize.raw_text if info.prize else 'N/A'}")
+```
+
+## Referencia de Métodos
+
+| Método | Retorna | Descripción |
+|--------|---------|-------------|
+| [`event.list(tier, region, status, ...)`](./list) | `EventList` | Explorar torneos con filtros de tier, región, estado y paginación |
+| [`event.info(event_id)`](./info) | `EventInfo` | Metadados completos de un torneo específico |
+| [`event.stages(event_id)`](./stages) | `EventStages` | Desglose de fases con rangos de fechas |
+| [`event.teams(event_id, stage)`](./teams) | `EventTeams` | Equipos participantes por fase |
+| [`event.matches(event_id, stage_id, state)`](./matches) | `EventMatches` | Lista de partidos con filtrado por estado y fase |
+| [`event.standings(event_id, stage)`](./standings) | `EventStandings` | Clasificaciones y tablas de posiciones por fase |
+
+## Manejo de Excepciones
+
+Todos los métodos de eventos lanzan excepciones tipadas desde `vlrdevapi.exceptions`:
+
+| Excepción | Cuándo se Produce |
+|-----------|-------------|
+| `ValidationError` | Parámetros inválidos (`event_id`, tier o región incorrectos) |
+| `NotFoundError` | La página del torneo no existe en vlr.gg (HTTP 404) |
+| `RequestError` | Fallo de red o error de respuesta HTTP |
+| `RateLimitError` | Límite de peticiones alcanzado (HTTP 429) |
+| `ParsingError` | Estructura HTML de la página no reconocida |
+| `DataNotFoundError` | Los datos solicitados no existen en la página |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import NotFoundError, ParsingError
+
+try:
+    info = vlrdevapi.event(2765).info()
+    print(f"Torneo cargado: {info.name}")
+except NotFoundError:
+    print("Torneo no encontrado")
+except ParsingError as e:
+    print(f"Error al procesar la página: {e}")
+```

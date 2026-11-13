@@ -1,0 +1,274 @@
+---
+title: Estatísticas da Equipe (Team Stats)
+description: "Obtenha estatísticas de mapas e agentes de uma equipe em um intervalo de datas configurável, com filtros opcionais por evento/série e composições detalhadas."
+---
+
+`team.stats(team_id, ...)` retorna estatísticas ao nível de mapa para uma equipe no vlr.gg, com filtragem flexível por data e dados opcionais sobre composições de agentes.
+
+## Assinatura
+
+```python
+team.stats(
+    team_id: int,
+    date_start: date | None = None,
+    date_end: date | None = None,
+    event_id: int | None = None,
+    series_id: int | None = None,
+    subseries_id: int | None = None,
+    last_days: int | None = None,
+    agent_composition: AgentCompositionLevel = "none",
+) -> TeamStats
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador único da equipe no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+  "date_start": {
+    description: "Data inicial das estatísticas (inclusiva). Padrão: 30 dias atrás.",
+    type: "date | None",
+    typeDescription: "datetime.date - data ISO (2025-01-01) ou None",
+    default: "None",
+    required: false,
+  },
+  "date_end": {
+    description: "Data final das estatísticas (inclusiva). Padrão: data de hoje.",
+    type: "date | None",
+    typeDescription: "datetime.date - data ISO ou None",
+    default: "None",
+    required: false,
+  },
+  "event_id": {
+    description: "Filtra estatísticas para um evento específico.",
+    type: "int | None",
+    typeDescription: "int - ID do evento no vlr.gg, ou None",
+    default: "None",
+    required: false,
+  },
+  "series_id": {
+    description: "Filtra estatísticas para uma série específica.",
+    type: "int | None",
+    typeDescription: "int - ID da série, ou None",
+    default: "None",
+    required: false,
+  },
+  "subseries_id": {
+    description: "Filtra estatísticas para uma subsérie específica.",
+    type: "int | None",
+    typeDescription: "int - ID da subsérie, ou None",
+    default: "None",
+    required: false,
+  },
+  "last_days": {
+    description: "Atalho para definir o intervalo de datas para os últimos N dias.",
+    type: "int | None",
+    typeDescription: "int - número de dias, ex: 90, ou None",
+    default: "None",
+    required: false,
+  },
+  "agent_composition": {
+    description: "Nível de detalhamento das composições de agentes.",
+    type: "AgentCompositionLevel",
+    typeDescription: '"none" - sem agentes | "basic" - composições sem partidas | "detailed" - histórico completo de partidas por comp',
+    default: '"none"',
+    required: false,
+  },
+}} />
+
+## Retorno - `TeamStats`
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador da equipe.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "maps": {
+    description: "Estatísticas de mapas (apenas mapas com games_played > 0).",
+    type: "list[MapStats]",
+    typeDescription: "list[MapStats] - veja os campos detalhados abaixo",
+    default: "[]",
+  },
+}} />
+
+### Campos de `MapStats`
+
+<TypeTable type={{
+  "map_name": {
+    description: "Nome do mapa (ex: 'Haven', 'Bind').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "games_played": {
+    description: "Número de jogos disputados no mapa.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "win_rate": {
+    description: "Taxa de vitória em porcentagem (ex: 33.0 para 33%).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "wins": {
+    description: "Total de vitórias no mapa.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "losses": {
+    description: "Total de derrotas no mapa.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "attack_first": {
+    description: "Vezes em que começou jogando no lado atacante.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "defense_first": {
+    description: "Vezes em que começou jogando no lado defensor.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "attack_round_win_rate": {
+    description: "Taxa de vitória de rounds no lado de ataque.",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "attack_rounds_won": {
+    description: "Rounds de ataque vencidos.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "attack_rounds_lost": {
+    description: "Rounds de ataque perdidos.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "defense_round_win_rate": {
+    description: "Taxa de vitória de rounds no lado de defesa.",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "defense_rounds_won": {
+    description: "Rounds de defesa vencidos.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "defense_rounds_lost": {
+    description: "Rounds de defesa perdidos.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "compositions": {
+    description: "Composições de agentes para este mapa (quando solicitadas).",
+    type: "list[AgentComposition] | None",
+    typeDescription: "list[AgentComposition] | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `AgentComposition`
+
+<TypeTable type={{
+  "agents": {
+    description: "Nomes dos agentes (normalizados, ordenados alfabeticamente).",
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+  "games_played": {
+    description: "Quantidade de partidas disputadas com esta composição.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "wins": {
+    description: "Vitórias com esta formação.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "losses": {
+    description: "Derrotas com esta formação.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "win_rate": {
+    description: "Taxa de vitória da composição em porcentagem.",
+    type: "float",
+    typeDescription: "float",
+    default: "0.0",
+  },
+  "matches": {
+    description: "Detalhes de partidas (disponível apenas no modo 'detailed').",
+    type: "list[CompositionMatchDetails] | None",
+    typeDescription: "list[CompositionMatchDetails] | None",
+    default: "None",
+  },
+}} />
+
+## Exemplos
+
+### Estatísticas padrão (últimos 30 dias)
+
+```python
+# doc-check: allow-empty
+import vlrdevapi
+
+stats = vlrdevapi.team.stats(team_id=2593)
+print(f"Estatísticas de mapas da equipe {stats.team_id}:")
+for m in stats.maps:
+    wr = f"{m.win_rate:.0f}%" if m.win_rate is not None else "N/A"
+    atk_wr = f"{m.attack_round_win_rate:.0f}%" if m.attack_round_win_rate is not None else "N/A"
+    def_wr = f"{m.defense_round_win_rate:.0f}%" if m.defense_round_win_rate is not None else "N/A"
+    print(f"  {m.map_name}: {m.games_played}j | {wr} WR | ATK {atk_wr} | DEF {def_wr}")
+```
+
+### Análise de composições de agentes
+
+```python
+# doc-check: allow-empty
+import vlrdevapi
+
+stats = vlrdevapi.team.stats(team_id=2593, last_days=90, agent_composition="basic")
+for m in stats.maps:
+    print(f"\n{m.map_name}:")
+    if m.compositions:
+        for comp in m.compositions[:3]:
+            agents = ", ".join(comp.agents)
+            print(f"  [{agents}] {comp.games_played}j - {comp.wins}V / {comp.losses}D ({comp.win_rate:.0f}%)")
+    else:
+        print("  (sem dados de composição)")
+```
+
+### Acesso curried
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+stats = team.stats(last_days=90)
+if stats.maps:
+    best_map = max(stats.maps, key=lambda m: m.win_rate or 0)
+    print(f"Melhor mapa: {best_map.map_name} ({best_map.win_rate:.0f}% WR)")
+```\n

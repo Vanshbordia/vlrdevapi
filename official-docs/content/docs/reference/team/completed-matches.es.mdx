@@ -1,0 +1,196 @@
+---
+title: Partidas Finalizadas del Equipo (Team Completed Matches)
+description: "Obtén el historial de partidas finalizadas de un equipo con tanteos, rivales, resultado victoria/derrota y detalles del torneo."
+---
+
+`team.completed_matches(team_id)` devuelve el historial de partidas completadas por un equipo en vlr.gg.
+
+Por defecto devuelve las primeras **50** partidas (primera página de vlr.gg). Ajusta `limit` para traer más, o pasa `return_all=True` para descargar todas las páginas disponibles.
+
+## Firma
+
+```python
+team.completed_matches(
+    team_id: int,
+    limit: int = 50,
+    return_all: bool = False,
+) -> TeamCompletedMatches
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador único del equipo en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+  "limit": {
+    description: "Número máximo de partidas terminadas a consultar. Solo se solicitan páginas extra si se sobrepasan los 50 iniciales.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    default: "50",
+  },
+  "return_all": {
+    description: "Si es True, recorre todas las páginas y devuelve la totalidad de partidas. Invalida `limit`.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+## Retorno - `TeamCompletedMatches`
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador del equipo.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "matches": {
+    description: "Lista de partidas terminadas.",
+    type: "list[TeamCompletedMatchEntry]",
+    typeDescription: "list[TeamCompletedMatchEntry] - consulta los campos detallados a continuación",
+    default: "[]",
+  },
+  "has_next_page": {
+    description: "Indica si existen más partidas disponibles más allá del listado devuelto.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+### Campos de `TeamCompletedMatchEntry`
+
+<TypeTable type={{
+  "match_id": {
+    description: "Identificador de la partida.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "URL relativa hacia la ficha de la partida.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "Nombre del torneo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: 'Fase del torneo (ej. "Playoffs", "Group Stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "bracket": {
+    description: 'Cuadro o ronda (ej. "LBF", "Ro16").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "opponent": {
+    description: "Equipo contrincante.",
+    type: "OpponentInCompletedMatch | None",
+    typeDescription: "OpponentInCompletedMatch | None - consulta los campos a continuación",
+    default: "None",
+  },
+  "team_score": {
+    description: "Puntuación de este equipo.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "opponent_score": {
+    description: "Puntuación del rival.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "is_win": {
+    description: "Indica si este equipo ganó la serie.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "datetime": {
+    description: "Fecha y hora de inicio en formato UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `OpponentInCompletedMatch`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador del equipo rival.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nombre del equipo rival.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: "Tag del equipo rival.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Ejemplos
+
+### Resultados recientes
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.team.completed_matches(team_id=2593)
+print(f"Partidas finalizadas del equipo {history.team_id}:")
+for m in history.matches[:10]:
+    result = "VICTORIA" if m.is_win else "derrota"
+    opp = m.opponent.name if m.opponent else "Por determinar"
+    round_label = " ".join(part for part in (m.stage, m.bracket) if part)
+    print(
+        f"  {m.team_score} - {m.opponent_score} vs {opp} "
+        f"({result}) - {m.event} {round_label}"
+    )
+```
+
+### Registro de victorias y derrotas
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.team.completed_matches(team_id=2593)
+wins = sum(1 for m in history.matches if m.is_win)
+losses = sum(1 for m in history.matches if not m.is_win)
+total = wins + losses
+pct = wins / total * 100 if total else 0
+print(f"{wins}V - {losses}D ({pct:.0f}% efectividad) en {total} encuentros")
+```
+
+### Acceso curried
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+history = team.completed_matches()
+for m in history.matches[:5]:
+    tag = m.opponent.tag if m.opponent else "TBD"
+    print(f"{'V' if m.is_win else 'D'} {m.team_score}-{m.opponent_score} vs {tag}")
+```\n
