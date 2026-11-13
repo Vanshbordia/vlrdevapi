@@ -88,7 +88,7 @@ class TestOtherPlayers:
 
         assert result.total_winnings == 28450
         assert result.total_winnings_currency == "$"
-        assert len(result.placements) == 27
+        assert len(result.placements) == 28
         assert result.placements[0].event_id == 3127
         assert result.placements[0].placement == "5th–8th"
         assert result.placements[0].team_name == "Ascension Winners"

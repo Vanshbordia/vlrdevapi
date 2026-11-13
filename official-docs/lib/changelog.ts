@@ -26,6 +26,36 @@ export type ChangelogVersion = {
 
 export const versions = [
   {
+    version: '3.1.1',
+    date: '13 November 2026',
+    isoDate: '2026-11-13',
+    github: 'https://github.com/vanshbordia/vlrdevapi/releases/tag/3.1.1',
+    pypi: 'https://pypi.org/project/vlrdevapi/3.1.1/',
+    summary: 'Official MCP Registry integration, automated OIDC-based registry publishing pipeline, and Windows zoneinfo timezone compatibility fix.',
+    sections: [
+      {
+        title: 'Added',
+        items: [
+          'Official MCP Registry Manifest — Added server.json registering io.github.vanshbordia/vlrdevapi with stdio transport and uvx runtime hints.',
+          'Automated MCP Registry Publishing — GitHub Actions release workflow publishes directly to registry.modelcontextprotocol.io via GitHub OIDC.',
+          'PyPI MCP Ownership Verification — Added verification marker to README.md.',
+        ],
+      },
+      {
+        title: 'Fixed',
+        items: [
+          'Windows Timezone Support — Added tzdata as a core Windows dependency (sys_platform == "win32") to prevent ZoneInfoNotFoundError.',
+        ],
+      },
+      {
+        title: 'Changed',
+        items: [
+          'Dependency Upgrades — Bumped Python and documentation dependencies to latest stable minor releases (Next.js 16.4.6, Fumadocs 16.19, Tailwind CSS 4.3.5, Pydantic, Polars, Pandas).',
+        ],
+      },
+    ],
+  },
+  {
     version: '3.1.0',
     date: '25 October 2026',
     isoDate: '2026-10-25',

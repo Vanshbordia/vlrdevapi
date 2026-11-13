@@ -280,6 +280,11 @@ ROUTES += [
         {},
     ),
     (
+        "/team/4330/fancy-united-esports",
+        "team/4330/overview_light.html",
+        {},
+    ),
+    (
         "/team/matches/120/?core_id=all&group=completed&page=2",
         "team/120/completed_matches_page2.html",
         {},
@@ -491,13 +496,20 @@ for _gid in GAMES_BO5_2026:
     ]
 
 # ── Upcoming series (best_of + TBD map tabs) ─────────────────
-SERIES_ID_UPCOMING = 773433
-SERIES_SLUG_UPCOMING = "mibr-gc-vs-gentle-mates-gc-game-changers-2026-championship-s-o-paulo-ubsf"
+SERIES_ID_UPCOMING = 784392
+SERIES_SLUG_UPCOMING = "fancy-united-esports-vs-original-gaming-predator-league-2027-vietnam-gf"
 
 ROUTES.append(
     (
         f"/{SERIES_ID_UPCOMING}/{SERIES_SLUG_UPCOMING}",
         f"series/{SERIES_ID_UPCOMING}/overview.html",
+        {},
+    ),
+)
+ROUTES.append(
+    (
+        "/773433/mibr-gc-vs-gentle-mates-gc-game-changers-2026-championship-s-o-paulo-ubsf",
+        "series/773433/overview.html",
         {},
     ),
 )

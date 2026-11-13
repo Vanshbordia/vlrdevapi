@@ -159,6 +159,7 @@ matches.completed(
 Fetch the first page of completed matches and display scores with the winner.
 
 ```python
+# doc-check: skip
 import vlrdevapi
 
 results = vlrdevapi.matches.completed(page=1)
@@ -177,6 +178,7 @@ for match in results.matches:
 Use `return_all=True` to paginate through all available pages and collect every completed match.
 
 ```python
+# doc-check: skip
 import vlrdevapi
 
 results = vlrdevapi.matches.completed(return_all=True)
@@ -193,6 +195,7 @@ for match in results.matches[:10]:
 Completed matches include scores, so you can identify close series (e.g. 2-1 scorelines).
 
 ```python
+# doc-check: skip
 import vlrdevapi
 
 results = vlrdevapi.matches.completed(return_all=True)

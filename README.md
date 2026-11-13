@@ -17,6 +17,8 @@
 
 </div>
 
+<!-- mcp-name: io.github.vanshbordia/vlrdevapi -->
+
 ---
 
 **vlrdevapi** is a high-performance, type-safe Python client for extracting and analyzing Valorant esports data from [VLR.gg](https://www.vlr.gg/). Built for competitive analysts, data scientists, Discord bot creators, and esports engineers, it delivers structured [Pydantic](https://docs.pydantic.dev/) models with full type hinting, built-in rate limiting, automatic retries, and comprehensive coverage across all VLR.gg entities.
@@ -302,7 +304,7 @@ print(players.to_markdown())
 
 ## Model Context Protocol (MCP) Server
 
-VLRdevAPI includes a native MCP server for AI assistants and autonomous coding agents:
+VLRdevAPI includes a native MCP server for AI assistants and autonomous coding agents (`io.github.vanshbordia/vlrdevapi` on the official MCP Registry):
 
 ```bash
 # Run server over stdio

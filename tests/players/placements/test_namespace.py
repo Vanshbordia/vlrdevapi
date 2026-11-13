@@ -38,4 +38,4 @@ class TestSyncWithClient:
             result = client.player.placements(53)
         assert result.player_id == 53
         assert result.total_winnings == 28450
-        assert len(result.placements) == 27
+        assert len(result.placements) == 28

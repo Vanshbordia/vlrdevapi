@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [3.1.1] - 2026-11-13
+
+### Added
+
+- **Official MCP Registry Manifest** — Added `server.json` compliant with the Model Context Protocol registry schema (`registry.modelcontextprotocol.io`), registering `io.github.vanshbordia/vlrdevapi` with stdio transport and `uvx` runtime arguments.
+- **Automated MCP Registry Publishing Workflow** — Extended GitHub Actions release pipeline (`publish.yml`) with automated OIDC authentication (`id-token: write`) via `mcp-publisher`.
+- **PyPI MCP Ownership Verification** — Added package ownership verification marker to `README.md`.
+
+### Fixed
+
+- **Windows Timezone Support** — Added `tzdata>=2025.1; sys_platform == 'win32'` as a core dependency to resolve `ZoneInfoNotFoundError` when running `vlrdevapi` or `uvx` on Windows.
+
+### Changed
+
+- **Dependency Upgrades** — Bumped core Python dependencies (Pydantic, Pandas, Polars, PyArrow, Pytest, Ruff) and documentation website dependencies (Next.js 16.4.6, Fumadocs 16.19, Tailwind CSS 4.3.5).
+
 ## [3.1.0] - 2026-10-25
 
 ### Added
@@ -485,6 +501,7 @@ The API surface, module structure, and type system are all new.
 - `aiohttp` and `asyncio` dependencies.
 - v1.x match/event/team parsing modules.
 
+[3.1.1]: https://github.com/Vanshbordia/vlrdevapi/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/Vanshbordia/vlrdevapi/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.4.1...v3.0.0
 [2.4.1]: https://github.com/Vanshbordia/vlrdevapi/compare/v2.4.0...v2.4.1

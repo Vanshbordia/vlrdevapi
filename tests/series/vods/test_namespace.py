@@ -70,7 +70,7 @@ class TestSyncModuleLevel:
 
         result = vlrdevapi.series.vods(773433)
         assert len(result.streams) == 113
-        assert result.vods == []
+        assert len(result.vods) == 2
 
         platforms = {stream.platform for stream in result.streams}
         assert {"twitch", "youtube", "bilibili", "douyu", "huya"} <= platforms
