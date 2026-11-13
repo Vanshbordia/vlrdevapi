@@ -82,23 +82,17 @@ event.teams(
     typeDescription: "str",
     default: '""',
   },
-  "tag": {
-    description: "战队缩写简称/队标代码（例如：EDG、PRX、FNC）。",
-    type: "str",
-    typeDescription: "str",
-    default: '""',
+  "note": {
+    description: "战队相关的可选备注信息。",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
   },
-  "country": {
-    description: "战队所属国家/地区。",
-    type: "str",
-    typeDescription: "str",
-    default: '""',
-  },
-  "url": {
-    description: "该战队在 vlr.gg 上的相对主页路径。",
-    type: "str",
-    typeDescription: "str",
-    default: '""',
+  "players": {
+    description: "战队成员列表。",
+    type: "list[TeamPlayer]",
+    typeDescription: "list[TeamPlayer]",
+    default: "[]",
   },
 }} />
 
@@ -109,8 +103,8 @@ import vlrdevapi
 
 event_teams = vlrdevapi.event(2765).teams()
 
-for stage in event_teams.stages:
+for stage in event_teams:
     print(f"\n赛段: {stage.stage_name} (包含 {len(stage.teams)} 支队伍)")
-    for team in stage.teams:
-        print(f"  - {team.name} ({team.tag or '无简称'}) - 国家/地区: {team.country}")
+    for team in stage.teams[:3]:
+        print(f"  - {team.name} (ID: {team.id})")
 ```

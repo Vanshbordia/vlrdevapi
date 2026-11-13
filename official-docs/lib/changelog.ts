@@ -44,6 +44,7 @@ export const versions = [
       {
         title: 'Fixed',
         items: [
+          'MCP Registry Launch Command — Added vlrdevapi console script alias to vlrdevapi.mcp.server:main alongside vlrdevapi-mcp so MCP registry clients can launch the server using the package identifier.',
           'Windows Timezone Support — Added tzdata as a core Windows dependency (sys_platform == "win32") to prevent ZoneInfoNotFoundError.',
         ],
       },

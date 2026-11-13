@@ -264,6 +264,7 @@ for m in stats.maps:
 ### 柯里化链式访问
 
 ```python
+# doc-check: allow-empty
 import vlrdevapi
 
 team = vlrdevapi.team(2593)
@@ -271,4 +272,6 @@ stats = team.stats(last_days=90)
 if stats.maps:
     best_map = max(stats.maps, key=lambda m: m.win_rate or 0)
     print(f"胜率最高的主场地图: {best_map.map_name} (胜率 {best_map.win_rate:.0f}%)")
-```\n
+else:
+    print("(暂无地图表现数据)")
+```

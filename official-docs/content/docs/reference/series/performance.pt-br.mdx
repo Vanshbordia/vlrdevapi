@@ -283,4 +283,4 @@ perf = series.performance(game_id=1)
 if perf.adv_stats:
     top_clutcher = max(perf.adv_stats, key=lambda p: (p.one_v1 or 0) + (p.one_v2 or 0))
     print(f"Maior especialista em clutches: {top_clutcher.name}")
-```\n
+```

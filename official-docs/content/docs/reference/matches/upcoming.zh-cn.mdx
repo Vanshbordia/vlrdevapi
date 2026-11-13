@@ -87,17 +87,17 @@ matches.upcoming(
   },
   "team1": {
     description: "对阵第一支队伍的相关资料。",
-    type: "TeamInMatch | None",
-    typeDescription: "TeamInMatch | None",
+    type: "TeamInUpcomingMatch | None",
+    typeDescription: "TeamInUpcomingMatch | None",
     default: "None",
   },
   "team2": {
     description: "对阵第二支队伍的相关资料。",
-    type: "TeamInMatch | None",
-    typeDescription: "TeamInMatch | None",
+    type: "TeamInUpcomingMatch | None",
+    typeDescription: "TeamInUpcomingMatch | None",
     default: "None",
   },
-  "time_until_match": {
+  "eta": {
     description: '距离比赛开打的剩余倒计时文本（例如："2h 30m"）。',
     type: "str",
     typeDescription: "str",
@@ -122,6 +122,6 @@ for match in page.matches[:5]:
     t1 = match.team1.name if match.team1 else "待定"
     t2 = match.team2.name if match.team2 else "待定"
     print(f"{t1} vs {t2} | {match.event} ({match.stage})")
-    print(f"开赛时间: {match.datetime} (倒计时: {match.time_until_match})")
+    print(f"开赛时间: {match.datetime} (倒计时: {match.eta})")
     print(f"链接: https://vlr.gg{match.url}\n")
 ```

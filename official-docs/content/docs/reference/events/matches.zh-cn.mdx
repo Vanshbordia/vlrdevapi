@@ -71,35 +71,29 @@ event.matches(
     typeDescription: "int",
     required: true,
   },
-  "team1": {
-    description: "对阵双方中的战队 1（已包含补充的战队 ID 与名称）。",
-    type: "MatchTeam | None",
-    typeDescription: "MatchTeam | None",
+  "stage": {
+    description: "阶段名称（例如：'Playoffs'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
   },
-  "team2": {
-    description: "对阵双方中的战队 2（已包含补充的战队 ID 与名称）。",
-    type: "MatchTeam | None",
-    typeDescription: "MatchTeam | None",
-  },
-  "score1": {
-    description: "战队 1 获胜的大比分局数/小分。",
-    type: "int | None",
-    typeDescription: "int | None",
-  },
-  "score2": {
-    description: "战队 2 获胜的大比分局数/小分。",
-    type: "int | None",
-    typeDescription: "int | None",
+  "phase": {
+    description: "具体轮次阶段（例如：'Grand Final'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
   },
   "status": {
     description: "该场比赛的进行状态。",
-    type: "str",
-    typeDescription: '"completed" | "live" | "upcoming"',
+    type: "MatchStatus",
+    typeDescription: 'MatchStatus - "completed" | "live" | "upcoming"',
+    required: true,
   },
-  "round_info": {
-    description: '比赛所属的具体轮次描述（例如："Grand Final"、"Upper Semifinals"）。',
-    type: "str | None",
-    typeDescription: "str | None",
+  "teams": {
+    description: "参赛队伍列表（通常为 2 支队伍）。",
+    type: "list[MatchTeam]",
+    typeDescription: "list[MatchTeam]",
+    default: "[]",
   },
 }} />
 
@@ -112,9 +106,8 @@ import vlrdevapi
 matches = vlrdevapi.event(2765).matches(state="completed")
 
 for m in matches.matches[:5]:
-    t1 = m.team1.name if m.team1 else "待定"
-    t2 = m.team2.name if m.team2 else "待定"
-    s1 = m.score1 if m.score1 is not None else 0
-    s2 = m.score2 if m.score2 is not None else 0
-    print(f"{t1} [{s1} - {s2}] {t2} | {m.round_info}")
+    t1, t2 = m.teams[0], m.teams[1]
+    s1 = t1.score if t1.score is not None else 0
+    s2 = t2.score if t2.score is not None else 0
+    print(f"{t1.name} [{s1} - {s2}] {t2.name} | {m.stage} - {m.phase}")
 ```

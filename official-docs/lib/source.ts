@@ -87,7 +87,10 @@ export function getGuideEntries(): ContentEntry[] {
 }
 
 export function getPageMarkdownUrl(page: (typeof source)['$inferPage']) {
-  const segments = [...page.slugs, 'content.md'];
+  const isNonDefaultLang = page.locale && page.locale !== i18n.defaultLanguage;
+  const segments = isNonDefaultLang
+    ? [page.locale, ...page.slugs, 'content.md']
+    : [...page.slugs, 'content.md'];
 
   return {
     segments,

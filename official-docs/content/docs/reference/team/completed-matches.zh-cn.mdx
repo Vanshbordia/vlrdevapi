@@ -193,4 +193,4 @@ history = team.completed_matches()
 for m in history.matches[:5]:
     tag = m.opponent.tag if m.opponent else "TBD"
     print(f"{'胜' if m.is_win else '负'} {m.team_score}-{m.opponent_score} 对阵 {tag}")
-```\n
+```

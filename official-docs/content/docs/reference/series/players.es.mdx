@@ -59,15 +59,48 @@ vlrdevapi.series(series_id).players(game_id: int | str = "all") -> PlayersStats
     typeDescription: "str",
     default: '""',
   },
+  "team1": {
+    description: "Estadísticas de los jugadores del Equipo 1.",
+    type: "TeamPlayers",
+    typeDescription: "TeamPlayers - consulta los campos detallados a continuación",
+  },
+  "team2": {
+    description: "Estadísticas de los jugadores del Equipo 2.",
+    type: "TeamPlayers",
+    typeDescription: "TeamPlayers - consulta los campos detallados a continuación",
+  },
+}} />
+
+### Campos de `TeamPlayers`
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador numérico único del equipo en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team_name": {
+    description: "Nombre completo del equipo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team_short": {
+    description: "Abreviatura o sigla del equipo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
   "players": {
-    description: "Lista de registros estadísticos individuales de los jugadores.",
-    type: "list[PlayerStatsEntry]",
-    typeDescription: "list[PlayerStatsEntry] - consulta los campos detallados a continuación",
+    description: "Lista de jugadores con sus estadísticas por partida.",
+    type: "list[PlayerGameStats]",
+    typeDescription: "list[PlayerGameStats]",
     default: "[]",
   },
 }} />
 
-### Campos de `PlayerStatsEntry`
+### Campos de `PlayerGameStats`
 
 <TypeTable type={{
   "player_id": {
@@ -76,89 +109,40 @@ vlrdevapi.series(series_id).players(game_id: int | str = "all") -> PlayersStats
     typeDescription: "int",
     default: "0",
   },
-  "player_name": {
+  "name": {
     description: "Nombre en el juego del jugador.",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
-  "team_name": {
-    description: "Nombre o tag del equipo.",
+  "country_code": {
+    description: "Código de país de dos letras (ej: 'US').",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
-  "agent": {
-    description: "Nombre del agente utilizado en la partida.",
+  "country": {
+    description: "Nombre completo del país.",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
-  "rating": {
-    description: "Rating 2.0 del jugador.",
-    type: "float | None",
-    typeDescription: "float | None",
-    default: "None",
-  },
-  "acs": {
-    description: "Puntuación de combate promedio (Average Combat Score).",
-    type: "float | None",
-    typeDescription: "float | None",
-    default: "None",
-  },
-  "kills": {
-    description: "Bajas totales.",
-    type: "int | None",
-    typeDescription: "int | None",
-    default: "None",
-  },
-  "deaths": {
-    description: "Muertes totales.",
-    type: "int | None",
-    typeDescription: "int | None",
-    default: "None",
-  },
-  "assists": {
-    description: "Asistencias totales.",
-    type: "int | None",
-    typeDescription: "int | None",
-    default: "None",
-  },
-  "kd": {
-    description: "Ratio bajas/muertes (K/D).",
-    type: "float | None",
-    typeDescription: "float | None",
-    default: "None",
-  },
-  "adr": {
-    description: "Daño promedio por ronda (ADR).",
-    type: "float | None",
-    typeDescription: "float | None",
-    default: "None",
-  },
-  "hs_percent": {
-    description: "Porcentaje de impactos a la cabeza (HS%).",
-    type: "float | None",
-    typeDescription: "float | None",
-    default: "None",
-  },
-  "kast": {
-    description: "Porcentaje de rondas con KAST.",
+  "team_short": {
+    description: "Abreviatura o sigla del equipo.",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
-  "first_kills": {
-    description: "Primeras bajas conseguidas (FK).",
-    type: "int | None",
-    typeDescription: "int | None",
-    default: "None",
+  "agents": {
+    description: "Agentes utilizados por el jugador en la partida.",
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
   },
-  "first_deaths": {
-    description: "Primeras muertes recibidas (FD).",
-    type: "int | None",
-    typeDescription: "int | None",
-    default: "None",
+  "stats": {
+    description: "Estadísticas en tres vertientes (global, ataque, defensa).",
+    type: "PlayerStats",
+    typeDescription: "PlayerStats",
   },
 }} />
 
@@ -170,8 +154,11 @@ vlrdevapi.series(series_id).players(game_id: int | str = "all") -> PlayersStats
 import vlrdevapi
 
 stats = vlrdevapi.series.players(series_id=670471, game_id="all")
-for p in stats.players[:5]:
-    print(f"{p.player_name} ({p.team_name}): {p.kills}/{p.deaths}/{p.assists} | ACS: {p.acs} | Rating: {p.rating}")
+for team in [stats.team1, stats.team2]:
+    print(f"--- {team.team_name} ---")
+    for p in team.players[:3]:
+        s = p.stats.overall
+        print(f"{p.name}: {s.kills}/{s.deaths}/{s.assists} | ACS: {s.acs} | Rating: {s.rating}")
 ```
 
 ### Estadísticas del Mapa 1
@@ -181,8 +168,12 @@ import vlrdevapi
 
 stats = vlrdevapi.series.players(series_id=670471, game_id=1)
 print(f"Mapa 1: {stats.map_name}")
-for p in stats.players:
-    print(f"  {p.player_name} [{p.agent}]: {p.kills}K / {p.deaths}D (K/D {p.kd})")
+for team in [stats.team1, stats.team2]:
+    for p in team.players[:2]:
+        s = p.stats.overall
+        agents = ", ".join(p.agents)
+        diff = s.kd_diff if s.kd_diff is not None else 0
+        print(f"  {p.name} [{agents}]: {s.kills}K / {s.deaths}D ({diff:+d})")
 ```
 
 ### Acceso curried
@@ -192,6 +183,7 @@ import vlrdevapi
 
 series = vlrdevapi.series(670471)
 stats = series.players(game_id=1)
-best_player = max(stats.players, key=lambda p: p.rating or 0)
-print(f"MVP del Mapa 1: {best_player.player_name} con rating {best_player.rating}")
-```\n
+all_players = stats.team1.players + stats.team2.players
+best_player = max(all_players, key=lambda p: p.stats.overall.rating or 0)
+print(f"MVP del Mapa 1: {best_player.name} con rating {best_player.stats.overall.rating}")
+```

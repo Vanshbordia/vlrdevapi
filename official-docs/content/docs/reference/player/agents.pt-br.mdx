@@ -188,6 +188,8 @@ if stats.agents:
     most_played = max(stats.agents, key=lambda a: a.rounds or 0)
     print(f"Mais jogado: {most_played.agent} ({most_played.rounds} rounds)")
     print(f"Rating: {most_played.rating} | KD: {most_played.kd} | ACS: {most_played.acs}")
+else:
+    print("Nenhuma estatística de agente disponível para este jogador.")
 ```
 
 ### Acesso curried
@@ -202,4 +204,6 @@ if stats.agents:
         rnd = a.rounds or 0
         rat = f"{a.rating:.2f}" if a.rating is not None else "N/A"
         print(f"{a.agent}: rating {rat} em {rnd} rounds")
-```\n
+else:
+    print("Nenhuma estatística de agente encontrada para este jogador.")
+```

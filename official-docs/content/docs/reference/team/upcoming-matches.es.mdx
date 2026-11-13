@@ -132,8 +132,9 @@ import vlrdevapi
 
 team = vlrdevapi.team(2593)
 upcoming = team.upcoming_matches()
-if upcoming.matches:
-    m = upcoming.matches[0]
+if not upcoming.matches:
+    print("No hay próximas partidas")
+for m in upcoming.matches:
     opp = m.opponent.tag if m.opponent else "?"
     print(f"Próxima cita: vs {opp} en {m.event}")
-```\n
+```

@@ -153,4 +153,4 @@ profile = player.profile()
 if profile.top_agents:
     best_agent = max(profile.top_agents, key=lambda a: a.rating or 0)
     print(f"Melhor agente de {profile.name}: {best_agent.agent} ({best_agent.rating} rating)")
-```\n
+```

@@ -160,7 +160,7 @@ import vlrdevapi
 econ = vlrdevapi.series.economy(series_id=670471, game_id=1)
 print(f"经济对决: {econ.team1} vs {econ.team2}")
 for r in econ.rounds[:5]:
-    print(f"第 {r.round_number} 回合: {econ.team1} ({r.buy_type_team1.value}, ${r.spent_team1}) vs {econ.team2} ({r.buy_type_team2.value}, ${r.spent_team2}) -> 获胜: {r.winner.name}")
+    print(f"第 {r.round_number} 回合: {econ.team1} ({r.buy_type_team1}, ${r.spent_team1}) vs {econ.team2} ({r.buy_type_team2}, ${r.spent_team2}) -> 获胜: {r.winner.name}")
 ```
 
 ### 柯里化链式访问
@@ -172,4 +172,4 @@ series = vlrdevapi.series(670471)
 econ = series.economy(game_id=1)
 if econ.pistol_team1:
     print(f"{econ.team1} 手枪局胜率: {econ.pistol_team1.won}/{econ.pistol_team1.total}")
-```\n
+```

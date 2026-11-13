@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **MCP Registry CLI Entrypoint** — Expose `vlrdevapi` console script alias to `vlrdevapi.mcp.server:main` alongside `vlrdevapi-mcp` so MCP registry clients launch the server using the package identifier.
 - **Windows Timezone Support** — Added `tzdata>=2025.1; sys_platform == 'win32'` as a core dependency to resolve `ZoneInfoNotFoundError` when running `vlrdevapi` or `uvx` on Windows.
 
 ### Changed

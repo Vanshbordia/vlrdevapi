@@ -87,17 +87,17 @@ matches.upcoming(
   },
   "team1": {
     description: "Datos del primer equipo.",
-    type: "TeamInMatch | None",
-    typeDescription: "TeamInMatch | None",
+    type: "TeamInUpcomingMatch | None",
+    typeDescription: "TeamInUpcomingMatch | None",
     default: "None",
   },
   "team2": {
     description: "Datos del segundo equipo.",
-    type: "TeamInMatch | None",
-    typeDescription: "TeamInMatch | None",
+    type: "TeamInUpcomingMatch | None",
+    typeDescription: "TeamInUpcomingMatch | None",
     default: "None",
   },
-  "time_until_match": {
+  "eta": {
     description: 'Tiempo restante hasta el inicio del partido (ej: "2h 30m").',
     type: "str",
     typeDescription: "str",
@@ -122,6 +122,6 @@ for match in page.matches[:5]:
     t1 = match.team1.name if match.team1 else "Por definir"
     t2 = match.team2.name if match.team2 else "Por definir"
     print(f"{t1} vs {t2} | {match.event} ({match.stage})")
-    print(f"Hora: {match.datetime} (comienza en {match.time_until_match})")
+    print(f"Hora: {match.datetime} (comienza en {match.eta})")
     print(f"URL: https://vlr.gg{match.url}\n")
 ```

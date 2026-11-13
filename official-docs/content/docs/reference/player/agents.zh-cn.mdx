@@ -188,6 +188,8 @@ if stats.agents:
     most_played = max(stats.agents, key=lambda a: a.rounds or 0)
     print(f"出场最多: {most_played.agent} ({most_played.rounds} 回合)")
     print(f"Rating: {most_played.rating} | KD: {most_played.kd} | ACS: {most_played.acs}")
+else:
+    print("该选手无特工数据。")
 ```
 
 ### 柯里化链式访问
@@ -202,4 +204,6 @@ if stats.agents:
         rnd = a.rounds or 0
         rat = f"{a.rating:.2f}" if a.rating is not None else "N/A"
         print(f"{a.agent}: {rnd} 回合中 Rating 为 {rat}")
-```\n
+else:
+    print("未找到该选手的特工统计数据。")
+```

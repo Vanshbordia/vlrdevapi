@@ -81,16 +81,28 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     typeDescription: "int",
     default: "0",
   },
-  "winner": {
-    description: '该回合获胜方："team1" 或 "team2"。',
+  "winner_team_name": {
+    description: "本回合获胜队伍名称。",
     type: "str",
-    typeDescription: '"team1" | "team2"',
+    typeDescription: "str",
     default: '""',
   },
+  "winner_team_id": {
+    description: "本回合获胜队伍的 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
   "win_type": {
-    description: '获胜判定方式："elimination"（全歼敌方）, "defuse"（拆除爆弹）, "detonation"（爆弹引爆）, 或 "time"（防守超时）。',
+    description: '获胜判定方式："elimination"（全歼敌方）, "defuse"（拆除爆弹）, "spike_detonation"（爆弹引爆）, 或 "time_expired"（防守超时）。',
+    type: "RoundWinType",
+    typeDescription: "RoundWinType",
+    default: "RoundWinType.ELIMINATION",
+  },
+  "side": {
+    description: '获胜方阵营："Attack" 或 "Defense"。',
     type: "str",
-    typeDescription: '"elimination" | "defuse" | "detonation" | "time"',
+    typeDescription: '"Attack" | "Defense"',
     default: '""',
   },
   "team1_score": {
@@ -104,18 +116,6 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     type: "int",
     typeDescription: "int",
     default: "0",
-  },
-  "team1_side": {
-    description: '第一支战队在本回合所属的攻防方："attack" 或 "defense"。',
-    type: "str",
-    typeDescription: '"attack" | "defense"',
-    default: '""',
-  },
-  "team2_side": {
-    description: '第二支战队在本回合所属的攻防方："attack" 或 "defense"。',
-    type: "str",
-    typeDescription: '"attack" | "defense"',
-    default: '""',
   },
   "team1_bank": {
     description: "第一支战队在回合初始拥有的总誉币储备。",
@@ -164,9 +164,8 @@ import vlrdevapi
 
 rounds_data = vlrdevapi.series.rounds(series_id=670471, game_id=1)
 print(f"比赛: {rounds_data.team1} vs {rounds_data.team2}")
-for r in rounds_data.rounds:
-    win_team = rounds_data.team1 if r.winner == "team1" else rounds_data.team2
-    print(f"第 {r.round_number:2d} 回合: 比分 {r.team1_score}-{r.team2_score} | 获胜: {win_team} ({r.win_type})")
+for r in rounds_data.rounds[:5]:
+    print(f"第 {r.round_number:2d} 回合: 比分 {r.team1_score}-{r.team2_score} | 获胜: {r.winner_team_name} ({r.win_type.full_name})")
 ```
 
 ### 柯里化链式访问
@@ -178,4 +177,4 @@ series = vlrdevapi.series(670471)
 rounds_data = series.rounds(game_id=1)
 defuses = [r for r in rounds_data.rounds if r.win_type == "defuse"]
 print(f"拆包获胜的回合数: {len(defuses)}")
-```\n
+```

@@ -72,37 +72,38 @@ event.standings(
 <TypeTable type={{
   "team": {
     description: "本行名次所对应的战队对象。",
-    type: "Team",
-    typeDescription: "Team - 包含 id, name, tag, country, url",
+    type: "TeamStanding",
+    typeDescription: "TeamStanding - 包含 id, name, country, logo_url",
   },
-  "rank": {
-    description: "战队在积分榜上的当前名次。",
-    type: "int",
-    typeDescription: "int",
-  },
-  "series_record": {
-    description: '系列赛大场胜负记录（例如："5-1"）。',
+  "place": {
+    description: "积分榜名次（例如：'1st', '2nd', '3rd-4th'）。",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
-  "map_record": {
-    description: '小局小分胜负记录（例如："11-4"）。',
-    type: "str",
-    typeDescription: "str",
-    default: '""',
+  "prize_money": {
+    description: "奖金数值金额。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
   },
-  "map_diff": {
-    description: "地图净胜场差额。",
-    type: "int",
-    typeDescription: "int",
-    default: "0",
+  "prize_currency": {
+    description: "奖金货币符号（例如：'$'）。",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
   },
-  "round_diff": {
-    description: "单局回合净胜分差额。",
-    type: "int",
-    typeDescription: "int",
-    default: "0",
+  "points": {
+    description: "获得的巡回积分。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "note": {
+    description: "关于排名的附加备注信息。",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
   },
 }} />
 
@@ -113,8 +114,9 @@ import vlrdevapi
 
 standings = vlrdevapi.event(2765).standings()
 
-for stage in standings.stages:
+for stage in standings:
     print(f"\n--- {stage.stage_name} ---")
-    for entry in stage.standings:
-        print(f"#{entry.rank} {entry.team.name:20s} | 大场: {entry.series_record} | 小分: {entry.map_record}")
+    for entry in stage.standings[:3]:
+        prize = f"{entry.prize_currency}{entry.prize_money:,}" if entry.prize_money else "无奖金"
+        print(f"{entry.place}: {entry.team.name} | {prize}")
 ```

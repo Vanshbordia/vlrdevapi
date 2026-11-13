@@ -103,17 +103,23 @@ event.list(
     typeDescription: '"ongoing" | "upcoming" | "completed"',
     default: '""',
   },
-  "dates": {
-    description: "赛期日期跨度字符串。",
-    type: "str",
-    typeDescription: "str",
-    default: '""',
+  "start_date": {
+    description: "赛事开始日期。如果 vlr.gg 省略了年份，则年份为 2019。",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "end_date": {
+    description: "赛事结束日期。如果 vlr.gg 省略了年份，则年份为 2019。",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
   },
   "prize": {
-    description: "奖金池总额文本。",
-    type: "str",
-    typeDescription: "str",
-    default: '""',
+    description: "赛事总奖金信息。",
+    type: "EventPrize | None",
+    typeDescription: "EventPrize | None",
+    default: "None",
   },
   "region": {
     description: "赛事举办赛区或国家/地区。",
@@ -122,7 +128,7 @@ event.list(
     default: '""',
   },
   "url": {
-    description: "该赛事在 vlr.gg 上的相对访问路径。",
+    description: "该赛事在 vlr.gg 上的完整访问链接。",
     type: "str",
     typeDescription: "str",
     default: '""',
@@ -134,15 +140,12 @@ event.list(
 ```python
 import vlrdevapi
 
-# 查询 VCT 美洲赛区目前正在进行的全部赛事
-ongoing = vlrdevapi.event.list(
-    tier="vct",
-    region="americas",
-    status="ongoing",
-)
+events = vlrdevapi.event.list()
 
-for event in ongoing.events:
-    print(f"[{event.status.upper()}] {event.name} ({event.dates})")
-    print(f"奖金: {event.prize} | 赛区: {event.region}")
-    print(f"ID: {event.id} -> https://vlr.gg{event.url}\n")
+for event in events.events:
+    dates = f"{event.start_date} - {event.end_date}" if event.start_date and event.end_date else "TBD"
+    prize_text = event.prize.raw_text if event.prize else "N/A"
+    print(f"[{event.status.upper()}] {event.name} ({dates})")
+    print(f"奖金: {prize_text} | 赛区: {event.region}")
+    print(f"ID: {event.id} -> {event.url}\n")
 ```

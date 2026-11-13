@@ -72,37 +72,38 @@ event.standings(
 <TypeTable type={{
   "team": {
     description: "Equipe correspondente a esta linha da tabela.",
-    type: "Team",
-    typeDescription: "Team - inclui id, name, tag, country, url",
+    type: "TeamStanding",
+    typeDescription: "TeamStanding - inclui id, name, country, logo_url",
   },
-  "rank": {
-    description: "Posição numérica da equipe na classificação.",
-    type: "int",
-    typeDescription: "int",
-  },
-  "series_record": {
-    description: 'Histórico de séries (ex: "5-1").',
+  "place": {
+    description: "Posição na tabela de classificação (ex: '1st', '2nd', '3rd-4th').",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
-  "map_record": {
-    description: 'Histórico de mapas vencidos e perdidos (ex: "11-4").',
-    type: "str",
-    typeDescription: "str",
-    default: '""',
+  "prize_money": {
+    description: "Valor numérico da premiação.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
   },
-  "map_diff": {
-    description: "Saldo de mapas (diferença entre vitórias e derrotas).",
-    type: "int",
-    typeDescription: "int",
-    default: "0",
+  "prize_currency": {
+    description: "Símbolo da moeda da premiação (ex: '$').",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
   },
-  "round_diff": {
-    description: "Saldo de rodadas/rounds da equipe.",
-    type: "int",
-    typeDescription: "int",
-    default: "0",
+  "points": {
+    description: "Pontos de circuito obtidos.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "note": {
+    description: "Observação adicional sobre a colocação.",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
   },
 }} />
 
@@ -113,8 +114,9 @@ import vlrdevapi
 
 standings = vlrdevapi.event(2765).standings()
 
-for stage in standings.stages:
+for stage in standings:
     print(f"\n--- {stage.stage_name} ---")
-    for entry in stage.standings:
-        print(f"#{entry.rank} {entry.team.name:20s} | Séries: {entry.series_record} | Mapas: {entry.map_record}")
+    for entry in stage.standings[:3]:
+        prize = f"{entry.prize_currency}{entry.prize_money:,}" if entry.prize_money else "Sem premiação"
+        print(f"{entry.place}: {entry.team.name} | {prize}")
 ```

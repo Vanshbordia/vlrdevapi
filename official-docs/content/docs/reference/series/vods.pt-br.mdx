@@ -60,7 +60,7 @@ vlrdevapi.series(series_id).vods() -> SeriesVods
     typeDescription: "str",
     default: '""',
   },
-  "name": {
+  "channel": {
     description: "Nome do canal de transmissão ou streamer.",
     type: "str",
     typeDescription: "str",
@@ -72,8 +72,8 @@ vlrdevapi.series(series_id).vods() -> SeriesVods
     typeDescription: "str",
     default: '""',
   },
-  "country": {
-    description: "País ou idioma da transmissão.",
+  "country_code": {
+    description: "Código de país ou idioma da transmissão.",
     type: "str",
     typeDescription: "str",
     default: '""',
@@ -83,8 +83,8 @@ vlrdevapi.series(series_id).vods() -> SeriesVods
 ### Campos de `SeriesVod`
 
 <TypeTable type={{
-  "title": {
-    description: "Título ou descrição do VOD (ex: 'Full Match', 'Map 1').",
+  "label": {
+    description: "Título ou rótulo do VOD (ex: 'Full match', 'Map 1').",
     type: "str",
     typeDescription: "str",
     default: '""',
@@ -112,8 +112,8 @@ import vlrdevapi
 
 vod_data = vlrdevapi.series.vods(series_id=670471)
 print(f"Transmissões disponíveis ({len(vod_data.streams)}):")
-for s in vod_data.streams:
-    print(f"  [{s.platform.upper()}] {s.name} ({s.country}): {s.url}")
+for s in vod_data.streams[:3]:
+    print(f"  [{s.platform.upper()}] {s.channel} ({s.country_code}): {s.url}")
 ```
 
 ### Obter links de VODs da partida
@@ -123,8 +123,8 @@ import vlrdevapi
 
 vod_data = vlrdevapi.series.vods(series_id=670471)
 print(f"VODs encontrados ({len(vod_data.vods)}):")
-for v in vod_data.vods:
-    print(f"  {v.title}: {v.url}")
+for v in vod_data.vods[:3]:
+    print(f"  {v.label}: {v.url}")
 ```
 
 ### Acesso curried
@@ -134,6 +134,6 @@ import vlrdevapi
 
 series = vlrdevapi.series(670471)
 vod_data = series.vods()
-for v in vod_data.vods:
-    print(f"{v.title} -> {v.url}")
-```\n
+for v in vod_data.vods[:3]:
+    print(f"{v.label} -> {v.url}")
+```

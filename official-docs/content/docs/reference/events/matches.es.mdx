@@ -71,35 +71,29 @@ event.matches(
     typeDescription: "int",
     required: true,
   },
-  "team1": {
-    description: "Primer equipo de la serie (incluye ID y nombre).",
-    type: "MatchTeam | None",
-    typeDescription: "MatchTeam | None",
+  "stage": {
+    description: "Nombre de la fase (ej: 'Playoffs').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
   },
-  "team2": {
-    description: "Segundo equipo de la serie (incluye ID y nombre).",
-    type: "MatchTeam | None",
-    typeDescription: "MatchTeam | None",
-  },
-  "score1": {
-    description: "Mapas ganados por el equipo 1.",
-    type: "int | None",
-    typeDescription: "int | None",
-  },
-  "score2": {
-    description: "Mapas ganados por el equipo 2.",
-    type: "int | None",
-    typeDescription: "int | None",
+  "phase": {
+    description: "Ronda o fase del partido (ej: 'Grand Final').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
   },
   "status": {
     description: "Estado del partido.",
-    type: "str",
-    typeDescription: '"completed" | "live" | "upcoming"',
+    type: "MatchStatus",
+    typeDescription: 'MatchStatus - "completed" | "live" | "upcoming"',
+    required: true,
   },
-  "round_info": {
-    description: 'Ronda o fase del partido (ej: "Gran Final", "Semifinal de Cuadro Superior").',
-    type: "str | None",
-    typeDescription: "str | None",
+  "teams": {
+    description: "Equipos que participan en el partido (generalmente 2).",
+    type: "list[MatchTeam]",
+    typeDescription: "list[MatchTeam]",
+    default: "[]",
   },
 }} />
 
@@ -112,9 +106,8 @@ import vlrdevapi
 matches = vlrdevapi.event(2765).matches(state="completed")
 
 for m in matches.matches[:5]:
-    t1 = m.team1.name if m.team1 else "TBD"
-    t2 = m.team2.name if m.team2 else "TBD"
-    s1 = m.score1 if m.score1 is not None else 0
-    s2 = m.score2 if m.score2 is not None else 0
-    print(f"{t1} [{s1} - {s2}] {t2} | {m.round_info}")
+    t1, t2 = m.teams[0], m.teams[1]
+    s1 = t1.score if t1.score is not None else 0
+    s2 = t2.score if t2.score is not None else 0
+    print(f"{t1.name} [{s1} - {s2}] {t2.name} | {m.stage} - {m.phase}")
 ```

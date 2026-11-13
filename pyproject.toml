@@ -81,6 +81,7 @@ all = [
 ]
 
 [project.scripts]
+vlrdevapi = "vlrdevapi.mcp.server:main"
 vlrdevapi-mcp = "vlrdevapi.mcp.server:main"
 
 [dependency-groups]
@@ -124,4 +125,3 @@ exclude = [
     "/.pytest_cache",
     "/.ruff_cache",
 ]
-

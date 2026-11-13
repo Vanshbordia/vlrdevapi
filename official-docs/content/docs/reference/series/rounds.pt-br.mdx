@@ -81,16 +81,28 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     typeDescription: "int",
     default: "0",
   },
-  "winner": {
-    description: 'Equipe vencedora da rodada: "team1" ou "team2".',
+  "winner_team_name": {
+    description: "Nome da equipe vencedora da rodada.",
     type: "str",
-    typeDescription: '"team1" | "team2"',
+    typeDescription: "str",
     default: '""',
   },
+  "winner_team_id": {
+    description: "ID da equipe vencedora da rodada.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
   "win_type": {
-    description: 'Forma como a rodada foi vencida: "elimination", "defuse", "detonation", ou "time".',
+    description: 'Forma como a rodada foi vencida: "elimination", "defuse", "spike_detonation", ou "time_expired".',
+    type: "RoundWinType",
+    typeDescription: "RoundWinType",
+    default: "RoundWinType.ELIMINATION",
+  },
+  "side": {
+    description: 'Lado da equipe vencedora: "Attack" ou "Defense".',
     type: "str",
-    typeDescription: '"elimination" | "defuse" | "detonation" | "time"',
+    typeDescription: '"Attack" | "Defense"',
     default: '""',
   },
   "team1_score": {
@@ -104,18 +116,6 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     type: "int",
     typeDescription: "int",
     default: "0",
-  },
-  "team1_side": {
-    description: 'Lado da Equipe 1 na rodada: "attack" ou "defense".',
-    type: "str",
-    typeDescription: '"attack" | "defense"',
-    default: '""',
-  },
-  "team2_side": {
-    description: 'Lado da Equipe 2 na rodada: "attack" ou "defense".',
-    type: "str",
-    typeDescription: '"attack" | "defense"',
-    default: '""',
   },
   "team1_bank": {
     description: "Créditos totais da Equipe 1 no início do round.",
@@ -164,9 +164,8 @@ import vlrdevapi
 
 rounds_data = vlrdevapi.series.rounds(series_id=670471, game_id=1)
 print(f"Partida: {rounds_data.team1} vs {rounds_data.team2}")
-for r in rounds_data.rounds:
-    win_team = rounds_data.team1 if r.winner == "team1" else rounds_data.team2
-    print(f"Round {r.round_number:2d}: {r.team1_score}-{r.team2_score} | Vencedor: {win_team} por {r.win_type}")
+for r in rounds_data.rounds[:5]:
+    print(f"Round {r.round_number:2d}: {r.team1_score}-{r.team2_score} | Vencedor: {r.winner_team_name} por {r.win_type.full_name}")
 ```
 
 ### Acesso curried
@@ -178,4 +177,4 @@ series = vlrdevapi.series(670471)
 rounds_data = series.rounds(game_id=1)
 clutches_defuses = [r for r in rounds_data.rounds if r.win_type == "defuse"]
 print(f"Rounds vencidos no defuse: {len(clutches_defuses)}")
-```\n
+```

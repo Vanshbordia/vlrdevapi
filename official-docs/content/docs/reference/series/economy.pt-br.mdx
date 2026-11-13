@@ -160,7 +160,7 @@ import vlrdevapi
 econ = vlrdevapi.series.economy(series_id=670471, game_id=1)
 print(f"Economia: {econ.team1} vs {econ.team2}")
 for r in econ.rounds[:5]:
-    print(f"Round {r.round_number}: {econ.team1} ({r.buy_type_team1.value}, ${r.spent_team1}) vs {econ.team2} ({r.buy_type_team2.value}, ${r.spent_team2}) -> Vencedor: {r.winner.name}")
+    print(f"Round {r.round_number}: {econ.team1} ({r.buy_type_team1}, ${r.spent_team1}) vs {econ.team2} ({r.buy_type_team2}, ${r.spent_team2}) -> Vencedor: {r.winner.name}")
 ```
 
 ### Acesso curried
@@ -172,4 +172,4 @@ series = vlrdevapi.series(670471)
 econ = series.economy(game_id=1)
 if econ.pistol_team1:
     print(f"{econ.team1} rounds de pistola: {econ.pistol_team1.won}/{econ.pistol_team1.total}")
-```\n
+```

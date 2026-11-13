@@ -103,17 +103,23 @@ event.list(
     typeDescription: '"ongoing" | "upcoming" | "completed"',
     default: '""',
   },
-  "dates": {
-    description: "Intervalo de datas formatado como string.",
-    type: "str",
-    typeDescription: "str",
-    default: '""',
+  "start_date": {
+    description: "Data de início do torneio. O ano é 2019 se o vlr.gg omitiu o ano.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "end_date": {
+    description: "Data de término do torneio. O ano é 2019 se o vlr.gg omitiu o ano.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
   },
   "prize": {
-    description: "Valor total da premiação como string.",
-    type: "str",
-    typeDescription: "str",
-    default: '""',
+    description: "Informações sobre a premiação total do torneio.",
+    type: "EventPrize | None",
+    typeDescription: "EventPrize | None",
+    default: "None",
   },
   "region": {
     description: "País ou região onde o evento ocorre.",
@@ -122,7 +128,7 @@ event.list(
     default: '""',
   },
   "url": {
-    description: "URL relativa do evento no vlr.gg.",
+    description: "URL completa do evento no vlr.gg.",
     type: "str",
     typeDescription: "str",
     default: '""',
@@ -134,15 +140,12 @@ event.list(
 ```python
 import vlrdevapi
 
-# Buscar torneios em andamento no VCT Americas
-ongoing = vlrdevapi.event.list(
-    tier="vct",
-    region="americas",
-    status="ongoing",
-)
+events = vlrdevapi.event.list()
 
-for event in ongoing.events:
-    print(f"[{event.status.upper()}] {event.name} ({event.dates})")
-    print(f"Premiação: {event.prize} | Região: {event.region}")
-    print(f"ID: {event.id} -> https://vlr.gg{event.url}\n")
+for event in events.events:
+    dates = f"{event.start_date} - {event.end_date}" if event.start_date and event.end_date else "TBD"
+    prize_text = event.prize.raw_text if event.prize else "N/A"
+    print(f"[{event.status.upper()}] {event.name} ({dates})")
+    print(f"Premiação: {prize_text} | Região: {event.region}")
+    print(f"ID: {event.id} -> {event.url}\n")
 ```

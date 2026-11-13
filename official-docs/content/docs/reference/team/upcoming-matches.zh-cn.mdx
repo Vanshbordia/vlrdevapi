@@ -132,8 +132,9 @@ import vlrdevapi
 
 team = vlrdevapi.team(2593)
 upcoming = team.upcoming_matches()
-if upcoming.matches:
-    m = upcoming.matches[0]
+if not upcoming.matches:
+    print("暂无即将进行的比赛")
+for m in upcoming.matches:
     opp = m.opponent.tag if m.opponent else "?"
     print(f"下一场比赛: 对阵 {opp} ({m.event})")
-```\n
+```
