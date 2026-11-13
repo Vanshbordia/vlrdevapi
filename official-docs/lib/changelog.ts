@@ -26,6 +26,38 @@ export type ChangelogVersion = {
 
 export const versions = [
   {
+    version: '3.1.2',
+    date: '14 November 2026',
+    isoDate: '2026-11-14',
+    github: 'https://github.com/Vanshbordia/vlrdevapi/releases/tag/3.1.2',
+    pypi: 'https://pypi.org/project/vlrdevapi/3.1.2/',
+    summary: 'MCP Registry OIDC publisher namespace alignment, standalone registry publishing workflow, CI runner optimizations, and multilingual documentation schema alignment.',
+    sections: [
+      {
+        title: 'Fixed',
+        items: [
+          'MCP Registry OIDC Namespace Alignment — Updated server namespace to io.github.Vanshbordia/vlrdevapi in server.json to strictly match GitHub identity claims, resolving 403 Forbidden errors during publishing.',
+          'Multilingual Documentation Schemas — Aligned model attribute tables and executable code examples across Spanish, Portuguese, and Simplified Chinese documentation to match the Python SDK models.',
+          'Documentation Verification Pipeline — Added check_docs_schema.py to validate MDX documentation tables against live Python runtime models before site builds.',
+        ],
+      },
+      {
+        title: 'Added',
+        items: [
+          'Standalone MCP Publishing Workflow — Added dedicated .github/workflows/mcp-publish.yml allowing standalone MCP registry publication on demand.',
+          'Targeted Release Dispatch — Added dispatch targets (all, mcp-only, pypi-only) to publish.yml to support independent or recovery deployments.',
+        ],
+      },
+      {
+        title: 'Changed',
+        items: [
+          'CI/CD Runner Upgrades — Pinned runs-on: ubuntu-24.04 across all GitHub Actions workflows to eliminate runner deprecation warnings.',
+          'Direct PyPI Build Integration — Streamlined release pipeline by building packages directly with uv build in the publish step, eliminating Node.js 20 deprecated artifact actions.',
+        ],
+      },
+    ],
+  },
+  {
     version: '3.1.1',
     date: '13 November 2026',
     isoDate: '2026-11-13',

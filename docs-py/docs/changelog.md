@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this page.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [3.1.2] - 2026-11-14
+
+### Fixed
+
+- **MCP Registry OIDC Namespace Alignment** — Updated server namespace to `io.github.Vanshbordia/vlrdevapi` in `server.json` to match GitHub identity claim casing strictly, resolving `403 Forbidden` errors during automated registry publishing.
+- **Multilingual Documentation Schemas** — Aligned model attribute tables and executable code examples across Spanish, Portuguese, and Simplified Chinese documentation to match the Python SDK models.
+- **Documentation Verification Pipeline** — Added `check_docs_schema.py` to continuously validate MDX documentation tables against live Python runtime models before doc builds and deployments.
+
+### Added
+
+- **Standalone MCP Publishing Workflow** — Added dedicated `.github/workflows/mcp-publish.yml` allowing standalone MCP registry publication on demand via `workflow_dispatch`.
+- **Targeted Release Dispatch** — Added dispatch targets (`all`, `mcp-only`, `pypi-only`) to `publish.yml` to support selective re-releases when PyPI or MCP registry publication runs independently.
+
+### Changed
+
+- **CI/CD Runner Upgrades** — Pinned `runs-on: ubuntu-24.04` across all GitHub Actions workflows to eliminate runner deprecation warnings.
+- **Direct PyPI Build Integration** — Streamlined release pipeline by building packages directly with `uv build` in the publish step, eliminating Node.js 20 deprecated artifact upload/download actions.
+
 ## [3.1.1] - 2026-11-13
 
 ### Added
