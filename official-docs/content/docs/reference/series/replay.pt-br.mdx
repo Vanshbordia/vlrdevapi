@@ -1,0 +1,422 @@
+---
+title: Replay da Série (Series Replay)
+description: "Obtenha a linha do tempo do replay com o kill-feed de cada round - abates com armas e coordenadas espaciais, plantas e desarmes de Spike, ressurreições e ângulos de visão."
+---
+
+`series.replay(series_id, game_id)` retorna a linha do tempo de replay do kill-feed para cada rodada de um mapa específico dentro de uma série no vlr.gg (aba logs).
+
+## Assinatura
+
+```python
+series.replay(
+    series_id: int,
+    game_id: int,
+) -> ReplayData
+```
+
+Com acesso curried:
+
+```python
+vlrdevapi.series(series_id).replay(game_id: int) -> ReplayData
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único da série no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+  "game_id": {
+    description: "Número do mapa na série (base 1) ou seu game ID numérico real do vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+}} />
+
+## Retorno - `ReplayData`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único da série no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: "Identificador do mapa no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team1": {
+    description: "Nome da Equipe 1.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2": {
+    description: "Nome da Equipe 2.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1_id": {
+    description: "ID da Equipe 1 no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2_id": {
+    description: "ID da Equipe 2 no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "num_rounds": {
+    description: "Quantidade de rounds com dados de replay registrados.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "rounds": {
+    description: "Lista de rounds do replay em ordem cronológica.",
+    type: "list[ReplayRound]",
+    typeDescription: "list[ReplayRound] - veja os campos abaixo",
+    default: "[]",
+  },
+}} />
+
+### Método auxiliar `round(round_number)`
+
+`ReplayData.round(n)` retorna o `ReplayRound` para uma rodada específica (base 1) ou `None` caso não haja dados.
+
+## `ReplayRound`
+
+<TypeTable type={{
+  "round_number": {
+    description: "Número da rodada.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "attacking": {
+    description: "Nome da equipe que iniciou no ataque nesta rodada.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "loadouts": {
+    description: "Loadout da fase de compra dos 10 jogadores (arma equipada, escudo e créditos).",
+    type: "list[PlayerRoundLoadout]",
+    typeDescription: "list[PlayerRoundLoadout]",
+    default: "[]",
+  },
+  "players": {
+    description: "Os dez jogadores com ID real, agente, equipe e lado.",
+    type: "list[ReplayPlayerRef]",
+    typeDescription: "list[ReplayPlayerRef]",
+    default: "[]",
+  },
+  "events": {
+    description: "Eventos ordenados do kill-feed (incluindo 'boom' e 'resurrect' derivados).",
+    type: "list[ReplayEvent]",
+    typeDescription: "list[ReplayEvent]",
+    default: "[]",
+  },
+  "boom_at": {
+    description: "Marcador de detonação da Spike.",
+    type: "int | None",
+    typeDescription: "int or None",
+  },
+}} />
+
+### Assistente `loadout_for(player)`
+
+`ReplayRound.loadout_for(player)` aceita um nome de jogador sem distinção entre maiúsculas e minúsculas (ex: `'Derke'`) ou um `player_id` numérico, retornando o `PlayerRoundLoadout` do jogador para aquela rodada, ou `None`.
+
+## `PlayerRoundLoadout`
+
+Snapshot de economia e armamento na fase de compras de um jogador no início da rodada.
+
+<TypeTable type={{
+  "player_id": {
+    description: "ID único do jogador no vlr.gg (associado a partir da aba de visão geral; 0 se não for possível resolver).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nome do jogador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team": {
+    description: "Tag ou nome da equipe.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "Nome do agente (ex: 'Sage', 'Neon', 'Chamber').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "side": {
+    description: "Lado em que o jogador atuou nesta rodada.",
+    type: "str",
+    typeDescription: '"Attack" | "Defense"',
+    default: '""',
+  },
+  "weapon": {
+    description: "Arma equipada no início da rodada (ex: 'Ghost', 'Vandal', 'Operator').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "armor": {
+    description: "Escudo equipado ('No armor', 'Light armor', 'Heavy armor' ou 'Regen Shield').",
+    type: "ArmorType | str",
+    typeDescription: '"No armor" | "Light armor" | "Heavy armor" | "Regen Shield"',
+    default: '"No armor"',
+  },
+  "credits_left": {
+    description: "Créditos restantes após a fase de compra.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "spent": {
+    description: "Créditos gastos na fase de compra.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+}} />
+
+## `ReplayEvent`
+
+Um evento na linha do tempo da rodada. `type` é um enum `ReplayEventType` (`KILL`, `PLANT`, `DEFUSE`, `BOOM` ou `RESURRECT`; `.value` retorna a string em minúsculas e `.full_name` um rótulo legível); `derived: True` marca os dois tipos que o vlr.gg não registra como linhas de feed (detonação da spike e ressurreições).
+
+<TypeTable type={{
+  "seq": {
+    description: "Posição do evento na rodada (base 0).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "type": {
+    description: "Tipo de evento (enum ReplayEventType).",
+    type: "ReplayEventType",
+    typeDescription: 'ReplayEventType.KILL | PLANT | DEFUSE | BOOM | RESURRECT',
+    default: "KILL",
+  },
+  "clock": {
+    description: "Relógio da rodada no momento do evento (M:SS); vazio para o marcador de detonação quando o vlr.gg não informa evento posterior.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "seconds": {
+    description: "Relógio da rodada no momento do evento em segundos; None quando o relógio não for informado.",
+    type: "int | None",
+    typeDescription: "int or None",
+  },
+  "actor": {
+    description: "Jogador atuante (quem abateu, plantou, desarmou ou foi revivido).",
+    type: "ReplayActor",
+    typeDescription: "ReplayActor - veja os campos abaixo",
+  },
+  "victim": {
+    description: "Jogador abatido (somente em eventos de abate).",
+    type: "ReplayActor | None",
+    typeDescription: "ReplayActor or None",
+  },
+  "cause": {
+    description: "Causa do abate: arma ou nome da habilidade/ult/spike (somente em eventos de abate).",
+    type: "str",
+    typeDescription: '"e.g. Sheriff, Phantom, Overdrive, Tour de Force, Spike"',
+    default: '""',
+  },
+  "site": {
+    description: "Letra do spike site ('A', 'B' ou 'C') para eventos de spike; vazio caso contrário.",
+    type: "str",
+    typeDescription: '"A" | "B" | "C" | ""',
+    default: '""',
+  },
+  "pos_x": {
+    description: "Coordenada X do evento na grade 1024x1024 do minimapa (abates: posição da vítima; plantas/defuses: posição do jogador).",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "pos_y": {
+    description: "Coordenada Y do evento na grade 1024x1024 do minimapa.",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "from_x": {
+    description: "Coordenada X de quem abateu no momento do tiro (apenas eventos de abate).",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "from_y": {
+    description: "Coordenada Y de quem abateu no momento do tiro (apenas eventos de abate).",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "distance_units": {
+    description: "Distância euclidiana entre quem abateu e a vítima em unidades do minimapa (apenas eventos de abate).",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "alive": {
+    description: "Snapshot dos jogadores vivos no momento do evento com coordenadas no mapa e ângulos de visão.",
+    type: "list[ReplayAlivePlayer]",
+    typeDescription: "list[ReplayAlivePlayer] - veja os campos abaixo",
+    default: "[]",
+  },
+  "derived": {
+    description: "Indica se o evento foi derivado ('boom'/'resurrect') em vez de uma linha do feed original no vlr.gg.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+## `ReplayActor` / `ReplayAlivePlayer`
+
+<TypeTable type={{
+  "player_id": {
+    description: "ID único do jogador no vlr.gg (associado dentro de sua equipe a partir da aba de visão geral; 0 se não for possível resolver).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nome do jogador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "Identificador do agente em minúsculas conforme exibido no vlr.gg (ex: 'omen').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team": {
+    description: "Nome da equipe à qual o jogador pertence nesta rodada.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "side": {
+    description: "Lado em que o jogador estava nesta rodada.",
+    type: "str",
+    typeDescription: '"Attack" | "Defense"',
+    default: '""',
+  },
+  "x": {
+    description: "Coordenada no grid 1024x1024 do minimapa.",
+    type: "float",
+    typeDescription: "float (apenas snapshots de jogadores vivos)",
+    default: "0",
+  },
+  "y": {
+    description: "Coordenada no grid 1024x1024 do minimapa.",
+    type: "float",
+    typeDescription: "float (apenas snapshots de jogadores vivos)",
+    default: "0",
+  },
+  "view_angle": {
+    description: "Direção do olhar em graus no minimapa (0 aponta para +x, gira em sentido horário).",
+    type: "int",
+    typeDescription: "int (apenas snapshots de jogadores vivos)",
+    default: "0",
+  },
+}} />
+
+## `ReplayPlayerRef`
+
+<TypeTable type={{
+  "player_id": {
+    description: "ID único do jogador no vlr.gg (associado dentro de sua equipe a partir da aba de visão geral; 0 se não for possível resolver).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nome do jogador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "Identificador do agente em minúsculas conforme exibido no vlr.gg (ex: 'omen').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team": {
+    description: "Nome da equipe à qual o jogador pertence nesta rodada.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "side": {
+    description: "Lado em que o jogador estava nesta rodada.",
+    type: "str",
+    typeDescription: '"Attack" | "Defense"',
+    default: '""',
+  },
+}} />
+
+## Exemplos
+
+### Kill-feed da Rodada 1
+
+```python
+import vlrdevapi
+
+replay = vlrdevapi.series.replay(series_id=754737, game_id=283288)
+print(f"{replay.team1} vs {replay.team2} ({replay.num_rounds} rounds)")
+
+for ev in replay.round(1).events:
+    who = ev.actor.name if ev.actor else "-"
+    print(f"{ev.seq}. {ev.seconds}s {ev.type.full_name}: {who}", end="")
+    if ev.cause:
+        print(f" ({ev.cause})", end="")
+    if ev.victim:
+        print(f" -> {ev.victim.name}", end="")
+    print()
+```
+
+### Plantas e detonação da Spike
+
+```python
+import vlrdevapi
+from vlrdevapi._series.replay.models import ReplayEventType
+
+replay = vlrdevapi.series.replay(series_id=754737, game_id=283288)
+
+for ev in replay.round(14).events:
+    if ev.type in (ReplayEventType.PLANT, ReplayEventType.DEFUSE, ReplayEventType.BOOM):
+        print(f"{ev.clock or '-'} {ev.type.full_name} no bombsite {ev.site} em ({ev.pos_x}, {ev.pos_y})")
+```
+
+### Acesso curried
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(754737)
+replay = series.replay(game_id=283288)
+round_1 = replay.round(1)
+for ld in round_1.loadouts[:4]:
+    print(f"{ld.name} ({ld.agent}): {ld.weapon} + {ld.armor} (${ld.spent} gastos)")
+```

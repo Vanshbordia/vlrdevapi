@@ -472,25 +472,25 @@ class TestParseSeriesInfoTechnicalPauses:
         assert len(self.result.veto) > 0
 
 
-_UPCOMING_FIXTURES = FIXTURES_DIR / "series" / "773433"
+_UPCOMING_FIXTURES = FIXTURES_DIR / "series" / "784392"
 
 
 class TestParseSeriesInfoUpcoming:
     @pytest.fixture(autouse=True)
     def setup(self):
         if _LIVE:
-            self.result = parse_series_info(HTMLParser(live_fetch("/773433")))
+            self.result = parse_series_info(HTMLParser(live_fetch("/784392")))
         else:
             path = _UPCOMING_FIXTURES / "overview.html"
             if not path.exists():
                 pytest.fail(f"Fixture not found: {path}")
             self.result = parse_series_info(HTMLParser(path.read_text(encoding="utf-8")))
-        self.result.series_id = 773433
+        self.result.series_id = 784392
 
     def test_basic_info(self):
         assert self.result.status == "upcoming"
-        assert self.result.team1.name == "MIBR GC"
-        assert self.result.team2.name == "Gentle Mates GC"
+        assert self.result.team1.name == "Fancy United Esports"
+        assert self.result.team2.name == "Original Gaming"
         assert self.result.score1 == 0
         assert self.result.score2 == 0
 

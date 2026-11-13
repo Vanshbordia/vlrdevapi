@@ -1,0 +1,77 @@
+---
+title: Visão Geral da API de Equipes (Team API)
+description: "O namespace Team fornece acesso a dados completos de equipes do vlr.gg - informações cadastrais, elenco, estatísticas, histórico de partidas, transferências e colocações em torneios."
+icon: Shield
+---
+
+A API de Equipes oferece dados detalhados para equipes cadastradas no vlr.gg. É acessada via `vlrdevapi.team(id)` (acesso curried) ou através de uma instância explícita de `VLRClient`.
+
+<Callout type="info">
+Todos os sub-namespaces são inicializados sob demanda (lazy) e compartilham as mesmas configurações do cliente HTTP: timeout, repetições automáticas e limites de taxa.
+</Callout>
+
+## Padrões de Acesso
+
+### Nível de módulo (cliente padrão)
+
+```python
+import vlrdevapi
+
+# Acesso direto (passando team_id em cada método)
+info = vlrdevapi.team.info(team_id=2593)
+roster = vlrdevapi.team.roster(team_id=2593)
+print(f"{info.name} ({info.tag}) - {len(roster.players)} jogadores")
+
+# Acesso curried - passe o team_id uma única vez e encadeie os métodos
+team = vlrdevapi.team(2593)
+info = team.info()
+print(f"País: {info.country}")
+```
+
+### Cliente explícito
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=30, requests_per_second=8) as client:
+    t = client.team(2593)
+    info = t.info()
+    print(f"{info.name} ({info.tag}) - {info.country}")
+```
+
+## Referência de Sub-namespaces
+
+| Método | Retorno | Descrição |
+|--------|---------|-----------|
+| [`team.info(team_id)`](./info) | `TeamInfo` | Dados da equipe - nome, tag, país, logos e redes sociais |
+| [`team.roster(team_id)`](./roster) | `TeamRoster` | Elenco atual - jogadores e comissão técnica |
+| [`team.completed_matches(team_id)`](./completed-matches) | `TeamCompletedMatches` | Histórico de partidas finalizadas |
+| [`team.upcoming_matches(team_id)`](./upcoming-matches) | `TeamUpcomingMatches` | Próximas partidas agendadas |
+| [`team.transactions(team_id)`](./transactions) | `TeamTransactions` | Histórico de transferências (entradas/saídas/reservas) |
+| [`team.stats(team_id, ...)`](./stats) | `TeamStats` | Estatísticas de mapas e agentes em um intervalo de datas |
+| [`team.placements(team_id)`](./placements) | `TeamPlacements` | Histórico de colocações em torneios e premiações |
+
+## Tratamento Comum de Erros
+
+Todos os métodos de equipe levantam exceções tipadas de `vlrdevapi.exceptions`:
+
+| Exceção | Quando é Lançada |
+|---------|------------------|
+| `ValidationError` | Argumentos inválidos (`team_id` incorreto, data inválida, etc.) |
+| `NotFoundError` | Página da equipe não encontrada (HTTP 404) |
+| `RequestError` | Falha de conexão ou erro HTTP |
+| `RateLimitError` | Excesso de requisições (HTTP 429) |
+| `ParsingError` | Estrutura da página HTML não reconhecida |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import NotFoundError, ValidationError
+
+try:
+    info = vlrdevapi.team.info(team_id=2593)
+    print(f"Equipe: {info.name}")
+except NotFoundError:
+    print("Equipe não encontrada")
+except ValidationError as e:
+    print(f"Entrada inválida: {e}")
+```

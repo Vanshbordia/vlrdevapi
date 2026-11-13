@@ -1,0 +1,18 @@
+{
+  "pages": [
+    "index",
+    "---Primeiros Passos---",
+    "getting-started",
+    "installation",
+    "quickstart",
+    "---IA & Agentes---",
+    "mcp",
+    "---Tutoriais---",
+    "[Guias](/guides/)",
+    "[Blog](/blog/)",
+    "---Referência da API---",
+    "reference",
+    "---Comunidade---",
+    "contributing"
+  ]
+}

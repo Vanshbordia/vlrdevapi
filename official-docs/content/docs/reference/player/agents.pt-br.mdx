@@ -1,0 +1,209 @@
+---
+title: Estatísticas por Agente (Player Agents)
+description: "Obtenha estatísticas detalhadas de cada agente jogado - rating, ACS, K/D, ADR, KAST e mais ao longo de um período configurável."
+---
+
+`player.agents(player_id, timespan)` retorna estatísticas detalhadas de cada agente jogado por um jogador no vlr.gg.
+
+## Assinatura
+
+```python
+player.agents(
+    player_id: int,
+    timespan: Literal["30d", "60d", "90d", "all"] = "all",
+) -> AgentStatsPage
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "player_id": {
+    description: "Identificador único do jogador no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+  "timespan": {
+    description: "Período temporal para o cálculo das estatísticas.",
+    type: 'Literal["30d", "60d", "90d", "all"]',
+    typeDescription: '"30d" - últimos 30 dias | "60d" - últimos 60 dias | "90d" - últimos 90 dias | "all" - todo o histórico',
+    default: '"all"',
+    required: false,
+  },
+}} />
+
+## Retorno - `AgentStatsPage`
+
+<TypeTable type={{
+  "timespan": {
+    description: "Período temporal consultado.",
+    type: "str",
+    typeDescription: "str",
+    default: '"all"',
+  },
+  "agents": {
+    description: "Lista de estatísticas por agente.",
+    type: "list[AgentStats]",
+    typeDescription: "list[AgentStats] - veja os campos detalhados abaixo",
+    default: "[]",
+  },
+}} />
+
+### Campos de `AgentStats`
+
+<TypeTable type={{
+  "agent": {
+    description: "Nome do agente (ex: 'jett').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "use": {
+    description: "Taxa e contagem de uso (ex: '(12) 46%').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "rounds": {
+    description: "Total de rounds jogados.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "rating": {
+    description: "Rating 2.0 do jogador com este agente.",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "acs": {
+    description: "Pontuação média de combate (Average Combat Score).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "kd": {
+    description: "Relação Eliminações/Mortes (K/D ratio).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "adr": {
+    description: "Dano médio por round (Average Damage per Round).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "kast": {
+    description: "Porcentagem KAST (kill, assist, survive, trade).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "kpr": {
+    description: "Eliminações por round (Kills per Round).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "apr": {
+    description: "Assistências por round (Assists per Round).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "kills": {
+    description: "Total de eliminações com o agente.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "deaths": {
+    description: "Total de mortes com o agente.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "assists": {
+    description: "Total de assistências com o agente.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "first_kills": {
+    description: "Primeiros abates (first bloods).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "first_deaths": {
+    description: "Primeiras mortes sofridas na rodada.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+## Exemplos
+
+### Estatísticas de agentes com período padrão
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.player.agents(player_id=438)
+print(f"Período: {stats.timespan}")
+if stats.agents:
+    for a in stats.agents:
+        print(f"{a.agent}: {a.rounds}r | {a.rating} rating | {a.acs} ACS | {a.kd} KD")
+else:
+    print("Nenhuma estatística de agente disponível para este jogador.")
+```
+
+### Filtrar pelos últimos 60 dias
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.player.agents(player_id=438, timespan="60d")
+if stats.agents:
+    for a in stats.agents:
+        rnd = a.rounds or 0
+        rat = f"{a.rating:.2f}" if a.rating is not None else "N/A"
+        acs = f"{a.acs:.1f}" if a.acs is not None else "N/A"
+        kd = f"{a.kd:.2f}" if a.kd is not None else "N/A"
+        adr = f"{a.adr:.1f}" if a.adr is not None else "N/A"
+        print(f"{a.agent:>8} | {rnd:>3}r | R={rat} | ACS={acs} | K/D={kd} | ADR={adr}")
+else:
+    print("Nenhum dado encontrado para os últimos 60 dias.")
+```
+
+### Identificar o agente mais jogado
+
+```python
+import vlrdevapi
+
+stats = vlrdevapi.player.agents(player_id=438, timespan="all")
+if stats.agents:
+    most_played = max(stats.agents, key=lambda a: a.rounds or 0)
+    print(f"Mais jogado: {most_played.agent} ({most_played.rounds} rounds)")
+    print(f"Rating: {most_played.rating} | KD: {most_played.kd} | ACS: {most_played.acs}")
+else:
+    print("Nenhuma estatística de agente disponível para este jogador.")
+```
+
+### Acesso curried
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(438)
+stats = player.agents(timespan="90d")
+if stats.agents:
+    for a in stats.agents:
+        rnd = a.rounds or 0
+        rat = f"{a.rating:.2f}" if a.rating is not None else "N/A"
+        print(f"{a.agent}: rating {rat} em {rnd} rounds")
+else:
+    print("Nenhuma estatística de agente encontrada para este jogador.")
+```

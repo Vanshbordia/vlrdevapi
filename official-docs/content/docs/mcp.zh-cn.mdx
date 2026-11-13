@@ -1,0 +1,184 @@
+---
+title: "MCP 服务端 (Model Context Protocol)"
+description: "10 秒极速配置，将 VLRdevAPI 直连至 Claude Desktop、Cursor、Claude Code、Windsurf、OpenCode、DeepSeek、Codex、Grok 及各类自主 AI 智能体。"
+icon: Bot
+---
+
+零门槛、零部署、无需任何 API 密钥，即可将任何 AI 编码助手或自主智能体直接接入实时无畏契约 (Valorant) 电竞数据库。
+
+```bash
+# Claude Code CLI (单条命令)
+claude mcp add vlrdevapi -- uvx --from "vlrdevapi[mcp]" vlrdevapi-mcp
+```
+
+或将以下 JSON 配置直接粘贴至对应客户端的配置文件中：
+
+```json
+{
+  "mcpServers": {
+    "vlrdevapi": {
+      "command": "uvx",
+      "args": ["--from", "vlrdevapi[mcp]", "vlrdevapi-mcp"]
+    }
+  }
+}
+```
+
+---
+
+## 主流客户端 10 秒配置指南
+
+### Claude Code CLI
+
+在终端中执行单条命令：
+
+```bash
+claude mcp add vlrdevapi -- uvx --from "vlrdevapi[mcp]" vlrdevapi-mcp
+```
+
+Claude Code 将自动按需拉取并启动服务端，注册全部 40 个工具并立即在当前会话中生效。
+
+### Claude Desktop
+
+打开您的配置文件：
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **Linux**: `~/.config/Claude/claude_desktop_config.json`
+
+在 `mcpServers` 节点下添加 `vlrdevapi`：
+
+```json
+{
+  "mcpServers": {
+    "vlrdevapi": {
+      "command": "uvx",
+      "args": ["--from", "vlrdevapi[mcp]", "vlrdevapi-mcp"]
+    }
+  }
+}
+```
+
+重启 Claude Desktop。点击对话框右下角的锤子图标，即可看到已就绪的 40+ 项无畏契约电竞专属工具。
+
+### Cursor IDE
+
+1. 打开 **Cursor Settings** &rarr; **Features** &rarr; **MCP Servers**。
+2. 点击 **Add New MCP Server**。
+3. 名称 (Name): `vlrdevapi`, 类型 (Type): `command`, 命令 (Command): `uvx --from "vlrdevapi[mcp]" vlrdevapi-mcp`。
+
+或者直接在项目根目录的 `.cursor/mcp.json` 中添加：
+
+```json
+{
+  "mcpServers": {
+    "vlrdevapi": {
+      "command": "uvx",
+      "args": ["--from", "vlrdevapi[mcp]", "vlrdevapi-mcp"]
+    }
+  }
+}
+```
+
+### Windsurf / Codeium
+
+在 `~/.codeium/windsurf/mcp_config.json` 中添加：
+
+```json
+{
+  "mcpServers": {
+    "vlrdevapi": {
+      "command": "uvx",
+      "args": ["--from", "vlrdevapi[mcp]", "vlrdevapi-mcp"]
+    }
+  }
+}
+```
+
+### Zed 编辑器
+
+在 Zed 的 `settings.json` 中配置：
+
+```json
+{
+  "context_servers": {
+    "vlrdevapi": {
+      "command": "uvx",
+      "args": ["--from", "vlrdevapi[mcp]", "vlrdevapi-mcp"]
+    }
+  }
+}
+```
+
+---
+
+## 自主 AI 智能体 (OpenCode、DeepSeek、Codex、Grok 等)
+
+对于自主 Agent、CLI 封装框架或自定义 LLM 应用，只需将工具执行器配置为标准 stdio 调用：
+
+```bash
+uvx --from "vlrdevapi[mcp]" vlrdevapi-mcp
+```
+
+### 开箱即用的 Agent 系统提示词
+
+您可以直接将以下提示词注入到任何 Agent 的上下文环境中：
+
+> **无畏契约电竞数据接口接入指引：**
+> 你已接入 VLRdevAPI Model Context Protocol (MCP) 服务端。通过 stdio 执行 `uvx --from "vlrdevapi[mcp]" vlrdevapi-mcp` 运行服务。
+> - 优先使用复合工具（如 `get_match_full_context(series_id)` 和 `get_team_overview(team_id)`）处理高阶综合查询。
+> - 查询赛程请调用 `matches_live()` 与 `matches_upcoming()`。
+> - 分析选手战绩请调用 `player_agents(player_id)` 与 `get_player_career_summary(player_id)`。
+> - 全程无需任何 API 密钥或第三方账号。
+
+---
+
+## 您可以向 AI 提问哪些问题
+
+连接成功后，您的 AI 助手可直接根据实时 VLR.gg 数据回答自然语言提问：
+
+* *"现在 VCT 正在打哪场比赛？"* &rarr; 调用 `matches_live()`
+* *"列出 EDG 或 FPX 本周即将进行的全部赛程"* &rarr; 调用 `team_upcoming_matches(team_id=...)`
+* *"对比 EDG 和 PRX 的历史交锋胜率与阵容评分"* &rarr; 调用 `compare_teams(...)`
+* *"调取 ZmjjKK (康康) 的职业生涯详报，包括擅长特工池和奖金统计"* &rarr; 调用 `get_player_career_summary(...)`
+* *"解析今年全球冠军赛总决赛决胜局的逐回合经济局势与枪械购买"* &rarr; 调用 `series_economy(...)`
+* *"汇总今天的最新无畏契约电竞头条要闻"* &rarr; 调用 `get_news_digest()`
+
+---
+
+## 高阶复合工具 (专为多跳推理设计)
+
+服务端特别提供了 9 项专为大模型设计的复合工具。智能体无需在多轮对话中发起 5 次繁琐的基础请求，单次调用即可获取完整情报：
+
+| 工具名称 | 参数 | 返回内容 |
+|:---|:---|:---|
+| `get_match_full_context` | `series_id` | 比赛概况、选手详细评分、直播信号流与回放 VOD 列表。 |
+| `get_team_overview` | `team_id` | 战队资料、现役阵容、近期交手赛果、后续赛程及历史战绩荣誉。 |
+| `compare_teams` | `team_id_1`, `team_id_2` | 两支战队在阵容深度、战队排名、赛事奖金及近况表现的双排并列对比。 |
+| `get_player_career_summary` | `player_id` | 选手履历生平、现役队伍、特工池综合评分及赛事名次盘点。 |
+| `get_h2h_matchup` | `team_id_1`, `team_id_2` | 两队之间所有历史交锋胜负局数与关键战役完整备忘录。 |
+| `get_tournament_dossier` | `event_id` | 锦标赛全景档案：参赛名单、赛段晋级图与实时阶段积分。 |
+| `get_live_and_upcoming_schedule` | `limit` | 实时直播动态滚动与未来赛程计划的综合快讯。 |
+| `get_news_digest` | `limit`, `include_top_article_body` | 最新电竞新闻快报摘要，可附带头条文章的完整 Markdown 原文。 |
+| `series_map_summary` | `series_id`, `game_id` | 单张地图深度战报：回合经济分析、精彩回放事件与选手局内表现。 |
+
+---
+
+## 40 项基础颗粒度工具清单
+
+除高阶复合工具外，VLRdevAPI 的全部接口均以独立工具形式无缝开放：
+
+* **Matches**: `matches_upcoming`、`matches_live`、`matches_completed`
+* **Series**: `series_info`、`series_players`、`series_rounds`、`series_performance`、`series_economy`、`series_replay`、`series_vods`、`series_map_summary`
+* **Teams**: `team_info`、`team_roster`、`team_stats`、`team_completed_matches`、`team_upcoming_matches`、`team_transactions`、`team_placements`
+* **Players**: `player_info`、`player_teams`、`player_agents`、`player_matches`、`player_profile`、`player_placements`
+* **Events**: `events_list`、`event_info`、`event_stages`、`event_teams`、`event_matches`、`event_standings`
+* **News**: `news_list`、`news_article`
+
+---
+
+## 为什么能做到真正零配置
+
+1. **无需 API 密钥**: VLR.gg 属于公开电竞数据站点，无需注册开发者账号或申请 Token。
+2. **`uvx` 运行隔离**: `uvx` 会将 `vlrdevapi[mcp]` 下载到安全独立的临时缓存区运行，绝不污染全局 Python 环境。
+3. **优雅的异常防护机制**: 针对领域异常（如 `NotFoundError`、`ValidationError`）均返回规范格式的 JSON 错误信息，避免 AI 进程异常退出。
+4. **Token 极致优化**: 采用 VLRdevAPI 优化后的轻量字典序列化协议，最大限度节约模型的上下文窗口（Context Window）。

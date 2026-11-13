@@ -1,0 +1,194 @@
+---
+title: Rondas de la Serie (Series Rounds)
+description: "Obtén los datos ronda a ronda de un mapa específico de la serie: ganador, tipo de victoria, bando y economía por ronda."
+---
+
+`series.rounds(series_id, game_id)` devuelve el desglose ronda a ronda de un mapa concreto dentro de la serie, unificando los datos económicos (banco, gasto y tipo de compra) procedentes de la pestaña de economía de vlr.gg.
+
+## Firma
+
+```python
+series.rounds(
+    series_id: int,
+    game_id: int,
+) -> RoundsData
+```
+
+Con acceso curried:
+
+```python
+vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único de la serie en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+  "game_id": {
+    description: "Número de mapa dentro de la serie (base 1).",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+}} />
+
+## Retorno - `RoundsData`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único de la serie en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: "Identificador del mapa en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team1": {
+    description: "Nombre del Equipo 1 (primer equipo listado).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1_id": {
+    description: "ID del Equipo 1.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2": {
+    description: "Nombre del Equipo 2 (segundo equipo listado).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2_id": {
+    description: "ID del Equipo 2.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "rounds": {
+    description: "Lista de rondas disputadas en este mapa.",
+    type: "list[RoundData]",
+    typeDescription: "list[RoundData] - consulta los campos detallados a continuación",
+    default: "[]",
+  },
+}} />
+
+### Campos de `RoundData`
+
+<TypeTable type={{
+  "round_number": {
+    description: "Número de ronda en la partida (1-indexed).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "winner_team_name": {
+    description: "Nombre del equipo vencedor de la ronda.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "winner_team_id": {
+    description: "ID del equipo vencedor de la ronda.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "win_type": {
+    description: 'Método de victoria en la ronda. Usa `.full_name` para la etiqueta descriptiva.',
+    type: "RoundWinType",
+    typeDescription: 'RoundWinType - "elimination" | "defuse" | "spike_detonation" | "time_expired"',
+    default: "RoundWinType.ELIMINATION",
+  },
+  "side": {
+    description: 'Bando del equipo ganador: "Defense" (CT) o "Attack" (T).',
+    type: "str",
+    typeDescription: '"Defense" | "Attack"',
+    default: '""',
+  },
+  "team1_score": {
+    description: "Marcador del Equipo 1 tras esta ronda.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2_score": {
+    description: "Marcador del Equipo 2 tras esta ronda.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "bank_team1": {
+    description: "Créditos en banco del Equipo 1 al inicio de la ronda.",
+    type: "float | None",
+    typeDescription: "float | None",
+  },
+  "bank_team2": {
+    description: "Créditos en banco del Equipo 2 al inicio de la ronda.",
+    type: "float | None",
+    typeDescription: "float | None",
+  },
+  "spent_team1": {
+    description: "Créditos gastados por el Equipo 1 en esta ronda.",
+    type: "int | None",
+    typeDescription: "int | None",
+  },
+  "spent_team2": {
+    description: "Créditos gastados por el Equipo 2 en esta ronda.",
+    type: "int | None",
+    typeDescription: "int | None",
+  },
+  "buy_type_team1": {
+    description: "Nivel de compra del Equipo 1.",
+    type: "str",
+    typeDescription: '"Pistol" | "Eco" | "Half-buy" | "Full-buy" | ""',
+    default: '""',
+  },
+  "buy_type_team2": {
+    description: "Nivel de compra del Equipo 2.",
+    type: "str",
+    typeDescription: '"Pistol" | "Eco" | "Half-buy" | "Full-buy" | ""',
+    default: '""',
+  },
+  "is_pistol_round": {
+    description: "Indica si es ronda de pistolas (rondas 1 y 13).",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+## Ejemplos
+
+### Recorrer las rondas de la partida
+
+```python
+import vlrdevapi
+
+rounds_data = vlrdevapi.series.rounds(series_id=670471, game_id=1)
+print(f"Partida: {rounds_data.team1} vs {rounds_data.team2}")
+for r in rounds_data.rounds[:5]:
+    print(f"Ronda {r.round_number:2d}: {r.team1_score}-{r.team2_score} | Vencedor: {r.winner_team_name} ({r.win_type.full_name})")
+```
+
+### Acceso curried
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+rounds_data = series.rounds(game_id=1)
+defuse_wins = [r for r in rounds_data.rounds if r.win_type == "defuse"]
+print(f"Rondas ganadas desactivando la Spike: {len(defuse_wins)}")
+```

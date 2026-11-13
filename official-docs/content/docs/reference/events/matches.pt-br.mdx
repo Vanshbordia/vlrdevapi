@@ -1,0 +1,186 @@
+---
+title: Partidas do Evento (Event Matches)
+description: Consulte as partidas de um evento com filtros por etapa e status, incluindo enriquecimento concorrente dos IDs de times.
+---
+
+`event.matches(event_id)` retorna as partidas de um torneio com filtragem flexível por etapa e status de jogo. Os IDs das equipes são enriquecidos em paralelo através de consultas rápidas das séries.
+
+## Assinatura
+
+```python
+event.matches(
+    event_id: int,
+    stage_id: str | None = None,
+    state: Literal["all", "completed", "live", "upcoming"] = "all",
+) -> EventMatches
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador numérico exclusivo do evento no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+  "stage_id": {
+    description: 'Identificador da etapa correspondente ao parâmetro de URL series_id (ex: "5556").',
+    type: "str | None",
+    typeDescription: "str - ID obtido em event.stages(), ou None para todas",
+    default: "None",
+    required: false,
+  },
+  "state": {
+    description: "Filtra as partidas pelo seu status atual.",
+    type: 'Literal["all", "completed", "live", "upcoming"]',
+    typeDescription: '"all" - todas | "completed" - finalizadas | "live" - em andamento | "upcoming" - agendadas',
+    default: '"all"',
+    required: false,
+  },
+}} />
+
+## Retorno - `EventMatches`
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador do evento ao qual estas partidas pertencem.",
+    type: "int",
+    typeDescription: "int",
+  },
+  "matches": {
+    description: "Lista de partidas da competição.",
+    type: "list[EventMatch]",
+    typeDescription: "list[EventMatch]",
+    default: "[]",
+  },
+}} />
+
+### Campos de `EventMatch`
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador do evento.",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+  "match_id": {
+    description: "Identificador numérico da partida obtido da URL do vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+  "stage": {
+    description: 'Nome da etapa (ex: "Group Stage", "Playoffs").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "phase": {
+    description: 'Fase ou rodada da partida (ex: "Week 1", "Upper Round 1").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "status": {
+    description: "Status do confronto: completed, live ou upcoming.",
+    type: "MatchStatus",
+    typeDescription: "Enum MatchStatus - veja abaixo",
+    required: true,
+  },
+  "match_date": {
+    description: "Data da partida.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "match_time": {
+    description: "Horário da partida.",
+    type: "time | None",
+    typeDescription: "datetime.time | None",
+    default: "None",
+  },
+  "datetime_utc": {
+    description: "Data e horário combinados da partida em UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+  "teams": {
+    description: "Equipes que disputam a partida (geralmente 2).",
+    type: "list[MatchTeam]",
+    typeDescription: "list[MatchTeam] - veja abaixo",
+    default: "[]",
+  },
+}} />
+
+### Campos de `MatchTeam`
+
+<TypeTable type={{
+  "id": {
+    description: "ID da equipe no vlr.gg. None para TBD.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "name": {
+    description: 'Nome da equipe (ex: "FNATIC", "TBD").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_name": {
+    description: 'Nome completo do país a partir da bandeira da equipe (ex: "United States"); vazio para TBD.',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "score": {
+    description: "Placar da equipe. None se não disponível (partidas futuras).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "winner": {
+    description: "Indica se esta equipe venceu a partida.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+### Enum `MatchStatus`
+
+<TypeTable type={{
+  "COMPLETED": {
+    description: "A partida foi disputada e concluída.",
+    type: "str",
+    typeDescription: 'Valor: "completed"',
+  },
+  "LIVE": {
+    description: "A partida está atualmente em andamento.",
+    type: "str",
+    typeDescription: 'Valor: "live"',
+  },
+  "UPCOMING": {
+    description: "A partida está agendada, mas ainda não começou.",
+    type: "str",
+    typeDescription: 'Valor: "upcoming"',
+  },
+}} />
+
+## Exemplos de Código
+
+```python
+import vlrdevapi
+
+# Obter partidas finalizadas de um evento
+matches = vlrdevapi.event(2765).matches(state="completed")
+
+for m in matches.matches[:5]:
+    t1, t2 = m.teams[0], m.teams[1]
+    s1 = t1.score if t1.score is not None else 0
+    s2 = t2.score if t2.score is not None else 0
+    print(f"{t1.name} [{s1} - {s2}] {t2.name} | {m.stage} - {m.phase}")
+```

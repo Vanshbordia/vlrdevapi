@@ -1,0 +1,229 @@
+---
+title: Informações do Evento (Event Info)
+description: Obtenha metadados detalhados de um evento específico - nome, série, datas, premiação, localização física e regiões.
+---
+
+`event.info(event_id)` retorna metadados completos de um único evento ou torneio no vlr.gg.
+
+## Assinatura
+
+```python
+event.info(event_id: int) -> EventInfo
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador numérico exclusivo do evento no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `EventInfo`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador do evento.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nome de exibição completo do evento.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "subtitle": {
+    description: "Subtítulo ou slogan do evento.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "image_url": {
+    description: "URL da imagem de miniatura/logo do evento.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "series": {
+    description: "Link da série principal (ex: Valorant Champions Tour 2026).",
+    type: "EventSeriesLink | None",
+    typeDescription: "EventSeriesLink | None - veja os campos detalhados abaixo",
+    default: "None",
+  },
+  "stage": {
+    description: "Etapa dentro da série (ex: Etapa 1 / Stage 1).",
+    type: "EventStageTag | None",
+    typeDescription: "EventStageTag | None - veja os campos detalhados abaixo",
+    default: "None",
+  },
+  "regions": {
+    description: "Tags de regiões associadas ao evento. Múltiplas regiões distintas se consolidam como Internacional.",
+    type: "list[EventRegion]",
+    typeDescription: "list[EventRegion] - veja os campos detalhados abaixo",
+    default: "[]",
+  },
+  "start_date": {
+    description: "Data de início do evento.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "end_date": {
+    description: "Data de término do evento.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "prize": {
+    description: "Detalhes da premiação incluindo montante e moeda.",
+    type: "EventPrize | None",
+    typeDescription: "EventPrize | None - veja os campos detalhados abaixo",
+    default: "None",
+  },
+  "location": {
+    description: "Local físico do evento (país e arena).",
+    type: "EventLocation | None",
+    typeDescription: "EventLocation | None - veja os campos detalhados abaixo",
+    default: "None",
+  },
+  "region_location": {
+    description: "Localização regional (país, ex: para torneios online).",
+    type: "EventLocation | None",
+    typeDescription: "EventLocation | None - veja os campos detalhados abaixo",
+    default: "None",
+  },
+}} />
+
+### Campos de `EventSeriesLink`
+
+<TypeTable type={{
+  "name": {
+    description: "Nome de exibição da série.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "href": {
+    description: "URL relativa para a página da série.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `EventStageTag`
+
+<TypeTable type={{
+  "name": {
+    description: "Nome da etapa (ex: Etapa 1).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "href": {
+    description: "URL relativa para a página da etapa.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `EventRegion`
+
+<TypeTable type={{
+  "name": {
+    description: "Nome da região (ex: Americas, EMEA, Pacific, China, International).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "subregion": {
+    description: "Nome da sub-região quando analisado a partir de subregion= (ex: Japan, North America). None para links region=.",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "href": {
+    description: "URL relativa para a página da região ou sub-região.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `EventPrize`
+
+<TypeTable type={{
+  "amount": {
+    description: "Valor numérico da premiação (ex: 1000000).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "currency_symbol": {
+    description: "Símbolo da moeda (ex: $, €).",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "currency_code": {
+    description: "Código da moeda (ex: USD, EUR).",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "converted_amount": {
+    description: "Valor convertido para USD quando a moeda original for diferente.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "is_tbd": {
+    description: "Indica se a premiação total está a definir (TBD).",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "raw_text": {
+    description: 'Texto bruto da premiação (ex: "$1,000,000 USD").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `EventLocation`
+
+<TypeTable type={{
+  "country": {
+    description: "Nome do país.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "venue": {
+    description: "Nome da arena/local (vazio para localizações a nível regional).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Exemplos de Código
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.event(2765).info()
+print(f"Evento: {info.name}")
+if info.prize:
+    print(f"Premiação: {info.prize.raw_text}")
+if info.location:
+    print(f"Local: {info.location.venue}, {info.location.country}")
+print(f"Datas: {info.start_date} até {info.end_date}")
+```

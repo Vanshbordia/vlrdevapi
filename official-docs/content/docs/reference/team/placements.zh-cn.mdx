@@ -1,0 +1,153 @@
+---
+title: 战队赛事成绩与奖金 (Team Placements)
+description: "获取战队的历史赛事名次与奖金汇总：各阶段名次、所获奖金数额及生涯总奖金。"
+---
+
+`team.placements(team_id)` 返回指定战队在 vlr.gg 上的历史赛事名次与奖金记录。
+
+## 函数签名
+
+```python
+team.placements(team_id: int) -> TeamPlacements
+```
+
+## 参数
+
+<TypeTable type={{
+  "team_id": {
+    description: "vlr.gg 上的唯一战队 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+}} />
+
+## 返回值 - `TeamPlacements`
+
+<TypeTable type={{
+  "team_id": {
+    description: "战队 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "total_winnings": {
+    description: "赛事总奖金累计（数值型）。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "total_winnings_currency": {
+    description: "奖金货币符号（例如 '$', '€'）。",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "placements": {
+    description: "各项赛事的名次记录列表。",
+    type: "list[TeamEventPlacement]",
+    typeDescription: "list[TeamEventPlacement] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+}} />
+
+### `TeamEventPlacement` 字段说明
+
+<TypeTable type={{
+  "event_id": {
+    description: "赛事在 vlr.gg 上的 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "event_name": {
+    description: "赛事名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "year": {
+    description: "赛事举办年份。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "placements": {
+    description: "各阶段的名次记录（例如可同时包含小组赛与淘汰赛阶段）。",
+    type: "list[EventPlacement]",
+    typeDescription: "list[EventPlacement] - 详见下方字段说明",
+    default: "[]",
+  },
+  "prize": {
+    description: "所获奖金数额（数值型）。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "prize_currency": {
+    description: "奖金货币符号。",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+### `EventPlacement` 字段说明
+
+<TypeTable type={{
+  "stage": {
+    description: '赛事阶段（例如 "Playoffs", "Group Stage"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "placement": {
+    description: '所获名次（例如 "1st", "2nd", "3rd", "5th-8th"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## 示例
+
+### 查看所有名次记录与奖金
+
+```python
+import vlrdevapi
+
+placements = vlrdevapi.team.placements(team_id=2593)
+total = f"{placements.total_winnings_currency}{placements.total_winnings:,}" if placements.total_winnings and placements.total_winnings_currency else "N/A"
+print(f"总奖金: {total}")
+print()
+for event in placements.placements:
+    for p in event.placements:
+        print(f"{event.year} {event.event_name}: {p.stage} 阶段获得第 {p.placement}")
+```
+
+### 按年份汇总奖金收益
+
+```python
+import vlrdevapi
+
+placements = vlrdevapi.team.placements(team_id=2593)
+by_year = {}
+for event in placements.placements:
+    by_year[event.year] = by_year.get(event.year, 0) + (event.prize or 0)
+currency = placements.total_winnings_currency or "$"
+for year in sorted(by_year):
+    print(f"  {year} 年: {currency}{by_year[year]:,}")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+placements = team.placements()
+wins = [e for e in placements.placements for p in (e.placements or []) if "1st" in p.placement]
+print(f"夺冠次数: {len(wins)}")
+for e in wins:
+    print(f"  {e.event_name} ({e.year})")
+```

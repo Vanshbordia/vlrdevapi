@@ -3,6 +3,7 @@ import { loader } from 'fumadocs-core/source';
 import { docsContentRoute, docsRoute } from './shared';
 import { icons } from 'lucide-react';
 import { createElement } from 'react';
+import { i18n } from './i18n';
 
 // See https://fumadocs.dev/docs/headless/source-api for more info
 export const source = loader({
@@ -15,6 +16,7 @@ export const source = loader({
   },
   baseUrl: docsRoute,
   source: docs.toFumadocsSource(),
+  i18n,
   plugins: [],
 });
 
@@ -85,7 +87,10 @@ export function getGuideEntries(): ContentEntry[] {
 }
 
 export function getPageMarkdownUrl(page: (typeof source)['$inferPage']) {
-  const segments = [...page.slugs, 'content.md'];
+  const isNonDefaultLang = page.locale && page.locale !== i18n.defaultLanguage;
+  const segments = isNonDefaultLang
+    ? [page.locale, ...page.slugs, 'content.md']
+    : [...page.slugs, 'content.md'];
 
   return {
     segments,

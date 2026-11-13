@@ -1,0 +1,151 @@
+---
+title: 快速入门
+description: VLRdevAPI 简介、架构概览与常见使用模式。
+icon: Rocket
+---
+
+VLRdevAPI 是一个用于从 [VLR.gg](https://www.vlr.gg/) 获取无畏契约 (Valorant) 电竞数据的 Python 库。它负责处理 HTTP 请求、HTML 解析和数据规范化，让您能够直接操作类型化的 Python 对象，而无需处理繁琐的原始标记文本。
+
+## 架构概览
+
+该库提供了两种数据访问方式：
+
+- **模块级访问** - 延迟初始化的默认客户端，适合快速编写单行查询
+- **显式 `VLRClient`** - 允许对网络配置、超时时间及客户端资源生命周期进行完全控制
+
+这两种方式均提供相同的六个核心命名空间：
+
+| 命名空间 | 描述 |
+|---|---|
+| `matches` | 即将进行、正在直播和已结束的比赛列表 |
+| `team` | 战队资料、选手阵容、统计数据、比赛记录和名次 |
+| `player` | 选手档案、特工池、所属战队及个人比赛历史 |
+| `event` | 赛事详情、阶段划分、积分榜、参赛战队与赛程 |
+| `series` | 单场系列赛（BO3/BO5 等）详情、VOD 录像、选手表现及经济数据 |
+| `news` | 资讯列表与完整 Markdown 新闻文章 |
+
+## 环境要求
+
+- **Python 3.11 或更高版本** - 运行 `python --version` 检查当前版本
+
+## 安装
+
+```bash
+uv add vlrdevapi
+```
+
+或使用 pip：
+
+```bash
+pip install vlrdevapi
+```
+
+## 使用模式
+
+<Steps>
+  <Step>
+
+  ### 模块级快速调用
+
+  最简便的上手方式。库会在首次调用命名空间时自动初始化默认客户端。
+
+```python
+import vlrdevapi
+
+matches = vlrdevapi.matches.upcoming()
+for match in matches.matches[:5]:
+    t1 = match.team1.name if match.team1 else "待定"
+    t2 = match.team2.name if match.team2 else "待定"
+    print(f"{t1} vs {t2}")
+```
+  </Step>
+
+  <Step>
+
+  ### 使用上下文管理器的显式客户端
+
+  当需要自定义超时配置或希望确保网络连接在使用完毕后立即关闭时，请使用此模式。
+
+  ```python
+  from vlrdevapi import VLRClient
+
+  with VLRClient() as client:
+      page = client.matches.upcoming()
+      for match in page.matches[:5]:
+          t1 = match.team1.name if match.team1 else "待定"
+          t2 = match.team2.name if match.team2 else "待定"
+          print(f"{t1} vs {t2}")
+  ```
+  </Step>
+
+  <Step>
+
+  ### 链式柯里化调用 (Curried access)
+
+  一次传入对象 ID，随后链式调用其专属方法获取细分数据。
+
+  ```python
+  import vlrdevapi
+
+  team = vlrdevapi.team(2593)
+  info = team.info()
+  roster = team.roster()
+  print(f"{info.name} 共有 {len(roster.players)} 名选手")
+  ```
+  </Step>
+</Steps>
+
+## 命名空间参考
+
+每个命名空间都针对特定数据类型提供了相应方法：
+
+- **`matches.upcoming()`** / **`matches.live()`** / **`matches.completed()`** - 比赛列表
+- **`team(id)`** - 战队专属数据（阵容、数据统计、对战记录、名次）
+- **`player(id)`** - 选手专属数据（个人档案、特工数据、战队变动、历史比赛）
+- **`event(id)`** - 赛事专属数据（赛事概况、赛段、积分榜、参赛战队）
+- **`series(id)`** - 系列赛专属数据（比分概况、VOD 录像、选手评分、经济局分析）
+- **`news(page)`** / **`news.article(article_id)`** - 新闻资讯列表与正文
+
+## 数据科学导出与表格序列化
+
+VLRdevAPI 的每个响应模型都原生内置了表格导出方法：
+
+```python
+import vlrdevapi
+
+# 获取系列赛选手数据并转换为 DataFrame
+players = vlrdevapi.series(754737).players()
+
+# 直接导出为 pandas DataFrame
+df = players.to_df()
+print(f"成功导出 {len(df)} 条选手记录到 DataFrame")
+
+# 或导出为高性能 Polars DataFrame
+pl_df = players.to_polars()
+
+# 直接以 CSV、Excel、Parquet 或 JSON 格式保存至磁盘
+players.to_csv("players_stats.csv")
+players.to_excel("players_stats.xlsx")
+players.to_parquet("players_stats.parquet")
+players.to_json("players_stats.json")
+```
+
+## Model Context Protocol (MCP) 服务端
+
+通过内置的 MCP 服务端，可将 Claude Desktop、Cursor 或各类自主 AI Agent 直接连接至实时无畏契约电竞数据：
+
+```bash
+# 通过 CLI 命令直接启动
+vlrdevapi-mcp
+
+# 或使用 uvx 实现零安装即用
+uvx --from "vlrdevapi[mcp]" vlrdevapi-mcp
+```
+
+了解更多请参阅 [MCP 服务端指南](/zh-cn/docs/mcp/)。
+
+## 后续步骤
+
+- 阅读 [快速上手教程](/zh-cn/docs/quickstart/) 体验完整的可运行示例
+- 查看 [安装说明](/zh-cn/docs/installation/) 了解按需安装的可选拓展包
+- 查阅 [贡献指南](/zh-cn/docs/contributing/) 参与项目开源建设

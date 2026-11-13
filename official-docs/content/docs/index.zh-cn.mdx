@@ -1,0 +1,84 @@
+---
+title: 文档
+description: 用于与 VLR.gg API 交互以获取无畏契约 (Valorant) 电竞数据的 Python 库。
+icon: Library
+---
+
+VLRdevAPI 是一个 Python 库，为从 [VLR.gg](https://www.vlr.gg/) 获取无畏契约 (Valorant) 电竞数据提供了干净、类型安全的接口。它负责网页爬取、解析和数据规范化，让您可以专注于构建自己的应用程序。
+
+## 功能特性
+
+- **比赛数据** - 获取带有详细统计数据的即将进行和已结束的比赛
+- **选手资料** - 查询选手统计、特工使用情况和表现指标
+- **战队信息** - 获取战队阵容、排名和历史交锋记录
+- **赛事报道** - 浏览锦标赛、赛程安排和积分榜
+- **新闻与文章** - 浏览新闻列表并获取 Markdown 格式的完整文章
+- **类型安全** - 完善的类型提示 (Type Hints)，提供更佳的 IDE 支持并减少运行时错误
+- **并发请求** - 多阶段端点通过线程池并行抓取页面
+
+<Cards>
+  <Card
+    title="快速入门"
+    description="在几分钟内了解 VLRdevAPI 的基础知识"
+    href="/zh-cn/docs/getting-started/"
+  />
+  <Card
+    title="安装指南"
+    description="通过 pip 或源码进行安装"
+    href="/zh-cn/docs/installation/"
+  />
+  <Card
+    title="快速上手"
+    description="直接查看 Python 代码示例"
+    href="/zh-cn/docs/quickstart/"
+  />
+  <Card
+    title="教程指南"
+    description="使用 VLRdevAPI 构建项目的分步操作指南"
+    href="/guides/"
+  />
+  <Card
+    title="博客与示例"
+    description="项目实战、数据分析与深度探讨"
+    href="/blog/"
+  />
+  <Card
+    title="GitHub"
+    description="查看源代码并参与项目贡献"
+    href="https://github.com/vanshbordia/vlrdevapi"
+  />
+</Cards>
+
+## 快速上手
+
+```bash
+# 使用 uv (推荐)
+uv add vlrdevapi
+
+# 或使用 pip
+pip install vlrdevapi
+```
+
+```python
+# doc-check: skip
+import vlrdevapi
+
+page = vlrdevapi.matches.upcoming()
+for match in page.matches[:3]:
+    team1 = match.team1.name if match.team1 else "待定"
+    team2 = match.team2.name if match.team2 else "待定"
+    print(f"{team1} vs {team2} | {match.event}")
+```
+
+## 常见用例
+
+- [Python 版 VLR.gg API](/vlr-gg-api/) - 为什么需要 VLR.gg 非官方客户端及其功能
+- [无畏契约电竞 API](/valorant-esports-api/) - 在 Python 中查询 VLR.gg 无畏契约电竞数据
+- [Python 版无畏契约 API](/valorant-api-python/) - 安装客户端并使用类型化模型
+- [无畏契约统计数据 API](/valorant-stats-api/) - 获取选手、战队和比赛统计数据
+
+## 更多内容
+
+- [教程指南](/guides/) - 真实项目的分步教程
+- [博客](/blog/) - 项目实战、对比与深度分析
+- [常见问题 (FAQ)](/faq/) - 关于安装、速率限制和数据范围的解答

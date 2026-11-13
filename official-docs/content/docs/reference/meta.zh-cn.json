@@ -1,0 +1,6 @@
+{
+  "title": "API 参考文档",
+  "pages": ["events", "series", "matches", "player", "team", "news", "mcp"],
+  "pagesIndex": "index",
+  "defaultOpen": true
+}

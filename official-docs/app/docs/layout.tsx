@@ -15,8 +15,8 @@ export const metadata: Metadata = {
 
 export default function Layout({ children }: LayoutProps<'/docs'>) {
   return (
-    <DocsProvider>
-      <DocsLayout tree={source.getPageTree()} {...baseOptions()}>
+    <DocsProvider locale="en">
+      <DocsLayout tree={source.getPageTree('en')} {...baseOptions()}>
         {children}
       </DocsLayout>
     </DocsProvider>

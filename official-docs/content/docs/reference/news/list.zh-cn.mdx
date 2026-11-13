@@ -1,0 +1,125 @@
+---
+title: 新闻列表 (News List)
+description: "通过分页浏览 vlr.gg 上的新闻文章列表。"
+---
+
+`news()` 返回 vlr.gg 网站上分页的新闻资讯列表。
+
+## 函数签名
+
+```python
+news(
+    page: int = 1,
+) -> NewsPage
+```
+
+## 参数
+
+<TypeTable type={{
+  "page": {
+    description: "页码（从 1 开始）。",
+    type: "int",
+    typeDescription: "正整数",
+    default: "1",
+    required: false,
+  },
+}} />
+
+## 返回值 - `NewsPage`
+
+<TypeTable type={{
+  "news": {
+    description: "新闻条目列表。",
+    type: "list[News]",
+    typeDescription: "list[News] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+  "has_next_page": {
+    description: "是否存在下一页结果。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "page_number": {
+    description: "当前页码（从 1 开始）。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+}} />
+
+### `News` 字段说明
+
+<TypeTable type={{
+  "id": {
+    description: "vlr.gg 上的唯一新闻标识符。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "title": {
+    description: "新闻标题。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "subtitle": {
+    description: "新闻副标题或简要概述。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "link": {
+    description: "新闻文章的相对 URL 地址。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_name": {
+    description: "新闻关联的国家/地区名称（例如 \"China\"）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "date": {
+    description: "发布时间（带时区信息的 UTC datetime）。",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+  "author": {
+    description: "新闻作者。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## 示例
+
+### 获取最新新闻
+
+```python
+import vlrdevapi
+
+result = vlrdevapi.news(page=1)
+print(f"当前页新闻数量: {len(result.news)}")
+print(f"是否有下一页: {result.has_next_page}")
+
+for item in result.news:
+    print(f"{item.date.date()} | {item.title} | 作者: {item.author}")
+```
+
+### 按国家/地区筛选新闻
+
+```python
+import vlrdevapi
+
+result = vlrdevapi.news(page=1)
+local_news = [n for n in result.news if n.country_name == "China"]
+if local_news:
+    for n in local_news:
+        print(f"{n.title} - {n.author}")
+else:
+    print("当前页暂无中国相关的新闻。")
+```

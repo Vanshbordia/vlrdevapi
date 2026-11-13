@@ -1,0 +1,170 @@
+---
+title: 战队资料 (Team Info)
+description: "获取战队的详细信息：全称、战队 Tag、所属地区、浅色/深色 Logo 图标、社媒链接及前身/后续更名记录。"
+---
+
+`team.info(team_id)` 返回指定战队在 vlr.gg 上的详细基础资料。
+
+## 函数签名
+
+```python
+team.info(team_id: int) -> TeamInfo
+```
+
+## 参数
+
+<TypeTable type={{
+  "team_id": {
+    description: "vlr.gg 上的唯一战队 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+}} />
+
+## 返回值 - `TeamInfo`
+
+<TypeTable type={{
+  "id": {
+    description: "战队在 vlr.gg 上的唯一 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "战队全称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: "战队比赛 Tag 简写。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "light_logo_url": {
+    description: "适用于浅色背景的队标 Logo URL。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "dark_logo_url": {
+    description: "适用于深色背景的队标 Logo URL。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "战队所属国家/地区名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "is_active": {
+    description: "战队当前是否处于活跃运营状态。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "True",
+  },
+  "socials": {
+    description: "战队官方社交媒体账号列表。",
+    type: "list[TeamSocial] | None",
+    typeDescription: "list[TeamSocial] | None",
+    default: "None",
+  },
+  "previous_teams": {
+    description: "战队的前身或历史俱乐部记录（若有更名）。",
+    type: "list[TeamSuccessor] | None",
+    typeDescription: "list[TeamSuccessor] | None",
+    default: "None",
+  },
+  "current_teams": {
+    description: "战队更名后的后续新俱乐部记录（若已重组）。",
+    type: "list[TeamSuccessor] | None",
+    typeDescription: "list[TeamSuccessor] | None",
+    default: "None",
+  },
+}} />
+
+### `TeamSocial` 字段说明
+
+<TypeTable type={{
+  "name": {
+    description: '社交平台名称（例如 "Twitch", "YouTube", "Twitter"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "url": {
+    description: "社交主页的完整 URL 地址。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `TeamSuccessor` 字段说明
+
+<TypeTable type={{
+  "id": {
+    description: "关联战队的 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "关联战队的名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## 示例
+
+### 基础查询战队信息
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.team.info(team_id=2593)
+print(f"{info.name} ({info.tag})")
+print(f"国家/地区: {info.country}")
+print(f"活跃状态: {info.is_active}")
+print(f"浅色 Logo: {info.light_logo_url}")
+print(f"深色 Logo: {info.dark_logo_url}")
+```
+
+### 查看官方社交媒体链接
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.team.info(team_id=2593)
+if info.socials:
+    for s in info.socials:
+        print(f"{s.name}: {s.url}")
+```
+
+### 追踪战队更名前身与后继
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.team.info(team_id=682)
+prev = ', '.join(t.name for t in info.previous_teams) if info.previous_teams else "(无)"
+curr = ', '.join(t.name for t in info.current_teams) if info.current_teams else "(无)"
+print(f"历史前身战队: {prev}")
+print(f"重组后继战队: {curr}")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+info = team.info()
+print(f"{info.name} ({info.tag}) - {info.country}")
+```

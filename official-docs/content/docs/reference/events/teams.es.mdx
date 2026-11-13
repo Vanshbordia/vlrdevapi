@@ -1,0 +1,127 @@
+---
+title: Equipos del Torneo (Event Teams)
+description: Obtén los equipos participantes de un torneo agrupados por fase, con descargas concurrentes en torneos multifase.
+---
+
+`event.teams(event_id)` devuelve las escuadras que compiten en el torneo, agrupadas por fase. Cuando un evento cuenta con varias fases, los datos se descargan en paralelo (hasta 5 peticiones simultáneas) para acelerar la respuesta.
+
+## Firma
+
+```python
+event.teams(
+    event_id: int,
+    stage: str | None = None,
+) -> EventTeams
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador numérico único del torneo en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+  "stage": {
+    description: 'Nombre opcional de la fase o ruta de URL para filtrar (ej: "playoffs", "group-stage").',
+    type: "str | None",
+    typeDescription: "str - nombre de la fase o None para todas",
+    default: "None",
+    required: false,
+  },
+}} />
+
+## Retorno - `EventTeams`
+
+`EventTeams` envuelve una lista de instancias `EventStageTeams` y soporta `__len__`, `__iter__` y `__getitem__`.
+
+<TypeTable type={{
+  "stages": {
+    description: "Lista de fases con sus respectivos equipos asignados.",
+    type: "list[EventStageTeams]",
+    typeDescription: "list[EventStageTeams]",
+  },
+}} />
+
+### Campos de `EventStageTeams`
+
+<TypeTable type={{
+  "stage_path": {
+    description: 'Segmento de ruta en la URL (ej: "group-stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage_name": {
+    description: 'Nombre descriptivo de la fase (ej: "Fase de Grupos").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "teams": {
+    description: "Lista de equipos participantes en esta fase.",
+    type: "list[Team]",
+    typeDescription: "list[Team]",
+    default: "[]",
+  },
+}} />
+
+### Campos de `Team`
+
+<TypeTable type={{
+  "name": {
+    description: 'Nombre del equipo (ej: "NRG", "FNATIC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "id": {
+    description: "Identificador del equipo en vlr.gg (ej: 1034).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "note": {
+    description: 'Nota opcional (ej: "Partner Team").',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "players": {
+    description: "Lista de jugadores del equipo (solo nombre e id). Siempre presente; puede estar vacía si la plantilla no está disponible.",
+    type: "list[TeamPlayer]",
+    typeDescription: "list[TeamPlayer] - consulta los campos a continuación",
+    default: "[]",
+  },
+}} />
+
+### Campos de `TeamPlayer`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador del jugador en vlr.gg (ej: 1311).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: 'Nombre del jugador en el juego (ej: "Melser").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Ejemplos de Código
+
+```python
+import vlrdevapi
+
+event_teams = vlrdevapi.event(2765).teams()
+
+for stage in event_teams:
+    print(f"\nFase: {stage.stage_name} ({len(stage.teams)} equipos)")
+    for team in stage.teams[:3]:
+        print(f"  - {team.name} (ID: {team.id})")
+```

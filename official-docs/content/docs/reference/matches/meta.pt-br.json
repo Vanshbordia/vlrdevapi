@@ -1,0 +1,9 @@
+{
+  "title": "Partidas",
+  "pages": [
+    "upcoming",
+    "live",
+    "completed"
+  ],
+  "pagesIndex": "index"
+}

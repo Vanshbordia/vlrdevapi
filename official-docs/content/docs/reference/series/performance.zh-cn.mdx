@@ -1,0 +1,274 @@
+---
+title: 比赛对决与高级统计 (Series Performance)
+description: "获取系列赛的高阶竞技表现数据：击杀对决矩阵（全击杀、首杀、大狙击杀）及多杀、残局 (Clutch) 统计。"
+---
+
+`series.performance(series_id, game_id)` 返回系列赛指定地图或全场汇总的高级竞技表现数据，涵盖详尽的选手对决击杀矩阵与关键局统计。
+
+## 函数签名
+
+```python
+series.performance(
+    series_id: int,
+    game_id: int | str = "all",
+) -> PerformanceData
+```
+
+通过柯里化链式访问：
+
+```python
+vlrdevapi.series(series_id).performance(game_id: int | str = "all") -> PerformanceData
+```
+
+## 参数
+
+<TypeTable type={{
+  "series_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+  "game_id": {
+    description: '小局地图序号（从 1 开始的正整数）或传入 "all" 获取全场累计数据。',
+    type: "int | str",
+    typeDescription: 'int 或 "all"',
+    default: '"all"',
+    required: false,
+  },
+}} />
+
+## 返回值 - `PerformanceData`
+
+<TypeTable type={{
+  "series_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: '小局标识（"all" 或小局数字 ID）。',
+    type: "str",
+    typeDescription: "str",
+    default: '"all"',
+  },
+  "all_kills_matrix": {
+    description: "完整击杀对决矩阵，展示双方各选手之间的对决胜负情况。",
+    type: "KillMatrix",
+    typeDescription: "KillMatrix - 详见下方字段说明",
+  },
+  "first_kills_matrix": {
+    description: "开局首杀对决矩阵（仅统计双方每回合第一击杀）。",
+    type: "KillMatrix",
+    typeDescription: "KillMatrix",
+  },
+  "op_kills_matrix": {
+    description: "大狙 (Operator) 击杀对决矩阵。",
+    type: "KillMatrix",
+    typeDescription: "KillMatrix",
+  },
+  "adv_stats": {
+    description: "每位选手的进阶高阶数据（多杀回合、残局胜利等）。",
+    type: "list[AdvStatsEntry]",
+    typeDescription: "list[AdvStatsEntry] - 详见下方字段说明",
+    default: "[]",
+  },
+}} />
+
+### `KillMatrix` 字段说明
+
+<TypeTable type={{
+  "entries": {
+    description: "击杀记录条目列表（包含击杀者、受害者、总击杀数与净差值）。",
+    type: "list[KillEntry]",
+    typeDescription: "list[KillEntry]",
+    default: "[]",
+  },
+}} />
+
+`KillMatrix` 还封装了便捷辅助函数：`lookup(killer, victim)`, `by_killer(name)`, `by_victim(name)`, `by_team(team)`, `killers()`, `victims()`。
+
+### `KillEntry` 字段说明
+
+<TypeTable type={{
+  "killer": {
+    description: "击杀者比赛 ID。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "killer_id": {
+    description: "击杀者选手 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "killer_team": {
+    description: "击杀者所属战队 Tag。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "victim": {
+    description: "受害者比赛 ID。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "victim_id": {
+    description: "受害者选手 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "victim_team": {
+    description: "受害者所属战队 Tag。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "kills": {
+    description: "击杀者在此对决中拿到的击杀数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "deaths": {
+    description: "击杀者在此对决中阵亡的次数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "diff": {
+    description: "净差值（kills - deaths）。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+### `AdvStatsEntry` 字段说明
+
+<TypeTable type={{
+  "player_id": {
+    description: "选手在 vlr.gg 上的唯一 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "选手比赛 ID。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team_short": {
+    description: "战队 Tag 简称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "选用特工名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "two_k": {
+    description: "双杀 (2K) 回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "three_k": {
+    description: "三杀 (3K) 回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "four_k": {
+    description: "四杀 (4K) 回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "five_k": {
+    description: "五杀团灭 (Ace) 回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v1": {
+    description: "获胜的 1v1 残局局数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v2": {
+    description: "获胜的 1v2 残局局数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v3": {
+    description: "获胜的 1v3 残局局数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v4": {
+    description: "获胜的 1v4 残局局数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "one_v5": {
+    description: "获胜的 1v5 残局局数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "economy": {
+    description: "经济评级 (Econ rating)。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "plants": {
+    description: "下包次数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "defuses": {
+    description: "拆包次数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+## 示例
+
+### 查看选手击杀矩阵
+
+```python
+import vlrdevapi
+
+perf = vlrdevapi.series.performance(series_id=670471, game_id=1)
+if perf.all_kills_matrix.entries:
+    for entry in perf.all_kills_matrix.entries[:5]:
+        print(f"{entry.killer} ({entry.killer_team}) 击杀 {entry.victim} ({entry.victim_team})")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+perf = series.performance(game_id=1)
+for p in perf.adv_stats[:3]:
+    print(f"{p.name} - 3K: {p.three_k} | 4K: {p.four_k} | Ace: {p.five_k}")
+```

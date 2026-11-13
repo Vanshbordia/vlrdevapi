@@ -1,0 +1,13 @@
+{
+  "title": "Equipos",
+  "pages": [
+    "info",
+    "roster",
+    "completed-matches",
+    "upcoming-matches",
+    "transactions",
+    "stats",
+    "placements"
+  ],
+  "pagesIndex": "index"
+}

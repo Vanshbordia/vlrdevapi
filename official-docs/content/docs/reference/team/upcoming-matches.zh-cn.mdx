@@ -1,0 +1,140 @@
+---
+title: 战队未赛赛程 (Team Upcoming Matches)
+description: "获取战队的未来对战赛程：包含预定对手详情、赛事阶段及 UTC 开赛时间。"
+---
+
+`team.upcoming_matches(team_id)` 返回指定战队在 vlr.gg 上即将进行的所有预定赛程安排。
+
+## 函数签名
+
+```python
+team.upcoming_matches(team_id: int) -> TeamUpcomingMatches
+```
+
+## 参数
+
+<TypeTable type={{
+  "team_id": {
+    description: "vlr.gg 上的唯一战队 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+}} />
+
+## 返回值 - `TeamUpcomingMatches`
+
+<TypeTable type={{
+  "team_id": {
+    description: "战队 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "matches": {
+    description: "待进行的比赛条目列表。",
+    type: "list[TeamUpcomingMatchEntry]",
+    typeDescription: "list[TeamUpcomingMatchEntry] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+}} />
+
+### `TeamUpcomingMatchEntry` 字段说明
+
+<TypeTable type={{
+  "match_id": {
+    description: "比赛 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "比赛详情页面的相对 URL 地址。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "赛事名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: '赛事阶段（例如 "Playoffs", "Group Stage"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "bracket": {
+    description: '淘汰赛阶段内的具体对阵组（例如 "LBF", "Ro16"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "opponent": {
+    description: "对手战队信息。",
+    type: "OpponentInUpcomingMatch | None",
+    typeDescription: "OpponentInUpcomingMatch | None - 详见下方字段说明",
+    default: "None",
+  },
+  "datetime": {
+    description: "UTC 预定开赛时间。",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+### `OpponentInUpcomingMatch` 字段说明
+
+<TypeTable type={{
+  "id": {
+    description: "对手战队 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "对手战队全称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: "对手战队 Tag 缩写。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## 示例
+
+### 查看未来赛程
+
+```python
+import vlrdevapi
+
+upcoming = vlrdevapi.team.upcoming_matches(team_id=2593)
+if not upcoming.matches:
+    print("该战队暂无未来预定赛程")
+for m in upcoming.matches:
+    opp = m.opponent.name if m.opponent else "待定"
+    round_label = " ".join(part for part in (m.stage, m.bracket) if part)
+    print(f"对阵 {opp} ({m.event} - {round_label})，开赛时间: {m.datetime}")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+upcoming = team.upcoming_matches()
+if not upcoming.matches:
+    print("暂无即将进行的比赛")
+for m in upcoming.matches:
+    opp = m.opponent.tag if m.opponent else "?"
+    print(f"下一场比赛: 对阵 {opp} ({m.event})")
+```

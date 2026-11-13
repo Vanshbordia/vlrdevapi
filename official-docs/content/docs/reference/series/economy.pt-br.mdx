@@ -1,0 +1,222 @@
+---
+title: Economia da Série (Series Economy)
+description: "Obtenha dados de economia por round para um mapa da partida - saldo bancário das equipes, gastos, tipo de compra, vencedor e matriz de compras."
+---
+
+`series.economy(series_id, game_id)` retorna dados econômicos detalhados para cada rodada de um mapa específico dentro de uma série no vlr.gg.
+
+## Assinatura
+
+```python
+series.economy(
+    series_id: int,
+    game_id: int,
+) -> EconomyData
+```
+
+Com acesso curried:
+
+```python
+vlrdevapi.series(series_id).economy(game_id: int) -> EconomyData
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único da série no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+  "game_id": {
+    description: "Número do mapa dentro da série (base 1).",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+}} />
+
+## Retorno - `EconomyData`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único da série no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: "Identificador do mapa no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team1": {
+    description: "Nome da Equipe 1 (iniciou na defesa no primeiro tempo).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1_id": {
+    description: "ID da Equipe 1.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2": {
+    description: "Nome da Equipe 2 (iniciou no ataque no primeiro tempo).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2_id": {
+    description: "ID da Equipe 2.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "rounds": {
+    description: "Lista de registros econômicos de cada rodada.",
+    type: "list[RoundEconomyData]",
+    typeDescription: "list[RoundEconomyData] - veja os campos abaixo",
+    default: "[]",
+  },
+  "buy_matrix_team1": {
+    description: "Matriz de tipo de compra da Equipe 1 (resumo de pistols, conversões, bônus e registros por nível de compra).",
+    type: "TeamBuyMatrix",
+    typeDescription: "TeamBuyMatrix",
+  },
+  "buy_matrix_team2": {
+    description: "Matriz de tipo de compra da Equipe 2.",
+    type: "TeamBuyMatrix",
+    typeDescription: "TeamBuyMatrix",
+  },
+  "pistol_team1": {
+    description: "Atalho para buy_matrix_team1.pistol - rounds de pistolas vencidos/totais para a equipe 1.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "converted_team1": {
+    description: "Atalho para buy_matrix_team1.converted - rounds de conversão vencidos/totais para a equipe 1.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "bonus_team1": {
+    description: "Atalho para buy_matrix_team1.bonus - rounds bônus vencidos/totais para a equipe 1.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "pistol_team2": {
+    description: "Atalho para buy_matrix_team2.pistol - rounds de pistolas vencidos/totais para a equipe 2.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "converted_team2": {
+    description: "Atalho para buy_matrix_team2.converted - rounds de conversão vencidos/totais para a equipe 2.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "bonus_team2": {
+    description: "Atalho para buy_matrix_team2.bonus - rounds bônus vencidos/totais para a equipe 2.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+}} />
+
+### Campos de `RoundEconomyData`
+
+<TypeTable type={{
+  "round_number": {
+    description: "Número do round (base 1).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "bank_team1": {
+    description: "Saldo bancário acumulado da Equipe 1 no início do round.",
+    type: "float",
+    typeDescription: "float",
+    default: "0.0",
+  },
+  "bank_team2": {
+    description: "Saldo bancário acumulado da Equipe 2 no início do round.",
+    type: "float",
+    typeDescription: "float",
+    default: "0.0",
+  },
+  "spent_team1": {
+    description: "Total de créditos gastos pela Equipe 1 na rodada.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "spent_team2": {
+    description: "Total de créditos gastos pela Equipe 2 na rodada.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "winner": {
+    description: "Informações da equipe vencedora do round.",
+    type: "RoundWinner",
+    typeDescription: "RoundWinner",
+  },
+  "buy_type_team1": {
+    description: "Classificação da compra da Equipe 1 (Pistol, Eco, Half-buy, Full-buy).",
+    type: "BuyType",
+    typeDescription: "BuyType enum",
+  },
+  "buy_type_team2": {
+    description: "Classificação da compra da Equipe 2.",
+    type: "BuyType",
+    typeDescription: "BuyType enum",
+  },
+  "is_pistol_round": {
+    description: "Indica se foi um round de pistolas (rounds 1 e 13).",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+### Campos de `RoundWinner`
+
+<TypeTable type={{
+  "name": {
+    description: "Nome da equipe vencedora.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "id": {
+    description: "ID da equipe vencedora.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+}} />
+
+## Exemplos
+
+### Percorrer a economia das rodadas
+
+```python
+import vlrdevapi
+
+econ = vlrdevapi.series.economy(series_id=670471, game_id=1)
+print(f"Economia: {econ.team1} vs {econ.team2}")
+for r in econ.rounds[:5]:
+    print(f"Round {r.round_number}: {econ.team1} ({r.buy_type_team1}, ${r.spent_team1}) vs {econ.team2} ({r.buy_type_team2}, ${r.spent_team2}) -> Vencedor: {r.winner.name}")
+```
+
+### Acesso curried
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+econ = series.economy(game_id=1)
+if econ.pistol_team1:
+    print(f"{econ.team1} rounds de pistola: {econ.pistol_team1.won}/{econ.pistol_team1.total}")
+```

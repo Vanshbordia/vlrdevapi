@@ -1,0 +1,103 @@
+---
+title: Inicio Rápido
+description: Un tutorial práctico que cubre partidos, equipos, jugadores y torneos.
+icon: Zap
+---
+
+Este tutorial te guía paso a paso para consultar datos reales de múltiples espacios de nombres de VLRdevAPI. Guarda el siguiente script como `demo.py` y ejecútalo.
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import DataNotFoundError
+
+# Consulta partidos próximos
+page = vlrdevapi.matches.upcoming()
+print(f"Encontrados {len(page.matches)} partidos próximos\n")
+
+# Muestra los primeros 3 partidos junto con el torneo
+for match in page.matches[:3]:
+    t1 = match.team1.name if match.team1 else "Por definir"
+    t2 = match.team2.name if match.team2 else "Por definir"
+    print(f"{t1:20s} vs {t2:20s} | {match.event}")
+
+# Obtén información del equipo 1 del primer partido
+match = page.matches[0]
+t1 = match.team1
+if t1:
+    info = vlrdevapi.team(t1.id).info()
+    print(f"\nEquipo: {info.name} ({info.tag})")
+    print(f"País: {info.country}")
+    # Algunos equipos aún no tienen plantilla registrada en VLR
+    try:
+        roster = vlrdevapi.team(t1.id).roster()
+    except DataNotFoundError:
+        print("Plantilla no disponible")
+    else:
+        for player in roster.players:
+            print(f"  Jugador: {player.ign}")
+```
+
+Ejemplo de salida (los datos varían según los torneos en curso):
+
+```text
+Encontrados 6 partidos próximos
+
+FNATIC               vs BBL Esports          | VCT 2026: EMEA Kickoff
+Gentle Mates         vs FNATIC               | VCT 2026: EMEA Kickoff
+Paper Rex            vs Leviatán             | Valorant Masters London 2026
+
+Equipo: FNATIC (FNC)
+País: United Kingdom
+  Jugador: Boaster
+  Jugador: Derke
+  Jugador: Alfajer
+  Jugador: Leo
+  Jugador: Chronicle
+```
+
+## Paso a Paso
+
+<Steps>
+  <Step>
+
+  ### Consultar partidos próximos
+
+  `vlrdevapi.matches.upcoming()` devuelve un objeto `UpcomingMatchesPage` con una lista de entradas `UpcomingMatchEntry`. Cada entrada contiene `team1`, `team2`, `event`, `stage`, `datetime` y otros atributos.
+
+  ```python
+  page = vlrdevapi.matches.upcoming()
+  for match in page.matches[:3]:
+      t1 = match.team1.name if match.team1 else "Por definir"
+      t2 = match.team2.name if match.team2 else "Por definir"
+      print(t1, "vs", t2, match.event)
+  ```
+  </Step>
+
+  <Step>
+
+  ### Navegar por datos relacionados
+
+  Cada equipo en un partido incluye un identificador `.id`. Pásalo al espacio de nombres `team` para consultar plantillas, estadísticas e historial de resultados.
+
+  ```python
+  info = vlrdevapi.team(team_id).info()
+  roster = vlrdevapi.team(team_id).roster()
+  ```
+  </Step>
+
+  <Step>
+
+  ### Explorar otros espacios de nombres
+
+  El mismo patrón intuitivo aplica para jugadores y torneos.
+
+  ```python
+  # Perfil de jugador y agentes más utilizados
+  profile = vlrdevapi.player(438).profile()
+  print(f"{profile.name} - {', '.join(a.agent for a in profile.top_agents[:3])}")
+
+  # Información de torneo y clasificación
+  event = vlrdevapi.event(2100).info()
+  ```
+  </Step>
+</Steps>

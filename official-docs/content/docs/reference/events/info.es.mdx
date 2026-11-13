@@ -1,0 +1,229 @@
+---
+title: Información del Torneo (Event Info)
+description: "Consulta metadados detallados de un torneo específico: nombre, serie, fechas, bolsa de premios, sede física y regiones."
+---
+
+`event.info(event_id)` devuelve metadados completos y detallados de un torneo en vlr.gg.
+
+## Firma
+
+```python
+event.info(event_id: int) -> EventInfo
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador numérico único del torneo en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `EventInfo`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador del torneo.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nombre completo oficial del torneo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "subtitle": {
+    description: "Subtítulo o lema del evento.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "image_url": {
+    description: "URL de la imagen o miniatura del evento.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "series": {
+    description: "Enlace a la serie principal (ej: Valorant Champions Tour 2026).",
+    type: "EventSeriesLink | None",
+    typeDescription: "EventSeriesLink | None - consulta los campos anidados a continuación",
+    default: "None",
+  },
+  "stage": {
+    description: "Etiqueta de la fase dentro del circuito (ej: Fase 1).",
+    type: "EventStageTag | None",
+    typeDescription: "EventStageTag | None - consulta los campos anidados a continuación",
+    default: "None",
+  },
+  "regions": {
+    description: "Regiones asociadas al evento. Múltiples regiones independientes se unifican como Internacional.",
+    type: "list[EventRegion]",
+    typeDescription: "list[EventRegion] - consulta los campos anidados a continuación",
+    default: "[]",
+  },
+  "start_date": {
+    description: "Fecha de inicio del torneo.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "end_date": {
+    description: "Fecha de conclusión del torneo.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "prize": {
+    description: "Detalles del premio económico con cantidad y divisa.",
+    type: "EventPrize | None",
+    typeDescription: "EventPrize | None - consulta los campos anidados a continuación",
+    default: "None",
+  },
+  "location": {
+    description: "Sede física del torneo (país y recinto/arena).",
+    type: "EventLocation | None",
+    typeDescription: "EventLocation | None - consulta los campos anidados a continuación",
+    default: "None",
+  },
+  "region_location": {
+    description: "Ubicación regional a nivel de país (ej: para competiciones online).",
+    type: "EventLocation | None",
+    typeDescription: "EventLocation | None - consulta los campos anidados a continuación",
+    default: "None",
+  },
+}} />
+
+### Campos de `EventSeriesLink`
+
+<TypeTable type={{
+  "name": {
+    description: "Nombre para mostrar de la serie.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "href": {
+    description: "Ruta relativa a la página de la serie.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `EventStageTag`
+
+<TypeTable type={{
+  "name": {
+    description: "Nombre de la fase (ej: Fase 1).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "href": {
+    description: "Ruta relativa a la página de la fase.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `EventRegion`
+
+<TypeTable type={{
+  "name": {
+    description: "Nombre de la región (ej: Americas, EMEA, Pacific, China, International).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "subregion": {
+    description: "Nombre de la subregión si procede de una ruta subregion= (ej: Japan, North America). None para enlaces region=.",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "href": {
+    description: "Ruta relativa a la página de la región o subregión.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `EventPrize`
+
+<TypeTable type={{
+  "amount": {
+    description: "Monto numérico del premio (ej: 1000000).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "currency_symbol": {
+    description: "Símbolo de la moneda (ej: $, €).",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "currency_code": {
+    description: "Código de la moneda (ej: USD, EUR).",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "converted_amount": {
+    description: "Monto convertido a USD cuando la divisa original es diferente.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "is_tbd": {
+    description: "Indica si la bolsa de premios está por determinar (TBD).",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "raw_text": {
+    description: 'Texto original del premio (ej: "$1,000,000 USD").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `EventLocation`
+
+<TypeTable type={{
+  "country": {
+    description: "Nombre del país.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "venue": {
+    description: "Nombre del recinto/arena (vacío para ubicaciones a nivel regional).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Ejemplos de Código
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.event(2765).info()
+print(f"Torneo: {info.name}")
+if info.prize:
+    print(f"Bolsa de premios: {info.prize.raw_text}")
+if info.location:
+    print(f"Sede: {info.location.venue}, {info.location.country}")
+print(f"Fechas: {info.start_date} al {info.end_date}")
+```

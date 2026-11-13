@@ -1,0 +1,151 @@
+---
+title: Classificação do Evento (Event Standings)
+description: Obtenha a tabela de classificação e pontuação de um evento, agrupada por etapa com suporte a requisições paralelas.
+---
+
+`event.standings(event_id)` retorna a classificação e tabelas de grupos de um evento, agrupadas por etapa. Eventos com múltiplas etapas são consultados em paralelo (até 5 requisições concorrentes) para garantir alta performance.
+
+## Assinatura
+
+```python
+event.standings(
+    event_id: int,
+    stage: str | None = None,
+) -> EventStandings
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador numérico exclusivo do evento no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+  "stage": {
+    description: 'Nome opcional da etapa ou segmento de URL para filtrar (ex: "playoffs", "group-stage").',
+    type: "str | None",
+    typeDescription: "str - caminho/nome da etapa, ou None para todas",
+    default: "None",
+    required: false,
+  },
+}} />
+
+## Retorno - `EventStandings`
+
+`EventStandings` encapsula uma lista de instâncias de `EventStageStandings` e suporta `__len__`, `__iter__` e `__getitem__`.
+
+<TypeTable type={{
+  "stages": {
+    description: "Lista de etapas contendo suas respectivas tabelas de classificação.",
+    type: "list[EventStageStandings]",
+    typeDescription: "list[EventStageStandings]",
+  },
+}} />
+
+### Campos de `EventStageStandings`
+
+<TypeTable type={{
+  "stage_path": {
+    description: "Segmento de caminho da etapa na URL.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage_name": {
+    description: "Nome de exibição da etapa.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "standings": {
+    description: "Lista de posições e desempenhos dos times nesta etapa.",
+    type: "list[StandingEntry]",
+    typeDescription: "list[StandingEntry]",
+    default: "[]",
+  },
+}} />
+
+### Campos de `StandingEntry`
+
+<TypeTable type={{
+  "place": {
+    description: 'String com a colocação (ex: "1st", "2nd", "3rd-4th").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "prize_money": {
+    description: "Valor numérico da premiação (ex: 125000). None se não houver prêmio.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "prize_currency": {
+    description: 'Símbolo da moeda da premiação (ex: "$", "€"). None se não houver prêmio.',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "team": {
+    description: "Informações da equipe nesta classificação.",
+    type: "TeamStanding",
+    typeDescription: "TeamStanding - veja os campos abaixo",
+  },
+  "points": {
+    description: "Pontos de circuito (ex: 4). None se não estiver presente.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "note": {
+    description: 'Observação adicional (ex: "Masters Santiago"). None se não estiver presente.',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `TeamStanding`
+
+<TypeTable type={{
+  "id": {
+    description: "ID da equipe no vlr.gg. None para TBD.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "name": {
+    description: 'Nome da equipe (ex: "FURIA").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: 'País da equipe (ex: "Brazil").',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "logo_url": {
+    description: "URL da imagem do logo da equipe.",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+## Exemplos de Código
+
+```python
+import vlrdevapi
+
+standings = vlrdevapi.event(2765).standings()
+
+for stage in standings:
+    print(f"\n--- {stage.stage_name} ---")
+    for entry in stage.standings[:3]:
+        prize = f"{entry.prize_currency}{entry.prize_money:,}" if entry.prize_money else "Sem premiação"
+        print(f"{entry.place}: {entry.team.name} | {prize}")
+```

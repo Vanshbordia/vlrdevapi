@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-23",
+  "capturedAt": "2026-11-13",
   "player": {
     "id": 11225,
     "name": "Ethan",
@@ -9,31 +9,31 @@
     "totalWinnings": 645700,
     "currency": "$",
     "fieldCount": 13,
-    "requestBytes": 68238,
+    "requestBytes": 70258,
     "agents": [
       {
         "name": "Kayo",
-        "share": "45%",
-        "rounds": 299,
-        "rating": 1.11,
-        "acs": 199.4,
-        "kd": 1.05
-      },
-      {
-        "name": "Phoenix",
-        "share": "19%",
-        "rounds": 131,
-        "rating": 0.89,
-        "acs": 186.9,
-        "kd": 0.79
+        "share": "36%",
+        "rounds": 172,
+        "rating": 1.04,
+        "acs": 188.7,
+        "kd": 0.93
       },
       {
         "name": "Omen",
-        "share": "16%",
+        "share": "23%",
         "rounds": 103,
         "rating": 0.89,
         "acs": 151.9,
         "kd": 0.75
+      },
+      {
+        "name": "Phoenix",
+        "share": "18%",
+        "rounds": 79,
+        "rating": 1.05,
+        "acs": 204.6,
+        "kd": 0.96
       }
     ]
   },
@@ -50,20 +50,6 @@
         "realName": "Ethan Arnold",
         "country": "United States",
         "role": "Captain"
-      },
-      {
-        "id": 11494,
-        "ign": "keiko",
-        "realName": "Georgio Sanassy",
-        "country": "United Kingdom",
-        "role": "Player"
-      },
-      {
-        "id": 2172,
-        "ign": "brawk",
-        "realName": "Brock Somerhalder",
-        "country": "United States",
-        "role": "Player"
       },
       {
         "id": 5132,
@@ -154,17 +140,17 @@
     "venue": "Riot Games Arena, Berlin",
     "country": "Germany",
     "startDate": "2026-04-01",
-    "endDate": "2026-05-17",
+    "endDate": "2026-05-18",
     "stages": [
       {
         "name": "Playoffs",
         "startDate": "2026-05-07",
-        "endDate": "2026-05-17"
+        "endDate": "2026-05-18"
       },
       {
         "name": "Group Stage",
         "startDate": "2026-04-01",
-        "endDate": "2026-05-01"
+        "endDate": "2026-05-02"
       }
     ],
     "standings": [
@@ -186,14 +172,14 @@
     ]
   },
   "news": {
-    "id": 778312,
-    "title": "Evil Geniuses to cease operations",
-    "subtitle": "The villains bow out after a five-year run in Valorant.",
+    "id": 790076,
+    "title": "BiliBili Gaming brings home alvinboy as part of 2027 rebuild",
+    "subtitle": "A long trip over the Pacific Ocean brings alvinboy to his new home.",
     "author": "jenopelle",
-    "date": "2026-10-23T00:00:00+00:00",
-    "country": "United States",
-    "excerpt": "Evil Geniuses has announced that it will cease competitive and day-to-day operations, effective November 2. The date coincides with the official end of VCT's 2026 contracts and the start of free agency ahead of the 2027 season. The statement from CEO Chris DeAppolonio shared the efforts taken by the org to continue operations, such as stabilizing operations,",
-    "contentLength": 3440,
-    "links": 18
+    "date": "2026-11-13T00:00:00+00:00",
+    "country": "China",
+    "excerpt": "Bilibili Gaming has announced the signing of Alvin \" alvinboy \" Hong , bringing the Chinese-Canadian across the Pacific Ocean as part of the team's 2027 rebuild. alvinboy is a familiar name in the North American Challengers scene. He's a well-traveled Tier 2 veteran, competing for Team Mystic , Burger Boyz , and TSM across the Challengers and FunHavers circu",
+    "contentLength": 3476,
+    "links": 28
   }
 }

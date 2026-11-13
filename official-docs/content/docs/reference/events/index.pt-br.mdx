@@ -1,0 +1,81 @@
+---
+title: Visão Geral da API de Eventos
+description: O namespace Events fornece acesso a dados de torneios do vlr.gg - listagem de eventos, metadados, etapas, times, partidas e tabelas de classificação.
+icon: Calendar
+---
+
+A API de Eventos é o ponto de entrada para todos os dados de torneios e competições. Ela pode ser acessada via `vlrdevapi.event(id)` (acesso encadeado) ou por meio de uma instância explícita de `VLRClient`.
+
+<Callout type="info">
+Todos os sub-namespaces são inicializados sob demanda (lazy) e compartilham a mesma configuração de cliente HTTP, timeout, retentativas e limites de taxa de requisições.
+</Callout>
+
+## Padrões de Acesso
+
+### Nível de módulo (cliente padrão)
+
+```python
+import vlrdevapi
+
+# Listar e buscar eventos
+events = vlrdevapi.event.list(tier="vct", region="americas")
+print(f"Encontrados {len(events.events)} eventos do VCT Americas")
+
+# Acesso encadeado (curried) - passe o ID uma vez e encadeie os métodos
+event = vlrdevapi.event(2765)
+info = event.info()
+print(f"Evento: {info.name}")
+stages = event.stages()
+print(f"Etapas: {len(stages)}")
+matches = event.matches()
+print(f"Partidas: {len(matches.matches)}")
+```
+
+### Cliente explícito
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=30, requests_per_second=8) as client:
+    e = client.event(2765)
+    info = e.info()
+    print(f"Evento: {info.name}")
+    print(f"Premiação: {info.prize.raw_text if info.prize else 'N/A'}")
+```
+
+## Referência dos Sub-namespaces
+
+| Método | Retorno | Descrição |
+|--------|---------|-------------|
+| [`event.list(tier, region, status, ...)`](./list) | `EventList` | Explorar e filtrar eventos por nível (tier), região, status e datas |
+| [`event.info(event_id)`](./info) | `EventInfo` | Metadados completos de um evento específico |
+| [`event.stages(event_id)`](./stages) | `EventStages` | Divisão de etapas com intervalos de datas |
+| [`event.teams(event_id, stage)`](./teams) | `EventTeams` | Times participantes por etapa |
+| [`event.matches(event_id, stage_id, state)`](./matches) | `EventMatches` | Lista de partidas com filtros de status e etapa |
+| [`event.standings(event_id, stage)`](./standings) | `EventStandings` | Classificação e pontuação por etapa |
+
+## Tratamento de Erros Comuns
+
+Todos os métodos de eventos levantam exceções tipadas de `vlrdevapi.exceptions`:
+
+| Exceção | Quando é Lançada |
+|-----------|-------------|
+| `ValidationError` | Argumentos inválidos (`event_id`, tier ou região inválidos) |
+| `NotFoundError` | Página do evento não encontrada (HTTP 404) |
+| `RequestError` | Falha de conexão ou erro HTTP |
+| `RateLimitError` | Limite de requisições excedido (HTTP 429) |
+| `ParsingError` | Estrutura da página HTML não reconhecida |
+| `DataNotFoundError` | Dados semanticamente ausentes na página |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import NotFoundError, ParsingError
+
+try:
+    info = vlrdevapi.event(2765).info()
+    print(f"Evento carregado: {info.name}")
+except NotFoundError:
+    print("Evento não encontrado")
+except ParsingError as e:
+    print(f"Falha ao analisar dados: {e}")
+```

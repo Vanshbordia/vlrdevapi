@@ -1,0 +1,12 @@
+{
+  "title": "Jugadores",
+  "pages": [
+    "info",
+    "teams",
+    "agents",
+    "matches",
+    "placements",
+    "profile"
+  ],
+  "pagesIndex": "index"
+}

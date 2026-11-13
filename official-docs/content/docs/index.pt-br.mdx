@@ -1,0 +1,84 @@
+---
+title: Documentação
+description: Uma biblioteca Python para interagir com a API do VLR.gg e obter dados de esports do Valorant.
+icon: Library
+---
+
+VLRdevAPI é uma biblioteca Python que oferece uma interface limpa e fortemente tipada para extrair dados de esports do Valorant diretamente do [VLR.gg](https://www.vlr.gg/). Ela cuida da raspagem (scraping), análise e normalização dos dados para que você possa focar no desenvolvimento do seu aplicativo.
+
+## Recursos
+
+- **Dados de Partidas** - Obtenha partidas futuras e concluídas com estatísticas detalhadas
+- **Perfis de Jogadores** - Acesse estatísticas de jogadores, uso de agentes e métricas de desempenho
+- **Informações de Times** - Consulte escalações (rosters), rankings e histórico de partidas
+- **Cobertura de Eventos** - Navegue por torneios, cronogramas e tabelas de classificação
+- **Notícias e Artigos** - Acesse a lista de notícias e leia artigos completos formatados em Markdown
+- **Tipagem Segura** - Dicas de tipo completas (type hints) para melhor suporte na IDE e menos erros em tempo de execução
+- **Busca Concorrente** - Endpoints de múltiplos estágios buscam suas páginas em paralelo usando pool de threads
+
+<Cards>
+  <Card
+    title="Primeiros Passos"
+    description="Aprenda o básico do VLRdevAPI em poucos minutos"
+    href="/pt-br/docs/getting-started/"
+  />
+  <Card
+    title="Instalação"
+    description="Instale via pip ou a partir do código-fonte"
+    href="/pt-br/docs/installation/"
+  />
+  <Card
+    title="Início Rápido"
+    description="Vá direto para os exemplos práticos em Python"
+    href="/pt-br/docs/quickstart/"
+  />
+  <Card
+    title="Tutoriais e Guias"
+    description="Passo a passo para construir aplicações com VLRdevAPI"
+    href="/guides/"
+  />
+  <Card
+    title="Blog & Exemplos"
+    description="Análises de dados, projetos e artigos aprofundados"
+    href="/blog/"
+  />
+  <Card
+    title="GitHub"
+    description="Veja o código-fonte e contribua com o projeto"
+    href="https://github.com/vanshbordia/vlrdevapi"
+  />
+</Cards>
+
+## Início Rápido
+
+```bash
+# com uv (recomendado)
+uv add vlrdevapi
+
+# ou com pip
+pip install vlrdevapi
+```
+
+```python
+# doc-check: skip
+import vlrdevapi
+
+page = vlrdevapi.matches.upcoming()
+for match in page.matches[:3]:
+    team1 = match.team1.name if match.team1 else "A Definir"
+    team2 = match.team2.name if match.team2 else "A Definir"
+    print(f"{team1} vs {team2} | {match.event}")
+```
+
+## Casos de Uso Populares
+
+- [API VLR.gg para Python](/vlr-gg-api/) - Por que existe um cliente não oficial para o VLR.gg e o que ele busca
+- [API de Esports do Valorant](/valorant-esports-api/) - Consulte dados de esports do VLR.gg em Python
+- [API do Valorant para Python](/valorant-api-python/) - Instale o cliente e trabalhe com modelos tipados
+- [API de Estatísticas do Valorant](/valorant-stats-api/) - Estatísticas de jogadores, times e partidas em Python
+
+## Mais Recursos
+
+- [Guias e Tutoriais](/guides/) - Passo a passo para projetos reais
+- [Blog](/blog/) - Projetos, comparações e análises
+- [Perguntas Frequentes (FAQ)](/faq/) - Respostas sobre instalação, limites de requisições e cobertura de dados

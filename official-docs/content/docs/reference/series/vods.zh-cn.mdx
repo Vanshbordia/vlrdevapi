@@ -1,0 +1,157 @@
+---
+title: 比赛直播流与录像 (Series Streams & VODs)
+description: "获取单场比赛的官方直播流、二路观赛频道以及全场/分地图的录像回放 (VOD) 链接。"
+---
+
+`series.vods(series_id)` 返回 vlr.gg 比赛页面上列出的直播流与录像视频 (VOD) 链接。官方转播频道与主播二路解说流在未开赛前即可获取；全场比赛及单地图录像通常在比赛结束后更新收录。
+
+## 函数签名
+
+```python
+series.vods(series_id: int) -> SeriesVods
+```
+
+通过柯里化链式访问：
+
+```python
+vlrdevapi.series(series_id).vods() -> SeriesVods
+```
+
+## 参数
+
+<TypeTable type={{
+  "series_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+}} />
+
+## 返回值 - `SeriesVods`
+
+<TypeTable type={{
+  "series_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "streams": {
+    description: "本场比赛的官方直播及主播二路转播频道列表。",
+    type: "list[SeriesStream]",
+    typeDescription: "list[SeriesStream] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+  "vods": {
+    description: "全场总录像及分地图独立录像视频列表。",
+    type: "list[SeriesVod]",
+    typeDescription: "list[SeriesVod] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+}} />
+
+### `SeriesStream` 字段说明
+
+<TypeTable type={{
+  "platform": {
+    description: "直播推流平台代码（例如 'bilibili', 'douyu', 'huya', 'twitch', 'youtube'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "channel": {
+    description: "直播频道或解说主播名称（例如 'Valorant', 'VCT CN', 'FNS'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "url": {
+    description: "直播间完整 URL 地址。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stream_type": {
+    description: "直播类型：'broadcast' 为官方主舞台流，'watchparty' 为二路解说流。",
+    type: "str",
+    typeDescription: '"broadcast" | "watchparty"',
+    default: '"broadcast"',
+  },
+  "country_code": {
+    description: "直播语种或所属国家/地区代码（例如 'cn', 'us', 'br'），'un' 表示未知。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `SeriesVod` 字段说明
+
+<TypeTable type={{
+  "url": {
+    description: "录像回放完整播放链接（YouTube、Twitch 等）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "label": {
+    description: '录像描述标签（例如 "Full match", "Corrode", "Lotus"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "platform": {
+    description: "视频托管平台代码（例如 'twitch', 'youtube'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "map_number": {
+    description: "单张地图录像的地图序号，全场录像为 None。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "start_seconds": {
+    description: "视频播放起始偏移时间（以秒为单位）。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+## 示例
+
+### 查看当前比赛的直播频道
+
+```python
+import vlrdevapi
+
+vod_data = vlrdevapi.series.vods(series_id=670471)
+print(f"可用直播频道 ({len(vod_data.streams)}):")
+for s in vod_data.streams[:3]:
+    print(f"  [{s.platform.upper()}] {s.channel} ({s.country_code}): {s.url}")
+```
+
+### 获取各小局回放录像
+
+```python
+import vlrdevapi
+
+vod_data = vlrdevapi.series.vods(series_id=670471)
+print(f"回放录像 ({len(vod_data.vods)}):")
+for v in vod_data.vods[:3]:
+    print(f"  {v.label}: {v.url}")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+vod_data = series.vods()
+for v in vod_data.vods[:3]:
+    print(f"{v.label} -> {v.url}")
+```

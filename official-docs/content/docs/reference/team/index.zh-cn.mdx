@@ -1,0 +1,77 @@
+---
+title: 战队 API 概述 (Team API)
+description: "Team 命名空间提供对 vlr.gg 战队全量数据的访问：基本信息、选手阵容、竞技统计、比赛记录、人员变动及赛事名次。"
+icon: Shield
+---
+
+战队 API 提供了获取 vlr.gg 网站上各大战队详细数据的能力。你可以通过 `vlrdevapi.team(id)`（柯里化链式访问）或显式的 `VLRClient` 实例进行调用。
+
+<Callout type="info">
+所有子命名空间均支持惰性初始化，并共享相同的 HTTP 客户端设置、超时时间、重试策略与速率限制规则。
+</Callout>
+
+## 访问模式
+
+### 模块级（默认客户端）
+
+```python
+import vlrdevapi
+
+# 直接访问（每次调用传入 team_id）
+info = vlrdevapi.team.info(team_id=2593)
+roster = vlrdevapi.team.roster(team_id=2593)
+print(f"{info.name} ({info.tag}) - 共有 {len(roster.players)} 名选手")
+
+# 柯里化访问 - 仅传入一次 team_id，连续调用不同方法
+team = vlrdevapi.team(2593)
+info = team.info()
+print(f"所属国家/地区: {info.country}")
+```
+
+### 显式客户端
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=30, requests_per_second=8) as client:
+    t = client.team(2593)
+    info = t.info()
+    print(f"{info.name} ({info.tag}) - {info.country}")
+```
+
+## 子命名空间参考
+
+| 方法 | 返回类型 | 说明 |
+|------|----------|------|
+| [`team.info(team_id)`](./info) | `TeamInfo` | 战队基础信息 - 全称、Tag、国籍、Logo 图标及社媒链接 |
+| [`team.roster(team_id)`](./roster) | `TeamRoster` | 当前成员阵容 - 现役选手与教练组管理团队 |
+| [`team.completed_matches(team_id)`](./completed-matches) | `TeamCompletedMatches` | 已完赛的历史比赛记录 |
+| [`team.upcoming_matches(team_id)`](./upcoming-matches) | `TeamUpcomingMatches` | 未来即将进行的赛程安排 |
+| [`team.transactions(team_id)`](./transactions) | `TeamTransactions` | 战队阵容变动历史（加入、离队、转替补） |
+| [`team.stats(team_id, ...)`](./stats) | `TeamStats` | 指定时间范围内的地图胜率与特工阵容统计 |
+| [`team.placements(team_id)`](./placements) | `TeamPlacements` | 战队历史赛事名次与奖金汇总 |
+
+## 常见异常处理
+
+所有 team 方法均会抛出来自 `vlrdevapi.exceptions` 的类型化异常：
+
+| 异常 | 触发时机 |
+|------|----------|
+| `ValidationError` | 参数无效（如非法的 `team_id`、错误的日期等） |
+| `NotFoundError` | 战队页面不存在 (HTTP 404) |
+| `RequestError` | 网络失败或 HTTP 错误 |
+| `RateLimitError` | 请求过于频繁 (HTTP 429) |
+| `ParsingError` | 页面 HTML 结构无法被正确解析 |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import NotFoundError, ValidationError
+
+try:
+    info = vlrdevapi.team.info(team_id=2593)
+    print(f"战队: {info.name}")
+except NotFoundError:
+    print("未找到该战队")
+except ValidationError as e:
+    print(f"输入参数无效: {e}")
+```

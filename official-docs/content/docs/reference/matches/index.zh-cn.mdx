@@ -1,0 +1,71 @@
+---
+title: 比赛对局 API 概览 (Matches)
+description: "浏览与筛选 vlr.gg 上的比赛列表 — 包含即将开始、正在直播与已完赛的历史赛果，附带队伍详情、比分及跨页支持。"
+icon: Swords
+---
+
+Matches API 提供了访问 vlr.gg 上比赛列表的通用接口，划分为三大类别：即将进行 (upcoming)、正在进行 (live) 与已完赛对局 (completed)。可以通过 `vlrdevapi.matches` 在默认客户端或显式 `VLRClient` 实例中进行调用。
+
+<Callout type="info">
+所有子命名空间均支持按需延迟初始化，并共享底层的 HTTP 连接池配置。与柯里化命名空间（如 event、series）不同，顶层的 matches 命名空间**不可**直接作为函数调用。
+</Callout>
+
+## 常见调用模式
+
+### 模块级快速调用 (默认客户端)
+
+```python
+# doc-check: skip
+import vlrdevapi
+
+# 查询即将进行的比赛
+upcoming = vlrdevapi.matches.upcoming(page=1)
+print(f"近期赛程: {len(upcoming.matches)} 场比赛")
+
+# 查询已结束的历史对局
+completed = vlrdevapi.matches.completed(page=1)
+print(f"历史赛果: 第 1 页共有 {len(completed.matches)} 场比赛")
+```
+
+### 显式客户端
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=15, requests_per_second=8) as client:
+    upcoming = client.matches.upcoming(page=1)
+    print(f"通过显式客户端获取近期赛程: {len(upcoming.matches)} 场比赛")
+```
+
+## 子命名空间方法清单
+
+| 方法 | 返回类型 | 功能描述 |
+|---|---|---|
+| [`matches.upcoming(page, max_page, return_all)`](./upcoming) | `UpcomingMatchesPage` | 分页浏览未来的预定赛程及开赛时间 |
+| [`matches.live()`](./live) | `LiveMatchesPage` | 获取当前正在实时进行的全部比赛 |
+| [`matches.completed(page, max_page, return_all)`](./completed) | `CompletedMatchesPage` | 分页浏览过往已完赛的历史赛果与总比分 |
+
+## 常见异常处理
+
+所有 matches 方法在异常情况下均会抛出 `vlrdevapi.exceptions` 中的类型化异常：
+
+| 异常类型 | 抛出场景 |
+|---|---|
+| `ValidationError` | 传入参数校验失败（无效的 `page` 或负数的 `max_page`） |
+| `NotFoundError` | 目标页面在 vlr.gg 上不存在 (HTTP 404) |
+| `RequestError` | 底层网络通信故障或 HTTP 错误响应 |
+| `RateLimitError` | 频繁请求触发限流 (HTTP 429) |
+| `ParsingError` | 目标网页 HTML 结构无法解析 |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import ValidationError, RequestError
+
+try:
+    results = vlrdevapi.matches.upcoming(page=1)
+    print(f"成功获取 {len(results.matches)} 场即将开始的比赛")
+except ValidationError as e:
+    print(f"入参不合法: {e}")
+except RequestError as e:
+    print(f"请求失败: {e}")
+```

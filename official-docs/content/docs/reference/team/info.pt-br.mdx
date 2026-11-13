@@ -1,0 +1,170 @@
+---
+title: Informações da Equipe (Team Info)
+description: "Obtenha dados cadastrais da equipe - nome completo, tag, país, logos claro e escuro, redes sociais e histórico de renomeação."
+---
+
+`team.info(team_id)` retorna informações detalhadas de uma equipe no vlr.gg.
+
+## Assinatura
+
+```python
+team.info(team_id: int) -> TeamInfo
+```
+
+## Parâmetros
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador único da equipe no vlr.gg.",
+    type: "int",
+    typeDescription: "Inteiro positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `TeamInfo`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador único da equipe no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nome completo da equipe.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: "Sigla/tag curta da equipe.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "light_logo_url": {
+    description: "URL da imagem de logotipo para tema claro.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "dark_logo_url": {
+    description: "URL da imagem de logotipo para tema escuro.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "País de origem da equipe.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "is_active": {
+    description: "Indica se a equipe está atualmente em atividade.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "True",
+  },
+  "socials": {
+    description: "Lista de perfis oficiais nas redes sociais.",
+    type: "list[TeamSocial] | None",
+    typeDescription: "list[TeamSocial] | None",
+    default: "None",
+  },
+  "previous_teams": {
+    description: "Lista de nomes ou organizações anteriores (predecessoras).",
+    type: "list[TeamSuccessor] | None",
+    typeDescription: "list[TeamSuccessor] | None",
+    default: "None",
+  },
+  "current_teams": {
+    description: "Lista de novas organizações/nomes atuais (sucessoras pós-rebrand).",
+    type: "list[TeamSuccessor] | None",
+    typeDescription: "list[TeamSuccessor] | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `TeamSocial`
+
+<TypeTable type={{
+  "name": {
+    description: 'Nome da plataforma (ex: "Twitch", "YouTube", "Twitter").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "url": {
+    description: "URL completa para o perfil na plataforma.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `TeamSuccessor`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador da equipe relacionada.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nome da equipe.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Exemplos
+
+### Consulta básica da equipe
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.team.info(team_id=2593)
+print(f"{info.name} ({info.tag})")
+print(f"País: {info.country}")
+print(f"Em atividade: {info.is_active}")
+print(f"Logo tema claro: {info.light_logo_url}")
+print(f"Logo tema escuro: {info.dark_logo_url}")
+```
+
+### Links de redes sociais
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.team.info(team_id=2593)
+if info.socials:
+    for s in info.socials:
+        print(f"{s.name}: {s.url}")
+```
+
+### Linhagem e rebrands
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.team.info(team_id=682)
+prev = ', '.join(t.name for t in info.previous_teams) if info.previous_teams else "(nenhuma)"
+curr = ', '.join(t.name for t in info.current_teams) if info.current_teams else "(nenhuma)"
+print(f"Anteriormente conhecida como: {prev}")
+print(f"Atualmente conhecida como: {curr}")
+```
+
+### Acesso curried
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+info = team.info()
+print(f"{info.name} ({info.tag}) - {info.country}")
+```

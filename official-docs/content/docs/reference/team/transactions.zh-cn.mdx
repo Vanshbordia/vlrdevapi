@@ -1,0 +1,139 @@
+---
+title: 战队人员转会变动 (Team Transactions)
+description: "获取战队的阵容人员进出历史：选手加盟、离队以及转入非活跃状态，包含具体日期与职务。"
+---
+
+`team.transactions(team_id)` 返回指定战队在 vlr.gg 上的历史阵容转会与人员流动记录。
+
+## 函数签名
+
+```python
+team.transactions(team_id: int) -> TeamTransactions
+```
+
+## 参数
+
+<TypeTable type={{
+  "team_id": {
+    description: "vlr.gg 上的唯一战队 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+}} />
+
+## 返回值 - `TeamTransactions`
+
+<TypeTable type={{
+  "team_id": {
+    description: "战队 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "transactions": {
+    description: "人员流动变动条目列表。",
+    type: "list[TeamTransaction]",
+    typeDescription: "list[TeamTransaction] - 嵌套字段详见下方说明",
+    default: "[]",
+  },
+}} />
+
+### `TeamTransaction` 字段说明
+
+<TypeTable type={{
+  "date": {
+    description: "变动发生日期。",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "action": {
+    description: "人员变动类型。",
+    type: "TransactionAction",
+    typeDescription: '"Join" | "Leave" | "Inactive"',
+  },
+  "player": {
+    description: "变动涉及的选手或职员。",
+    type: "TransactionPlayer",
+    typeDescription: "TransactionPlayer - 详见下方字段说明",
+  },
+  "position": {
+    description: '在队中的位置职务（例如 "Player", "Assistant coach"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "source_url": {
+    description: "官宣公告来源链接。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `TransactionPlayer` 字段说明
+
+<TypeTable type={{
+  "id": {
+    description: "成员在 vlr.gg 上的唯一 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "ign": {
+    description: "游戏比赛 ID (In-game name)。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "real_name": {
+    description: "真实姓名。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "国籍/地区名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## 示例
+
+### 查看近期人员变动
+
+```python
+import vlrdevapi
+
+history = vlrdevapi.team.transactions(team_id=2593)
+print(f"战队 {history.team_id} 的人员变动历史:")
+for t in history.transactions[:10]:
+    print(f"  {t.date}: {t.player.ign} {t.action.value} ({t.position})")
+```
+
+### 统计加盟与离队次数
+
+```python
+from collections import Counter
+import vlrdevapi
+
+history = vlrdevapi.team.transactions(team_id=2593)
+counts = Counter(t.action.value for t in history.transactions)
+print(f"加入 (Join): {counts.get('Join', 0)}")
+print(f"离队 (Leave): {counts.get('Leave', 0)}")
+print(f"转替补/非活跃 (Inactive): {counts.get('Inactive', 0)}")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+history = team.transactions()
+for t in history.transactions[:5]:
+    print(f"{t.date}: {t.player.ign} -> {t.action.value}")
+```

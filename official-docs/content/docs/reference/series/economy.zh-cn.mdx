@@ -1,0 +1,222 @@
+---
+title: 比赛经济数据 (Series Economy)
+description: "获取系列赛各小局地图的逐回合经济分析：战队储备金、消费支出、买枪等级、回合胜者及买枪类型矩阵。"
+---
+
+`series.economy(series_id, game_id)` 返回 vlr.gg 上系列赛指定单张小局地图每一回合的深度经济数据。
+
+## 函数签名
+
+```python
+series.economy(
+    series_id: int,
+    game_id: int,
+) -> EconomyData
+```
+
+通过柯里化链式访问：
+
+```python
+vlrdevapi.series(series_id).economy(game_id: int) -> EconomyData
+```
+
+## 参数
+
+<TypeTable type={{
+  "series_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+  "game_id": {
+    description: "小局地图序号（从 1 开始的正整数）。",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+}} />
+
+## 返回值 - `EconomyData`
+
+<TypeTable type={{
+  "series_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: "地图在 vlr.gg 上的唯一 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team1": {
+    description: "第一支战队全称（上半场作为防守方）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1_id": {
+    description: "第一支战队 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2": {
+    description: "第二支战队全称（上半场作为进攻方）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2_id": {
+    description: "第二支战队 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "rounds": {
+    description: "每回合经济数据记录列表。",
+    type: "list[RoundEconomyData]",
+    typeDescription: "list[RoundEconomyData] - 详见下方字段说明",
+    default: "[]",
+  },
+  "buy_matrix_team1": {
+    description: "第一支战队的买枪类型胜负汇总矩阵。",
+    type: "TeamBuyMatrix",
+    typeDescription: "TeamBuyMatrix",
+  },
+  "buy_matrix_team2": {
+    description: "第二支战队的买枪类型胜负汇总矩阵。",
+    type: "TeamBuyMatrix",
+    typeDescription: "TeamBuyMatrix",
+  },
+  "pistol_team1": {
+    description: "buy_matrix_team1.pistol 的快捷方式 - 战队 1 手枪局胜场/总数。",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "converted_team1": {
+    description: "buy_matrix_team1.converted 的快捷方式 - 战队 1 转化局胜场/总数。",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "bonus_team1": {
+    description: "buy_matrix_team1.bonus 的快捷方式 - 战队 1 奖励局胜场/总数。",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "pistol_team2": {
+    description: "buy_matrix_team2.pistol 的快捷方式 - 战队 2 手枪局胜场/总数。",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "converted_team2": {
+    description: "buy_matrix_team2.converted 的快捷方式 - 战队 2 转化局胜场/总数。",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "bonus_team2": {
+    description: "buy_matrix_team2.bonus 的快捷方式 - 战队 2 奖励局胜场/总数。",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+}} />
+
+### `RoundEconomyData` 字段说明
+
+<TypeTable type={{
+  "round_number": {
+    description: "回合序号（从 1 开始）。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "bank_team1": {
+    description: "第一支战队在回合初拥有的总资金。",
+    type: "float",
+    typeDescription: "float",
+    default: "0.0",
+  },
+  "bank_team2": {
+    description: "第二支战队在回合初拥有的总资金。",
+    type: "float",
+    typeDescription: "float",
+    default: "0.0",
+  },
+  "spent_team1": {
+    description: "第一支战队在本回合花费采购的总资金。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "spent_team2": {
+    description: "第二支战队在本回合花费采购的总资金。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "winner": {
+    description: "该回合获胜战队的信息。",
+    type: "RoundWinner",
+    typeDescription: "RoundWinner",
+  },
+  "buy_type_team1": {
+    description: "第一支战队买枪等级评级（Pistol, Eco, Half-buy, Full-buy）。",
+    type: "BuyType",
+    typeDescription: "BuyType 枚举",
+  },
+  "buy_type_team2": {
+    description: "第二支战队买枪等级评级。",
+    type: "BuyType",
+    typeDescription: "BuyType 枚举",
+  },
+  "is_pistol_round": {
+    description: "是否为手枪局（第 1 及第 13 回合）。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+### `RoundWinner` 字段说明
+
+<TypeTable type={{
+  "name": {
+    description: "获胜战队名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "id": {
+    description: "获胜战队 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+}} />
+
+## 示例
+
+### 查看逐回合经济发展
+
+```python
+import vlrdevapi
+
+econ = vlrdevapi.series.economy(series_id=670471, game_id=1)
+print(f"经济对决: {econ.team1} vs {econ.team2}")
+for r in econ.rounds[:5]:
+    print(f"第 {r.round_number} 回合: {econ.team1} ({r.buy_type_team1}, ${r.spent_team1}) vs {econ.team2} ({r.buy_type_team2}, ${r.spent_team2}) -> 获胜: {r.winner.name}")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+econ = series.economy(game_id=1)
+if econ.pistol_team1:
+    print(f"{econ.team1} 手枪局胜率: {econ.pistol_team1.won}/{econ.pistol_team1.total}")
+```

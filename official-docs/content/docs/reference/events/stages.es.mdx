@@ -1,0 +1,85 @@
+---
+title: Fases del Torneo (Event Stages)
+description: "Obtén el desglose de fases de un torneo: Fase de Grupos, Playoffs y sus rangos de fechas."
+---
+
+`event.stages(event_id)` devuelve la división de fases de un evento (ej: "Fase de Grupos", "Playoffs") con fechas estimadas de inicio y fin obtenidas del submenú de vlr.gg.
+
+## Firma
+
+```python
+event.stages(event_id: int) -> EventStages
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador numérico único del torneo en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `EventStages`
+
+`EventStages` envuelve una lista de objetos `EventStage` y soporta `__len__`, `__iter__` y `__getitem__`.
+
+<TypeTable type={{
+  "stages": {
+    description: "Lista de fases que componen el torneo.",
+    type: "list[EventStage]",
+    typeDescription: "list[EventStage] - consulta los campos a continuación",
+  },
+}} />
+
+### Protocolo de Contenedor
+
+| Método | Comportamiento |
+|---|---|
+| `len(result)` | Devuelve el número total de fases |
+| `for stage in result` | Itera sobre cada fase |
+| `result[i]` | Acceso por índice a una fase específica |
+
+### Campos de `EventStage`
+
+<TypeTable type={{
+  "name": {
+    description: 'Nombre descriptivo de la fase (ej: "Fase de Grupos", "Playoffs").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "id": {
+    description: "Identificador de la fase usado como parámetro de URL series_id.",
+    type: "str",
+    typeDescription: 'str (ej: "all", "5556", "5557")',
+    default: '""',
+  },
+  "start_date": {
+    description: "Fecha de inicio de la fase.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "end_date": {
+    description: "Fecha de conclusión de la fase.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+}} />
+
+## Ejemplos de Código
+
+```python
+import vlrdevapi
+
+stages = vlrdevapi.event(2765).stages()
+print(f"Total de fases: {len(stages)}")
+
+for stage in stages:
+    print(f"- {stage.name} (ID: {stage.id})")
+    print(f"  Fechas: {stage.start_date} al {stage.end_date}")
+```

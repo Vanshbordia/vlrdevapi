@@ -1,0 +1,71 @@
+---
+title: Visión General de la API de Partidos
+description: "Explora y filtra partidos en vlr.gg: listados de partidos próximos, en vivo y finalizados con detalles de equipos, marcadores y paginación."
+icon: Swords
+---
+
+La API de Partidos (Matches API) proporciona acceso a los listados de encuentros en vlr.gg, organizados en tres categorías: próximos (upcoming), en directo (live) y finalizados (completed). Se accede mediante `vlrdevapi.matches` con el cliente predeterminado o mediante una instancia explícita de `VLRClient`.
+
+<Callout type="info">
+Todos los sub-espacios de nombres se inicializan bajo demanda (lazy) y comparten la misma configuración de cliente HTTP. A diferencia de los espacios de nombres curried (como event y series), el espacio de nombres principal matches **no** es invocable como función.
+</Callout>
+
+## Patrones de Acceso
+
+### A nivel de módulo (cliente predeterminado)
+
+```python
+# doc-check: skip
+import vlrdevapi
+
+# Partidos próximos
+upcoming = vlrdevapi.matches.upcoming(page=1)
+print(f"Próximos: {len(upcoming.matches)} partidos")
+
+# Partidos finalizados
+completed = vlrdevapi.matches.completed(page=1)
+print(f"Finalizados: {len(completed.matches)} partidos en página 1")
+```
+
+### Cliente explícito
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=15, requests_per_second=8) as client:
+    upcoming = client.matches.upcoming(page=1)
+    print(f"Próximos vía cliente explícito: {len(upcoming.matches)} partidos")
+```
+
+## Referencia de Métodos
+
+| Método | Retorna | Descripción |
+|---|---|---|
+| [`matches.upcoming(page, max_page, return_all)`](./upcoming) | `UpcomingMatchesPage` | Navega por partidos programados con soporte de paginación |
+| [`matches.live()`](./live) | `LiveMatchesPage` | Obtiene los partidos que se están disputando en directo |
+| [`matches.completed(page, max_page, return_all)`](./completed) | `CompletedMatchesPage` | Consulta partidos finalizados con marcadores y ganadores |
+
+## Manejo de Excepciones
+
+Todos los métodos de partidos lanzan excepciones tipadas desde `vlrdevapi.exceptions`:
+
+| Excepción | Cuándo se Produce |
+|---|---|
+| `ValidationError` | Parámetros inválidos (`page` incorrecto, `max_page` negativo, etc.) |
+| `NotFoundError` | La página de partidos no existe (HTTP 404) |
+| `RequestError` | Error de red o fallo en la respuesta HTTP |
+| `RateLimitError` | Se ha superado el límite de peticiones (HTTP 429) |
+| `ParsingError` | Estructura HTML de la página no reconocida |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import ValidationError, RequestError
+
+try:
+    results = vlrdevapi.matches.upcoming(page=1)
+    print(f"Descargados {len(results.matches)} partidos próximos")
+except ValidationError as e:
+    print(f"Entrada inválida: {e}")
+except RequestError as e:
+    print(f"Error en la petición: {e}")
+```

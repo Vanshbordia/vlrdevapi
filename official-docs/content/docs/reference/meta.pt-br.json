@@ -1,0 +1,6 @@
+{
+  "title": "Referência da API",
+  "pages": ["events", "series", "matches", "player", "team", "news", "mcp"],
+  "pagesIndex": "index",
+  "defaultOpen": true
+}

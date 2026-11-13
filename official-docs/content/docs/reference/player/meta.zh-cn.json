@@ -1,0 +1,12 @@
+{
+  "title": "选手档案",
+  "pages": [
+    "info",
+    "teams",
+    "agents",
+    "matches",
+    "placements",
+    "profile"
+  ],
+  "pagesIndex": "index"
+}

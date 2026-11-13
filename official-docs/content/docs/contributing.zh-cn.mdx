@@ -1,0 +1,46 @@
+---
+title: 参与贡献 VLRdevAPI
+description: "VLRdevAPI 本地开发环境配置、代码规范与 Pull Request 提交流程指南。"
+---
+
+非常感谢您对参与本项目开源贡献的兴趣！
+
+## 本地开发环境搭建
+
+1. 克隆代码仓库：`git clone https://github.com/Vanshbordia/vlrdevapi`
+2. 安装开发依赖：`uv sync --group dev`
+3. 运行静态预检：`ruff check src/` 以及 `ty check src/vlrdevapi/`
+
+## Pull Request 提交规范
+
+- 保持每个 PR 专注于单一改动或功能点。
+- 为所有逻辑变动补充或更新相应的单元测试。
+- 在提交推送前执行 `ruff check src/ tests/` 与 `ty check src/vlrdevapi/` 保证检查通过。
+- 在 CHANGELOG.md 中最新版本标题下记录本次改动内容。
+- 若修改了文档文件 (.mdx)，请运行 `uv run scripts/check_mdx_examples.py` 确保所有示例代码均能正常执行。
+
+## 代码风格
+
+- 遵循 PEP 8 规范并采用 `ruff` 默认配置（单行最大长度 120 字符，默认双引号）。
+- 所有公共方法均需编写 Google 风格的规范 Docstring。
+- 所有函数签名均需标注完善的 Python Type Hints。
+- 优先使用 `Literal` 替代 `Union[Literal, str]` — 校验会在运行时自动处理。
+
+## 项目目录架构
+
+```
+src/vlrdevapi/
+  _base.py          # SyncNamespace 命名空间基类
+  _cache.py         # 内存 LRUCache 缓存机制
+  _client.py        # VLRClient 核心客户端类
+  _event/           # 赛事与锦标赛端点接口
+  _matches/         # 赛程列表端点接口（直播中 / 即将进行 / 已完赛）
+  _news/            # 新闻列表与文章正文端点接口
+  _player/          # 选手相关端点接口（资料 / 战队 / 特工 / 比赛 / 综合档案）
+  _series/          # 系列赛（单场比赛对局详情）端点接口
+  _team/            # 战队相关端点接口（资料 / 阵容 / 名次等）
+  _utils/           # 内部基础工具（分页计算、URL 路径处理）
+  commons/          # 公共工具库（赛区、映射字典、日期解析、国家代码、奖金、时区）
+  validators.py     # 入参安全清洗与类型校验器
+  fetcher.py        # 具备自动重试与速率限制的底层 HTTP 抓取器
+```

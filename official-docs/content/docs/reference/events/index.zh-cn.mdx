@@ -1,0 +1,81 @@
+---
+title: 赛事 API 概览 (Events)
+description: Events 命名空间提供从 vlr.gg 查询无畏契约锦标赛全部数据的入口 — 包含赛事列表、基础元数据、赛段划分、参赛战队、赛程对阵及阶段积分榜。
+icon: Calendar
+---
+
+Events API 是获取所有锦标赛相关数据的核心入口。可以通过 `vlrdevapi.event(id)`（柯里化链式访问）或创建显式 `VLRClient` 实例进行调用。
+
+<Callout type="info">
+所有子命名空间均支持按需延迟初始化，并共享底层的 HTTP 连接池配置、超时时间、自动重试及请求速率限制策略。
+</Callout>
+
+## 常见调用模式
+
+### 模块级快速调用 (默认客户端)
+
+```python
+import vlrdevapi
+
+# 浏览与搜索赛事列表
+events = vlrdevapi.event.list(tier="vct", region="americas")
+print(f"找到 {len(events.events)} 场 VCT Americas 赛事")
+
+# 柯里化链式调用 — 一次传入赛事 ID，随后按需链式调用方法
+event = vlrdevapi.event(2765)
+info = event.info()
+print(f"赛事名称: {info.name}")
+stages = event.stages()
+print(f"赛段数量: {len(stages)}")
+matches = event.matches()
+print(f"赛程场次: {len(matches.matches)}")
+```
+
+### 显式客户端
+
+```python
+from vlrdevapi import VLRClient
+
+with VLRClient(timeout=30, requests_per_second=8) as client:
+    e = client.event(2765)
+    info = e.info()
+    print(f"赛事名称: {info.name}")
+    print(f"奖金总额: {info.prize.raw_text if info.prize else 'N/A'}")
+```
+
+## 子命名空间方法清单
+
+| 方法 | 返回类型 | 功能描述 |
+|---|---|---|
+| [`event.list(tier, region, status, ...)`](./list) | `EventList` | 按赛事级别 (tier)、赛区、进行状态与分页筛选并查询赛事列表 |
+| [`event.info(event_id)`](./info) | `EventInfo` | 获取单场赛事的详细元数据（名称、赛历、总奖金、线下场馆等） |
+| [`event.stages(event_id)`](./stages) | `EventStages` | 获取赛事的所有赛段（小组赛、淘汰赛）及起止日期 |
+| [`event.teams(event_id, stage)`](./teams) | `EventTeams` | 按赛段分类获取参赛战队名单 |
+| [`event.matches(event_id, stage_id, state)`](./matches) | `EventMatches` | 查询赛事赛程，支持按进行状态和赛段筛选 |
+| [`event.standings(event_id, stage)`](./standings) | `EventStandings` | 获取各赛段的小组积分排名榜单 |
+
+## 常见异常处理
+
+所有赛事方法在异常情况下均会抛出 `vlrdevapi.exceptions` 中的类型化异常：
+
+| 异常类型 | 抛出场景 |
+|---|---|
+| `ValidationError` | 传入的参数无效（无效的 `event_id`、非法赛区或级别等） |
+| `NotFoundError` | 赛事页面在 vlr.gg 上不存在 (HTTP 404) |
+| `RequestError` | 底层网络请求失败或服务端 HTTP 报错 |
+| `RateLimitError` | 触发访问频率限制 (HTTP 429) |
+| `ParsingError` | 网页 HTML 结构发生未识别的变动 |
+| `DataNotFoundError` | 页面中缺失语义上所请求的数据字段 |
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import NotFoundError, ParsingError
+
+try:
+    info = vlrdevapi.event(2765).info()
+    print(f"成功加载赛事: {info.name}")
+except NotFoundError:
+    print("未找到指定赛事")
+except ParsingError as e:
+    print(f"页面数据解析失败: {e}")
+```

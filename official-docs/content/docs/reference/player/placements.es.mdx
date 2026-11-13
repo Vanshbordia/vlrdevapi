@@ -1,0 +1,167 @@
+---
+title: Posiciones del Jugador en Torneos (Player Placements)
+description: "Obtén el historial de clasificaciones en torneos y los premios monetarios totales de un jugador en vlr.gg."
+---
+
+`player.placements(player_id)` devuelve el historial de clasificaciones en eventos y las ganancias totales del jugador a partir de la tarjeta de Event Placements de su perfil en vlr.gg.
+
+## Firma
+
+```python
+player.placements(player_id: int) -> PlayerPlacements
+```
+
+Con acceso curried:
+
+```python
+vlrdevapi.player(player_id).placements() -> PlayerPlacements
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "player_id": {
+    description: "Identificador único del jugador en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `PlayerPlacements`
+
+<TypeTable type={{
+  "player_id": {
+    description: "Identificador único del jugador en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "total_winnings": {
+    description: "Premios totales acumulados en su carrera como valor numérico, o None si no figuran.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "total_winnings_currency": {
+    description: "Símbolo de la divisa de las ganancias totales (ej. '$').",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "placements": {
+    description: "Lista de clasificaciones en torneos. Un evento puede figurar varias veces si el jugador participó en distintas fases.",
+    type: "list[PlayerEventPlacement]",
+    typeDescription: "list[PlayerEventPlacement] - consulta los campos detallados a continuación",
+    default: "[]",
+  },
+}} />
+
+### Campos de `PlayerEventPlacement`
+
+<TypeTable type={{
+  "event_id": {
+    description: "Identificador del torneo en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "event_name": {
+    description: "Nombre del torneo (ej. 'Champions 2024').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "year": {
+    description: "Año en el que se celebró el evento.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "stage": {
+    description: "Fase del torneo (ej. 'Playoffs', 'Group Stage').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "placement": {
+    description: "Posición alcanzada en esa fase (ej. '1st', '2nd', '5th–6th').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "prize_amount": {
+    description: "Premio monetario de esta posición, o None cuando no se indica.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "prize_currency": {
+    description: "Símbolo de la divisa del premio (ej. '$').",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "team_name": {
+    description: "Equipo al que representaba el jugador en dicho torneo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Ejemplos
+
+### Listar todas las clasificaciones
+
+```python
+import vlrdevapi
+
+placements = vlrdevapi.player.placements(player_id=46051)
+
+print(
+    f"{placements.total_winnings_currency}"
+    f"{placements.total_winnings:,} ganancias totales"
+)
+for entry in placements.placements:
+    prize = (
+        f"{entry.prize_currency}{entry.prize_amount:,}"
+        if entry.prize_amount is not None
+        else "sin premio"
+    )
+    print(
+        f"{entry.year} | {entry.event_name} | "
+        f"{entry.stage} - {entry.placement} | {entry.team_name} | {prize}"
+    )
+```
+
+### Agrupar posiciones por evento
+
+```python
+from collections import defaultdict
+import vlrdevapi
+
+result = vlrdevapi.player.placements(player_id=11225)
+events = defaultdict(list)
+
+for entry in result.placements:
+    events[(entry.event_id, entry.event_name)].append(entry)
+
+for (event_id, event_name), rows in events.items():
+    print(f"{event_name} ({event_id})")
+    for row in rows:
+        print(f"  {row.stage}: {row.placement} ({row.team_name})")
+```
+
+### Acceso curried
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(46051)
+placements = player.placements()
+
+for entry in placements.placements:
+    if entry.prize_amount:
+        print(f"{entry.event_name}: {entry.prize_currency}{entry.prize_amount:,}")
+```

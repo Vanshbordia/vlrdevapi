@@ -1,0 +1,156 @@
+---
+title: 选手综合档案 (Player Profile)
+description: "获取选手的综合档案：单次调用整合个人资料、当前战队、招牌特工及曾用名。"
+---
+
+`player.profile(player_id)` 返回整合了选手个人基本信息、当前效力战队以及招牌特工竞技统计的综合选手档案。
+
+## 函数签名
+
+```python
+player.profile(player_id: int) -> PlayerProfile
+```
+
+## 参数
+
+<TypeTable type={{
+  "player_id": {
+    description: "vlr.gg 上的唯一选手 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+}} />
+
+## 返回值 - `PlayerProfile`
+
+<TypeTable type={{
+  "player_id": {
+    description: "vlr.gg 上的唯一选手 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "选手的比赛游戏 ID（常用名）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "real_name": {
+    description: "选手的真实姓名。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "img": {
+    description: "选手个人头像照片的 URL。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "x_link": {
+    description: "X (原 Twitter) 个人主页链接。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "x_handle": {
+    description: "X (原 Twitter) 用户名。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "twitch_link": {
+    description: "Twitch 直播间主页链接。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "twitch_handle": {
+    description: "Twitch 直播间用户名。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: "选手的国籍/地区名称（例如 'CHINA'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_code": {
+    description: "两位小写国家/地区代码（例如 'cn'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "aliases": {
+    description: "选手过往使用的曾用名列表。",
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+  "current_team": {
+    description: "选手当前所在的战队（若自由人则为 None）。",
+    type: "PlayerTeam | None",
+    typeDescription: "PlayerTeam | None",
+    default: "None",
+  },
+  "top_agents": {
+    description: "最常使用的招牌特工列表（按出场率降序排序）。",
+    type: "list[AgentStats]",
+    typeDescription: "list[AgentStats]",
+    default: "[]",
+  },
+  "stats_timespan": {
+    description: "特工统计采用的时间周期 ('30d' 或 'all')。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## 示例
+
+### 查看选手完整综合档案
+
+`profile` 方法是一个便捷整合接口，只需一次网络调用即可同时获取资料、当前战队与主力特工。
+
+```python
+import vlrdevapi
+
+profile = vlrdevapi.player.profile(player_id=438)
+print(f"{profile.name} ({profile.real_name})")
+print(f"国家/地区: {profile.country}")
+team_name = profile.current_team.name if profile.current_team else "(自由人/无战队)"
+print(f"所属战队: {team_name}")
+print("主力特工:")
+if profile.top_agents:
+    for a in profile.top_agents[:3]:
+        print(f"  {a.agent}: Rating {a.rating}, KD {a.kd}")
+else:
+    print("  (暂无特工数据)")
+```
+
+### 提取社交平台链接
+
+```python
+import vlrdevapi
+
+profile = vlrdevapi.player.profile(player_id=438)
+print(f"X: {profile.x_handle} ({profile.x_link})")
+print(f"Twitch: {profile.twitch_handle} ({profile.twitch_link})")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+player = vlrdevapi.player(438)
+profile = player.profile()
+if profile.top_agents:
+    best_agent = max(profile.top_agents, key=lambda a: a.rating or 0)
+    print(f"{profile.name} 最拿手的特工: {best_agent.agent} (Rating {best_agent.rating})")
+```

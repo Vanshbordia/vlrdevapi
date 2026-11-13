@@ -1,0 +1,13 @@
+{
+  "title": "系列赛对局",
+  "pages": [
+    "info",
+    "vods",
+    "players",
+    "rounds",
+    "performance",
+    "economy",
+    "replay"
+  ],
+  "pagesIndex": "index"
+}

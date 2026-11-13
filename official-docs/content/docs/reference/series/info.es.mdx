@@ -1,0 +1,402 @@
+---
+title: Información de la Serie (Series Info)
+description: "Obtén los datos generales del encuentro: equipos, marcadores, detalles del torneo, enfrentamientos directos, vetos de mapas y desglose por mapa."
+---
+
+`series.info(series_id)` devuelve la información general de una serie o partido en vlr.gg, incluidos detalles de los equipos, tanteador general, contexto del torneo, historial cara a cara, fase de veto y mapas disputados.
+
+## Firma
+
+```python
+series.info(series_id: int) -> SeriesInfo
+```
+
+Con acceso curried:
+
+```python
+vlrdevapi.series(series_id).info() -> SeriesInfo
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único de la serie en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `SeriesInfo`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único de la serie en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "status": {
+    description: 'Estado de la partida: "completed", "live" o "upcoming".',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1": {
+    description: "Información del primer equipo.",
+    type: "SeriesTeam",
+    typeDescription: "SeriesTeam - consulta los campos a continuación",
+  },
+  "team2": {
+    description: "Información del segundo equipo.",
+    type: "SeriesTeam",
+    typeDescription: "SeriesTeam - consulta los campos a continuación",
+  },
+  "score1": {
+    description: "Puntuación en mapas del primer equipo.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "score2": {
+    description: "Puntuación en mapas del segundo equipo.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "best_of": {
+    description: "Formato al mejor de N mapas (ej. 1, 3 o 5).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "event_id": {
+    description: "Identificador del torneo en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "event_name": {
+    description: 'Nombre del torneo (ej. "Valorant Champions 2025").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: 'Fase del torneo (ej. "Playoffs").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "bracket": {
+    description: 'Cuadro o ronda (ej. "Grand Final", "Upper Round 1").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "datetime": {
+    description: "Fecha y hora combinada del encuentro en formato UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+  "patch": {
+    description: 'Versión del parche en la que se disputó (ej. "11.05").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "veto": {
+    description: "Selección y baneo de mapas (vetos).",
+    type: "list[MapVeto]",
+    typeDescription: "list[MapVeto] - consulta los campos a continuación",
+    default: "[]",
+  },
+  "games": {
+    description: "Mapas que componen la serie con sus marcadores.",
+    type: "list[SeriesGame]",
+    typeDescription: "list[SeriesGame] - consulta los campos a continuación",
+    default: "[]",
+  },
+  "forfeit": {
+    description: "Información de incomparecencia o abandono (forfeit/walkover).",
+    type: "ForfeitInfo",
+    typeDescription: "ForfeitInfo",
+  },
+  "notes": {
+    description: "Notas técnicas del partido (pausas técnicas, reinicios de lobby).",
+    type: "list[str]",
+    typeDescription: "list[str]",
+    default: "[]",
+  },
+  "head_to_head": {
+    description: "Historial de enfrentamientos previos entre ambos clubes.",
+    type: "list[SeriesHeadToHeadMatch]",
+    typeDescription: "list[SeriesHeadToHeadMatch]",
+    default: "[]",
+  },
+}} />
+
+### Campos de `SeriesTeam`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador del equipo en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: 'Nombre completo del equipo (ej. "KOI", "FNATIC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: 'Acrónimo o tag del equipo (ej. "KOI", "FNC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "logo_url": {
+    description: "URL del logotipo del equipo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `MapVeto`
+
+<TypeTable type={{
+  "map_name": {
+    description: 'Nombre del mapa (ej. "Split", "Lotus").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "veto_type": {
+    description: 'Tipo de veto: "ban", "pick" o "decider".',
+    type: "str",
+    typeDescription: '"ban" | "pick" | "decider"',
+    default: '""',
+  },
+  "team": {
+    description: "Equipo que ejecutó el baneo o elección (vacío para decider).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `SeriesGame`
+
+<TypeTable type={{
+  "game_id": {
+    description: "Identificador del mapa individual en vlr.gg (atributo data-game-id).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "order": {
+    description: "Orden cronológico del mapa en la serie (base 1).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "map_name": {
+    description: 'Nombre del mapa (ej. "Split", "Breeze").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "picked_by": {
+    description: "Tag del equipo que seleccionó el mapa (vacío para mapas decider o no elegidos).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "played": {
+    description: "Indica si el mapa llegó a jugarse.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "True",
+  },
+  "team1_score": {
+    description: "Puntos obtenidos por el Equipo 1 en este mapa.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_score": {
+    description: "Puntos obtenidos por el Equipo 2 en este mapa.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team1_defense_rounds": {
+    description: "Rondas ganadas por el Equipo 1 en defensa (bando CT).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team1_attack_rounds": {
+    description: "Rondas ganadas por el Equipo 1 en ataque (bando T).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_attack_rounds": {
+    description: "Rondas ganadas por el Equipo 2 en ataque (bando T).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_defense_rounds": {
+    description: "Rondas ganadas por el Equipo 2 en defensa (bando CT).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team1_overtime_rounds": {
+    description: "Rondas ganadas por el Equipo 1 en tiempo extra.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_overtime_rounds": {
+    description: "Rondas ganadas por el Equipo 2 en tiempo extra.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "duration_seconds": {
+    description: "Duración del mapa en segundos.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `ForfeitInfo`
+
+<TypeTable type={{
+  "forfeited": {
+    description: "Indica si el partido fue ganado por abandono (forfeit).",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "team": {
+    description: 'Nombre completo del equipo que abandonó (ej: "YFP X", "T1").',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "team_id": {
+    description: "ID del equipo que abandonó en vlr.gg.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "reason": {
+    description: "Explicación del abandono según las notas del partido.",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `SeriesHeadToHeadMatch`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único de la serie previa en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "URL completa de la serie previa en vlr.gg.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event_name": {
+    description: "Nombre del evento mostrado en la tarjeta de cara a cara.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: "Etiqueta de fase o ronda (ej. 'UBF', 'Group Stage').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "date": {
+    description: "Fecha en la que se disputó el partido previo.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "team1_name": {
+    description: "Nombre del primer equipo, según el orden de cabecera del cara a cara.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1_score": {
+    description: "Puntuación de la serie del primer equipo.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2_name": {
+    description: "Nombre del segundo equipo, según el orden de cabecera del cara a cara.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2_score": {
+    description: "Puntuación de la serie del segundo equipo.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "winner": {
+    description: "Qué lado ganó, relativo al orden de equipos del cara a cara.",
+    type: "str",
+    typeDescription: '"team1" | "team2" | ""',
+    default: '""',
+  },
+}} />
+
+## Ejemplos
+
+### Resumen del partido
+
+```python
+import vlrdevapi
+
+info = vlrdevapi.series.info(series_id=670471)
+print(f"{info.team1.name} {info.score1} - {info.score2} {info.team2.name}")
+print(f"Torneo: {info.event_name} ({info.stage})")
+print(f"Estado: {info.status}")
+for g in info.games:
+    if g.played:
+        print(f"  {g.map_name}: {g.team1_score} - {g.team2_score}")
+```
+
+### Acceso curried
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+info = series.info()
+print(f"Vetos del encuentro ({len(info.veto)}):")
+for v in info.veto:
+    print(f"  {v.team} {v.veto_type} {v.map_name}")
+```

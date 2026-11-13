@@ -1,0 +1,66 @@
+---
+title: Instalación
+description: Instala VLRdevAPI mediante uv, pip o desde el código fuente.
+icon: Download
+---
+
+## Requisitos
+
+- Python 3.11 o posterior
+- [uv](https://docs.astral.sh/uv/) (recomendado) o pip
+
+## Instalación desde PyPI
+
+Instala con [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv add vlrdevapi
+```
+
+O con pip:
+
+```bash
+pip install vlrdevapi
+```
+
+## Paquetes Opcionales (Extras)
+
+VLRdevAPI ofrece paquetes modulares para que instales únicamente las dependencias que requiere tu proyecto:
+
+```bash
+# Exportaciones para ciencia de datos
+pip install "vlrdevapi[pandas]"     # pandas.DataFrame (.to_df())
+pip install "vlrdevapi[polars]"     # polars.DataFrame (.to_polars())
+pip install "vlrdevapi[excel]"      # Hojas de cálculo Excel .xlsx (.to_excel())
+pip install "vlrdevapi[parquet]"    # Apache Parquet (.to_parquet())
+
+# Servidor Model Context Protocol (MCP)
+pip install "vlrdevapi[mcp]"        # CLI vlrdevapi-mcp para Claude y Cursor
+
+# Instalar todos los extras opcionales
+pip install "vlrdevapi[all]"
+```
+
+## Instalación desde el Código Fuente
+
+Clona el repositorio e instala con uv:
+
+```bash
+git clone https://github.com/vanshbordia/vlrdevapi.git
+cd vlrdevapi
+uv sync
+```
+
+O con pip en modo editable:
+
+```bash
+git clone https://github.com/vanshbordia/vlrdevapi.git
+cd vlrdevapi
+pip install -e .
+```
+
+## Verificar la Instalación
+
+```bash
+python -c "import vlrdevapi; m = vlrdevapi.matches.upcoming(); print(f'VLRdevAPI cargó {len(m.matches)} partidos próximos correctamente')"
+```

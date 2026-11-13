@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this page.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [3.1.1] - 2026-11-13
+
+### Added
+
+- **Official MCP Registry Manifest** — Added `server.json` compliant with the Model Context Protocol registry schema (`registry.modelcontextprotocol.io`), registering `io.github.vanshbordia/vlrdevapi` with stdio transport and `uvx` runtime arguments.
+- **Automated MCP Registry Publishing Workflow** — Extended GitHub Actions release pipeline (`publish.yml`) with automated OIDC authentication (`id-token: write`) via `mcp-publisher`.
+- **PyPI MCP Ownership Verification** — Added package ownership verification marker to `README.md`.
+
+### Fixed
+
+- **MCP Registry CLI Entrypoint** — Expose `vlrdevapi` console script alias to `vlrdevapi.mcp.server:main` alongside `vlrdevapi-mcp` so MCP registry clients launch the server using the package identifier.
+- **Windows Timezone Support** — Added `tzdata>=2025.1; sys_platform == 'win32'` as a core dependency to resolve `ZoneInfoNotFoundError` when running `vlrdevapi` or `uvx` on Windows.
+
+### Changed
+
+- **Dependency Upgrades** — Bumped core Python dependencies (Pydantic, Pandas, Polars, PyArrow, Pytest, Ruff) and documentation website dependencies (Next.js 16.4.6, Fumadocs 16.19, Tailwind CSS 4.3.5).
+
 ## [3.1.0] - 2026-10-25
 
 ### Added

@@ -1,0 +1,157 @@
+---
+title: Retransmisiones y VODs de la Serie (Series Streams & VODs)
+description: "Obtén los enlaces de directos, watch parties y vídeos bajo demanda (VODs) de un partido: Twitch, YouTube, Kick y plataformas regionales."
+---
+
+`series.vods(series_id)` devuelve los canales de emisión en directo y los enlaces a VODs (vídeos grabados) mostrados en la página del partido en vlr.gg. Las retransmisiones oficiales y watch parties se encuentran disponibles incluso para partidos programados; los vídeos completos y por mapa se listan una vez finalizado el encuentro.
+
+## Firma
+
+```python
+series.vods(series_id: int) -> SeriesVods
+```
+
+Con acceso curried:
+
+```python
+vlrdevapi.series(series_id).vods() -> SeriesVods
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único de la serie en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `SeriesVods`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único de la serie en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "streams": {
+    description: "Emisiones oficiales en directo y watch parties vinculadas al encuentro.",
+    type: "list[SeriesStream]",
+    typeDescription: "list[SeriesStream] - consulta los campos detallados a continuación",
+    default: "[]",
+  },
+  "vods": {
+    description: "Vídeos del partido completo y grabaciones individuales por mapa.",
+    type: "list[SeriesVod]",
+    typeDescription: "list[SeriesVod] - consulta los campos detallados a continuación",
+    default: "[]",
+  },
+}} />
+
+### Campos de `SeriesStream`
+
+<TypeTable type={{
+  "platform": {
+    description: "Identificador de la plataforma de emisión (ej. 'twitch', 'youtube', 'kick', 'bilibili', 'soop').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "channel": {
+    description: "Nombre del canal o retransmisor (ej: 'Valorant', 'VCT CN', 'FNS').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "url": {
+    description: "URL completa hacia el directo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stream_type": {
+    description: "Tipo de emisión en vlr.gg: 'broadcast' para oficial o 'watchparty' para co-stream.",
+    type: "str",
+    typeDescription: '"broadcast" | "watchparty"',
+    default: '"broadcast"',
+  },
+  "country_code": {
+    description: "Código de país o idioma de la emisión (ej: 'us', 'cn', 'br'). 'un' indica desconocido.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `SeriesVod`
+
+<TypeTable type={{
+  "url": {
+    description: "URL completa de visualización del vídeo bajo demanda (YouTube, Twitch, etc.).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "label": {
+    description: 'Etiqueta o nombre del vídeo (ej: "Full match", "Corrode", "Lotus").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "platform": {
+    description: "Código de plataforma (ej. 'twitch', 'youtube').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "map_number": {
+    description: "Número del mapa para VODs por mapa; None para el vídeo del partido completo.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "start_seconds": {
+    description: "Punto de inicio en el vídeo en segundos.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+## Ejemplos
+
+### Listar retransmisiones en directo
+
+```python
+import vlrdevapi
+
+vod_data = vlrdevapi.series.vods(series_id=670471)
+print(f"Directos disponibles ({len(vod_data.streams)}):")
+for s in vod_data.streams[:3]:
+    print(f"  [{s.platform.upper()}] {s.channel} ({s.country_code}): {s.url}")
+```
+
+### Obtener enlaces a VODs
+
+```python
+import vlrdevapi
+
+vod_data = vlrdevapi.series.vods(series_id=670471)
+print(f"Vídeos encontrados ({len(vod_data.vods)}):")
+for v in vod_data.vods[:3]:
+    print(f"  {v.label}: {v.url}")
+```
+
+### Acceso curried
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(670471)
+vod_data = series.vods()
+for v in vod_data.vods[:3]:
+    print(f"{v.label} -> {v.url}")
+```

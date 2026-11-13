@@ -1,0 +1,103 @@
+---
+title: 快速上手
+description: 涵盖比赛、战队、选手及赛事的动手实战教程。
+icon: Zap
+---
+
+本教程将带您体验从 VLRdevAPI 的多个命名空间查询真实电竞数据。将以下代码保存为 `demo.py` 并运行：
+
+```python
+import vlrdevapi
+from vlrdevapi.exceptions import DataNotFoundError
+
+# 获取即将进行的比赛
+page = vlrdevapi.matches.upcoming()
+print(f"共发现 {len(page.matches)} 场即将进行的比赛\n")
+
+# 输出前 3 场比赛的对阵队伍及所属赛事
+for match in page.matches[:3]:
+    t1 = match.team1.name if match.team1 else "待定"
+    t2 = match.team2.name if match.team2 else "待定"
+    print(f"{t1:20s} vs {t2:20s} | {match.event}")
+
+# 获取第一场比赛中战队 1 的详细资料
+match = page.matches[0]
+t1 = match.team1
+if t1:
+    info = vlrdevapi.team(t1.id).info()
+    print(f"\n战队: {info.name} ({info.tag})")
+    print(f"国家/地区: {info.country}")
+    # 部分战队页面可能暂未收录阵容信息 — 进行异常捕获
+    try:
+        roster = vlrdevapi.team(t1.id).roster()
+    except DataNotFoundError:
+        print("暂无阵容数据")
+    else:
+        for player in roster.players:
+            print(f"  选手: {player.ign}")
+```
+
+运行输出示例（具体数据随实时赛况变动）：
+
+```text
+共发现 6 场即将进行的比赛
+
+FNATIC               vs BBL Esports          | VCT 2026: EMEA Kickoff
+Gentle Mates         vs FNATIC               | VCT 2026: EMEA Kickoff
+Paper Rex            vs Leviatán             | Valorant Masters London 2026
+
+战队: FNATIC (FNC)
+国家/地区: United Kingdom
+  选手: Boaster
+  选手: Derke
+  选手: Alfajer
+  选手: Leo
+  选手: Chronicle
+```
+
+## 分步解析
+
+<Steps>
+  <Step>
+
+  ### 获取近期比赛列表
+
+  `vlrdevapi.matches.upcoming()` 返回包含 `UpcomingMatchEntry` 条目列表的 `UpcomingMatchesPage` 对象。每个条目均包含 `team1`、`team2`、`event`、`stage`、`datetime` 等属性。
+
+  ```python
+  page = vlrdevapi.matches.upcoming()
+  for match in page.matches[:3]:
+      t1 = match.team1.name if match.team1 else "待定"
+      t2 = match.team2.name if match.team2 else "待定"
+      print(t1, "vs", t2, match.event)
+  ```
+  </Step>
+
+  <Step>
+
+  ### 导航关联数据实体
+
+  比赛中的每个战队对象均包含 `.id` 标识符。将其传递给 `team` 命名空间即可轻松查询该战队的选手阵容、统计数据和过往战绩。
+
+  ```python
+  info = vlrdevapi.team(team_id).info()
+  roster = vlrdevapi.team(team_id).roster()
+  ```
+  </Step>
+
+  <Step>
+
+  ### 探索其他核心命名空间
+
+  同样的直观模式完全适用于选手与赛事数据：
+
+  ```python
+  # 选手个人档案与擅长特工池
+  profile = vlrdevapi.player(438).profile()
+  print(f"{profile.name} - {', '.join(a.agent for a in profile.top_agents[:3])}")
+
+  # 赛事概况与阶段积分榜
+  event = vlrdevapi.event(2100).info()
+  ```
+  </Step>
+</Steps>

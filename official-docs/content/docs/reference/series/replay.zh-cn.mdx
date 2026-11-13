@@ -1,0 +1,422 @@
+---
+title: 比赛回放时间线 (Series Replay)
+description: "获取逐回合的击杀日志回放时间线：包含武器与空间坐标的击杀事件、爆弹安放/拆除、复活记录以及存活视角朝向。"
+---
+
+`series.replay(series_id, game_id)` 返回系列赛指定小局地图每一回合的击杀日志时间线（对应 vlr.gg 上的 logs 面板）。
+
+## 函数签名
+
+```python
+series.replay(
+    series_id: int,
+    game_id: int,
+) -> ReplayData
+```
+
+通过柯里化链式访问：
+
+```python
+vlrdevapi.series(series_id).replay(game_id: int) -> ReplayData
+```
+
+## 参数
+
+<TypeTable type={{
+  "series_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "正整数",
+    required: true,
+  },
+  "game_id": {
+    description: "系列赛中小局序号（从 1 开始）或该局在 vlr.gg 上的实际数字 game ID。",
+    type: "int",
+    typeDescription: "int",
+    required: true,
+  },
+}} />
+
+## 返回值 - `ReplayData`
+
+<TypeTable type={{
+  "series_id": {
+    description: "vlr.gg 上的唯一比赛 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "game_id": {
+    description: "小局在 vlr.gg 上的唯一 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team1": {
+    description: "第一支战队全称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2": {
+    description: "第二支战队全称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1_id": {
+    description: "第一支战队在 vlr.gg 上的 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2_id": {
+    description: "第二支战队在 vlr.gg 上的 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "num_rounds": {
+    description: "包含回放数据的回合总数。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "rounds": {
+    description: "按先后顺序排列的回合回放数据列表。",
+    type: "list[ReplayRound]",
+    typeDescription: "list[ReplayRound] - 详见下方字段说明",
+    default: "[]",
+  },
+}} />
+
+### 辅助方法 `round(round_number)`
+
+`ReplayData.round(n)` 接受从 1 开始的回合号，返回对应的 `ReplayRound` 对象；若该回合无回放数据则返回 `None`。
+
+## `ReplayRound` 字段说明
+
+<TypeTable type={{
+  "round_number": {
+    description: "小局内的回合编号。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "attacking": {
+    description: "本回合担任进攻方（下包方）的战队名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "loadouts": {
+    description: "开局采购阶段全场十位选手的装备配置快照（主武器、护甲及剩余誉币）。",
+    type: "list[PlayerRoundLoadout]",
+    typeDescription: "list[PlayerRoundLoadout]",
+    default: "[]",
+  },
+  "players": {
+    description: "十位选手的 ID、使用特工、所属战队及攻防方阵营。",
+    type: "list[ReplayPlayerRef]",
+    typeDescription: "list[ReplayPlayerRef]",
+    default: "[]",
+  },
+  "events": {
+    description: "按发生时间顺序排列的击杀日志事件列表（包含派生的引爆与复活事件）。",
+    type: "list[ReplayEvent]",
+    typeDescription: "list[ReplayEvent]",
+    default: "[]",
+  },
+  "boom_at": {
+    description: "爆弹引爆事件在日志序列中的位置索引标记。",
+    type: "int | None",
+    typeDescription: "int or None",
+  },
+}} />
+
+### `loadout_for(player)` 辅助方法
+
+`ReplayRound.loadout_for(player)` 接受不区分大小写的选手名称（例如 `'Derke'`）或整数 `player_id`，返回该选手在该回合的 `PlayerRoundLoadout`，未找到则返回 `None`。
+
+## `PlayerRoundLoadout`
+
+回合开始时单名选手的买枪阶段装备与经济快照。
+
+<TypeTable type={{
+  "player_id": {
+    description: "vlr.gg 上的选手唯一 ID（从概览标签页匹配；若无法解析则为 0）。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "选手昵称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team": {
+    description: "战队缩写或名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "特工名称（例如：'Sage'、'Neon'、'Chamber'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "side": {
+    description: "该选手在该回合所处的阵营。",
+    type: "str",
+    typeDescription: '"Attack" | "Defense"',
+    default: '""',
+  },
+  "weapon": {
+    description: "回合开始时装备的武器（例如：'Ghost'、'Vandal'、'Operator'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "armor": {
+    description: "装备的护甲类型（'No armor'、'Light armor'、'Heavy armor' 或 'Regen Shield'）。",
+    type: "ArmorType | str",
+    typeDescription: '"No armor" | "Light armor" | "Heavy armor" | "Regen Shield"',
+    default: '"No armor"',
+  },
+  "credits_left": {
+    description: "买枪阶段结束后的剩余誉币点数。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "spent": {
+    description: "在买枪阶段花费的誉币点数。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+}} />
+
+## `ReplayEvent`
+
+回合时间线中的单个事件。`type` 为 `ReplayEventType` 枚举（`KILL`、`PLANT`、`DEFUSE`、`BOOM` 或 `RESURRECT`；`.value` 给出小写字符串，`.full_name` 给出可读标签）；`derived: True` 标记了 vlr.gg 原始日志未作为事件行记录的两种派生类型（爆弹引爆和复活）。
+
+<TypeTable type={{
+  "seq": {
+    description: "事件在回合内的发生序号（从 0 开始）。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "type": {
+    description: "事件类型（ReplayEventType 枚举）。",
+    type: "ReplayEventType",
+    typeDescription: 'ReplayEventType.KILL | PLANT | DEFUSE | BOOM | RESURRECT',
+    default: "KILL",
+  },
+  "clock": {
+    description: "事件发生时的回合倒计时时钟（M:SS）；对于 vlr.gg 未记录后续事件的引爆标记为空。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "seconds": {
+    description: "事件发生时的回合倒计时秒数；若未记录时钟则为 None。",
+    type: "int | None",
+    typeDescription: "int or None",
+  },
+  "actor": {
+    description: "行动选手（击杀者、下包者、拆包者或被复活者）。",
+    type: "ReplayActor",
+    typeDescription: "ReplayActor - 参见下方嵌套字段",
+  },
+  "victim": {
+    description: "受害/被击杀选手（仅限击杀事件）。",
+    type: "ReplayActor | None",
+    typeDescription: "ReplayActor or None",
+  },
+  "cause": {
+    description: "击杀原因：武器或技能/终极技能/爆弹名称（仅限击杀事件）。",
+    type: "str",
+    typeDescription: '"e.g. Sheriff, Phantom, Overdrive, Tour de Force, Spike"',
+    default: '""',
+  },
+  "site": {
+    description: "爆弹包点字母（'A'、'B' 或 'C'，仅限爆弹事件；其余为空）。",
+    type: "str",
+    typeDescription: '"A" | "B" | "C" | ""',
+    default: '""',
+  },
+  "pos_x": {
+    description: "事件在 1024x1024 小地图网格上的 X 坐标（击杀：受害者位置；下包/拆包：行动者位置）。",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "pos_y": {
+    description: "事件在 1024x1024 小地图网格上的 Y 坐标。",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "from_x": {
+    description: "击杀发生时击杀者的 X 坐标（仅限击杀事件）。",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "from_y": {
+    description: "击杀发生时击杀者的 Y 坐标（仅限击杀事件）。",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "distance_units": {
+    description: "小地图单位下的击杀者与受害者欧几里得距离（仅限击杀事件）。",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "alive": {
+    description: "此事件发生时存活选手的快照，包含小地图坐标和朝向角度。",
+    type: "list[ReplayAlivePlayer]",
+    typeDescription: "list[ReplayAlivePlayer] - 参见下方嵌套字段",
+    default: "[]",
+  },
+  "derived": {
+    description: "此事件是否为推导得出（'boom'/'resurrect'），而非 vlr.gg 的原始记录行。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+## `ReplayActor` / `ReplayAlivePlayer`
+
+<TypeTable type={{
+  "player_id": {
+    description: "vlr.gg 上的选手唯一 ID（从概览标签页匹配；若无法解析则为 0）。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "选手昵称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "vlr.gg 页面上显示的小写特工标识符（例如：'omen'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team": {
+    description: "该回合该选手所属的战队名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "side": {
+    description: "该回合该选手所处的阵营。",
+    type: "str",
+    typeDescription: '"Attack" | "Defense"',
+    default: '""',
+  },
+  "x": {
+    description: "在 1024x1024 小地图网格上的坐标。",
+    type: "float",
+    typeDescription: "float（仅限存活快照）",
+    default: "0",
+  },
+  "y": {
+    description: "在 1024x1024 小地图网格上的坐标。",
+    type: "float",
+    typeDescription: "float（仅限存活快照）",
+    default: "0",
+  },
+  "view_angle": {
+    description: "小地图角度单位下的朝向视角（0 朝向 +x，顺时针旋转）。",
+    type: "int",
+    typeDescription: "int（仅限存活快照）",
+    default: "0",
+  },
+}} />
+
+## `ReplayPlayerRef`
+
+<TypeTable type={{
+  "player_id": {
+    description: "vlr.gg 上的选手唯一 ID（从概览标签页匹配；若无法解析则为 0）。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "选手昵称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "vlr.gg 页面上显示的小写特工标识符（例如：'omen'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team": {
+    description: "该回合该选手所属的战队名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "side": {
+    description: "该回合该选手所处的阵营。",
+    type: "str",
+    typeDescription: '"Attack" | "Defense"',
+    default: '""',
+  },
+}} />
+
+## 示例
+
+### 查看第 1 回合击杀日志流水
+
+```python
+import vlrdevapi
+
+replay = vlrdevapi.series.replay(series_id=754737, game_id=283288)
+print(f"{replay.team1} 对阵 {replay.team2}（共 {replay.num_rounds} 回合）")
+
+for ev in replay.round(1).events:
+    who = ev.actor.name if ev.actor else "-"
+    print(f"{ev.seq}. {ev.seconds}秒 {ev.type.full_name}: {who}", end="")
+    if ev.cause:
+        print(f" ({ev.cause})", end="")
+    if ev.victim:
+        print(f" -> {ev.victim.name}", end="")
+    print()
+```
+
+### 追踪爆弹安放与引爆事件
+
+```python
+import vlrdevapi
+from vlrdevapi._series.replay.models import ReplayEventType
+
+replay = vlrdevapi.series.replay(series_id=754737, game_id=283288)
+
+for ev in replay.round(14).events:
+    if ev.type in (ReplayEventType.PLANT, ReplayEventType.DEFUSE, ReplayEventType.BOOM):
+        print(f"{ev.clock or '-'} {ev.type.full_name} 发生在 {ev.site} 包点，坐标 ({ev.pos_x}, {ev.pos_y})")
+```
+
+### 柯里化链式访问
+
+```python
+import vlrdevapi
+
+series = vlrdevapi.series(754737)
+replay = series.replay(game_id=283288)
+round_1 = replay.round(1)
+for ld in round_1.loadouts[:4]:
+    print(f"{ld.name} ({ld.agent}): {ld.weapon} + {ld.armor} (花费 ${ld.spent})")
+```

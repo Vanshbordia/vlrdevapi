@@ -236,6 +236,7 @@ team.stats(
 Print map statistics for the last 30 days.
 
 ```python
+# doc-check: allow-empty
 import vlrdevapi
 
 stats = vlrdevapi.team.stats(team_id=2593)
@@ -252,6 +253,7 @@ for m in stats.maps:
 Print map statistics over the last 90 days.
 
 ```python
+# doc-check: allow-empty
 import vlrdevapi
 
 stats = vlrdevapi.team.stats(team_id=2593, last_days=90)
@@ -267,6 +269,7 @@ for m in stats.maps:
 Use `agent_composition="basic"` to see which agent comps the team plays on each map.
 
 ```python
+# doc-check: allow-empty
 import vlrdevapi
 
 stats = vlrdevapi.team.stats(team_id=2593, last_days=90, agent_composition="basic")

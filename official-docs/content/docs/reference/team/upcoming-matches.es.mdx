@@ -1,0 +1,140 @@
+---
+title: Próximas Partidas del Equipo (Team Upcoming Matches)
+description: "Obtén los próximos partidos programados de un equipo con información del rival, torneo y fecha y hora de inicio."
+---
+
+`team.upcoming_matches(team_id)` devuelve las próximas partidas programadas de un equipo en vlr.gg.
+
+## Firma
+
+```python
+team.upcoming_matches(team_id: int) -> TeamUpcomingMatches
+```
+
+## Parámetros
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador único del equipo en vlr.gg.",
+    type: "int",
+    typeDescription: "Entero positivo",
+    required: true,
+  },
+}} />
+
+## Retorno - `TeamUpcomingMatches`
+
+<TypeTable type={{
+  "team_id": {
+    description: "Identificador del equipo.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "matches": {
+    description: "Lista de partidas programadas.",
+    type: "list[TeamUpcomingMatchEntry]",
+    typeDescription: "list[TeamUpcomingMatchEntry] - consulta los campos detallados a continuación",
+    default: "[]",
+  },
+}} />
+
+### Campos de `TeamUpcomingMatchEntry`
+
+<TypeTable type={{
+  "match_id": {
+    description: "Identificador de la partida.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "URL relativa hacia la ficha de la partida.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event": {
+    description: "Nombre del torneo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: 'Fase del torneo (ej. "Playoffs", "Group Stage").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "bracket": {
+    description: 'Cuadro o ronda (ej. "LBF", "Ro16").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "opponent": {
+    description: "Equipo contrincante.",
+    type: "OpponentInUpcomingMatch | None",
+    typeDescription: "OpponentInUpcomingMatch | None - consulta los campos a continuación",
+    default: "None",
+  },
+  "datetime": {
+    description: "Fecha y hora programada en formato UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `OpponentInUpcomingMatch`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador del equipo rival.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nombre del equipo rival.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: "Tag del equipo rival.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## Ejemplos
+
+### Listar próximas partidas
+
+```python
+import vlrdevapi
+
+upcoming = vlrdevapi.team.upcoming_matches(team_id=2593)
+if not upcoming.matches:
+    print("No hay partidas programadas para este equipo")
+for m in upcoming.matches:
+    opp = m.opponent.name if m.opponent else "Por determinar"
+    round_label = " ".join(part for part in (m.stage, m.bracket) if part)
+    print(f"vs {opp} ({m.event} - {round_label}) el {m.datetime}")
+```
+
+### Acceso curried
+
+```python
+import vlrdevapi
+
+team = vlrdevapi.team(2593)
+upcoming = team.upcoming_matches()
+if not upcoming.matches:
+    print("No hay próximas partidas")
+for m in upcoming.matches:
+    opp = m.opponent.tag if m.opponent else "?"
+    print(f"Próxima cita: vs {opp} en {m.event}")
+```

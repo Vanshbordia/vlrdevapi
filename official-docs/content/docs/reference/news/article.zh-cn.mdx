@@ -1,0 +1,115 @@
+---
+title: 新闻文章 (News Article)
+description: "获取 vlr.gg 网站上单篇新闻文章的完整内容。"
+---
+
+`news.article()` 获取 vlr.gg 网站上单篇新闻文章的完整正文内容。正文同时以纯文本格式（`content`）和经过 Markdown 转换的格式（`content_md`）返回，后者完整保留了标题层级、嵌套列表、表格、链接、逐字代码块、文本强调以及 Twitch 剪辑内嵌。`date` 以带时区信息的 UTC datetime 对象返回。
+
+如果文章 ID 在 vlr.gg 上不存在，则会抛出 `NotFoundError`（vlr.gg 会针对不存在的 ID 返回通用错误页面，SDK 会自动从页面内容中识别并抛出异常）。
+
+## 函数签名
+
+```python
+news.article(
+    article_id: int,
+) -> NewsArticle
+```
+
+## 参数
+
+<TypeTable type={{
+  "article_id": {
+    description: "新闻文章 ID。可使用新闻列表返回的 `News.id`，或 `News.link` 中的数字前缀。",
+    type: "int",
+    typeDescription: "正整数",
+    default: "-",
+    required: true,
+  },
+}} />
+
+## 返回值 - `NewsArticle`
+
+<TypeTable type={{
+  "id": {
+    description: "vlr.gg 上的唯一文章标识符。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "title": {
+    description: "新闻文章标题。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "author": {
+    description: "文章作者。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "date": {
+    description: "发布时间（带时区信息的 UTC datetime）。",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
+  },
+  "event_name": {
+    description: "文章关联的赛事活动名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event_link": {
+    description: "关联赛事页面的链接。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "content": {
+    description: "纯文本格式的文章正文完整内容。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "content_md": {
+    description: "转换为 Markdown 格式的文章正文完整内容，保留标题、嵌套列表、表格、超链接、代码块、强调语法及 Twitch 视频内嵌。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+## 示例
+
+### 获取单篇新闻文章
+
+```python
+import vlrdevapi
+
+article = vlrdevapi.news.article(734100)
+print(f"{article.title}")
+print(f"作者: {article.author} | 发布时间: {article.date}")
+print(f"关联赛事: {article.event_name}")
+print(article.content)
+```
+
+### 以 Markdown 格式读取文章内容
+
+```python
+import vlrdevapi
+
+article = vlrdevapi.news.article(734100)
+print(article.content_md)
+```
+
+### 获取新闻列表中文章的详情
+
+```python
+import vlrdevapi
+
+page = vlrdevapi.news(page=1)
+article_id = page.news[0].id
+article = vlrdevapi.news.article(article_id)
+print(article.title)
+```

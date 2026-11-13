@@ -1,0 +1,66 @@
+---
+title: 安装指南
+description: 通过 uv、pip 或从源码安装 VLRdevAPI。
+icon: Download
+---
+
+## 环境要求
+
+- Python 3.11 或更新版本
+- [uv](https://docs.astral.sh/uv/) (推荐) 或 pip
+
+## 从 PyPI 安装
+
+使用 [uv](https://docs.astral.sh/uv/) 安装：
+
+```bash
+uv add vlrdevapi
+```
+
+或使用 pip 安装：
+
+```bash
+pip install vlrdevapi
+```
+
+## 可选拓展包 (Extras)
+
+VLRdevAPI 提供了模块化的拓展包，您可以根据项目需求按需安装特定依赖：
+
+```bash
+# 数据科学导出支持
+pip install "vlrdevapi[pandas]"     # pandas.DataFrame (.to_df())
+pip install "vlrdevapi[polars]"     # polars.DataFrame (.to_polars())
+pip install "vlrdevapi[excel]"      # Excel .xlsx 表格 (.to_excel())
+pip install "vlrdevapi[parquet]"    # Apache Parquet 文件 (.to_parquet())
+
+# Model Context Protocol (MCP) 服务端
+pip install "vlrdevapi[mcp]"        # 适用于 Claude 与 Cursor 的 vlrdevapi-mcp CLI
+
+# 安装全部可选拓展依赖
+pip install "vlrdevapi[all]"
+```
+
+## 从源码安装
+
+克隆仓库并使用 uv 安装：
+
+```bash
+git clone https://github.com/vanshbordia/vlrdevapi.git
+cd vlrdevapi
+uv sync
+```
+
+或使用 pip 以可编辑模式安装：
+
+```bash
+git clone https://github.com/vanshbordia/vlrdevapi.git
+cd vlrdevapi
+pip install -e .
+```
+
+## 验证安装
+
+```bash
+python -c "import vlrdevapi; m = vlrdevapi.matches.upcoming(); print(f'VLRdevAPI 成功加载了 {len(m.matches)} 场即将进行的比赛')"
+```
