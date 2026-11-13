@@ -3,7 +3,7 @@
   "name": "io.github.Vanshbordia/vlrdevapi",
   "title": "VLR.gg Dev API MCP Server",
   "description": "MCP server providing tools to fetch Valorant esports data, matches, events, and rankings from vlr.gg",
-  "version": "3.1.1",
+  "version": "3.1.1.1",
   "repository": {
     "url": "https://github.com/Vanshbordia/vlrdevapi",
     "source": "github"
@@ -12,7 +12,7 @@
     {
       "registryType": "pypi",
       "identifier": "vlrdevapi",
-      "version": "3.1.1",
+      "version": "3.1.1.1",
       "runtimeHint": "uvx",
       "runtimeArguments": [
         {

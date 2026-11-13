@@ -22,7 +22,7 @@ jobs:
   test:
     name: Test on Python ${{ matrix.python-version }}
     if: github.event_name == 'release' || inputs.target != 'mcp-only'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         python-version: ['3.11', '3.12', '3.13', '3.14', '3.15']
@@ -43,12 +43,19 @@ jobs:
       - name: Run tests
         run: uv run pytest
 
-  release-build:
-    name: Build release distributions
+  pypi-publish:
+    name: Publish to PyPI
     if: github.event_name == 'release' || inputs.target != 'mcp-only'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - test
+
+    permissions:
+      id-token: write
+
+    environment:
+      name: pypi
+      url: https://pypi.org/project/vlrdevapi/
 
     steps:
       - uses: actions/checkout@v7
@@ -60,40 +67,13 @@ jobs:
       - name: Build package
         run: uv build
 
-      - name: Upload distributions
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-dists
-          path: dist/
-
-  pypi-publish:
-    name: Publish to PyPI
-    if: github.event_name == 'release' || inputs.target != 'mcp-only'
-    runs-on: ubuntu-latest
-    needs:
-      - release-build
-
-    permissions:
-      id-token: write
-
-    environment:
-      name: pypi
-      url: https://pypi.org/project/vlrdevapi/
-
-    steps:
-      - name: Retrieve release distributions
-        uses: actions/download-artifact@v4
-        with:
-          name: release-dists
-          path: dist/
-
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
   mcp-publish:
     name: Publish to MCP Registry
     if: always() && (github.event_name == 'release' || inputs.target != 'pypi-only') && (inputs.target == 'mcp-only' || needs.pypi-publish.result == 'success')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - pypi-publish
 

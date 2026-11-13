@@ -6,15 +6,15 @@ import { assetUrl, canonicalUrl } from './shared';
  */
 export const project = {
   name: 'VLRdevAPI',
-  version: '3.1.1',
+  version: '3.1.1.1',
   description:
     'A type-safe Python SDK for Valorant esports data from VLR.gg. Fetch match results, player stats, team rosters, and tournament brackets through a fully typed Python interface with no API key.',
   licenseUrl: 'https://opensource.org/license/mit',
   programmingLanguage: 'Python',
   runtimePlatform: 'Python 3.11+',
-  repositoryUrl: 'https://github.com/vanshbordia/vlrdevapi',
+  repositoryUrl: 'https://github.com/Vanshbordia/vlrdevapi',
   packageUrl: 'https://pypi.org/project/vlrdevapi/',
-  githubProfileUrl: 'https://github.com/vanshbordia',
+  githubProfileUrl: 'https://github.com/Vanshbordia',
   author: 'Vansh Bordia',
 } as const;
 
