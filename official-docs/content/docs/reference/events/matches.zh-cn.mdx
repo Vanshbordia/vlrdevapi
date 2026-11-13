@@ -72,28 +72,101 @@ event.matches(
     required: true,
   },
   "stage": {
-    description: "阶段名称（例如：'Playoffs'）。",
+    description: '阶段名称（例如："Group Stage"、"Playoffs"）。',
     type: "str",
     typeDescription: "str",
     default: '""',
   },
   "phase": {
-    description: "具体轮次阶段（例如：'Grand Final'）。",
+    description: '具体轮次阶段（例如："Week 1"、"Upper Round 1"）。',
     type: "str",
     typeDescription: "str",
     default: '""',
   },
   "status": {
-    description: "该场比赛的进行状态。",
+    description: "该场比赛的进行状态：completed、live 或 upcoming。",
     type: "MatchStatus",
-    typeDescription: 'MatchStatus - "completed" | "live" | "upcoming"',
+    typeDescription: "MatchStatus 枚举 - 见下方说明",
     required: true,
+  },
+  "match_date": {
+    description: "比赛举行日期。",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "match_time": {
+    description: "比赛计划时间。",
+    type: "time | None",
+    typeDescription: "datetime.time | None",
+    default: "None",
+  },
+  "datetime_utc": {
+    description: "UTC 标准时间对象。",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
   },
   "teams": {
     description: "参赛队伍列表（通常为 2 支队伍）。",
     type: "list[MatchTeam]",
-    typeDescription: "list[MatchTeam]",
+    typeDescription: "list[MatchTeam] - 见下方说明",
     default: "[]",
+  },
+}} />
+
+### `MatchTeam` 字段明细
+
+<TypeTable type={{
+  "id": {
+    description: "vlr.gg 战队 ID。若尚未确定（TBD）则为 None。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "name": {
+    description: '战队名称（例如："FNATIC"、"TBD"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_name": {
+    description: '根据战队国旗解析的所属国家全名（例如："United States"）；待定队伍为空。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "score": {
+    description: "战队得分。若不可用（如未开赛）则为 None。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "winner": {
+    description: "该队伍是否为该比赛的获胜方。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+### `MatchStatus` 枚举
+
+<TypeTable type={{
+  "COMPLETED": {
+    description: "比赛已完赛。",
+    type: "str",
+    typeDescription: '枚举值: "completed"',
+  },
+  "LIVE": {
+    description: "比赛当前正在进行中。",
+    type: "str",
+    typeDescription: '枚举值: "live"',
+  },
+  "UPCOMING": {
+    description: "比赛已排期但尚未开打。",
+    type: "str",
+    typeDescription: '枚举值: "upcoming"',
   },
 }} />
 

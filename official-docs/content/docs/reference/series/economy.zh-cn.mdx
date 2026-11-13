@@ -92,6 +92,36 @@ vlrdevapi.series(series_id).economy(game_id: int) -> EconomyData
     type: "TeamBuyMatrix",
     typeDescription: "TeamBuyMatrix",
   },
+  "pistol_team1": {
+    description: "buy_matrix_team1.pistol 的快捷方式 - 战队 1 手枪局胜场/总数。",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "converted_team1": {
+    description: "buy_matrix_team1.converted 的快捷方式 - 战队 1 转化局胜场/总数。",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "bonus_team1": {
+    description: "buy_matrix_team1.bonus 的快捷方式 - 战队 1 奖励局胜场/总数。",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "pistol_team2": {
+    description: "buy_matrix_team2.pistol 的快捷方式 - 战队 2 手枪局胜场/总数。",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "converted_team2": {
+    description: "buy_matrix_team2.converted 的快捷方式 - 战队 2 转化局胜场/总数。",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "bonus_team2": {
+    description: "buy_matrix_team2.bonus 的快捷方式 - 战队 2 奖励局胜场/总数。",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
 }} />
 
 ### `RoundEconomyData` 字段说明
@@ -147,6 +177,23 @@ vlrdevapi.series(series_id).economy(game_id: int) -> EconomyData
     type: "bool",
     typeDescription: "bool",
     default: "False",
+  },
+}} />
+
+### `RoundWinner` 字段说明
+
+<TypeTable type={{
+  "name": {
+    description: "获胜战队名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "id": {
+    description: "获胜战队 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
   },
 }} />
 

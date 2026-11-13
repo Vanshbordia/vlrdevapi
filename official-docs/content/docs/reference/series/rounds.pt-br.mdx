@@ -58,25 +58,37 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     typeDescription: "str",
     default: '""',
   },
+  "team1_id": {
+    description: "ID da Equipe 1.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
   "team2": {
     description: "Nome da Equipe 2 (segunda equipe listada).",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
+  "team2_id": {
+    description: "ID da Equipe 2.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
   "rounds": {
-    description: "Lista de informações de cada rodada jogada.",
-    type: "list[RoundInfo]",
-    typeDescription: "list[RoundInfo] - veja os campos detalhados abaixo",
+    description: "Lista de rodadas disputadas neste mapa.",
+    type: "list[RoundData]",
+    typeDescription: "list[RoundData] - veja os campos detalhados abaixo",
     default: "[]",
   },
 }} />
 
-### Campos de `RoundInfo`
+### Campos de `RoundData`
 
 <TypeTable type={{
   "round_number": {
-    description: "Número sequencial da rodada (1-24+).",
+    description: "Número da rodada na partida (1-indexed).",
     type: "int",
     typeDescription: "int",
     default: "0",
@@ -94,15 +106,15 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     default: "0",
   },
   "win_type": {
-    description: 'Forma como a rodada foi vencida: "elimination", "defuse", "spike_detonation", ou "time_expired".',
+    description: 'Forma como a rodada foi vencida. Use `.full_name` para o rótulo descritivo.',
     type: "RoundWinType",
-    typeDescription: "RoundWinType",
+    typeDescription: 'RoundWinType - "elimination" | "defuse" | "spike_detonation" | "time_expired"',
     default: "RoundWinType.ELIMINATION",
   },
   "side": {
-    description: 'Lado da equipe vencedora: "Attack" ou "Defense".',
+    description: 'Lado da equipe vencedora: "Defense" (CT) ou "Attack" (T).',
     type: "str",
-    typeDescription: '"Attack" | "Defense"',
+    typeDescription: '"Defense" | "Attack"',
     default: '""',
   },
   "team1_score": {
@@ -117,41 +129,43 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     typeDescription: "int",
     default: "0",
   },
-  "team1_bank": {
+  "bank_team1": {
     description: "Créditos totais da Equipe 1 no início do round.",
-    type: "int | None",
-    typeDescription: "int | None",
-    default: "None",
+    type: "float | None",
+    typeDescription: "float | None",
   },
-  "team1_spend": {
+  "bank_team2": {
+    description: "Créditos totais da Equipe 2 no início do round.",
+    type: "float | None",
+    typeDescription: "float | None",
+  },
+  "spent_team1": {
     description: "Créditos gastos pela Equipe 1 no round.",
     type: "int | None",
     typeDescription: "int | None",
-    default: "None",
   },
-  "team1_buy_type": {
-    description: 'Nível de compra da Equipe 1 ("eco", "semi-eco", "semi-buy", "full-buy").',
-    type: "str | None",
-    typeDescription: "str | None",
-    default: "None",
-  },
-  "team2_bank": {
-    description: "Créditos totais da Equipe 2 no início do round.",
-    type: "int | None",
-    typeDescription: "int | None",
-    default: "None",
-  },
-  "team2_spend": {
+  "spent_team2": {
     description: "Créditos gastos pela Equipe 2 no round.",
     type: "int | None",
     typeDescription: "int | None",
-    default: "None",
   },
-  "team2_buy_type": {
-    description: 'Nível de compra da Equipe 2 ("eco", "semi-eco", "semi-buy", "full-buy").',
-    type: "str | None",
-    typeDescription: "str | None",
-    default: "None",
+  "buy_type_team1": {
+    description: "Nível de compra da Equipe 1.",
+    type: "str",
+    typeDescription: '"Pistol" | "Eco" | "Half-buy" | "Full-buy" | ""',
+    default: '""',
+  },
+  "buy_type_team2": {
+    description: "Nível de compra da Equipe 2.",
+    type: "str",
+    typeDescription: '"Pistol" | "Eco" | "Half-buy" | "Full-buy" | ""',
+    default: '""',
+  },
+  "is_pistol_round": {
+    description: "Indica se é um round pistol (rodadas 1 e 13).",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
   },
 }} />
 

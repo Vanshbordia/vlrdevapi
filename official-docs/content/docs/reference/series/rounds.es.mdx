@@ -58,25 +58,37 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     typeDescription: "str",
     default: '""',
   },
+  "team1_id": {
+    description: "ID del Equipo 1.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
   "team2": {
     description: "Nombre del Equipo 2 (segundo equipo listado).",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
+  "team2_id": {
+    description: "ID del Equipo 2.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
   "rounds": {
-    description: "Lista con el desarrollo de cada ronda.",
-    type: "list[RoundInfo]",
-    typeDescription: "list[RoundInfo] - consulta los campos detallados a continuación",
+    description: "Lista de rondas disputadas en este mapa.",
+    type: "list[RoundData]",
+    typeDescription: "list[RoundData] - consulta los campos detallados a continuación",
     default: "[]",
   },
 }} />
 
-### Campos de `RoundInfo`
+### Campos de `RoundData`
 
 <TypeTable type={{
   "round_number": {
-    description: "Número de ronda (1-24+).",
+    description: "Número de ronda en la partida (1-indexed).",
     type: "int",
     typeDescription: "int",
     default: "0",
@@ -94,15 +106,15 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     default: "0",
   },
   "win_type": {
-    description: 'Método de victoria en la ronda: "elimination", "defuse", "spike_detonation", o "time_expired".',
+    description: 'Método de victoria en la ronda. Usa `.full_name` para la etiqueta descriptiva.',
     type: "RoundWinType",
-    typeDescription: "RoundWinType",
+    typeDescription: 'RoundWinType - "elimination" | "defuse" | "spike_detonation" | "time_expired"',
     default: "RoundWinType.ELIMINATION",
   },
   "side": {
-    description: 'Bando del equipo ganador: "Attack" o "Defense".',
+    description: 'Bando del equipo ganador: "Defense" (CT) o "Attack" (T).',
     type: "str",
-    typeDescription: '"Attack" | "Defense"',
+    typeDescription: '"Defense" | "Attack"',
     default: '""',
   },
   "team1_score": {
@@ -117,41 +129,43 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     typeDescription: "int",
     default: "0",
   },
-  "team1_bank": {
+  "bank_team1": {
     description: "Créditos en banco del Equipo 1 al inicio de la ronda.",
-    type: "int | None",
-    typeDescription: "int | None",
-    default: "None",
+    type: "float | None",
+    typeDescription: "float | None",
   },
-  "team1_spend": {
-    description: "Créditos gastados por el Equipo 1 en la ronda.",
-    type: "int | None",
-    typeDescription: "int | None",
-    default: "None",
-  },
-  "team1_buy_type": {
-    description: 'Tipo de compra del Equipo 1 ("eco", "semi-eco", "semi-buy", "full-buy").',
-    type: "str | None",
-    typeDescription: "str | None",
-    default: "None",
-  },
-  "team2_bank": {
+  "bank_team2": {
     description: "Créditos en banco del Equipo 2 al inicio de la ronda.",
+    type: "float | None",
+    typeDescription: "float | None",
+  },
+  "spent_team1": {
+    description: "Créditos gastados por el Equipo 1 en esta ronda.",
     type: "int | None",
     typeDescription: "int | None",
-    default: "None",
   },
-  "team2_spend": {
-    description: "Créditos gastados por el Equipo 2 en la ronda.",
+  "spent_team2": {
+    description: "Créditos gastados por el Equipo 2 en esta ronda.",
     type: "int | None",
     typeDescription: "int | None",
-    default: "None",
   },
-  "team2_buy_type": {
-    description: 'Tipo de compra del Equipo 2 ("eco", "semi-eco", "semi-buy", "full-buy").',
-    type: "str | None",
-    typeDescription: "str | None",
-    default: "None",
+  "buy_type_team1": {
+    description: "Nivel de compra del Equipo 1.",
+    type: "str",
+    typeDescription: '"Pistol" | "Eco" | "Half-buy" | "Full-buy" | ""',
+    default: '""',
+  },
+  "buy_type_team2": {
+    description: "Nivel de compra del Equipo 2.",
+    type: "str",
+    typeDescription: '"Pistol" | "Eco" | "Half-buy" | "Full-buy" | ""',
+    default: '""',
+  },
+  "is_pistol_round": {
+    description: "Indica si es ronda de pistolas (rondas 1 y 13).",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
   },
 }} />
 

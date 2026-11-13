@@ -50,13 +50,13 @@ matches.live() -> LiveMatchesPage
     default: '""',
   },
   "team1": {
-    description: "Informações do time 1 (nome, placar parcial no mapa e mapas vencidos).",
+    description: "Informações da primeira equipe.",
     type: "TeamInLiveMatch | None",
-    typeDescription: "TeamInLiveMatch | None",
+    typeDescription: "TeamInLiveMatch | None - veja os campos abaixo",
     default: "None",
   },
   "team2": {
-    description: "Informações do time 2 (nome, placar parcial no mapa e mapas vencidos).",
+    description: "Informações da segunda equipe.",
     type: "TeamInLiveMatch | None",
     typeDescription: "TeamInLiveMatch | None",
     default: "None",
@@ -75,18 +75,46 @@ matches.live() -> LiveMatchesPage
   },
 }} />
 
+### Campos de `TeamInLiveMatch`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador numérico exclusivo da equipe no vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: 'Nome completo da equipe (ex: "NRG", "FNATIC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: 'Abreviatura ou tag da equipe (ex: "NRG", "FNC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_name": {
+    description: 'Nome do país da equipe (ex: "United States").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
 ## Exemplos de Código
 
 ```python
 import vlrdevapi
 
 live_page = vlrdevapi.matches.live()
-print(f"Partidas ao vivo agora: {len(live_page.matches)}")
-
-for match in live_page.matches:
-    t1 = match.team1.name if match.team1 else "Time 1"
-    t2 = match.team2.name if match.team2 else "Time 2"
-    s1 = match.team1.score if match.team1 and match.team1.score is not None else 0
-    s2 = match.team2.score if match.team2 and match.team2.score is not None else 0
-    print(f"AO VIVO: {t1} [{s1} - {s2}] {t2} | {match.event}")
+if not live_page.matches:
+    print("Nenhuma partida ao vivo no momento")
+else:
+    for match in live_page.matches:
+        t1 = match.team1.name if match.team1 else "Time 1"
+        t2 = match.team2.name if match.team2 else "Time 2"
+        print(f"AO VIVO: {t1} vs {t2} ({match.event} - {match.stage})")
 ```

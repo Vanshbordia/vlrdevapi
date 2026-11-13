@@ -134,6 +134,248 @@ vlrdevapi.series(series_id).replay(game_id: int) -> ReplayData
   },
 }} />
 
+### Asistente `loadout_for(player)`
+
+`ReplayRound.loadout_for(player)` acepta un nombre de jugador que no distingue mayúsculas/minúsculas (ej. `'Derke'`) o un `player_id` numérico, devolviendo el `PlayerRoundLoadout` del jugador para esa ronda, o `None`.
+
+## `PlayerRoundLoadout`
+
+Instantánea del equipamiento y economía en la fase de compra de un jugador al inicio de una ronda.
+
+<TypeTable type={{
+  "player_id": {
+    description: "ID único del jugador en vlr.gg (asociado desde la pestaña de resumen; 0 si no se pudo resolver).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nombre del jugador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team": {
+    description: "Tag o nombre del equipo.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "Nombre del agente (ej. 'Sage', 'Neon', 'Chamber').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "side": {
+    description: "Bando en el que jugó el jugador en esta ronda.",
+    type: "str",
+    typeDescription: '"Attack" | "Defense"',
+    default: '""',
+  },
+  "weapon": {
+    description: "Arma equipada al inicio de la ronda (ej. 'Ghost', 'Vandal', 'Operator').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "armor": {
+    description: "Escudo equipado ('No armor', 'Light armor', 'Heavy armor' o 'Regen Shield').",
+    type: "ArmorType | str",
+    typeDescription: '"No armor" | "Light armor" | "Heavy armor" | "Regen Shield"',
+    default: '"No armor"',
+  },
+  "credits_left": {
+    description: "Créditos restantes tras la fase de compra.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "spent": {
+    description: "Créditos gastados en la fase de compra.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+}} />
+
+## `ReplayEvent`
+
+Un evento en la cronología de la ronda. `type` es un enum `ReplayEventType` (`KILL`, `PLANT`, `DEFUSE`, `BOOM` o `RESURRECT`; `.value` da la cadena en minúsculas y `.full_name` una etiqueta descriptiva); `derived: True` marca los dos tipos que vlr.gg no registra como filas del feed (la detonación de la spike y las resurrecciones).
+
+<TypeTable type={{
+  "seq": {
+    description: "Posición del evento en la ronda (base 0).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "type": {
+    description: "Tipo de evento (enum ReplayEventType).",
+    type: "ReplayEventType",
+    typeDescription: 'ReplayEventType.KILL | PLANT | DEFUSE | BOOM | RESURRECT',
+    default: "KILL",
+  },
+  "clock": {
+    description: "Reloj de la ronda en el momento del evento (M:SS); vacío para el marcador de explosión cuando vlr.gg no informa un evento posterior.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "seconds": {
+    description: "Reloj de la ronda en el momento del evento en segundos; None cuando no se informa el reloj (ej. un marcador de explosión de fin de ronda tras la última fila del feed).",
+    type: "int | None",
+    typeDescription: "int or None",
+  },
+  "actor": {
+    description: "Jugador que actúa (asesino, plantador, desactivador o jugador revivido).",
+    type: "ReplayActor",
+    typeDescription: "ReplayActor - consulta los campos a continuación",
+  },
+  "victim": {
+    description: "Jugador eliminado (solo en eventos de baja).",
+    type: "ReplayActor | None",
+    typeDescription: "ReplayActor or None",
+  },
+  "cause": {
+    description: "Causa de la baja: el arma o el nombre de la habilidad/ult/spike (solo en eventos de baja).",
+    type: "str",
+    typeDescription: '"e.g. Sheriff, Phantom, Overdrive, Tour de Force, Spike"',
+    default: '""',
+  },
+  "site": {
+    description: "Letra del punto de la spike ('A', 'B' o 'C') para eventos de spike; vacío en caso contrario.",
+    type: "str",
+    typeDescription: '"A" | "B" | "C" | ""',
+    default: '""',
+  },
+  "pos_x": {
+    description: "Coordenada X del evento en la cuadrícula del minimapa 1024x1024 (bajas: posición de la víctima; plantas/desactivaciones: posición del actor).",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "pos_y": {
+    description: "Coordenada Y del evento en la cuadrícula del minimapa 1024x1024.",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "from_x": {
+    description: "Coordenada X del asesino en el momento de la baja (solo eventos de baja).",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "from_y": {
+    description: "Coordenada Y del asesino en el momento de la baja (solo eventos de baja).",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "distance_units": {
+    description: "Distancia euclidiana entre asesino y víctima en unidades del minimapa (solo eventos de baja).",
+    type: "float | None",
+    typeDescription: "float or None",
+  },
+  "alive": {
+    description: "Instantánea de los jugadores vivos en este evento con coordenadas del mapa y ángulos de visión.",
+    type: "list[ReplayAlivePlayer]",
+    typeDescription: "list[ReplayAlivePlayer] - consulta los campos a continuación",
+    default: "[]",
+  },
+  "derived": {
+    description: "Indica si este evento fue deducido ('boom'/'resurrect') en lugar de registrarse como una fila del feed en vlr.gg.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+## `ReplayActor` / `ReplayAlivePlayer`
+
+<TypeTable type={{
+  "player_id": {
+    description: "ID único del jugador en vlr.gg (asociado dentro de su equipo desde la pestaña de resumen; 0 si no se pudo resolver).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nombre del jugador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "Identificador del agente en minúsculas como se muestra en vlr.gg (ej. 'omen').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team": {
+    description: "Nombre del equipo al que pertenece el jugador en esta ronda.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "side": {
+    description: "Bando en el que estaba el jugador en esta ronda.",
+    type: "str",
+    typeDescription: '"Attack" | "Defense"',
+    default: '""',
+  },
+  "x": {
+    description: "Coordenada en la cuadrícula del minimapa 1024x1024.",
+    type: "float",
+    typeDescription: "float (solo instantáneas de jugadores vivos)",
+    default: "0",
+  },
+  "y": {
+    description: "Coordenada en la cuadrícula del minimapa 1024x1024.",
+    type: "float",
+    typeDescription: "float (solo instantáneas de jugadores vivos)",
+    default: "0",
+  },
+  "view_angle": {
+    description: "Dirección de la mirada en grados del minimapa (0 apunta a +x, gira en el sentido de las agujas del reloj).",
+    type: "int",
+    typeDescription: "int (solo instantáneas de jugadores vivos)",
+    default: "0",
+  },
+}} />
+
+## `ReplayPlayerRef`
+
+<TypeTable type={{
+  "player_id": {
+    description: "ID único del jugador en vlr.gg (asociado dentro de su equipo desde la pestaña de resumen; 0 si no se pudo resolver).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: "Nombre del jugador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "agent": {
+    description: "Identificador del agente en minúsculas como se muestra en vlr.gg (ej. 'omen').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team": {
+    description: "Nombre del equipo al que pertenece el jugador en esta ronda.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "side": {
+    description: "Bando en el que estaba el jugador en esta ronda.",
+    type: "str",
+    typeDescription: '"Attack" | "Defense"',
+    default: '""',
+  },
+}} />
+
 ## Ejemplos
 
 ### Registro del kill-feed en la Ronda 1

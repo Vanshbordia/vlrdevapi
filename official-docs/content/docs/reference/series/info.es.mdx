@@ -194,7 +194,7 @@ vlrdevapi.series(series_id).info() -> SeriesInfo
 
 <TypeTable type={{
   "game_id": {
-    description: "Identificador del mapa individual en vlr.gg.",
+    description: "Identificador del mapa individual en vlr.gg (atributo data-game-id).",
     type: "int",
     typeDescription: "int",
     default: "0",
@@ -206,13 +206,13 @@ vlrdevapi.series(series_id).info() -> SeriesInfo
     default: "0",
   },
   "map_name": {
-    description: 'Nombre del mapa (ej. "Breeze", "Haven").',
+    description: 'Nombre del mapa (ej. "Split", "Breeze").',
     type: "str",
     typeDescription: "str",
     default: '""',
   },
   "picked_by": {
-    description: "Tag del equipo que seleccionó el mapa (vacío para mapas decider).",
+    description: "Tag del equipo que seleccionó el mapa (vacío para mapas decider o no elegidos).",
     type: "str",
     typeDescription: "str",
     default: '""',
@@ -224,16 +224,152 @@ vlrdevapi.series(series_id).info() -> SeriesInfo
     default: "True",
   },
   "team1_score": {
-    description: "Puntos obtenidos por el Equipo 1 en el mapa.",
+    description: "Puntos obtenidos por el Equipo 1 en este mapa.",
     type: "int | None",
     typeDescription: "int | None",
     default: "None",
   },
   "team2_score": {
-    description: "Puntos obtenidos por el Equipo 2 en el mapa.",
+    description: "Puntos obtenidos por el Equipo 2 en este mapa.",
     type: "int | None",
     typeDescription: "int | None",
     default: "None",
+  },
+  "team1_defense_rounds": {
+    description: "Rondas ganadas por el Equipo 1 en defensa (bando CT).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team1_attack_rounds": {
+    description: "Rondas ganadas por el Equipo 1 en ataque (bando T).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_attack_rounds": {
+    description: "Rondas ganadas por el Equipo 2 en ataque (bando T).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_defense_rounds": {
+    description: "Rondas ganadas por el Equipo 2 en defensa (bando CT).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team1_overtime_rounds": {
+    description: "Rondas ganadas por el Equipo 1 en tiempo extra.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_overtime_rounds": {
+    description: "Rondas ganadas por el Equipo 2 en tiempo extra.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "duration_seconds": {
+    description: "Duración del mapa en segundos.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `ForfeitInfo`
+
+<TypeTable type={{
+  "forfeited": {
+    description: "Indica si el partido fue ganado por abandono (forfeit).",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "team": {
+    description: 'Nombre completo del equipo que abandonó (ej: "YFP X", "T1").',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "team_id": {
+    description: "ID del equipo que abandonó en vlr.gg.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "reason": {
+    description: "Explicación del abandono según las notas del partido.",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `SeriesHeadToHeadMatch`
+
+<TypeTable type={{
+  "series_id": {
+    description: "Identificador único de la serie previa en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "URL completa de la serie previa en vlr.gg.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event_name": {
+    description: "Nombre del evento mostrado en la tarjeta de cara a cara.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: "Etiqueta de fase o ronda (ej. 'UBF', 'Group Stage').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "date": {
+    description: "Fecha en la que se disputó el partido previo.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "team1_name": {
+    description: "Nombre del primer equipo, según el orden de cabecera del cara a cara.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1_score": {
+    description: "Puntuación de la serie del primer equipo.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2_name": {
+    description: "Nombre del segundo equipo, según el orden de cabecera del cara a cara.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2_score": {
+    description: "Puntuación de la serie del segundo equipo.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "winner": {
+    description: "Qué lado ganó, relativo al orden de equipos del cara a cara.",
+    type: "str",
+    typeDescription: '"team1" | "team2" | ""',
+    default: '""',
   },
 }} />
 

@@ -99,6 +99,121 @@ event.info(event_id: int) -> EventInfo
   },
 }} />
 
+### Campos de `EventSeriesLink`
+
+<TypeTable type={{
+  "name": {
+    description: "Nome de exibição da série.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "href": {
+    description: "URL relativa para a página da série.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `EventStageTag`
+
+<TypeTable type={{
+  "name": {
+    description: "Nome da etapa (ex: Etapa 1).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "href": {
+    description: "URL relativa para a página da etapa.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `EventRegion`
+
+<TypeTable type={{
+  "name": {
+    description: "Nome da região (ex: Americas, EMEA, Pacific, China, International).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "subregion": {
+    description: "Nome da sub-região quando analisado a partir de subregion= (ex: Japan, North America). None para links region=.",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "href": {
+    description: "URL relativa para a página da região ou sub-região.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `EventPrize`
+
+<TypeTable type={{
+  "amount": {
+    description: "Valor numérico da premiação (ex: 1000000).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "currency_symbol": {
+    description: "Símbolo da moeda (ex: $, €).",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "currency_code": {
+    description: "Código da moeda (ex: USD, EUR).",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "converted_amount": {
+    description: "Valor convertido para USD quando a moeda original for diferente.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "is_tbd": {
+    description: "Indica se a premiação total está a definir (TBD).",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "raw_text": {
+    description: 'Texto bruto da premiação (ex: "$1,000,000 USD").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### Campos de `EventLocation`
+
+<TypeTable type={{
+  "country": {
+    description: "Nome do país.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "venue": {
+    description: "Nome da arena/local (vazio para localizações a nível regional).",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
 ## Exemplos de Código
 
 ```python

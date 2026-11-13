@@ -92,6 +92,36 @@ vlrdevapi.series(series_id).economy(game_id: int) -> EconomyData
     type: "TeamBuyMatrix",
     typeDescription: "TeamBuyMatrix",
   },
+  "pistol_team1": {
+    description: "Acceso rápido a buy_matrix_team1.pistol: rondas de pistolas ganadas/totales para el equipo 1.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "converted_team1": {
+    description: "Acceso rápido a buy_matrix_team1.converted: rondas de conversión ganadas/totales para el equipo 1.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "bonus_team1": {
+    description: "Acceso rápido a buy_matrix_team1.bonus: rondas de bonificación ganadas/totales para el equipo 1.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "pistol_team2": {
+    description: "Acceso rápido a buy_matrix_team2.pistol: rondas de pistolas ganadas/totales para el equipo 2.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "converted_team2": {
+    description: "Acceso rápido a buy_matrix_team2.converted: rondas de conversión ganadas/totales para el equipo 2.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
+  "bonus_team2": {
+    description: "Acceso rápido a buy_matrix_team2.bonus: rondas de bonificación ganadas/totales para el equipo 2.",
+    type: "EconScore | None",
+    typeDescription: "EconScore or None",
+  },
 }} />
 
 ### Campos de `RoundEconomyData`
@@ -147,6 +177,23 @@ vlrdevapi.series(series_id).economy(game_id: int) -> EconomyData
     type: "bool",
     typeDescription: "bool",
     default: "False",
+  },
+}} />
+
+### Campos de `RoundWinner`
+
+<TypeTable type={{
+  "name": {
+    description: "Nombre del equipo ganador.",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "id": {
+    description: "ID del equipo ganador.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
   },
 }} />
 

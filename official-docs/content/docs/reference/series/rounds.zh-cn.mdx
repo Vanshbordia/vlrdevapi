@@ -58,25 +58,37 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     typeDescription: "str",
     default: '""',
   },
+  "team1_id": {
+    description: "第一支战队的队伍 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
   "team2": {
     description: "第二支战队全称。",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
+  "team2_id": {
+    description: "第二支战队的队伍 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
   "rounds": {
-    description: "所有回合的战斗发展列表。",
-    type: "list[RoundInfo]",
-    typeDescription: "list[RoundInfo] - 嵌套字段详见下方说明",
+    description: "本场地图中所有回合的战斗详情列表。",
+    type: "list[RoundData]",
+    typeDescription: "list[RoundData] - 详见下方嵌套字段说明",
     default: "[]",
   },
 }} />
 
-### `RoundInfo` 字段说明
+### `RoundData` 字段说明
 
 <TypeTable type={{
   "round_number": {
-    description: "回合序号 (1-24+)。",
+    description: "对局回合序号（从 1 开始）。",
     type: "int",
     typeDescription: "int",
     default: "0",
@@ -88,21 +100,21 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     default: '""',
   },
   "winner_team_id": {
-    description: "本回合获胜队伍的 ID。",
+    description: "本回合获胜队伍的队伍 ID。",
     type: "int",
     typeDescription: "int",
     default: "0",
   },
   "win_type": {
-    description: '获胜判定方式："elimination"（全歼敌方）, "defuse"（拆除爆弹）, "spike_detonation"（爆弹引爆）, 或 "time_expired"（防守超时）。',
+    description: "获胜判定方式。使用 `.full_name` 可获取显示文本。",
     type: "RoundWinType",
-    typeDescription: "RoundWinType",
+    typeDescription: 'RoundWinType - "elimination" | "defuse" | "spike_detonation" | "time_expired"',
     default: "RoundWinType.ELIMINATION",
   },
   "side": {
-    description: '获胜方阵营："Attack" 或 "Defense"。',
+    description: '获胜方阵营："Defense" (CT) 或 "Attack" (T)。',
     type: "str",
-    typeDescription: '"Attack" | "Defense"',
+    typeDescription: '"Defense" | "Attack"',
     default: '""',
   },
   "team1_score": {
@@ -117,41 +129,43 @@ vlrdevapi.series(series_id).rounds(game_id: int) -> RoundsData
     typeDescription: "int",
     default: "0",
   },
-  "team1_bank": {
+  "bank_team1": {
     description: "第一支战队在回合初始拥有的总誉币储备。",
-    type: "int | None",
-    typeDescription: "int | None",
-    default: "None",
+    type: "float | None",
+    typeDescription: "float | None",
   },
-  "team1_spend": {
+  "bank_team2": {
+    description: "第二支战队在回合初始拥有的总誉币储备。",
+    type: "float | None",
+    typeDescription: "float | None",
+  },
+  "spent_team1": {
     description: "第一支战队本回合采购武器技能所消耗的誉币。",
     type: "int | None",
     typeDescription: "int | None",
-    default: "None",
   },
-  "team1_buy_type": {
-    description: '第一支战队的买枪类型评级 ("eco", "semi-eco", "semi-buy", "full-buy")。',
-    type: "str | None",
-    typeDescription: "str | None",
-    default: "None",
-  },
-  "team2_bank": {
-    description: "第二支战队在回合初始拥有的总誉币储备。",
-    type: "int | None",
-    typeDescription: "int | None",
-    default: "None",
-  },
-  "team2_spend": {
+  "spent_team2": {
     description: "第二支战队本回合采购消耗的誉币。",
     type: "int | None",
     typeDescription: "int | None",
-    default: "None",
   },
-  "team2_buy_type": {
-    description: '第二支战队的买枪类型评级 ("eco", "semi-eco", "semi-buy", "full-buy")。',
-    type: "str | None",
-    typeDescription: "str | None",
-    default: "None",
+  "buy_type_team1": {
+    description: "第一支战队的买枪类型评级。",
+    type: "str",
+    typeDescription: '"Pistol" | "Eco" | "Half-buy" | "Full-buy" | ""',
+    default: '""',
+  },
+  "buy_type_team2": {
+    description: "第二支战队的买枪类型评级。",
+    type: "str",
+    typeDescription: '"Pistol" | "Eco" | "Half-buy" | "Full-buy" | ""',
+    default: '""',
+  },
+  "is_pistol_round": {
+    description: "是否为手枪局（第 1 与第 13 回合）。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
   },
 }} />
 

@@ -142,7 +142,86 @@ vlrdevapi.series(series_id).players(game_id: int | str = "all") -> PlayersStats
   "stats": {
     description: "三向表现数据（综合、进攻、防守）。",
     type: "PlayerStats",
-    typeDescription: "PlayerStats",
+    typeDescription: "PlayerStats - 参见下方嵌套字段",
+  },
+}} />
+
+### `PlayerStats` 与 `SideStats` 字段说明
+
+`PlayerStats` 包含三个 `SideStats` 对象：`overall`（综合）、`attack`（进攻）和 `defend`（防守）。每个 `SideStats` 包含以下字段：
+
+<TypeTable type={{
+  "rating": {
+    description: "VLR Rating 评分（归一化综合表现指标）。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "acs": {
+    description: "平均战斗评分（ACS）。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "kills": {
+    description: "总击杀数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "deaths": {
+    description: "总阵亡数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "assists": {
+    description: "总助攻数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "kd_diff": {
+    description: "击杀/阵亡差值（K/D 差）。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "kast": {
+    description: "KAST 百分比（击杀、助攻、存活、补枪换命率）。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "adr": {
+    description: "每回合平均伤害（ADR）。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "hs_percent": {
+    description: "爆头率百分比（Headshot %）。",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "first_kills": {
+    description: "首杀总数（FK）。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "first_deaths": {
+    description: "首死总数（FD）。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "fk_fd_diff": {
+    description: "首杀/首死差值（FK/FD 差）。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
   },
 }} />
 

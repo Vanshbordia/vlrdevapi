@@ -98,9 +98,21 @@ event.list(
     default: '""',
   },
   "status": {
-    description: "赛事的当前进行状态。",
+    description: '赛事的当前进行状态（例如："ongoing"、"completed"）。',
+    type: 'Literal["ongoing", "upcoming", "completed", "paused"]',
+    typeDescription: 'Literal["ongoing", "upcoming", "completed", "paused"]',
+    default: '"upcoming"',
+  },
+  "region": {
+    description: "赛事举办赛区或国家/地区。",
     type: "str",
-    typeDescription: '"ongoing" | "upcoming" | "completed"',
+    typeDescription: "str",
+    default: '""',
+  },
+  "image_url": {
+    description: "赛事图标或缩略图的图片 URL。",
+    type: "str",
+    typeDescription: "str",
     default: '""',
   },
   "start_date": {
@@ -120,12 +132,6 @@ event.list(
     type: "EventPrize | None",
     typeDescription: "EventPrize | None",
     default: "None",
-  },
-  "region": {
-    description: "赛事举办赛区或国家/地区。",
-    type: "str",
-    typeDescription: "str",
-    default: '""',
   },
   "url": {
     description: "该赛事在 vlr.gg 上的完整访问链接。",

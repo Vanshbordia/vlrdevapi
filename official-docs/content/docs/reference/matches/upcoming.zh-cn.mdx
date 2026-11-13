@@ -88,7 +88,7 @@ matches.upcoming(
   "team1": {
     description: "对阵第一支队伍的相关资料。",
     type: "TeamInUpcomingMatch | None",
-    typeDescription: "TeamInUpcomingMatch | None",
+    typeDescription: "TeamInUpcomingMatch | None - 参见下方嵌套字段",
     default: "None",
   },
   "team2": {
@@ -96,6 +96,12 @@ matches.upcoming(
     type: "TeamInUpcomingMatch | None",
     typeDescription: "TeamInUpcomingMatch | None",
     default: "None",
+  },
+  "status": {
+    description: '比赛状态（例如："upcoming"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
   },
   "eta": {
     description: '距离比赛开打的剩余倒计时文本（例如："2h 30m"）。',
@@ -108,6 +114,35 @@ matches.upcoming(
     type: "datetime | None",
     typeDescription: "datetime.datetime | None",
     default: "None",
+  },
+}} />
+
+### `TeamInUpcomingMatch` 字段明细
+
+<TypeTable type={{
+  "id": {
+    description: "vlr.gg 上的战队唯一标识符。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: '战队全名（例如："NRG"、"FNATIC"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: '战队缩写标签（例如："NRG"、"FNC"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_name": {
+    description: '战队代表国家全称（例如："United States"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
   },
 }} />
 

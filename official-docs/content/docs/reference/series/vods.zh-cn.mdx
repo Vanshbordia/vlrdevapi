@@ -61,7 +61,7 @@ vlrdevapi.series(series_id).vods() -> SeriesVods
     default: '""',
   },
   "channel": {
-    description: "直播频道或解说主播名称。",
+    description: "直播频道或解说主播名称（例如 'Valorant', 'VCT CN', 'FNS'）。",
     type: "str",
     typeDescription: "str",
     default: '""',
@@ -72,8 +72,14 @@ vlrdevapi.series(series_id).vods() -> SeriesVods
     typeDescription: "str",
     default: '""',
   },
+  "stream_type": {
+    description: "直播类型：'broadcast' 为官方主舞台流，'watchparty' 为二路解说流。",
+    type: "str",
+    typeDescription: '"broadcast" | "watchparty"',
+    default: '"broadcast"',
+  },
   "country_code": {
-    description: "直播语种或所属国家/地区代码。",
+    description: "直播语种或所属国家/地区代码（例如 'cn', 'us', 'br'），'un' 表示未知。",
     type: "str",
     typeDescription: "str",
     default: '""',
@@ -83,23 +89,35 @@ vlrdevapi.series(series_id).vods() -> SeriesVods
 ### `SeriesVod` 字段说明
 
 <TypeTable type={{
-  "label": {
-    description: "录像描述标签（例如 'Full match', 'Map 1'）。",
-    type: "str",
-    typeDescription: "str",
-    default: '""',
-  },
   "url": {
-    description: "录像回放播放链接。",
+    description: "录像回放完整播放链接（YouTube、Twitch 等）。",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
-  "map_name": {
-    description: "该录像所对应的地图名称，全场总录像为空字符串。",
+  "label": {
+    description: '录像描述标签（例如 "Full match", "Corrode", "Lotus"）。',
     type: "str",
     typeDescription: "str",
     default: '""',
+  },
+  "platform": {
+    description: "视频托管平台代码（例如 'twitch', 'youtube'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "map_number": {
+    description: "单张地图录像的地图序号，全场录像为 None。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "start_seconds": {
+    description: "视频播放起始偏移时间（以秒为单位）。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
   },
 }} />
 

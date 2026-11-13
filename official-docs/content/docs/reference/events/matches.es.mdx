@@ -72,28 +72,101 @@ event.matches(
     required: true,
   },
   "stage": {
-    description: "Nombre de la fase (ej: 'Playoffs').",
+    description: 'Nombre de la fase (ej: "Group Stage", "Playoffs").',
     type: "str",
     typeDescription: "str",
     default: '""',
   },
   "phase": {
-    description: "Ronda o fase del partido (ej: 'Grand Final').",
+    description: 'Nombre de la ronda (ej: "Week 1", "Upper Round 1").',
     type: "str",
     typeDescription: "str",
     default: '""',
   },
   "status": {
-    description: "Estado del partido.",
+    description: "Estado del partido: completed, live o upcoming.",
     type: "MatchStatus",
-    typeDescription: 'MatchStatus - "completed" | "live" | "upcoming"',
+    typeDescription: "Enum MatchStatus - consulta a continuación",
     required: true,
+  },
+  "match_date": {
+    description: "Fecha del partido.",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "match_time": {
+    description: "Hora del partido.",
+    type: "time | None",
+    typeDescription: "datetime.time | None",
+    default: "None",
+  },
+  "datetime_utc": {
+    description: "Fecha y hora combinadas del partido en UTC.",
+    type: "datetime | None",
+    typeDescription: "datetime.datetime | None",
+    default: "None",
   },
   "teams": {
     description: "Equipos que participan en el partido (generalmente 2).",
     type: "list[MatchTeam]",
-    typeDescription: "list[MatchTeam]",
+    typeDescription: "list[MatchTeam] - consulta a continuación",
     default: "[]",
+  },
+}} />
+
+### Campos de `MatchTeam`
+
+<TypeTable type={{
+  "id": {
+    description: "ID del equipo en vlr.gg. None para TBD.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "name": {
+    description: 'Nombre del equipo (ej: "FNATIC", "TBD").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_name": {
+    description: 'Nombre completo del país según la bandera del equipo (ej: "United States"); vacío para TBD.',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "score": {
+    description: "Puntuación del equipo. None si no está disponible (partidos próximos).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "winner": {
+    description: "Indica si este equipo ganó el partido.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+}} />
+
+### Enum `MatchStatus`
+
+<TypeTable type={{
+  "COMPLETED": {
+    description: "El partido ha sido jugado y finalizado.",
+    type: "str",
+    typeDescription: 'Valor: "completed"',
+  },
+  "LIVE": {
+    description: "El partido está actualmente en progreso.",
+    type: "str",
+    typeDescription: 'Valor: "live"',
+  },
+  "UPCOMING": {
+    description: "El partido está programado pero aún no ha comenzado.",
+    type: "str",
+    typeDescription: 'Valor: "upcoming"',
   },
 }} />
 

@@ -70,37 +70,66 @@ event.standings(
 ### Campos de `StandingEntry`
 
 <TypeTable type={{
-  "team": {
-    description: "Equipe correspondente a esta linha da tabela.",
-    type: "TeamStanding",
-    typeDescription: "TeamStanding - inclui id, name, country, logo_url",
-  },
   "place": {
-    description: "Posição na tabela de classificação (ex: '1st', '2nd', '3rd-4th').",
+    description: 'String com a colocação (ex: "1st", "2nd", "3rd-4th").',
     type: "str",
     typeDescription: "str",
     default: '""',
   },
   "prize_money": {
-    description: "Valor numérico da premiação.",
+    description: "Valor numérico da premiação (ex: 125000). None se não houver prêmio.",
     type: "int | None",
     typeDescription: "int | None",
     default: "None",
   },
   "prize_currency": {
-    description: "Símbolo da moeda da premiação (ex: '$').",
+    description: 'Símbolo da moeda da premiação (ex: "$", "€"). None se não houver prêmio.',
     type: "str | None",
     typeDescription: "str | None",
     default: "None",
   },
+  "team": {
+    description: "Informações da equipe nesta classificação.",
+    type: "TeamStanding",
+    typeDescription: "TeamStanding - veja os campos abaixo",
+  },
   "points": {
-    description: "Pontos de circuito obtidos.",
+    description: "Pontos de circuito (ex: 4). None se não estiver presente.",
     type: "int | None",
     typeDescription: "int | None",
     default: "None",
   },
   "note": {
-    description: "Observação adicional sobre a colocação.",
+    description: 'Observação adicional (ex: "Masters Santiago"). None se não estiver presente.',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+### Campos de `TeamStanding`
+
+<TypeTable type={{
+  "id": {
+    description: "ID da equipe no vlr.gg. None para TBD.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "name": {
+    description: 'Nome da equipe (ex: "FURIA").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: 'País da equipe (ex: "Brazil").',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "logo_url": {
+    description: "URL da imagem do logo da equipe.",
     type: "str | None",
     typeDescription: "str | None",
     default: "None",

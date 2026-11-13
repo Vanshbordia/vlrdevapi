@@ -61,19 +61,25 @@ vlrdevapi.series(series_id).vods() -> SeriesVods
     default: '""',
   },
   "channel": {
-    description: "Nome do canal de transmissão ou streamer.",
+    description: "Nome do canal de transmissão ou streamer (ex: 'Valorant', 'VCT CN', 'FNS').",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
   "url": {
-    description: "URL da transmissão ao vivo.",
+    description: "URL completa da transmissão ao vivo.",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
+  "stream_type": {
+    description: "Tipo de transmissão no vlr.gg: 'broadcast' para oficial ou 'watchparty' para co-stream.",
+    type: "str",
+    typeDescription: '"broadcast" | "watchparty"',
+    default: '"broadcast"',
+  },
   "country_code": {
-    description: "Código de país ou idioma da transmissão.",
+    description: "Código de país ou idioma da transmissão (ex: 'us', 'cn', 'br'). 'un' indica desconhecido.",
     type: "str",
     typeDescription: "str",
     default: '""',
@@ -83,23 +89,35 @@ vlrdevapi.series(series_id).vods() -> SeriesVods
 ### Campos de `SeriesVod`
 
 <TypeTable type={{
-  "label": {
-    description: "Título ou rótulo do VOD (ex: 'Full match', 'Map 1').",
-    type: "str",
-    typeDescription: "str",
-    default: '""',
-  },
   "url": {
-    description: "URL de reprodução do vídeo gravado.",
+    description: "URL completa de reprodução do vídeo gravado (YouTube, Twitch, etc.).",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
-  "map_name": {
-    description: "Nome do mapa referente ao vídeo, ou vazio para a partida completa.",
+  "label": {
+    description: 'Título ou rótulo do VOD (ex: "Full match", "Corrode", "Lotus").',
     type: "str",
     typeDescription: "str",
     default: '""',
+  },
+  "platform": {
+    description: "Código da plataforma (ex: 'twitch', 'youtube').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "map_number": {
+    description: "Número do mapa para VODs por mapa; None para o vídeo completo da série.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "start_seconds": {
+    description: "Início no vídeo em segundos.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
   },
 }} />
 

@@ -70,29 +70,46 @@ event.teams(
 ### `Team` 字段明细
 
 <TypeTable type={{
-  "id": {
-    description: "战队在 vlr.gg 上的唯一数值 ID。",
-    type: "int",
-    typeDescription: "int",
-    default: "0",
-  },
   "name": {
-    description: "战队全称。",
+    description: '战队全称（例如："NRG"、"FNATIC"）。',
     type: "str",
     typeDescription: "str",
     default: '""',
   },
+  "id": {
+    description: "战队在 vlr.gg 上的唯一数值 ID（例如：1034）。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
   "note": {
-    description: "战队相关的可选备注信息。",
+    description: '战队相关的可选备注信息（例如："Partner Team"）。',
     type: "str | None",
     typeDescription: "str | None",
     default: "None",
   },
   "players": {
-    description: "战队成员列表。",
+    description: "战队成员列表（仅包含姓名与 ID）。始终存在；若名单不可用则可能为空列表。",
     type: "list[TeamPlayer]",
-    typeDescription: "list[TeamPlayer]",
+    typeDescription: "list[TeamPlayer] - 参见下方嵌套字段",
     default: "[]",
+  },
+}} />
+
+### `TeamPlayer` 字段明细
+
+<TypeTable type={{
+  "id": {
+    description: "选手在 vlr.gg 上的唯一数值 ID（例如：1311）。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: '选手游戏内昵称（例如："Melser"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
   },
 }} />
 

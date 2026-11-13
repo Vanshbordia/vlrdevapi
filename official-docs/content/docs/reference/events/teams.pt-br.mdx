@@ -70,29 +70,46 @@ event.teams(
 ### Campos de `Team`
 
 <TypeTable type={{
-  "id": {
-    description: "ID do time no vlr.gg.",
-    type: "int",
-    typeDescription: "int",
-    default: "0",
-  },
   "name": {
-    description: "Nome do time.",
+    description: 'Nome da equipe (ex: "NRG", "FNATIC").',
     type: "str",
     typeDescription: "str",
     default: '""',
   },
+  "id": {
+    description: "Identificador da equipe no vlr.gg (ex: 1034).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
   "note": {
-    description: "Nota opcional sobre o time.",
+    description: 'Observação opcional (ex: "Partner Team").',
     type: "str | None",
     typeDescription: "str | None",
     default: "None",
   },
   "players": {
-    description: "Lista de jogadores do time.",
+    description: "Lista de jogadores da equipe (apenas nome e id). Sempre presente; pode estar vazia se a escalação não estiver disponível.",
     type: "list[TeamPlayer]",
-    typeDescription: "list[TeamPlayer]",
+    typeDescription: "list[TeamPlayer] - veja os campos abaixo",
     default: "[]",
+  },
+}} />
+
+### Campos de `TeamPlayer`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador do jogador no vlr.gg (ex: 1311).",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: 'Nome do jogador no jogo (ex: "Melser").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
   },
 }} />
 

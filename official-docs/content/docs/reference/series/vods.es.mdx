@@ -61,19 +61,25 @@ vlrdevapi.series(series_id).vods() -> SeriesVods
     default: '""',
   },
   "channel": {
-    description: "Nombre del canal o retransmisor.",
+    description: "Nombre del canal o retransmisor (ej: 'Valorant', 'VCT CN', 'FNS').",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
   "url": {
-    description: "URL hacia el directo.",
+    description: "URL completa hacia el directo.",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
+  "stream_type": {
+    description: "Tipo de emisión en vlr.gg: 'broadcast' para oficial o 'watchparty' para co-stream.",
+    type: "str",
+    typeDescription: '"broadcast" | "watchparty"',
+    default: '"broadcast"',
+  },
   "country_code": {
-    description: "Código de país o idioma de la emisión.",
+    description: "Código de país o idioma de la emisión (ej: 'us', 'cn', 'br'). 'un' indica desconocido.",
     type: "str",
     typeDescription: "str",
     default: '""',
@@ -83,23 +89,35 @@ vlrdevapi.series(series_id).vods() -> SeriesVods
 ### Campos de `SeriesVod`
 
 <TypeTable type={{
-  "label": {
-    description: "Título o etiqueta del vídeo (ej. 'Full match', 'Map 1').",
-    type: "str",
-    typeDescription: "str",
-    default: '""',
-  },
   "url": {
-    description: "URL de visualización del vídeo bajo demanda.",
+    description: "URL completa de visualización del vídeo bajo demanda (YouTube, Twitch, etc.).",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
-  "map_name": {
-    description: "Nombre del mapa correspondiente al vídeo, o cadena vacía si es el partido completo.",
+  "label": {
+    description: 'Etiqueta o nombre del vídeo (ej: "Full match", "Corrode", "Lotus").',
     type: "str",
     typeDescription: "str",
     default: '""',
+  },
+  "platform": {
+    description: "Código de plataforma (ej. 'twitch', 'youtube').",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "map_number": {
+    description: "Número del mapa para VODs por mapa; None para el vídeo del partido completo.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "start_seconds": {
+    description: "Punto de inicio en el vídeo en segundos.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
   },
 }} />
 

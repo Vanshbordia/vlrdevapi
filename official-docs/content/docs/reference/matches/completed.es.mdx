@@ -88,7 +88,7 @@ matches.completed(
   "team1": {
     description: "Datos del equipo 1 (nombre, marcadores de mapas y si resultó ganador).",
     type: "TeamInCompletedMatch | None",
-    typeDescription: "TeamInCompletedMatch | None",
+    typeDescription: "TeamInCompletedMatch | None - consulta los campos a continuación",
     default: "None",
   },
   "team2": {
@@ -97,11 +97,58 @@ matches.completed(
     typeDescription: "TeamInCompletedMatch | None",
     default: "None",
   },
+  "status": {
+    description: 'Estado del partido (ej. "completed").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
   "datetime": {
     description: "Fecha y hora de finalización del partido en UTC.",
     type: "datetime | None",
     typeDescription: "datetime.datetime | None",
     default: "None",
+  },
+}} />
+
+### Campos de `TeamInCompletedMatch`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador numérico único del equipo en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: 'Nombre completo del equipo (ej. "NRG", "FNATIC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: 'Etiqueta corta del equipo (ej. "NRG", "FNC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_name": {
+    description: 'Nombre completo del país (ej. "United States").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "score": {
+    description: "Número de mapas ganados por el equipo.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "is_winner": {
+    description: "Indica si este equipo ganó el partido.",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
   },
 }} />
 

@@ -88,7 +88,7 @@ matches.completed(
   "team1": {
     description: "战队 1 比赛结果（包含队伍名、获得小分及是否为获胜方）。",
     type: "TeamInCompletedMatch | None",
-    typeDescription: "TeamInCompletedMatch | None",
+    typeDescription: "TeamInCompletedMatch | None - 参见下方嵌套字段",
     default: "None",
   },
   "team2": {
@@ -97,11 +97,58 @@ matches.completed(
     typeDescription: "TeamInCompletedMatch | None",
     default: "None",
   },
+  "status": {
+    description: '比赛状态（例如："completed"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
   "datetime": {
     description: "比赛完赛时间或赛期日期的 UTC 时间对象。",
     type: "datetime | None",
     typeDescription: "datetime.datetime | None",
     default: "None",
+  },
+}} />
+
+### `TeamInCompletedMatch` 字段明细
+
+<TypeTable type={{
+  "id": {
+    description: "vlr.gg 上的战队唯一标识符。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: '战队全名（例如："NRG"、"FNATIC"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: '战队缩写标签（例如："NRG"、"FNC"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_name": {
+    description: '战队代表国家全称（例如："United States"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "score": {
+    description: "战队赢下的地图局数。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "is_winner": {
+    description: "该战队是否赢得了本场比赛。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
   },
 }} />
 

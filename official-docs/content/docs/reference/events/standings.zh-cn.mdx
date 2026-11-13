@@ -70,37 +70,66 @@ event.standings(
 ### `StandingEntry` 字段明细
 
 <TypeTable type={{
-  "team": {
-    description: "本行名次所对应的战队对象。",
-    type: "TeamStanding",
-    typeDescription: "TeamStanding - 包含 id, name, country, logo_url",
-  },
   "place": {
-    description: "积分榜名次（例如：'1st', '2nd', '3rd-4th'）。",
+    description: '积分榜名次（例如："1st"、"2nd"、"3rd-4th"）。',
     type: "str",
     typeDescription: "str",
     default: '""',
   },
   "prize_money": {
-    description: "奖金数值金额。",
+    description: "奖金数值金额（例如：125000）。若无奖金则为 None。",
     type: "int | None",
     typeDescription: "int | None",
     default: "None",
   },
   "prize_currency": {
-    description: "奖金货币符号（例如：'$'）。",
+    description: '奖金货币符号（例如："$"、"€"）。若无奖金则为 None。',
     type: "str | None",
     typeDescription: "str | None",
     default: "None",
   },
+  "team": {
+    description: "本名次对应的战队信息。",
+    type: "TeamStanding",
+    typeDescription: "TeamStanding - 参见下方嵌套字段",
+  },
   "points": {
-    description: "获得的巡回积分。",
+    description: "获得的巡回赛积分（例如：4）。若无则为 None。",
     type: "int | None",
     typeDescription: "int | None",
     default: "None",
   },
   "note": {
-    description: "关于排名的附加备注信息。",
+    description: '附加备注（例如："Masters Santiago"）。若无则为 None。',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+### `TeamStanding` 字段明细
+
+<TypeTable type={{
+  "id": {
+    description: "vlr.gg 战队 ID。若尚未确定（TBD）则为 None。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "name": {
+    description: '战队名称（例如："FURIA"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country": {
+    description: '战队所属国家（例如："Brazil"）。',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "logo_url": {
+    description: "战队 Logo 图片链接。",
     type: "str | None",
     typeDescription: "str | None",
     default: "None",

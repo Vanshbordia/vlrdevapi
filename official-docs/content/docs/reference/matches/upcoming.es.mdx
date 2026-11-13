@@ -88,7 +88,7 @@ matches.upcoming(
   "team1": {
     description: "Datos del primer equipo.",
     type: "TeamInUpcomingMatch | None",
-    typeDescription: "TeamInUpcomingMatch | None",
+    typeDescription: "TeamInUpcomingMatch | None - consulta los campos a continuación",
     default: "None",
   },
   "team2": {
@@ -96,6 +96,12 @@ matches.upcoming(
     type: "TeamInUpcomingMatch | None",
     typeDescription: "TeamInUpcomingMatch | None",
     default: "None",
+  },
+  "status": {
+    description: 'Estado del partido (ej. "upcoming").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
   },
   "eta": {
     description: 'Tiempo restante hasta el inicio del partido (ej: "2h 30m").',
@@ -108,6 +114,35 @@ matches.upcoming(
     type: "datetime | None",
     typeDescription: "datetime.datetime | None",
     default: "None",
+  },
+}} />
+
+### Campos de `TeamInUpcomingMatch`
+
+<TypeTable type={{
+  "id": {
+    description: "Identificador numérico único del equipo en vlr.gg.",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "name": {
+    description: 'Nombre completo del equipo (ej. "NRG", "FNATIC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "tag": {
+    description: 'Etiqueta corta del equipo (ej. "NRG", "FNC").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "country_name": {
+    description: 'Nombre completo del país (ej. "United States").',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
   },
 }} />
 

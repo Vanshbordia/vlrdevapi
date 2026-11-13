@@ -142,7 +142,86 @@ vlrdevapi.series(series_id).players(game_id: int | str = "all") -> PlayersStats
   "stats": {
     description: "Estatísticas em três vertentes (geral, ataque, defesa).",
     type: "PlayerStats",
-    typeDescription: "PlayerStats",
+    typeDescription: "PlayerStats - veja os campos abaixo",
+  },
+}} />
+
+### Campos de `PlayerStats` e `SideStats`
+
+`PlayerStats` contém três objetos `SideStats`: `overall`, `attack` e `defend`. Cada `SideStats` possui os seguintes campos:
+
+<TypeTable type={{
+  "rating": {
+    description: "Rating VLR (métrica normalizada de desempenho).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "acs": {
+    description: "Pontuação Média de Combate (ACS).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "kills": {
+    description: "Total de abates.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "deaths": {
+    description: "Total de mortes.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "assists": {
+    description: "Total de assistências.",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "kd_diff": {
+    description: "Diferença entre abates e mortes (K/D diff).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "kast": {
+    description: "Porcentagem KAST (abate, assistência, sobrevivência, troca).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "adr": {
+    description: "Dano médio por rodada (ADR).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "hs_percent": {
+    description: "Porcentagem de tiros na cabeça (Headshot %).",
+    type: "float | None",
+    typeDescription: "float | None",
+    default: "None",
+  },
+  "first_kills": {
+    description: "Total de primeiros abates (FK).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "first_deaths": {
+    description: "Total de primeiras mortes sofridas (FD).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "fk_fd_diff": {
+    description: "Diferencial entre primeiros abates e primeiras mortes (FK/FD diff).",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
   },
 }} />
 

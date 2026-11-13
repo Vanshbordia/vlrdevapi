@@ -99,6 +99,121 @@ event.info(event_id: int) -> EventInfo
   },
 }} />
 
+### `EventSeriesLink` 字段明细
+
+<TypeTable type={{
+  "name": {
+    description: "所属系列赛的显示名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "href": {
+    description: "指向系列赛主页的相对路径。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `EventStageTag` 字段明细
+
+<TypeTable type={{
+  "name": {
+    description: "赛段名称（例如：Stage 1）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "href": {
+    description: "指向赛段主页的相对路径。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `EventRegion` 字段明细
+
+<TypeTable type={{
+  "name": {
+    description: "赛区名称（例如：Americas、EMEA、Pacific、China、International）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "subregion": {
+    description: "从 subregion= 面包屑解析出的子赛区名称（例如：Japan、North America）。对于 region= 链接则为 None。",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "href": {
+    description: "指向赛区或子赛区页面的相对路径。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `EventPrize` 字段明细
+
+<TypeTable type={{
+  "amount": {
+    description: "奖金数值金额（例如：1000000）。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "currency_symbol": {
+    description: "货币符号（例如：$、€）。",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "currency_code": {
+    description: "货币代码（例如：USD、EUR）。",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "converted_amount": {
+    description: "当原始货币非美元时，折算为美元的金额。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "is_tbd": {
+    description: "奖金池是否待定（TBD）。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "raw_text": {
+    description: '原始奖金文本（例如："$1,000,000 USD"）。',
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
+### `EventLocation` 字段明细
+
+<TypeTable type={{
+  "country": {
+    description: "举办国家名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "venue": {
+    description: "比赛场馆名称（对于赛区级线上赛为空）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+}} />
+
 ## 代码示例
 
 ```python

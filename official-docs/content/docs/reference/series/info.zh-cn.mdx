@@ -194,7 +194,7 @@ vlrdevapi.series(series_id).info() -> SeriesInfo
 
 <TypeTable type={{
   "game_id": {
-    description: "该小局地图在 vlr.gg 上的唯一 ID。",
+    description: "vlr.gg 上的小局地图唯一标识符（data-game-id 属性）。",
     type: "int",
     typeDescription: "int",
     default: "0",
@@ -206,19 +206,19 @@ vlrdevapi.series(series_id).info() -> SeriesInfo
     default: "0",
   },
   "map_name": {
-    description: '地图名称（例如 "Split", "Bind"）。',
+    description: '地图名称（例如："Split"、"Breeze"）。',
     type: "str",
     typeDescription: "str",
     default: '""',
   },
   "picked_by": {
-    description: "选择该地图的战队 Tag（决胜图留空）。",
+    description: "选择该地图的战队标签（决胜图或未选地图为空）。",
     type: "str",
     typeDescription: "str",
     default: '""',
   },
   "played": {
-    description: "该小局是否实际进行了比赛（未进行的局为 False）。",
+    description: "该小局是否实际进行了比赛（未进行的地图为 False）。",
     type: "bool",
     typeDescription: "bool",
     default: "True",
@@ -234,6 +234,142 @@ vlrdevapi.series(series_id).info() -> SeriesInfo
     type: "int | None",
     typeDescription: "int | None",
     default: "None",
+  },
+  "team1_defense_rounds": {
+    description: "第一支战队在防守方（CT 侧）获胜的回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team1_attack_rounds": {
+    description: "第一支战队在进攻方（T 侧）获胜的回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_attack_rounds": {
+    description: "第二支战队在进攻方（T 侧）获胜的回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_defense_rounds": {
+    description: "第二支战队在防守方（CT 侧）获胜的回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team1_overtime_rounds": {
+    description: "第一支战队在加时赛中获胜的回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "team2_overtime_rounds": {
+    description: "第二支战队在加时赛中获胜的回合数。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "duration_seconds": {
+    description: "本小局地图的比赛持续时间（秒）。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+}} />
+
+### `ForfeitInfo` 字段说明
+
+<TypeTable type={{
+  "forfeited": {
+    description: "比赛是否因弃权/判负结束。",
+    type: "bool",
+    typeDescription: "bool",
+    default: "False",
+  },
+  "team": {
+    description: '弃权战队全称（例如："YFP X"、"T1"）。',
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+  "team_id": {
+    description: "弃权战队的 vlr.gg 战队 ID。",
+    type: "int | None",
+    typeDescription: "int | None",
+    default: "None",
+  },
+  "reason": {
+    description: "比赛备注中关于弃权的原因说明。",
+    type: "str | None",
+    typeDescription: "str | None",
+    default: "None",
+  },
+}} />
+
+### `SeriesHeadToHeadMatch` 字段说明
+
+<TypeTable type={{
+  "series_id": {
+    description: "交锋历史中上一场系列赛在 vlr.gg 上的唯一 ID。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "url": {
+    description: "上一场系列赛在 vlr.gg 上的完整链接 URL。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "event_name": {
+    description: "交锋历史卡片中显示的赛事名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "stage": {
+    description: "阶段或轮次标签（例如：'UBF'、'Group Stage'）。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "date": {
+    description: "上一场比赛进行的日期。",
+    type: "date | None",
+    typeDescription: "datetime.date | None",
+    default: "None",
+  },
+  "team1_name": {
+    description: "按照交锋头部顺序排列的第一支战队名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team1_score": {
+    description: "第一支战队的大比分。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "team2_name": {
+    description: "按照交锋头部顺序排列的第二支战队名称。",
+    type: "str",
+    typeDescription: "str",
+    default: '""',
+  },
+  "team2_score": {
+    description: "第二支战队的大比分。",
+    type: "int",
+    typeDescription: "int",
+    default: "0",
+  },
+  "winner": {
+    description: "哪一方获胜（相对于交锋战队顺序）。",
+    type: "str",
+    typeDescription: '"team1" | "team2" | ""',
+    default: '""',
   },
 }} />
 

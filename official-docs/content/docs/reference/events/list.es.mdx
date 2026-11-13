@@ -98,9 +98,21 @@ event.list(
     default: '""',
   },
   "status": {
-    description: "Estado del torneo en el momento de la consulta.",
+    description: 'Estado del torneo (ej: "ongoing", "completed").',
+    type: 'Literal["ongoing", "upcoming", "completed", "paused"]',
+    typeDescription: 'Literal["ongoing", "upcoming", "completed", "paused"]',
+    default: '"upcoming"',
+  },
+  "region": {
+    description: "País o región sede del evento.",
     type: "str",
-    typeDescription: '"ongoing" | "upcoming" | "completed"',
+    typeDescription: "str",
+    default: '""',
+  },
+  "image_url": {
+    description: "URL de la imagen o miniatura del torneo.",
+    type: "str",
+    typeDescription: "str",
     default: '""',
   },
   "start_date": {
@@ -120,12 +132,6 @@ event.list(
     type: "EventPrize | None",
     typeDescription: "EventPrize | None",
     default: "None",
-  },
-  "region": {
-    description: "País o región sede del evento.",
-    type: "str",
-    typeDescription: "str",
-    default: '""',
   },
   "url": {
     description: "URL completa del torneo en vlr.gg.",
