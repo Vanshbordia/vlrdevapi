@@ -36,7 +36,7 @@ export const versions = [
       {
         title: 'Added',
         items: [
-          'Official MCP Registry Manifest — Added server.json registering io.github.vanshbordia/vlrdevapi with stdio transport and uvx runtime hints.',
+          'Official MCP Registry Manifest — Added server.json registering io.github.Vanshbordia/vlrdevapi with stdio transport and uvx runtime hints.',
           'Automated MCP Registry Publishing — GitHub Actions release workflow publishes directly to registry.modelcontextprotocol.io via GitHub OIDC.',
           'PyPI MCP Ownership Verification — Added verification marker to README.md.',
         ],

@@ -17,7 +17,7 @@
 
 </div>
 
-<!-- mcp-name: io.github.vanshbordia/vlrdevapi -->
+<!-- mcp-name: io.github.Vanshbordia/vlrdevapi -->
 
 ---
 
@@ -304,7 +304,7 @@ print(players.to_markdown())
 
 ## Model Context Protocol (MCP) Server
 
-VLRdevAPI includes a native MCP server for AI assistants and autonomous coding agents (`io.github.vanshbordia/vlrdevapi` on the official MCP Registry):
+VLRdevAPI includes a native MCP server for AI assistants and autonomous coding agents (`io.github.Vanshbordia/vlrdevapi` on the official MCP Registry):
 
 ```bash
 # Run server over stdio

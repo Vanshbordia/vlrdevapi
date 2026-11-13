@@ -1,6 +1,6 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.vanshbordia/vlrdevapi",
+  "name": "io.github.Vanshbordia/vlrdevapi",
   "title": "VLR.gg Dev API MCP Server",
   "description": "MCP server providing tools to fetch Valorant esports data, matches, events, and rankings from vlr.gg",
   "version": "3.1.1",

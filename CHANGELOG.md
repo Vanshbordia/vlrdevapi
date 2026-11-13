@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- **Official MCP Registry Manifest** — Added `server.json` compliant with the Model Context Protocol registry schema (`registry.modelcontextprotocol.io`), registering `io.github.vanshbordia/vlrdevapi` with stdio transport and `uvx` runtime arguments.
+- **Official MCP Registry Manifest** — Added `server.json` compliant with the Model Context Protocol registry schema (`registry.modelcontextprotocol.io`), registering `io.github.Vanshbordia/vlrdevapi` with stdio transport and `uvx` runtime arguments.
 - **Automated MCP Registry Publishing Workflow** — Extended GitHub Actions release pipeline (`publish.yml`) with automated OIDC authentication (`id-token: write`) via `mcp-publisher`.
 - **PyPI MCP Ownership Verification** — Added package ownership verification marker to `README.md`.
 
